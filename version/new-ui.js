@@ -9,7 +9,6 @@
    /* =======================================================
    ADMIN GLOBAL THEME
 ======================================================= */
-Okay permintaan sedang di proses bossku♥
 const ADMIN_THEME_KEY =
   "adminGlobalTheme";
 
