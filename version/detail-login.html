@@ -509,9 +509,6 @@ select:focus-visible{
   pointer-events:none;
 }
 </style>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -698,20 +695,121 @@ select:focus-visible{
   </div>
 </div>
 <!-- legacy iframe-only redirect removed for combined no-iframe admin shell -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCZ9zUxDf3V9TvI3vOdgeZD7pLE4IuPrOE",
-    authDomain: "logins-d615f.firebaseapp.com",
-    databaseURL: "https://logins-d615f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "logins-d615f",
-    storageBucket: "logins-d615f.appspot.com",
-    messagingSenderId: "580872784703",
-    appId: "1:580872784703:web:07957551c3214f3d32618a"
-  };
-  firebase.initializeApp(firebaseConfig);
+<script type="module">
+  /* Shared Firebase migration: myproduction-v2 */
+  import {
+    db,
+    ref as fbRef,
+    get as fbGet,
+    set as fbSet,
+    update as fbUpdate,
+    remove as fbRemove,
+    onValue as fbOnValue
+  } from "./firebase.js";
 
-  const dbRef       = firebase.database().ref('logins');
-  const blockedRef  = firebase.database().ref('logins/blocked_users');
+  function getSelectedSiteId(){
+    const fromState = window.AdminState?.siteId || "";
+    const fromStorage =
+      localStorage.getItem("admin.selectedSite") ||
+      localStorage.getItem("selectedSite") ||
+      "";
+    return String(fromState || fromStorage || "").trim();
+  }
+
+  function safeFirebaseKey(value){
+    return String(value || "").trim().replace(/[.#$\[\]\/]/g, "_");
+  }
+
+  const ACTIVE_SITE_ID = safeFirebaseKey(getSelectedSiteId());
+
+  function requireActiveSite(){
+    if (ACTIVE_SITE_ID) return true;
+    const tbody = document.getElementById("loginTableBody");
+    if (tbody){
+      tbody.innerHTML =
+        '<tr><td colspan="9">Please select a site from the admin header first.</td></tr>';
+    }
+    return false;
+  }
+
+  function mapLegacyPath(path = ""){
+    let clean = String(path || "").replace(/^\/+|\/+$/g, "");
+    if (clean === "logins") clean = "";
+    else if (clean.startsWith("logins/")) clean = clean.slice(7);
+
+    const base = ACTIVE_SITE_ID
+      ? `sites/${ACTIVE_SITE_ID}/logins`
+      : `sites/__no_site_selected__/logins`;
+
+    return clean ? `${base}/${clean}` : base;
+  }
+
+  function mapRootUpdates(updates = {}){
+    const mapped = {};
+    Object.entries(updates).forEach(([path, value]) => {
+      mapped[mapLegacyPath(path)] = value;
+    });
+    return mapped;
+  }
+
+  class LegacyRef {
+    constructor(path = "", isRoot = false){
+      this.path = path;
+      this.isRoot = isRoot;
+    }
+
+    child(childPath){
+      const base = String(this.path || "").replace(/\/+$/g, "");
+      const child = String(childPath || "").replace(/^\/+/g, "");
+      return new LegacyRef(base ? `${base}/${child}` : child, false);
+    }
+
+    on(eventName, callback, errorCallback){
+      if (eventName !== "value") {
+        throw new Error(`Unsupported realtime event: ${eventName}`);
+      }
+      if (!requireActiveSite()) return () => {};
+      return fbOnValue(
+        fbRef(db, mapLegacyPath(this.path)),
+        callback,
+        errorCallback
+      );
+    }
+
+    async get(){
+      if (!requireActiveSite()) throw new Error("Please select a site first.");
+      return fbGet(fbRef(db, mapLegacyPath(this.path)));
+    }
+
+    async set(value){
+      if (!requireActiveSite()) throw new Error("Please select a site first.");
+      return fbSet(fbRef(db, mapLegacyPath(this.path)), value);
+    }
+
+    async update(value){
+      if (!requireActiveSite()) throw new Error("Please select a site first.");
+      if (this.isRoot) return fbUpdate(fbRef(db), mapRootUpdates(value));
+      return fbUpdate(fbRef(db, mapLegacyPath(this.path)), value);
+    }
+
+    async remove(){
+      if (!requireActiveSite()) throw new Error("Please select a site first.");
+      return fbRemove(fbRef(db, mapLegacyPath(this.path)));
+    }
+  }
+
+  const firebase = {
+    database(){
+      return {
+        ref(path){
+          return new LegacyRef(path || "", !path);
+        }
+      };
+    }
+  };
+
+  const dbRef      = firebase.database().ref("logins");
+  const blockedRef = firebase.database().ref("logins/blocked_users");
 
   // ---------- Utils ----------
   function esc(s){
@@ -1786,13 +1884,31 @@ function setupResetPwModal(){
     setupResetPwModal();
   };
 })();
+
+  // Functions used by inline HTML action buttons.
+  window.hideToast = hideToast;
+  window.showConfirmBox = showConfirmBox;
+  window.toggleBlockUser = toggleBlockUser;
+
   window.addEventListener('DOMContentLoaded', init);
-  const THEME_KEY = "siteTheme";
+  const THEME_KEY = "adminGlobalTheme";
 
   function applyTheme(theme) {
     const finalTheme = theme === "dark" ? "dark" : "light";
     document.body.classList.toggle("dark-theme", finalTheme === "dark");
   }
+
+
+  window.addEventListener("sitechange", (event) => {
+    const nextSite = safeFirebaseKey(event?.detail?.siteId || getSelectedSiteId());
+    if (nextSite && nextSite !== ACTIVE_SITE_ID) {
+      const tbody = document.getElementById("loginTableBody");
+      if (tbody) {
+        tbody.innerHTML =
+          '<tr><td colspan="9">Site changed. Refresh this tab to load Detail Login for the selected site.</td></tr>';
+      }
+    }
+  });
 
   // apply masa mula load
   applyTheme(localStorage.getItem(THEME_KEY) || "light");
