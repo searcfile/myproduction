@@ -1752,3 +1752,30 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 .new-ui-switch-track:after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s}
 .new-ui-switch input:checked + .new-ui-switch-track{background:var(--blue)}
 .new-ui-switch input:checked + .new-ui-switch-track:after{transform:translateX(14px)}
+
+/* =========================================================
+   ADMIN FLAT-PAGE WORKSPACE V7
+========================================================= */
+html {
+  min-width: 0;
+}
+
+body {
+  min-width: 0;
+}
+
+.admin-workspace-tab,
+.admin-workspace-more-item {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.admin-workspace-tab.dragging {
+  cursor: grabbing;
+}
+
+@media (max-width: 768px) {
+  .admin-workspace-tabs {
+    min-width: 0;
+  }
+}
