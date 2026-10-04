@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My History</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg-main: #000;
+  --pg-card:#0b0b0b;
+  --text-main: #fff;
+  --text-soft: rgba(255,255,255,0.85);
+  --text-dim: rgba(255,255,255,0.65);
+  --colorbtn:rgba(255,255,255,0.85);
+  --backgroundbtn:#141414;
+  --backgrounddrop:#1f1f1f;
+  --border:#303030;
+  --border4:#303030;
+  --border2:#424242;
+  --panel-border: #424242;
+  --blur:rgba(255,255,255,0.25);
+  --border3:#303030;
+  --tab2:#141414;
+  --border-bottom:#141414;
+  --close:rgba(255,255,255,0.45);
+   --close-hover2:rgba(255,255,255,0.08);
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #303030;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(255,255,255,0.85);
+  --btn-border: #424242;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(0,0,0,0.5);
+  --popup-bg: #1f1f1f;
+
+  --empty-text: rgba(255,255,255,.7);
+  --empty-title: rgba(255,255,255,.85);
+
+  --toggle-track: #2c7be5;
+  --toggle-knob: #ffffff;
+  --btnfocus:#15325b;
+  --colorbtn-close:rgba(255, 255, 255, 0.45);
+  
+}
+
+/* default light theme */
+body.light-theme{
+  --pg-card:#ffffff;
+  --bg-main: #fff;
+  --text-main: #000;
+  --text-soft: rgba(0,0,0,0.88);
+  --text-dim: rgba(0,0,0,0.68);
+  --colorbtn:rgba(0, 0, 0, 0.88);
+  --colorbtn-close:rgba(0, 0, 0, 0.45);
+  --backgroundbtn:#ffffff;
+  --backgrounddrop:#ffffff;
+  --border:#303030;
+  --border4:#d9d9d9;
+  --border2:#d9d9d9;
+  --panel-border: #d4dbe6;
+  --blur:rgba(0,0,0,0.25);
+  --border3:#f0f0f0;
+  --tab2:#ffffff;
+  --border-bottom:#ffffff;
+  --close:rgba(0, 0, 0, 0.88);
+   --close-hover2:rgba(0,0,0,0.08);
+
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #d4dbe6;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(17,24,39,0.88);
+  --btn-border: #d4dbe6;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(15,23,42,0.18);
+  --popup-bg: #ffffff;
+
+  --empty-text: rgba(17,24,39,.7);
+  --empty-title: rgba(17,24,39,.88);
+
+  --toggle-track: #cfd8e3;
+  --toggle-knob: #ffffff;
+  --btnfocus:#91caff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-soft);
+}
+
+.history-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.history-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 8px;
+}
+
+.left-panel{
+  background: var(--backgrounddrop);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  overflow: visible;
+  position: relative;
+  z-index: 20;
+}
+
+.right-panel {
+  background: transparent;
+  border:0;
+  overflow: hidden;
+}
+.panel-head {
+  padding: 12px 14px;
+  border: 1px solid var(--border4);
+  background: var(--backgrounddrop);
+  font-weight: 500;
+  color: var(--text-soft);
+  font-size:14px;
+  border-radius:8px 8px 0 0 !important;
+}
+
+.search-box {
+  padding: 10px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.search-box input {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  padding: 4px 11px;
+  outline: none;
+  transition: all .3s;
+}
+.search-box input:hover{
+  border-color: var(--gold-hover);
+}
+.search-box input:focus {
+  border-color: var(--gold);
+}
+
+.tab-list {
+  max-height: calc(100vh - 150px);
+  overflow: auto;
+  padding: 8px;
+}
+
+.tab-item {
+  width: 100%;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  text-align: left;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.tab-item:hover {
+  border-color: var(--gold-hover);
+}
+.tab-item.active {
+  border-color: var(--gold);
+}
+.tab-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tab-meta {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.status-open {
+  color: #22c55e;
+}
+
+.status-closed {
+  color: #b31111;
+}
+.detail-empty {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 50px 10px;
+  background:var(--backgroundbtn);
+}
+.detail-empty2 {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 50px 10px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.stat-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat-value {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-soft);
+}
+.stats-table-wrap {
+  margin-bottom: 14px;
+  overflow: auto;
+  border: 1px solid var(--border4);
+  border-radius: 8px;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.stats-table th {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border2);
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-soft);
+  background: var(--backgrounddrop);
+  font-weight: 600;
+}
+
+.stats-table td {
+  background:var(--backgroundbtn);
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border2);
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.stats-table td:nth-child(2) {
+  color: var(--text-soft);
+}
+.table-wrap {
+  overflow: auto;
+  border: 1px solid var(--border4);
+  border-radius: 8px;
+}
+table th:nth-child(2),
+table td:nth-child(2) {
+  text-align: center;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+th,
+td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border2);
+  text-align: left;
+  font-size: 14px;
+  background:var(--backgroundbtn);
+}
+
+th {
+  background: var(--backgrounddrop);
+  color: var(--text-soft);
+  position: sticky;
+  top: 0;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.logs-box {
+  margin-top: 14px;
+}
+
+.log-list {
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--border4);
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid var(--border2);
+}
+
+.log-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border4);
+  font-size: 14px;
+  background:var(--backgroundbtn);
+}
+
+.log-row:last-child {
+  border-bottom: 0;
+}
+
+.log-action {
+  color: #fff;
+}
+
+.log-time {
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+  .history-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-list {
+    max-height: 280px;
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* ================= SCROLLBAR GLOBAL ================= */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px; /* nipis */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+#dateRangeInput {
+  margin-top: 8px;
+  cursor: default;
+}
+
+.range-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.range-buttons button {
+  height: 30px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all .3s;
+}
+#dateRangeInput{
+text-align: center;
+}
+.range-buttons button:hover {
+  border-color: var(--gold-hover);
+}
+.range-buttons button:active {
+  border-color: var(--gold-active);
+}
+.range-buttons button.active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.custom-range-wrap {
+  position: relative;
+  z-index: 99999;
+}
+#dateRangeInput {
+  text-align: center;
+  cursor: pointer;
+}
+
+.range-picker {
+  position: absolute;
+  left: 0;
+  top: 38px;
+  width: min(620px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  background: var(--backgrounddrop);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999999;
+  display: none;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+   transition: all .3s;
+}
+
+.range-picker.open {
+  display: block;
+}
+
+.range-picker-head,
+.picker-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+   transition: all .3s;
+}
+.picker-actions button {
+  height: 28px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  cursor: pointer;
+   transition: all .3s;
+  margin-top:5px;
+}
+.range-picker-head button{
+  height: 28px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  cursor: pointer;
+   transition: all .3s;
+  padding:0 15px;
+}
+.range-picker-head button:hover{
+  border: 1px solid var(--gold-hover);
+  color:var(--gold-hover);
+}
+.range-picker-head button:active{
+  border: 1px solid var(--gold-active);
+  color:var(--gold-active);
+}
+.picker-actions button:hover{
+  border: 1px solid var(--gold-hover);
+  color:var(--gold-hover);
+}
+.picker-actions button:active{
+  border: 1px solid var(--gold-active);
+  color:var(--gold-active);
+}
+#pickerTitle {
+  font-size: 13px;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.calendar-grid-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.month-title {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-week,
+.cal-day {
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.cal-week {
+  color: var(--text-dim);
+}
+
+.cal-day {
+  border: 1px solid transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  background:var(--backgroundbtn);
+   transition: all .3s;
+}
+
+.cal-day:hover {
+  border-color: var(--gold-hover);
+}
+
+.cal-day.muted {
+  color: var(--text-dim);
+  opacity: .45;
+}
+
+.cal-day.in-range {
+  background: rgba(22,104,220,.18);
+}
+
+.cal-day.selected {
+  background: var(--gold);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .range-picker {
+    width: 100%;
+  }
+
+  .calendar-grid-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+.date-range-line {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  gap: 6px;
+  align-items: center;
+  margin-top:8px;
+}
+
+.date-range-line #dateRangeInput {
+  margin-top: 0;
+}
+
+.range-toggle-btn {
+  width: 36px;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.range-toggle-btn:hover {
+  border-color: var(--gold-hover);
+  color:var(--gold-hover);
+}
+.range-toggle-btn:active {
+  border-color: var(--gold-active);
+  color:var(--gold-active);
+}
+.range-toggle-btn.active {
+  border-color: var(--gold);
+  color:var(--gold);
+}
+
+.range-toggle-btn svg {
+  transition: transform .25s ease;
+}
+
+.range-toggle-btn.active svg {
+  transform: rotate(180deg);
+}
+
+.range-buttons {
+  display: none;
+}
+
+.range-buttons.show {
+  display: grid;
+}
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+</style>
+</head>
+
+<body>
+<div class="history-page">
+
+  <div class="history-layout">
+    <aside class="left-panel">
+      <div class="panel-head">History Tabs</div>
+<div class="search-box">
+  <input id="searchInput" type="text" placeholder="Search tab...">
+
+<div class="custom-range-wrap">
+  <div class="date-range-line">
+    <input id="dateRangeInput" type="text" readonly placeholder="YYYY-MM-DD → YYYY-MM-DD">
+
+    <button type="button" id="rangeToggleBtn" class="range-toggle-btn" aria-label="Toggle Range">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div id="rangePicker" class="range-picker">
+    <div class="range-picker-head">
+      <button type="button" id="prevMonthBtn">‹‹</button>
+      <div id="pickerTitle"></div>
+      <button type="button" id="nextMonthBtn">››</button>
+    </div>
+
+    <div class="calendar-grid-wrap">
+      <div>
+        <div id="leftMonthTitle" class="month-title"></div>
+        <div id="leftCalendar" class="calendar-grid"></div>
+      </div>
+
+      <div>
+        <div id="rightMonthTitle" class="month-title"></div>
+        <div id="rightCalendar" class="calendar-grid"></div>
+      </div>
+    </div>
+
+    <div class="picker-actions">
+      <button type="button" id="clearRangeBtn">Clear</button>
+      <button type="button" id="applyRangeBtn">Apply</button>
+    </div>
+  </div>
+</div>
+
+  <div class="range-buttons">
+    <button type="button" data-range="today">Today</button>
+    <button type="button" data-range="yesterday">Yesterday</button>
+    <button type="button" data-range="thisWeek">This Week</button>
+    <button type="button" data-range="lastWeek">Last Week</button>
+    <button type="button" data-range="thisMonth">This Month</button>
+    <button type="button" data-range="lastMonth">Last Month</button>
+  </div>
+</div>
+      <div id="tabList" class="tab-list"></div>
+    </aside>
+
+    <main class="right-panel">
+      <div id="detailWrap" class="detail-wrap">
+        <div class="detail-empty">Select tab session from left side.</div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+const blurphpApp = firebase.initializeApp({
+  apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
+  authDomain: "blurphp.firebaseapp.com",
+  databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "blurphp",
+  storageBucket: "blurphp.appspot.com",
+  messagingSenderId: "593904200464",
+  appId: "1:593904200464:web:cea7bc1360532c20d99395"
+}, "blurphpHistoryApp");
+
+const blurphpDb = blurphpApp.database();
+
+const tabList = document.getElementById("tabList");
+const detailWrap = document.getElementById("detailWrap");
+const searchInput = document.getElementById("searchInput");
+const dateRangeInput = document.getElementById("dateRangeInput");
+const rangePicker = document.getElementById("rangePicker");
+const pickerTitle = document.getElementById("pickerTitle");
+const leftMonthTitle = document.getElementById("leftMonthTitle");
+const rightMonthTitle = document.getElementById("rightMonthTitle");
+const leftCalendar = document.getElementById("leftCalendar");
+const rightCalendar = document.getElementById("rightCalendar");
+const prevMonthBtn = document.getElementById("prevMonthBtn");
+const nextMonthBtn = document.getElementById("nextMonthBtn");
+const applyRangeBtn = document.getElementById("applyRangeBtn");
+const clearRangeBtn = document.getElementById("clearRangeBtn");
+const rangeButtons = document.querySelectorAll(".range-buttons button");
+  const rangeToggleBtn = document.getElementById("rangeToggleBtn");
+const rangeButtonsWrap = document.querySelector(".range-buttons");
+let pickerBaseDate = new Date();
+let tempStartDate = null;
+let tempEndDate = null;
+
+let activeRange = {
+  start: null,
+  end: null,
+  key: "today"
+};
+let allSessions = [];
+let selectedSessionId = "";
+
+function historyEmailKey(email) {
+  return String(email || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.#$[\]/]/g, "_");
+}
+
+function getLoginData() {
+  try {
+    return JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function formatTime(ms) {
+  if (!ms) return "-";
+  const d = new Date(Number(ms));
+  if (isNaN(d.getTime())) return "-";
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+
+  return `${dd}-${mm}-${yy} ${hh}:${mi}:${ss}`;
+}
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function toYMD(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+// Monday start week
+function startOfWeek(date) {
+  const d = startOfDay(date);
+  const day = d.getDay(); // Sun=0, Mon=1
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function endOfWeek(date) {
+  const d = startOfWeek(date);
+  d.setDate(d.getDate() + 6);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function getRangeByKey(key) {
+  const now = new Date();
+  let start, end;
+
+  if (key === "yesterday") {
+    start = startOfDay(now);
+    start.setDate(start.getDate() - 1);
+    end = endOfDay(start);
+  } else if (key === "thisWeek") {
+    start = startOfWeek(now);
+    end = endOfWeek(now);
+  } else if (key === "lastWeek") {
+    start = startOfWeek(now);
+    start.setDate(start.getDate() - 7);
+    end = endOfWeek(start);
+  } else if (key === "thisMonth") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  } else if (key === "lastMonth") {
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  } else {
+    start = startOfDay(now);
+    end = endOfDay(now);
+  }
+
+  return { start, end };
+}
+
+function setActiveRange(key = "today") {
+  const range = getRangeByKey(key);
+
+  activeRange = {
+    key,
+    start: range.start.getTime(),
+    end: range.end.getTime()
+  };
+
+if (dateRangeInput) {
+  dateRangeInput.value = `${toYMD(range.start)} → ${toYMD(range.end)}`;
+}
+
+  rangeButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.range === key);
+  });
+
+  renderTabList();
+}
+function monthName(date) {
+  return date.toLocaleString("en-US", { month: "short", year: "numeric" });
+}
+
+function sameDay(a, b) {
+  if (!a || !b) return false;
+  return toYMD(a) === toYMD(b);
+}
+
+function isBetweenDay(day, start, end) {
+  if (!day || !start || !end) return false;
+  const t = startOfDay(day).getTime();
+  return t >= startOfDay(start).getTime() && t <= startOfDay(end).getTime();
+}
+
+function renderCalendar(container, titleEl, date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  titleEl.textContent = monthName(date);
+  container.innerHTML = "";
+
+  ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach(w => {
+    const el = document.createElement("div");
+    el.className = "cal-week";
+    el.textContent = w;
+    container.appendChild(el);
+  });
+
+  const first = new Date(year, month, 1);
+  const startOffset = first.getDay();
+  const gridStart = new Date(year, month, 1 - startOffset);
+
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cal-day";
+    btn.textContent = d.getDate();
+
+    if (d.getMonth() !== month) btn.classList.add("muted");
+
+    if (sameDay(d, tempStartDate) || sameDay(d, tempEndDate)) {
+      btn.classList.add("selected");
+    } else if (isBetweenDay(d, tempStartDate, tempEndDate)) {
+      btn.classList.add("in-range");
+    }
+
+btn.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  // Klik pertama = pilih tarikh mula
+  if (!tempStartDate || (tempStartDate && tempEndDate)) {
+    tempStartDate = startOfDay(d);
+    tempEndDate = null;
+    renderRangePicker();
+    return;
+  }
+
+  // Klik kedua = pilih tarikh akhir dan terus apply
+  if (d.getTime() < tempStartDate.getTime()) {
+    tempEndDate = endOfDay(tempStartDate);
+    tempStartDate = startOfDay(d);
+  } else {
+    tempEndDate = endOfDay(d);
+  }
+
+  const start = startOfDay(tempStartDate);
+  const end = endOfDay(tempEndDate);
+
+  activeRange = {
+    key: "custom",
+    start: start.getTime(),
+    end: end.getTime()
+  };
+
+  if (dateRangeInput) {
+    dateRangeInput.value = `${toYMD(start)} → ${toYMD(end)}`;
+  }
+
+  rangeButtons.forEach(btn => btn.classList.remove("active"));
+
+  renderRangePicker();
+  closeRangePicker();
+  renderTabList();
+});
+
+    container.appendChild(btn);
+  }
+}
+
+function renderRangePicker() {
+  const leftDate = new Date(pickerBaseDate.getFullYear(), pickerBaseDate.getMonth(), 1);
+  const rightDate = new Date(pickerBaseDate.getFullYear(), pickerBaseDate.getMonth() + 1, 1);
+
+  if (pickerTitle) {
+    pickerTitle.textContent = `${monthName(leftDate)} - ${monthName(rightDate)}`;
+  }
+
+  renderCalendar(leftCalendar, leftMonthTitle, leftDate);
+  renderCalendar(rightCalendar, rightMonthTitle, rightDate);
+}
+
+function openRangePicker() {
+  if (!rangePicker) return;
+
+  const currentStart = activeRange.start ? new Date(activeRange.start) : new Date();
+  const currentEnd = activeRange.end ? new Date(activeRange.end) : currentStart;
+
+  tempStartDate = startOfDay(currentStart);
+  tempEndDate = endOfDay(currentEnd);
+  pickerBaseDate = new Date(currentStart.getFullYear(), currentStart.getMonth(), 1);
+
+  rangePicker.classList.add("open");
+  renderRangePicker();
+}
+
+function closeRangePicker() {
+  rangePicker?.classList.remove("open");
+}
+function escapeHtml(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderTabList() {
+  const q = searchInput.value.trim().toLowerCase();
+
+const filtered = allSessions.filter(item => {
+  const tab = String(item.tab || "").toLowerCase();
+  const matchSearch = tab.includes(q);
+
+  const openedAt = Number(item.openedAt || 0);
+  const matchDate =
+    !activeRange.start ||
+    (openedAt >= activeRange.start && openedAt <= activeRange.end);
+
+  return matchSearch && matchDate;
+});
+
+  if (!filtered.length) {
+    tabList.innerHTML = `
+      <div class="detail-empty">No History Data.</div>
+    `;
+    detailWrap.innerHTML = `
+      <div class="detail-empty2">No Data.</div>
+    `;
+    return;
+  }
+
+  tabList.innerHTML = filtered.map(item => {
+    const isActive = item.sessionId === selectedSessionId;
+    const status = item.closedAt ? "Closed" : "Open";
+    const statusClass = item.closedAt ? "status-closed" : "status-open";
+
+    return `
+      <button class="tab-item ${isActive ? "active" : ""}" data-id="${escapeHtml(item.sessionId)}">
+        <div class="tab-name">${escapeHtml(item.tab || "UNKNOWN")}</div>
+        <div class="tab-meta">
+          Total Action: ${Number(item.totalActions || 0)}
+        </div>
+        <div class="tab-meta">
+          Opened: ${formatTime(item.openedAt)}
+        </div>
+        <div class="tab-meta ${statusClass}">
+          ${status}
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  tabList.querySelectorAll(".tab-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedSessionId = btn.dataset.id;
+      renderTabList();
+      renderDetail();
+    });
+  });
+
+  if (!selectedSessionId && filtered[0]) {
+    selectedSessionId = filtered[0].sessionId;
+    renderTabList();
+    renderDetail();
+  }
+}
+
+function renderDetail() {
+  const item = allSessions.find(x => x.sessionId === selectedSessionId);
+
+  if (!item) {
+    detailWrap.innerHTML = `
+      <div class="detail-empty">Select tab session from left side.</div>
+    `;
+    return;
+  }
+
+let actions = item.actions || {};
+const labels = item.actionLabels || {};
+
+// ✅ kalau actions kosong, kira semula dari logs
+if (!actions || Object.keys(actions).length === 0) {
+  actions = {};
+
+  Object.values(item.logs || {}).forEach(log => {
+    const name = String(log.action || "").trim();
+    if (!name) return;
+
+    const key = name
+      .toLowerCase()
+      .replace(/[.#$[\]/]/g, "_")
+      .replace(/\s+/g, "_");
+
+    actions[key] = (actions[key] || 0) + 1;
+    labels[key] = name;
+  });
+}
+
+const realTotalActions = Object.values(actions)
+  .reduce((sum, n) => sum + Number(n || 0), 0);
+
+const actionRows = Object.entries(actions)
+  .sort((a, b) => b[1] - a[1])
+  .map(([key, count]) => {
+    const name = labels[key] || key;
+
+    return `
+      <tr>
+        <td>${escapeHtml(name)}</td>
+        <td><span class="count-badge">${Number(count || 0)}</span></td>
+      </tr>
+    `;
+  }).join("");
+
+  const logs = item.logs || {};
+  const logRows = Object.values(logs)
+    .sort((a, b) => Number(b.time || 0) - Number(a.time || 0))
+    .slice(0, 50)
+    .map(log => `
+      <div class="log-row">
+        <span class="log-action">${escapeHtml(log.action)}</span>
+        <span class="log-time">${formatTime(log.time)}</span>
+      </div>
+    `).join("");
+
+detailWrap.innerHTML = `
+    <div class="stats-table-wrap">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Tab</th>
+            <th>Total Action</th>
+            <th>Opened At</th>
+            <th>Closed At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${escapeHtml(item.tab || "-")}</td>
+            <td>${realTotalActions}</td>
+            <td>${formatTime(item.openedAt)}</td>
+            <td>${formatTime(item.closedAt)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Action Detail</th>
+            <th>Total Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${actionRows || `<tr><td colspan="2">No action yet.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="logs-box">
+      <div class="panel-head">
+        History Logs
+      </div>
+      <div class="log-list">
+        ${logRows || `<div class="detail-empty">No logs yet.</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function startHistoryListener() {
+  const login = getLoginData();
+
+  if (!login.email) {
+    detailWrap.innerHTML = `
+      <div class="detail-empty">No login data found.</div>
+    `;
+    return;
+  }
+
+  const emailKey = historyEmailKey(login.email);
+
+  blurphpDb.ref(`tabHistory/${emailKey}/sessions`).on("value", snap => {
+    const data = snap.val() || {};
+
+    allSessions = Object.values(data).sort((a, b) => {
+      return Number(b.openedAt || 0) - Number(a.openedAt || 0);
+    });
+
+    if (selectedSessionId && !allSessions.some(x => x.sessionId === selectedSessionId)) {
+      selectedSessionId = "";
+    }
+
+    renderTabList();
+    renderDetail();
+  });
+}
+
+searchInput.addEventListener("input", renderTabList);
+rangeToggleBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  rangeButtonsWrap?.classList.toggle("show");
+  rangeToggleBtn.classList.toggle("active", rangeButtonsWrap?.classList.contains("show"));
+});
+
+rangeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    setActiveRange(btn.dataset.range || "today");
+
+    // pilih range terus hide balik
+    rangeButtonsWrap?.classList.remove("show");
+    rangeToggleBtn?.classList.remove("active");
+  });
+});
+dateRangeInput?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openRangePicker();
+});
+
+prevMonthBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  pickerBaseDate.setMonth(pickerBaseDate.getMonth() - 1);
+  renderRangePicker();
+});
+
+nextMonthBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  pickerBaseDate.setMonth(pickerBaseDate.getMonth() + 1);
+  renderRangePicker();
+});
+
+applyRangeBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!tempStartDate) return;
+
+  const start = startOfDay(tempStartDate);
+  const end = tempEndDate ? endOfDay(tempEndDate) : endOfDay(tempStartDate);
+
+  activeRange = {
+    key: "custom",
+    start: start.getTime(),
+    end: end.getTime()
+  };
+
+  if (dateRangeInput) {
+    dateRangeInput.value = `${toYMD(start)} → ${toYMD(end)}`;
+  }
+
+  rangeButtons.forEach(btn => btn.classList.remove("active"));
+  closeRangePicker();
+  renderTabList();
+});
+
+clearRangeBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  tempStartDate = null;
+  tempEndDate = null;
+  setActiveRange("today");
+  closeRangePicker();
+});
+
+document.addEventListener("click", (e) => {
+  if (rangePicker?.classList.contains("open")) {
+    if (!rangePicker.contains(e.target) && e.target !== dateRangeInput) {
+      closeRangePicker();
+    }
+  }
+
+  if (rangeButtonsWrap?.classList.contains("show")) {
+    if (
+      !rangeButtonsWrap.contains(e.target) &&
+      !rangeToggleBtn?.contains(e.target)
+    ) {
+      rangeButtonsWrap.classList.remove("show");
+      rangeToggleBtn?.classList.remove("active");
+    }
+  }
+});
+window.addEventListener("message", function(e) {
+  const allowedOrigins = [
+    "https://5g88-main.vercel.app"
+  ];
+
+  if (!allowedOrigins.includes(e.origin)) return;
+
+  const data = e.data || {};
+
+  if (data.type === "user-login" && data.user) {
+    localStorage.setItem("gmailLogin", JSON.stringify(data.user));
+    startHistoryListener();
+  }
+});
+
+setActiveRange("today");
+startHistoryListener();
+  (function () {
+  const THEME_KEY = "siteTheme";
+
+  function applyChildTheme(theme) {
+    document.body.classList.remove("light-theme", "dark-theme");
+    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+  }
+
+  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+
+  window.addEventListener("message", function (e) {
+    const allowedOrigins = [
+      "https://5g88-main.vercel.app"
+    ];
+    if (!allowedOrigins.includes(e.origin)) return;
+
+    const data = e.data || {};
+    if (data.type === "theme-change") {
+      const theme = data.theme === "dark" ? "dark" : "light";
+      localStorage.setItem(THEME_KEY, theme);
+      applyChildTheme(theme);
+    }
+  });
+})();
+</script>
+</body>
+</html>
