@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- legacy iframe-only redirect removed for combined no-iframe admin shell -->
+  <title>Admin Notice</title>
+
+  <style>
+    :root{
+      --panel: #111723;
+      --panel-2: #161d2b;
+      --panel-3: #0f1521;
+      --line: rgba(60,137,232,.35);
+      --line-strong: rgba(60,137,232,.75);
+      --text: #eef4ff;
+      --muted: #8b9ab7;
+      --red: #dd1717;
+      --red-hover: #e75858;
+      --red-active: #b31616;
+      --gray: #777;
+      --gray-hover: #b8b8b8;
+      --gray-active: #666;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --shadow-soft: 0 6px 18px rgba(0,0,0,.22);
+      --radius: 16px;
+      --radius-sm: 10px;
+
+ 
+  --bg-main: #fff;
+  --sidebar: #001529;
+  --text-main: #000;
+  --text-soft: rgba(17,24,39,0.88);
+  --text-dim: rgba(17,24,39,0.72);
+  --colorbtn: rgba(0, 0, 0, 0.88);
+  --backgroundbtn: #ffffff;
+  --backgrounddrop: #ffffff;
+  --border: #303030;
+  --border2: #d9d9d9;
+  --panel-border: #d4dbe6;
+  --blur: rgba(0,0,0,0.25);
+  --border3: #f0f0f0;
+  --tab2: #ffffff;
+  --border-bottom: #ffffff;
+  --close: rgba(0, 0, 0, 0.88);
+
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #d4dbe6;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(17,24,39,0.88);
+  --btn-border: #d4dbe6;
+
+  --blue: #1668dc;
+  --blue-hover: #3c89e8;
+  --blue-active: #1554ad;
+
+  --overlay-bg: rgba(15,23,42,0.18);
+  --popup-bg: #ffffff;
+
+  --empty-text: rgba(17,24,39,.7);
+  --empty-title: rgba(17,24,39,.88);
+
+  --toggle-track: #cfd8e3;
+  --toggle-knob: #ffffff;
+  --btnfocus: #91caff;
+}
+
+body.dark-theme{
+  --bg-main: #000;
+  --sidebar: #001529;
+  --text-main: #fff;
+  --text-soft: rgba(255,255,255,0.85);
+  --text-dim: rgba(255,255,255,0.65);
+  --colorbtn: rgba(255,255,255,0.85);
+  --backgroundbtn: #141414;
+  --backgrounddrop: #1f1f1f;
+  --border: #303030;
+  --border2: #424242;
+  --panel-border: #424242;
+  --blur: rgba(255,255,255,0.25);
+  --border3: #303030;
+  --tab2: #141414;
+  --border-bottom: #141414;
+  --close: rgba(255,255,255,0.45);
+
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #303030;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(255,255,255,0.85);
+  --btn-border: #424242;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(0,0,0,0.5);
+  --popup-bg: #1f1f1f;
+
+  --empty-text: rgba(255,255,255,.7);
+  --empty-title: rgba(255,255,255,.85);
+
+  --toggle-track: #2c7be5;
+  --toggle-knob: #ffffff;
+  --btnfocus: #15325b;
+}
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background:var(--bg-main);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      gap: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      max-width: 590px;
+      min-width: 380px;
+      background: var(--backgroundbtn);
+      border-right: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .sidebar::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    .sidebar-header{
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid var(--border2);
+      background:var(--backgrounddrop);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+
+    .sidebar-header-left{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+
+    .sidebar-title{
+      margin:0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      color: var(--colorbtn);
+    }
+
+    .sidebar-subtitle{
+      margin:0;
+      font-size: 12px;
+      color: var(--blur);
+    }
+
+    .btn-create {
+      background:var(--blue);
+      color: white;
+      padding: 0px 15px;
+      font-size: 14px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      height:32px;
+    }
+    .btn-create:hover {
+      background: var(--blue-hover);
+    }
+    .btn-create:active {
+      background: var(--blue-active);
+    }
+
+    .notice-scroll {
+      padding: 16px;
+      overflow-y: auto;
+      flex-grow: 1;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(60,137,232,.4) transparent;
+    }
+
+    .notice-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .notice-scroll::-webkit-scrollbar-thumb {
+      background: rgba(60,137,232,.35);
+      border-radius: 999px;
+    }
+
+    .notice-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .notice-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      background: var(--backgroundbtn);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .notice-row::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+    }
+
+    .notice-row textarea,
+    .textarea-message {
+      width: 100%;
+      min-height: 78px;
+      padding: 12px 13px;
+      font-size: 13px;
+      line-height: 1.5;
+      border-radius: 6px;
+      background: var(--backgroundbtn);
+      color:var(--colorbtn)  !important;
+      border: 1px solid var(--border2);
+      resize: none !important;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .notice-row textarea::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .notice-row textarea::-webkit-scrollbar-thumb {
+      background: rgba(60,137,232,.32);
+      border-radius: 999px;
+    }
+
+    .notice-row textarea:hover,
+    .textarea-message:hover,
+    .judul-input:hover,
+    .create-time:hover,
+    .create-day:hover,
+    .main-compose textarea:hover {
+      border-color: var(--line-strong);
+    }
+
+    .notice-row textarea:focus,
+    .textarea-message:focus,
+    .judul-input:focus,
+    .create-time:focus,
+    .create-day:focus,
+    .main-compose textarea:focus {
+      outline: none;
+      border-color: var(--blue-hover);
+      box-shadow: 0 0 0 3px rgba(60,137,232,.14);
+    }
+
+    .notice-row button {
+      padding: 0px 15px;
+      height: 32px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+
+    .btn-send {
+      background:var(--blue);
+    }
+    .btn-send:hover {
+     background:var(--blue-hover);
+    }
+    .btn-send:active {
+     background:var(--blue-active);
+    }
+
+    .btn-edit {
+      background: linear-gradient(180deg, #a5a5a5, #8a8a8a);
+    }
+    .btn-edit:hover {
+      background: linear-gradient(180deg, #c4c4c4, #9e9e9e);
+    }
+    .btn-edit:active {
+      background: linear-gradient(180deg, #868686, #707070);
+    }
+
+    .btn-save {
+      background:var(--blue);
+    }
+    .btn-save:hover {
+      background:var(--blue-hover);
+    }
+    .btn-save:active {
+      background:var(--blue-active);
+    }
+
+    .btn-delete {
+      background:var(--red);
+    }
+    .btn-delete:hover {
+     background:var(--red-hover);
+    }
+    .btn-delete:active {
+      background:var(--red-active);
+    }
+
+    .toggle-switch {
+      width: 50px;
+      height: 26px;
+      background: #3b4250;
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.25);
+      flex-shrink: 0;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(180deg, #fff, #dadada);
+      border-radius: 50%;
+      transition: left 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,.25);
+    }
+
+    .toggle-switch.active {
+      background: linear-gradient(180deg, var(--blue-hover), var(--blue));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 0 0 3px rgba(60,137,232,.14);
+    }
+
+    .toggle-switch.active::after {
+      left: 26px;
+    }
+
+    .judul-input {
+      width: 100%;
+      padding: 4px 11px;
+      margin-bottom: 0;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: var(--backgroundbtn);
+      color: var(--colorbtn);
+      font-weight: 700;
+      transition: all 0.2s ease;
+      height:32px;
+    }
+
+    .create-time,
+    .create-day {
+      height: 32px;
+      padding: 4px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: var(--backgroundbtn);
+      color: var(--colorbtn);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .main {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background:var(--bg-main);
+    }
+
+    .main-header{
+      background:var(--backgrounddrop);
+      color:var(--colorbtn);
+      padding: 18px 20px 10px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .main-title{
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color:var(--colorbtn);
+      letter-spacing: .4px;
+    }
+
+    .main-subtitle{
+      margin: 4px 0 0;
+      color: var(--blur);
+      font-size: 12px;
+    }
+
+    .main-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+      background:var(--backgroundbtn);
+    }
+
+    .main-compose{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      min-height: 0;
+    }
+
+    .main-compose textarea {
+      width: 100%;
+      flex: 1;
+      min-height: 260px;
+      background:var(--backgroundbtn);
+      color:var(--colorbtn);
+      font-size: 14px;
+      line-height: 1.6;
+      border-radius: 6px;
+      padding: 16px 16px;
+      border: 1px solid var(--border2);
+      resize: none;
+    }
+
+    .main-compose textarea::placeholder{
+      color: var(--blur);
+      letter-spacing: .3px;
+    }
+
+    .main-action-bar{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .btn-fly, .btn-clear {
+      padding: 0px 15px;
+      min-height: 32px;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-fly {
+      background: var(--blue);
+    }
+
+    .btn-fly:hover {
+     background: var(--blue-hover);
+    }
+
+    .btn-fly:active {
+     background: var(--blue-active);
+    }
+    .btn-clear {
+    background:var(--red);
+    }
+
+    .btn-clear:hover {
+    background:var(--red-hover);
+    }
+
+    .btn-clear:active {
+     
+      background:var(--red-active);
+    }
+
+    .countdown-pill{
+      display:inline-flex;
+      align-items:center;
+      height: 32px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: var(--backgrounddrop);
+      border: 1px solid var(--border2);
+      color: var(--colorbtn);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .4px;
+    }
+
+    @media (max-width: 1100px){
+      body{
+        flex-direction: column;
+      }
+
+      .sidebar{
+        max-width: 100%;
+        min-width: 0;
+        height: 46%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .main{
+        height: 54%;
+      }
+    }
+
+    @media (max-width: 700px){
+      .sidebar-header,
+      .main-header,
+      .main-body,
+      .notice-scroll{
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .notice-row{
+        padding: 10px;
+      }
+
+      .notice-row button,
+      .btn-fly,
+      .btn-clear,
+      .btn-create{
+        width: 100%;
+        justify-content: center;
+      }
+
+      .main-action-bar{
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .create-time,
+      .create-day{
+        width: 100%;
+      }
+    }
+  :where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-header-left">
+        <h2 class="sidebar-title">Fly Notice List</h2>
+        <p class="sidebar-subtitle">Create, schedule, edit and send notice messages</p>
+      </div>
+      <button class="btn-create" onclick="createNotice()">+ Create</button>
+    </div>
+
+    <div id="noticeList" class="notice-scroll"></div>
+  </div>
+
+  <div class="main">
+    <div class="main-header">
+      <h2 class="main-title">Notice Composer</h2>
+      <p class="main-subtitle">Write your broadcast notice here and click FLY NOTICE</p>
+    </div>
+
+    <div class="main-body">
+      <div class="main-compose">
+        <textarea id="pesan" placeholder="Type Your Notice HERE..." onkeydown="handleKeyPress(event)"></textarea>
+
+        <div class="main-action-bar">
+          <button class="btn-fly" onclick="kirimPesan()">FLY NOTICE!</button>
+          <button class="btn-clear" onclick="clearPesan()">🗑️ CLEAR TEXT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTeofEXBlzZmELtVAVZ-dctZmOGvf0Y34",
+      authDomain: "notice-83ae5.firebaseapp.com",
+      databaseURL: "https://notice-83ae5-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "notice-83ae5",
+      storageBucket: "notice-83ae5.appspot.com",
+      messagingSenderId: "268106877488",
+      appId: "1:268106877488:web:798beadfe45104297e7bf5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let isCreating = false;
+    let noticeData = [];
+    const noticeList = document.getElementById('noticeList');
+    const pesanTextarea = document.getElementById("pesan");
+
+    function renderNotices() {
+      noticeList.innerHTML = '';
+      const sorted = [...noticeData].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+      sorted.forEach(({ id, text, title }) => {
+        const row = document.createElement('div');
+        row.className = 'notice-row';
+
+        const judulInput = document.createElement('input');
+        judulInput.type = 'text';
+        judulInput.value = title || '';
+        judulInput.disabled = true;
+        judulInput.placeholder = 'No Title...';
+        judulInput.className = 'judul-input';
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.disabled = true;
+        textarea.style.resize = 'none';
+
+        const sendBtn = document.createElement('button');
+        sendBtn.className = 'btn-send';
+        sendBtn.textContent = 'Send';
+        sendBtn.onclick = () => {
+          pesanTextarea.value = text;
+          localStorage.setItem("lastNoticeMessage", text);
+          kirimPesan();
+        };
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-edit';
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => {
+          textarea.disabled = false;
+          judulInput.disabled = false;
+          editBtn.style.display = 'none';
+          saveBtn.style.display = 'inline-block';
+        };
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-save';
+        saveBtn.textContent = 'Save';
+        saveBtn.style.display = 'none';
+        saveBtn.onclick = () => {
+          const newText = textarea.value.trim();
+          const newTitle = judulInput.value.trim();
+          if (!newText) return;
+          db.ref("notifikasi/list/" + id).set({
+            text: newText,
+            title: newTitle,
+            timestamp: Date.now()
+          });
+        };
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => {
+          db.ref("notifikasi/list/" + id).remove();
+          localStorage.removeItem(`autoSend_${id}`);
+        };
+
+        const controlDiv = document.createElement('div');
+        controlDiv.style.display = "flex";
+        controlDiv.style.alignItems = "center";
+        controlDiv.style.gap = "10px";
+        controlDiv.style.marginTop = "2px";
+        controlDiv.style.width = "100%";
+        controlDiv.style.flexWrap = "wrap";
+
+        const timeInput = document.createElement('input');
+        timeInput.type = 'datetime-local';
+        timeInput.className = 'create-time';
+
+        const countdownText = document.createElement('div');
+        countdownText.className = 'countdown-pill';
+        countdownText.textContent = '00:00:00';
+
+        const toggle = document.createElement('div');
+        toggle.className = 'toggle-switch';
+        toggle.title = 'Enable Auto Send';
+        toggle.style.marginLeft = 'auto';
+
+        const daySelect = document.createElement('select');
+        daySelect.className = 'create-day';
+
+        const today = new Date();
+        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+        for (let i = 1; i <= daysInMonth; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = `${i} day${i > 1 ? 's' : ''}`;
+          daySelect.appendChild(option);
+        }
+
+        const savedAuto = JSON.parse(localStorage.getItem(`autoSend_${id}`)) || {};
+        if (savedAuto.time) timeInput.value = savedAuto.time;
+        if (savedAuto.enabled) toggle.classList.add("active");
+        if (savedAuto.selectedDay) daySelect.value = savedAuto.selectedDay;
+
+        const isToggleOn = () => toggle.classList.contains("active");
+
+        const updateCountdown = () => {
+          const targetTime = new Date(timeInput.value).getTime();
+          startCountdown(targetTime, countdownText, () => isToggleOn());
+        };
+
+        if (savedAuto.time) updateCountdown();
+
+        daySelect.addEventListener("change", () => {
+          const days = parseInt(daySelect.value);
+          const future = new Date();
+          future.setDate(future.getDate() + days);
+          future.setSeconds(0);
+          future.setMilliseconds(0);
+          const formatted = future.toISOString().slice(0, 16);
+          timeInput.value = formatted;
+          updateCountdown();
+
+          localStorage.setItem(`autoSend_${id}`, JSON.stringify({
+            time: formatted,
+            enabled: isToggleOn(),
+            selectedDay: daySelect.value
+          }));
+        });
+
+        timeInput.addEventListener("change", () => {
+          updateCountdown();
+          localStorage.setItem(`autoSend_${id}`, JSON.stringify({
+            time: timeInput.value,
+            enabled: isToggleOn(),
+            selectedDay: daySelect.value
+          }));
+        });
+
+        toggle.addEventListener("click", () => {
+          toggle.classList.toggle("active");
+          updateCountdown();
+          localStorage.setItem(`autoSend_${id}`, JSON.stringify({
+            time: timeInput.value,
+            enabled: isToggleOn(),
+            selectedDay: daySelect.value
+          }));
+        });
+
+        setInterval(() => {
+          const target = new Date(timeInput.value).getTime();
+          const now = Date.now();
+          if (
+            isToggleOn() &&
+            timeInput.value &&
+            !timeInput.disabled &&
+            now >= target
+          ) {
+            pesanTextarea.value = text;
+            localStorage.setItem("lastNoticeMessage", text);
+            kirimPesan();
+
+            toggle.classList.remove("active");
+            timeInput.disabled = true;
+            toggle.style.pointerEvents = "none";
+            sendBtn.textContent = "Complete";
+            sendBtn.disabled = true;
+
+            localStorage.setItem(`autoSend_${id}`, JSON.stringify({
+              time: timeInput.value,
+              enabled: false,
+              selectedDay: daySelect.value
+            }));
+          }
+        }, 1000);
+
+        controlDiv.appendChild(timeInput);
+        controlDiv.appendChild(daySelect);
+        controlDiv.appendChild(toggle);
+        controlDiv.appendChild(countdownText);
+
+        row.appendChild(judulInput);
+        row.appendChild(textarea);
+        row.appendChild(sendBtn);
+        row.appendChild(editBtn);
+        row.appendChild(saveBtn);
+        row.appendChild(delBtn);
+        row.appendChild(controlDiv);
+        noticeList.appendChild(row);
+      });
+    }
+
+    function startCountdown(targetTime, display, isActiveCallback = () => true) {
+      clearInterval(display._timer);
+
+      function update() {
+        const now = Date.now();
+        const diff = targetTime - now;
+
+        if (!isActiveCallback()) {
+          display.textContent = '⏸️ Paused';
+          display.style.color = '#9aa7c0';
+          return;
+        }
+
+        if (diff <= 0) {
+          display.textContent = "00:00:00";
+          display.style.color = "#8d97aa";
+          clearInterval(display._timer);
+          return;
+        }
+
+        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        display.textContent = `${h}:${m}:${s}`;
+        display.style.color = diff < 300000 ? "#ff6b6b" : "var(--colorbtn)";
+      }
+
+      update();
+      display._timer = setInterval(update, 1000);
+    }
+
+    function createNotice() {
+      if (isCreating) return;
+      isCreating = true;
+
+      const row = document.createElement('div');
+      row.className = 'notice-row';
+
+      const judulInput = document.createElement('input');
+      judulInput.type = 'text';
+      judulInput.placeholder = 'Title Message...';
+      judulInput.className = 'judul-input';
+
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = 'Type new message...';
+      textarea.className = 'textarea-message';
+
+      const timeInput = document.createElement('input');
+      timeInput.type = 'datetime-local';
+      timeInput.className = 'create-time';
+
+      const countdownText = document.createElement('div');
+      countdownText.className = 'countdown-pill';
+      countdownText.style.color = '#9aa7c0';
+      countdownText.textContent = '00:00:00';
+
+      const toggle = document.createElement('div');
+      toggle.className = 'toggle-switch';
+      toggle.title = 'Enable Auto Send';
+      toggle.style.cursor = 'pointer';
+      toggle.addEventListener("click", () => {
+        toggle.classList.toggle("active");
+      });
+
+      const daySelect = document.createElement('select');
+      daySelect.className = 'create-day';
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} day${i > 1 ? 's' : ''}`;
+        daySelect.appendChild(option);
+      }
+
+      function startCountdownInCreate(targetTime) {
+        clearInterval(countdownText._timer);
+        function update() {
+          const now = Date.now();
+          const diff = targetTime - now;
+          if (diff <= 0) {
+            countdownText.textContent = "00:00:00";
+            countdownText.style.color = "#8d97aa";
+            clearInterval(countdownText._timer);
+            return;
+          }
+          const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+          const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+          const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+          countdownText.textContent = `${h}:${m}:${s}`;
+          countdownText.style.color = diff < 300000 ? "#ff6b6b" : "#69a9ff";
+        }
+        update();
+        countdownText._timer = setInterval(update, 1000);
+      }
+
+      daySelect.addEventListener("change", () => {
+        const days = parseInt(daySelect.value);
+        const future = new Date();
+        future.setDate(future.getDate() + days);
+        future.setSeconds(0);
+        future.setMilliseconds(0);
+        const formatted = future.toISOString().slice(0, 16);
+        timeInput.value = formatted;
+        startCountdownInCreate(future.getTime());
+      });
+
+      timeInput.addEventListener("change", () => {
+        const t = new Date(timeInput.value).getTime();
+        startCountdownInCreate(t);
+      });
+
+      const controlDiv = document.createElement('div');
+      controlDiv.style.display = 'flex';
+      controlDiv.style.alignItems = 'center';
+      controlDiv.style.gap = '10px';
+      controlDiv.style.marginTop = '2px';
+      controlDiv.style.width = '100%';
+      controlDiv.style.flexWrap = 'wrap';
+      controlDiv.appendChild(timeInput);
+      controlDiv.appendChild(daySelect);
+      controlDiv.appendChild(toggle);
+      controlDiv.appendChild(countdownText);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn-save';
+      saveBtn.textContent = 'Save';
+      saveBtn.onclick = () => {
+        const newText = textarea.value.trim();
+        const newTitle = judulInput.value.trim();
+        if (!newText) return;
+
+        const newId = db.ref().child("notifikasi/list").push().key;
+
+        db.ref("notifikasi/list/" + newId).set({
+          text: newText,
+          title: newTitle,
+          timestamp: Date.now()
+        }).then(() => {
+          if (timeInput.value) {
+            localStorage.setItem(`autoSend_${newId}`, JSON.stringify({
+              time: timeInput.value,
+              enabled: toggle.classList.contains("active"),
+              selectedDay: daySelect.value
+            }));
+          }
+
+          clearInterval(countdownText._timer);
+          row.remove();
+          isCreating = false;
+          renderNotices();
+        });
+      };
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn-delete';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => {
+        clearInterval(countdownText._timer);
+        row.remove();
+        isCreating = false;
+      };
+
+      row.appendChild(judulInput);
+      row.appendChild(textarea);
+      row.appendChild(saveBtn);
+      row.appendChild(cancelBtn);
+      row.appendChild(controlDiv);
+      noticeList.prepend(row);
+    }
+
+    function kirimPesan() {
+      const teks = pesanTextarea.value.trim();
+      if (!teks) return;
+
+      const data = {
+        message: teks,
+        timestamp: Date.now()
+      };
+
+      db.ref("notifikasi/pesanTerbaru").set(data)
+        .then(() => {
+          console.log("FLY NOTICE berjaya dihantar");
+        })
+        .catch((err) => {
+          console.error("Gagal hantar FLY NOTICE:", err);
+        });
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === "Enter" && !event.ctrlKey) {
+        event.preventDefault();
+        kirimPesan();
+      } else if (event.key === "Enter" && event.ctrlKey) {
+        const cursorPos = pesanTextarea.selectionStart;
+        const textBefore = pesanTextarea.value.substring(0, cursorPos);
+        const textAfter = pesanTextarea.value.substring(cursorPos);
+        pesanTextarea.value = textBefore + "\n" + textAfter;
+        pesanTextarea.selectionStart = pesanTextarea.selectionEnd = cursorPos + 1;
+        event.preventDefault();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", function () {
+      const saved = localStorage.getItem("lastNoticeMessage");
+      if (saved) {
+        pesanTextarea.value = saved;
+      }
+    });
+
+    pesanTextarea.addEventListener("input", function () {
+      localStorage.setItem("lastNoticeMessage", pesanTextarea.value);
+    });
+
+    db.ref("notifikasi/list").on("value", (snapshot) => {
+      const raw = snapshot.val() || {};
+      noticeData = Object.entries(raw).map(([id, val]) => ({ id, ...val }));
+      renderNotices();
+    });
+
+    function clearPesan() {
+      pesanTextarea.value = "";
+      localStorage.removeItem("lastNoticeMessage");
+    }
+      const THEME_KEY = "siteTheme";
+
+  function applyTheme(theme) {
+    const finalTheme = theme === "dark" ? "dark" : "light";
+    document.body.classList.toggle("dark-theme", finalTheme === "dark");
+  }
+
+  // apply masa mula load
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+  // dengar dari parent
+  window.addEventListener("message", (event) => {
+    if (event.data?.type === "theme-change") {
+      applyTheme(event.data.theme);
+    }
+  });
+  </script>
+</body>
+</html>
