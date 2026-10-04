@@ -1,0 +1,2580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/settings/logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Back Office Editor Admin</title>
+  <style>
+:root{
+  --bg-main: #fff;
+  --sidebar: #001529;
+  --text-main: #000;
+  --text-soft: rgba(17,24,39,0.88);
+  --text-dim: rgba(17,24,39,0.72);
+  --colorbtn: rgba(0, 0, 0, 0.88);
+  --backgroundbtn: #ffffff;
+  --backgrounddrop: #ffffff;
+  --border: #303030;
+  --border2: #d9d9d9;
+  --panel-border: #d4dbe6;
+  --blur: rgba(0,0,0,0.25);
+  --border3: #f0f0f0;
+  --tab2: #ffffff;
+  --border-bottom: #ffffff;
+  --close: rgba(0, 0, 0, 0.88);
+  --border4:#d9d9d9;
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #d4dbe6;
+  --close-hover2:rgba(0,0,0,0.08);
+  --close-btn2:rgba(0,0,0,0.45);
+  --btn-bg: transparent;
+  --btn-text: rgba(17,24,39,0.88);
+  --btn-border: #d4dbe6;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(15,23,42,0.18);
+  --popup-bg: #ffffff;
+
+  --empty-text: rgba(17,24,39,.7);
+  --empty-title: rgba(17,24,39,.88);
+
+  --toggle-track: #cfd8e3;
+  --toggle-knob: #ffffff;
+  --btnfocus: #91caff;
+}
+
+body.dark-theme{
+  --bg-main: #000;
+  --sidebar: #001529;
+  --text-main: #fff;
+  --text-soft: rgba(255,255,255,0.85);
+  --text-dim: rgba(255,255,255,0.65);
+  --colorbtn: rgba(255,255,255,0.85);
+  --backgroundbtn: #141414;
+  --backgrounddrop: #1f1f1f;
+  --border: #303030;
+  --border2: #424242;
+  --panel-border: #424242;
+  --blur: rgba(255,255,255,0.25);
+  --border3: #303030;
+  --tab2: #141414;
+  --border-bottom: #141414;
+  --close: rgba(255,255,255,0.45);
+  --border4:#303030;
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #303030;
+  --close-hover2:rgba(255,255,255,0.08);
+  --close-btn2:rgba(255,255,255,0.45);
+
+  --btn-bg: transparent;
+  --btn-text: rgba(255,255,255,0.85);
+  --btn-border: #424242;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(0,0,0,0.5);
+  --popup-bg: #1f1f1f;
+
+  --empty-text: rgba(255,255,255,.7);
+  --empty-title: rgba(255,255,255,.85);
+
+  --toggle-track: #2c7be5;
+  --toggle-knob: #ffffff;
+  --btnfocus: #15325b;
+}
+    * {margin: 0;padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background:var(--bg-main);
+      color: var(--colorbtn);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+.sidebar-overlay {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 64px);
+  z-index: 1001;
+  display: none;
+  background: transparent;
+}
+.sidebar-overlay.active {
+  display: block;
+}
+.sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 255px;
+  height: calc(100vh - 64px);
+  background: #001529;
+  z-index: 1002;
+  overflow: hidden;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 4px 0 18px rgba(0,0,0,0.35);
+  transform: translateX(-100%);
+  transition: transform 0.28s ease;
+}
+.sidebar.active {
+  transform: translateX(0);
+}
+.sidebar-inner {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 10px 16px;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+.sidebar-inner::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-inner::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1f6fe5, #0e4da8);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,  rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.85));
+}
+
+/* Firefox */
+.sidebar-inner {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+  .sidebar h2 {color: rgba(255,255,255,0.85);margin-bottom: 15px;border:1px solid #424242;border-radius:6px;text-align:center;font-size: 20px;}.sidebar h2{display:none !important;}
+  .sidebar a {display: block;margin: 10px 0;color: rgba(255,255,255,0.65);text-decoration: none;font-size: 14px;font-weight: bold;border-radius: 6px;transition: all 0.2s;padding: 4px 8px;gap: 5px;white-space: nowrap;border-bottom: 1px solid #424242;}
+  .sidebar a:hover {background:#03203d;color: white;}
+
+.header {
+  position: fixed;
+  width: 100%;
+  z-index: 1003;
+  height: 64px;
+  background: #001529;
+  display: flex;
+  align-items: center;
+  padding: 0 15px 0 0;
+  top: 0;
+  left: 0;
+  transition: background .25s ease, color .25s ease;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+ padding-inline: 16px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 8px;
+}
+.user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.user-button {
+  height: 32px;
+  padding: 0 15px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+}
+
+.user-button:hover {
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.user-button:active {
+  border-color: var(--gold-active);
+  color: var(--gold-active);
+}
+
+.user-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.user-name-text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: var(--backgrounddrop);
+    min-width: 220px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    z-index: 1;
+    color: var(--colorbtn);
+    top: 120%;
+    right: 0;
+    left: auto;
+    transform: none;
+    font-size: 14px;
+    transition: all 0.2s ease !important;
+}
+
+.dropdown-content.show {
+  display: block;
+}
+
+.dropdown-user-top {
+  padding: 4px 4px 8px;
+}
+
+#userEmail {
+  color: var(--text-soft);
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.dropdown-divider {
+  border: 0;
+  border-top: 1px solid var(--border2);
+  margin: 8px 0;
+}
+
+.dropdown-btn {
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+  margin-top: 8px;
+}
+
+.dropdown-btn:hover {
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.dropdown-btn:active {
+  border-color: var(--gold-active);
+  color: var(--gold-active);
+}
+
+.dropdown-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+.dropdown-profile-btn{
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  pointer-events: none;
+  font-weight: 600;
+}
+
+.dropdown-profile-btn svg{
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.dropdown-profile-name{
+  display: inline-block;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.theme-toggle-btn{
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+  margin-top: 8px;
+}
+
+.theme-toggle-btn:hover{
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.theme-toggle-btn:active{
+  border-color: var(--gold-active);
+  color: var(--gold-active);
+}
+
+.theme-toggle-label{
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.theme-switch{
+  width: 42px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--toggle-track);
+  position: relative;
+  flex-shrink: 0;
+  transition: background .25s ease;
+}
+
+.theme-switch-knob{
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  transition: transform .25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* masa dark aktif */
+body.dark-theme .theme-switch{
+  background: #2c7be5;
+}
+
+body.dark-theme .theme-switch-knob{
+  transform: translateX(20px);
+}
+.container {
+  position: relative;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  width: 100%;
+}
+.container.shrink {
+  margin-left: 255px;
+  width: calc(100% - 255px);
+}
+.menu-icon {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  font-size: 16px;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 1100;
+  transition: color 0.3s;
+  flex-shrink: 0;
+}
+.menu-icon svg {
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  fill: currentColor;
+}
+.menu-icon:hover {background: rgba(255, 255, 255, 0.08);}
+.menu-icon:active {background:rgba(255, 255, 255, 0.18);}    
+.menu-img {width: 20px;height: 20px;vertical-align: middle;margin-right: 8px;border-radius: 4px;}
+@media (max-width: 815px) {
+  .container,
+  .container.shrink {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+html, body {
+  height: 100%;
+}
+
+#pageFrame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 116px);
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+.tab-bar {
+  position: relative;
+  transition: margin-left 0.2s ease, width 0.2s ease;
+  width: 100%;
+  height: 52px;
+  background: var(--bg-main);
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  z-index: 1;
+  justify-content: flex-start;
+  white-space: nowrap;
+  margin-top: 64px;
+  overflow-x: auto;
+  overflow-y: visible;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  box-sizing: border-box;
+  padding: 0px 12px;
+}
+.tab-bar::before{
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  border-bottom:1px solid var(--border4);
+  z-index: 0; /* bawah tab */
+  pointer-events: none;
+}
+.tab-bar::-webkit-scrollbar {display: none;}
+.tab-module-search{
+  position: relative;
+  flex-shrink: 0;
+  z-index: 5;
+  margin-bottom:4px;
+}
+
+.tab-search-toggle{
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--tab2);
+  color: var(--text-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.tab-search-toggle svg{
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+.tab-search-toggle:hover{
+  border:1px solid var(--gold-hover);
+  color:var(--gold-hover);
+}
+.tab-search-toggle:active{
+  border:1px solid var(--gold-active);
+  color:var(--gold-active);
+}
+.tab-search-box{
+  width: 150px;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--tab2);
+  display: none;
+  align-items: center;
+  overflow: hidden;
+  transition: color 0.3s;
+}
+.tab-search-box:hover{
+  border-color: var(--gold-hover);
+  transition: color 0.3s;
+}
+
+.tab-search-box:focus-within{
+  border-color: var(--gold);
+}
+.tab-module-search.open .tab-search-box{
+  display: flex;
+}
+
+.tab-module-search.open .tab-search-toggle{
+  display: none;
+}
+
+.tab-search-input{
+  width: 100%;
+  height: 100%;
+  border:0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-soft);
+  padding: 0 6px 0 10px;
+  font-size: 14px;
+}
+
+.tab-search-action{
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--close);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tab-search-action svg{
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+.tab-search-action svg.icon-close{
+  width: 14px;
+  height: 14px;
+}
+.tab-search-action svg.icon-close:hover{
+  color:var(--close-btn2);
+}
+.tab-search-list{
+  position: fixed;
+  white-space: normal;
+  width: 150px;
+  top: 115px !important;
+  left: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  display: none;
+  background: var(--backgrounddrop);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 99999;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+}
+.tab-module-search.list-open .tab-search-list{
+  display: block;
+}
+.tab-search-item{
+  width: 100%;
+  display: flex;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+  text-align: left;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-overflow: ellipsis;
+}
+
+.tab-search-item:hover{
+  background:var(--close-hover2);
+}
+.tab {
+  background: var(--tab-bg);
+  color: var(--text-soft)!important;
+  padding: 11px 16px;
+  border-radius: 8px 8px 0 0;
+  gap: 2px;
+  white-space: nowrap;
+  transition:
+    transform .18s ease,
+    color .18s ease,
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    opacity .18s ease;
+  border: 1px solid var(--border3);
+  border-bottom: 1px solid var(--border3);
+  display: inline-flex;
+  font-size: 14px;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+  filter: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  line-height: 1.2;
+  z-index: 2;
+  margin-bottom: -1px;
+  position: relative;
+  will-change: transform;
+}
+.tab .close-tab {
+    background: transparent;
+    color: var(--close);
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    width: 1em;
+    height: 1em;
+    padding: 0;
+    margin-left: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .3s ease, transform .2s ease;
+    margin-left: 4px;
+    pointer-events: auto;
+    font-size: 12px;
+}
+
+.tab .close-tab svg{
+  width: 12px;
+  height: 12px;
+  display: block;
+  fill: currentColor;
+}
+
+.tab .close-tab:hover{
+  color:var(--text-main)!important
+}
+.tab .close-tab:active{
+  color:var(--gold-active)!important
+}
+.tab:not(.active-tab):hover {
+  color: var(--gold-hover) !important;
+}
+.tab:not(.active-tab):active,
+.tab:not(.active-tab):hover:active {
+  color: var(--gold-active) !important;
+}
+.active-tab {
+  color: var(--gold) !important;background:var(--tab2);
+  transition: all 0.3s ease;border-bottom: 1px solid var(--border-bottom);z-index: 3;
+}
+
+.header.shrink {
+  margin-left: 0 !important;
+  width: 100%;
+  transition: none;
+}
+.container {
+  transition: all 0.25s ease;
+}
+
+.tab-bar {
+  transition: all 0.25s ease;
+}
+.live-chat-button .btn-label {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+}
+.live-chat-button {
+  color: rgba(255,255,255,0.65);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.3s, background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  position: relative;
+
+  height: 100%;
+  height: 64px;
+  align-self: stretch;
+
+  padding: 0 15px;
+  white-space: nowrap;
+  border-radius: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.live-chat-button:hover {color: #ffffff;background: transparent;transition: color 0.3s!important;}
+.live-chat-button.active-detail {
+  background: var(--gold);
+  color: white;
+}
+.live-chat-button.active-livechat {
+  background: var(--gold);
+  color: white;
+}
+.live-chat-button.active-livechat {
+  background: var(--gold);
+  color: white;
+}
+.live-chat-button.active-tabsettings {
+  background: var(--gold);
+  color: white;
+}
+.live-chat-button.active-history {
+  background: var(--gold);
+  color: white;
+}
+.livechat-badge{
+  position: absolute;
+  top: 8px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff2b2b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.sidebar-inner{
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #001529;
+  padding: 0;
+}
+
+.sidebar-top{
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #001529;
+  padding: 10px 10px 12px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-search-wrap{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  background: #001529;
+}
+.sidebar-search-input{
+  width: 100%;
+  max-width: 210px;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  text-align: left;
+  outline: none;
+  padding: 0 11px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.sidebar-search-input::placeholder{
+  color: var(--blur);
+  text-align: left;
+}
+
+.sidebar-search-input:hover{
+  border-color: var(--gold-hover);
+}
+
+.sidebar-search-input:focus{
+  border-color: var(--gold);
+}
+.date-time {color: white;font-size: 14px;white-space: nowrap;transition: color 0.3s;}
+
+.header-btn-icon{
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px){
+  .date-time{
+    display: none !important;
+  }
+
+  .header-right{
+    gap: 8px;
+  }
+
+  .header-left{
+    gap: 8px;
+    margin-left: 12px;
+  }
+
+  .live-chat-button{
+    min-width: 44px;
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .live-chat-button .btn-label{
+    display: none !important;
+  }
+
+  .live-chat-button .header-btn-icon{
+    margin-right: 0 !important;
+  }
+
+  .user-button{
+    padding: 0 10px;
+  }
+
+  .user-name-text{
+    max-width: 76px;
+  }
+}
+
+@media (max-width: 640px){
+  .date-time{
+    display: none !important;
+  }
+
+  .header{
+    padding-right: 8px;
+  }
+
+  .header-left{
+    gap: 4px;
+    margin-left: 6px;
+  }
+
+  .live-chat-button{
+    min-width: 40px;
+    width: 40px;
+    height: 64px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .live-chat-button .btn-label{
+    display: none !important;
+  }
+
+  .live-chat-button .header-btn-icon{
+    margin-right: 0 !important;
+  }
+
+  .header-right{
+    gap: 6px;
+  }
+
+  .user-button{
+    height: 32px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .user-name-text{
+    max-width: 56px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 520px){
+  .user-name-text{
+    display: none !important;
+  }
+
+  .user-button{
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .user-button svg{
+    width: 22px;
+    height: 22px;
+  }
+
+  .user-button:hover{
+    background: rgba(255,255,255,0.08) !important;
+    border-radius: 50%;
+  }
+
+  .dropdown-content{
+    min-width: 230px;
+    right: 0;
+  }
+
+  .dropdown-user-name{
+    display: flex;
+  }
+}
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 16px;
+}
+
+.modal-overlay.show{
+  display: flex;
+}
+
+.modal-box{
+  width: 100%;
+  max-width: 420px;
+  background: var(--backgrounddrop);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  padding: 20px;
+  position: relative;
+}
+
+.modal-title{
+  color: var(--text-main);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.modal-close-btn{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close-btn:hover{
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.modal-form{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-input{
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  padding: 0 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.modal-input:focus{
+  border-color: var(--gold);
+}
+
+.modal-input::placeholder{
+  color: var(--blur);
+}
+
+.modal-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modal-btn{
+  min-width: 92px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-btn:hover{
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.modal-btn-primary{
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+.modal-btn-primary:hover{
+  background: var(--gold-hover);
+  border-color: var(--gold-hover);
+  color: #fff;
+}
+
+.modal-btn-primary:active{
+  background: var(--gold-active);
+  border-color: var(--gold-active);
+}
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+.login-loading{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.25);
+  z-index:999999;
+}
+
+.login-loading.show{
+  display:flex;
+}
+
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  width:32px;
+  height:32px;
+  position:relative;
+  margin:0 auto;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.85);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){top:0;left:50%;transform:translateX(-50%);animation-delay:0s;}
+.loading-dots span:nth-child(2){right:0;top:50%;transform:translateY(-50%);animation-delay:.25s;}
+.loading-dots span:nth-child(3){bottom:0;left:50%;transform:translateX(-50%);animation-delay:.5s;}
+.loading-dots span:nth-child(4){left:0;top:50%;transform:translateY(-50%);animation-delay:.75s;}
+
+@keyframes dotPulse{
+  0%{opacity:.2;}
+  25%{opacity:1;}
+  50%{opacity:.4;}
+  100%{opacity:.2;}
+}
+
+@keyframes loadingRotate{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+
+.loading-text{
+  color:#fff;
+  font-size:14px;
+  font-weight:400;
+  text-align:center;
+}
+  </style>
+</head>
+<body>
+<div id="pageLoading" class="login-loading">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="loading-text">Please wait while fetching...</div>
+  </div>
+</div>
+<div class="sidebar-overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-top">
+      <div class="sidebar-search-wrap">
+        <input
+          type="text"
+          id="sidebarSearchInput"
+          class="sidebar-search-input"
+          placeholder="Search menu..."
+          autocomplete="off"
+        />
+      </div>
+    </div>
+
+    <a href="#" onclick="addTab('ADMIN LIVECHAT', 'https://feature-settings.vercel.app/settings/livechat')">
+      <img src="https://i.imgur.com/WDjH3BZ.png" alt="icon" class="menu-img">ADMIN LIVECHAT
+    </a>
+
+    <a href="#" onclick="addTab('DETAIL LOGIN', 'https://feature-settings.vercel.app/settings/datalogin')">
+      <img src="https://i.imgur.com/WDjH3BZ.png" alt="icon" class="menu-img">DETAIL LOGIN
+    </a>
+
+    <a href="#" onclick="addTab('FLY NOTICE', 'https://feature-settings.vercel.app/settings/notice')">
+      <img src="https://i.imgur.com/WDjH3BZ.png" alt="icon" class="menu-img">FLY NOTICE
+    </a>
+
+    <a href="#" onclick="addTab('TAB SETTINGS', 'https://feature-settings.vercel.app/settings/tabsettings')">
+      <img src="https://i.imgur.com/WDjH3BZ.png" alt="icon" class="menu-img">TAB SETTINGS
+    </a>
+    <a href="#" onclick="addTab('USER HISTORY', 'https://feature-settings.vercel.app/settings/userhistory')">
+      <img src="https://i.imgur.com/WDjH3BZ.png" alt="icon" class="menu-img">USER HISTORY
+    </a>
+  </div>
+</div>
+
+<div class="header">
+  <div class="menu-icon" id="menuIcon" aria-label="Menu" title="Menu">
+    <svg
+      viewBox="64 64 896 896"
+      width="1rem"
+      height="1rem"
+      fill="currentColor"
+      aria-hidden="true">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 000 13.8z"></path>
+    </svg>
+  </div>
+
+  <div class="header-left">
+
+    <button id="detailLoginBtn" onclick="addTab('DETAIL LOGIN', 'https://feature-settings.vercel.app/settings/datalogin')" class="live-chat-button">
+      <svg width="16" height="16" fill="white" viewBox="0 0 24 24" style="margin-right: 6px;">
+        <path d="M1 3.488c0-1.926 4.656-3.488 10-3.488 5.345 0 10 1.562 10 3.488s-4.655 3.487-10 3.487c-5.344 0-10-1.561-10-3.487zm10 14.823c.34 0 .678-.007 1.011-.019.045-1.407.537-2.7 1.342-3.745-.839.067-1.643.1-2.353.1-3.006 0-7.588-.523-10-2.256v2.434c0 1.925 4.656 3.486 10 3.486zm0-5.665c5.345 0 10-1.562 10-3.487v-2.44c-2.418 1.738-7.005 2.256-10 2.256-3.006 0-7.588-.523-10-2.256v2.44c0 1.926 4.656 3.487 10 3.487zm1.254 7.635c-.438.02-.861.03-1.254.03-2.995 0-7.582-.518-10-2.256v2.458c0 1.925 4.656 3.487 10 3.487 1.284 0 2.526-.092 3.676-.256-1.155-.844-2.02-2.055-2.422-3.463zm6.246-6.281c-2.483 0-4.5 2.015-4.5 4.5s2.017 4.5 4.5 4.5 4.5-2.015 4.5-4.5-2.017-4.5-4.5-4.5zm-.563 6.55l-1.84-1.778.736-.758 1.089 1.05 2.43-2.439.751.744-3.166 3.181z"/>
+      </svg>
+      <span class="btn-label">Detail Login</span>
+    </button>
+
+    <button id="tabsettingsBtn" onclick="addTab('TAB SETTINGS', 'https://feature-settings.vercel.app/settings/tabsettings')" class="live-chat-button">
+      <svg width="16" height="16" fill="white" viewBox="0 0 24 24" style="margin-right: 6px;">
+        <path d="M24 13.616v-3.232c-1.651-.587-2.693-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.749-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.743-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 3.384c-2.762 0-5-2.239-5-5s2.238-5 5-5 5 2.239 5 5-2.238 5-5 5zm3-5c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3z"/>
+      </svg>
+      <span class="btn-label">Tab Settings</span>
+    </button>
+
+    <button id="userhistory" onclick="addTab('USER HISTORY', 'https://feature-settings.vercel.app/settings/userhistory')" class="live-chat-button">
+  <svg width="16" height="16" fill="white" viewBox="0 0 24 24" style="margin-right: 6px;">
+    <path d="M24 12c0 6.627-5.373 12-12 12s-12-5.373-12-12h2c0 5.514 4.486 10 10 10s10-4.486 10-10-4.486-10-10-10c-2.777 0-5.287 1.141-7.099 2.977l2.061 2.061-6.962 1.354 1.305-7.013 2.179 2.18c2.172-2.196 5.182-3.559 8.516-3.559 6.627 0 12 5.373 12 12zm-13-6v8h7v-2h-5v-6h-2z"/>
+  </svg>
+  <span class="btn-label">User History</span>
+</button>
+
+    <button id="liveChatBtn" onclick="addTab('ADMIN LIVECHAT', 'https://feature-settings.vercel.app/settings/livechat')" class="live-chat-button" style="position: relative;">
+  <svg width="16" height="16" fill="white" viewBox="0 0 24 24" style="margin-right: 6px;">
+    <path d="M24 20h-3v4l-5.333-4h-7.667v-4h2v2h6.333l2.667 2v-2h3v-8.001h-2v-2h4v12.001zm-6-6h-9.667l-5.333 4v-4h-3v-14.001h18v14.001zm-9-4.084h-5v1.084h5v-1.084zm5-2.916h-10v1h10v-1zm0-3h-10v1h10v-1z"/>
+  </svg>
+  <span class="btn-label">Live Chat</span>
+  <span id="livechatDot" class="livechat-badge" style="display:none;">0</span>
+</button>
+
+    
+  </div>
+
+  <div class="header-right">
+    <div id="dateTime" class="date-time"></div>
+<div class="user-dropdown">
+  <button id="userName" class="user-button" type="button" aria-label="Account" title="Account">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
+    </svg>
+    <span id="userNameText" class="user-name-text"></span>
+  </button>
+
+<div id="dropdownContent" class="dropdown-content">
+  <div class="dropdown-user-top">
+    <div id="userEmail"></div>
+  </div>
+
+  <hr class="dropdown-divider">
+
+  <button id="themeToggleBtn" class="theme-toggle-btn" type="button" aria-label="Toggle theme">
+    <span id="themeToggleLabel" class="theme-toggle-label">Light Mode</span>
+    <span id="themeToggleSwitch" class="theme-switch" aria-hidden="true">
+      <span class="theme-switch-knob"></span>
+    </span>
+  </button>
+
+  <button id="dropdownProfileBtn" class="dropdown-btn dropdown-profile-btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
+      </svg>
+      <span id="dropdownUserName" class="dropdown-profile-name"></span>
+    </button>
+
+    <button id="changePasswordBtn" class="dropdown-btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M17 8h-1V6a4 4 0 10-8 0v2H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V10a2 2 0 00-2-2zm-6 8.73V19h2v-2.27a2 2 0 10-2 0zM10 8V6a2 2 0 114 0v2h-4z"/>
+      </svg>
+      <span>Change Password</span>
+    </button>
+
+   <button id="changeSecondPasswordBtn" class="dropdown-btn" type="button">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 1.75l8 3.56v6.05c0 5.05-3.41 9.76-8 10.89-4.59-1.13-8-5.84-8-10.89V5.31l8-3.56zm0 2.19L6 6.61v4.75c0 4.02 2.54 7.79 6 8.84 3.46-1.05 6-4.82 6-8.84V6.61l-6-2.67zm3.53 5.53l1.06 1.06-5.36 5.36-3.18-3.18 1.06-1.06 2.12 2.12 4.3-4.3z"/>
+  </svg>
+  <span>Change 2nd Password</span>
+</button>
+  
+    <button id="logoutBtn" class="dropdown-btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 10v-5l8 7-8 7v-5h-8v-4h8zm-16-8v20h14v-2h-12v-16h12v-2h-14z"/>
+      </svg>
+      <span>Logout</span>
+    </button>
+  </div>
+</div>
+  </div>
+</div>
+  
+<div id="changePasswordModal" class="modal-overlay">
+  <div class="modal-box">
+    <button id="closeChangePasswordModal" class="modal-close-btn" type="button">×</button>
+
+    <div class="modal-title">Change Password</div>
+
+    <div class="modal-form">
+      <input id="oldPasswordInput" class="modal-input" type="password" placeholder="Old Password" />
+      <input id="newPasswordInput" class="modal-input" type="password" placeholder="New Password" />
+      <input id="confirmPasswordInput" class="modal-input" type="password" placeholder="Confirm Password" />
+    </div>
+
+    <div class="modal-actions">
+      <button id="cancelChangePasswordBtn" class="modal-btn modal-btn-cancel" type="button">Cancel</button>
+      <button id="submitChangePasswordBtn" class="modal-btn modal-btn-primary" type="button">Change</button>
+    </div>
+  </div>
+</div>
+
+<div id="changeSecondPasswordModal" class="modal-overlay">
+  <div class="modal-box">
+    <button id="closeChangeSecondPasswordModal" class="modal-close-btn" type="button">×</button>
+
+    <div class="modal-title">Change 2nd Password</div>
+
+    <div class="modal-form">
+      <input id="oldSecondPasswordInput" class="modal-input" type="password" inputmode="numeric" maxlength="6" placeholder="Old 2nd Password" />
+      <input id="newSecondPasswordInput" class="modal-input" type="password" inputmode="numeric" maxlength="6" placeholder="New 2nd Password" />
+      <input id="confirmSecondPasswordInput" class="modal-input" type="password" inputmode="numeric" maxlength="6" placeholder="Confirm 2nd Password" />
+    </div>
+
+    <div class="modal-actions">
+      <button id="cancelChangeSecondPasswordBtn" class="modal-btn modal-btn-cancel" type="button">Cancel</button>
+      <button id="submitChangeSecondPasswordBtn" class="modal-btn modal-btn-primary" type="button">Change</button>
+    </div>
+  </div>
+</div>
+  
+<div id="mainContainer" class="container">
+  <div id="tabBar" class="tab-bar"></div>
+
+<iframe
+  id="pageFrame"
+  allow="clipboard-write"
+  sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-popups-to-escape-sandbox"
+  style="width: 100%; border: none;">
+</iframe>
+</div>
+
+<audio id="notifSound" src="https://searcfile.github.io/5G88-audio/notifsound/notification.wav" preload="auto"></audio>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  // ✅ Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
+    authDomain: "blurphp.firebaseapp.com",
+    databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "blurphp",
+    storageBucket: "blurphp.firebasedatabase.app",
+    messagingSenderId: "593904200464",
+    appId: "1:593904200464:web:cea7bc1360532c20d99395",
+    measurementId: "G-R494S2DPZ5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+function showPageLoading(){
+  document.getElementById("pageLoading")?.classList.add("show");
+}
+
+function hidePageLoading(){
+  document.getElementById("pageLoading")?.classList.remove("show");
+}
+
+showPageLoading();
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    hidePageLoading();
+  }, 300);
+});
+  // ✅ Firebase login app
+  const loginFirebaseConfig = {
+    apiKey: "AIzaSyCIYYpl-1psexPB_-CadD1smsc_e6rhu1U",
+    authDomain: "page-login2.firebaseapp.com",
+    databaseURL: "https://page-login2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "page-login2",
+    storageBucket: "page-login2.firebasestorage.app",
+    messagingSenderId: "860837620702",
+    appId: "1:860837620702:web:db51c2a50d414a4de44b4f"
+  };
+
+  const loginApp = firebase.apps.find(app => app.name === "loginApp")
+    || firebase.initializeApp(loginFirebaseConfig, "loginApp");
+
+  const loginAuth = loginApp.auth();
+  const loginDb = loginApp.database();
+function syncAdminIdentityForLivechat() {
+  const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
+  if (!savedLoginUser) return;
+
+  const adminName = savedLoginUser.username || "Admin";
+  const adminEmail = savedLoginUser.email || "";
+  const adminPhoto =
+    savedLoginUser.photoURL ||
+    localStorage.getItem("userphoto") ||
+    "https://i.imgur.com/qiZFOs9.png";
+
+  localStorage.setItem("username", adminName);
+  localStorage.setItem("useremail", adminEmail);
+  localStorage.setItem("userphoto", adminPhoto);
+
+  localStorage.setItem("adminName", adminName);
+  localStorage.setItem("adminEmail", adminEmail);
+  localStorage.setItem("adminPhoto", adminPhoto);
+}
+function getCurrentUserStorageKey(baseKey) {
+  const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
+  const userKey =
+    savedLoginUser?.email ||
+    savedLoginUser?.username ||
+    "guest";
+  return `${baseKey}_${userKey}`;
+}
+// ✅ Guard: kalau belum login, terus balik ke login page
+  const LOGIN_URL = "/login/";
+  let authChecked = false;
+
+loginAuth.onAuthStateChanged((user) => {
+  authChecked = true;
+
+  if (!user) {
+    localStorage.removeItem("loginUser");
+    localStorage.removeItem("username");
+    localStorage.removeItem("useremail");
+    localStorage.removeItem("userphoto");
+    localStorage.removeItem("adminName");
+    localStorage.removeItem("adminEmail");
+    localStorage.removeItem("adminPhoto");
+    window.location.replace(LOGIN_URL);
+    return;
+  }
+
+  const email = user.email || "";
+  const username = email.replace("@5g88.local", "") || "Admin";
+
+localStorage.setItem("loginUser", JSON.stringify({
+  uid: user.uid,
+  email,
+  username,
+  photoURL: user.photoURL || localStorage.getItem("userphoto") || "",
+  lastLogin: Date.now()
+}));
+
+  syncAdminIdentityForLivechat();
+
+  const userNameTextEl = document.getElementById("userNameText");
+  const userEmailEl = document.getElementById("userEmail");
+  const dropdownUserNameEl = document.getElementById("dropdownUserName");
+
+  if (userNameTextEl) userNameTextEl.textContent = username;
+  if (userEmailEl) userEmailEl.textContent = email;
+  if (dropdownUserNameEl) dropdownUserNameEl.textContent = username;
+});
+const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
+if (savedLoginUser) {
+  syncAdminIdentityForLivechat();
+
+  const userNameTextEl = document.getElementById("userNameText");
+  const userEmailEl = document.getElementById("userEmail");
+  const dropdownUserNameEl = document.getElementById("dropdownUserName");
+
+  if (userNameTextEl) userNameTextEl.textContent = savedLoginUser.username || "Admin";
+  if (userEmailEl) userEmailEl.textContent = savedLoginUser.email || "";
+  if (dropdownUserNameEl) dropdownUserNameEl.textContent = savedLoginUser.username || "Admin";
+}
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logoutAccount);
+  }
+  const changeSecondPasswordBtn = document.getElementById("changeSecondPasswordBtn");
+const changeSecondPasswordModal = document.getElementById("changeSecondPasswordModal");
+const closeChangeSecondPasswordModal = document.getElementById("closeChangeSecondPasswordModal");
+const cancelChangeSecondPasswordBtn = document.getElementById("cancelChangeSecondPasswordBtn");
+const submitChangeSecondPasswordBtn = document.getElementById("submitChangeSecondPasswordBtn");
+
+const oldSecondPasswordInput = document.getElementById("oldSecondPasswordInput");
+const newSecondPasswordInput = document.getElementById("newSecondPasswordInput");
+const confirmSecondPasswordInput = document.getElementById("confirmSecondPasswordInput");
+
+function cleanSecondPasswordInputs() {
+  [oldSecondPasswordInput, newSecondPasswordInput, confirmSecondPasswordInput].forEach(input => {
+    if (!input) return;
+    input.value = input.value.replace(/\D/g, "").slice(0, 6);
+  });
+}
+
+[oldSecondPasswordInput, newSecondPasswordInput, confirmSecondPasswordInput].forEach(input => {
+  if (input) input.addEventListener("input", cleanSecondPasswordInputs);
+});
+
+function openChangeSecondPasswordModal() {
+  if (dropdownContent) dropdownContent.classList.remove("show");
+  if (changeSecondPasswordModal) changeSecondPasswordModal.classList.add("show");
+}
+
+function closeChangeSecondPasswordPopup() {
+  if (changeSecondPasswordModal) changeSecondPasswordModal.classList.remove("show");
+  if (oldSecondPasswordInput) oldSecondPasswordInput.value = "";
+  if (newSecondPasswordInput) newSecondPasswordInput.value = "";
+  if (confirmSecondPasswordInput) confirmSecondPasswordInput.value = "";
+}
+
+if (changeSecondPasswordBtn) {
+  changeSecondPasswordBtn.addEventListener("click", openChangeSecondPasswordModal);
+}
+
+if (closeChangeSecondPasswordModal) {
+  closeChangeSecondPasswordModal.addEventListener("click", closeChangeSecondPasswordPopup);
+}
+
+if (cancelChangeSecondPasswordBtn) {
+  cancelChangeSecondPasswordBtn.addEventListener("click", closeChangeSecondPasswordPopup);
+}
+
+if (changeSecondPasswordModal) {
+  changeSecondPasswordModal.addEventListener("click", (e) => {
+    if (e.target === changeSecondPasswordModal) closeChangeSecondPasswordPopup();
+  });
+}
+
+if (submitChangeSecondPasswordBtn) {
+  submitChangeSecondPasswordBtn.addEventListener("click", async () => {
+    const oldCode = oldSecondPasswordInput?.value?.trim() || "";
+    const newCode = newSecondPasswordInput?.value?.trim() || "";
+    const confirmCode = confirmSecondPasswordInput?.value?.trim() || "";
+
+    if (!oldCode || !newCode || !confirmCode) {
+      alert("Please fill in all 2nd password fields.");
+      return;
+    }
+
+    if (newCode.length !== 6) {
+      alert("New 2nd password must be 6 digits.");
+      return;
+    }
+
+    if (newCode !== confirmCode) {
+      alert("New 2nd password and confirm do not match.");
+      return;
+    }
+
+    const user = loginAuth.currentUser;
+
+    if (!user) {
+      alert("User not found. Please login again.");
+      return;
+    }
+
+    try {
+      submitChangeSecondPasswordBtn.disabled = true;
+      submitChangeSecondPasswordBtn.textContent = "Changing...";
+
+      const ref = loginDb.ref("users/" + user.uid + "/secondPassword");
+      const snap = await ref.get();
+      const savedCode = String(snap.val() || "");
+
+      if (oldCode !== savedCode) {
+        alert("Old 2nd password is incorrect.");
+        return;
+      }
+
+      await ref.set(newCode);
+
+      alert("2nd password changed successfully.");
+      closeChangeSecondPasswordPopup();
+
+    } catch (err) {
+      console.error("Change 2nd password error:", err);
+      alert(err.message || "Failed to change 2nd password.");
+    } finally {
+      submitChangeSecondPasswordBtn.disabled = false;
+      submitChangeSecondPasswordBtn.textContent = "Change";
+    }
+  });
+}
+const changePasswordBtn = document.getElementById("changePasswordBtn");
+const changePasswordModal = document.getElementById("changePasswordModal");
+const closeChangePasswordModal = document.getElementById("closeChangePasswordModal");
+const cancelChangePasswordBtn = document.getElementById("cancelChangePasswordBtn");
+const submitChangePasswordBtn = document.getElementById("submitChangePasswordBtn");
+
+const oldPasswordInput = document.getElementById("oldPasswordInput");
+const newPasswordInput = document.getElementById("newPasswordInput");
+const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+
+function openChangePasswordModal() {
+  if (dropdownContent) dropdownContent.classList.remove("show");
+  if (changePasswordModal) changePasswordModal.classList.add("show");
+}
+
+function closeChangePasswordPopup() {
+  if (changePasswordModal) changePasswordModal.classList.remove("show");
+  if (oldPasswordInput) oldPasswordInput.value = "";
+  if (newPasswordInput) newPasswordInput.value = "";
+  if (confirmPasswordInput) confirmPasswordInput.value = "";
+}
+
+if (changePasswordBtn) {
+  changePasswordBtn.addEventListener("click", openChangePasswordModal);
+}
+
+if (closeChangePasswordModal) {
+  closeChangePasswordModal.addEventListener("click", closeChangePasswordPopup);
+}
+
+if (cancelChangePasswordBtn) {
+  cancelChangePasswordBtn.addEventListener("click", closeChangePasswordPopup);
+}
+
+if (changePasswordModal) {
+  changePasswordModal.addEventListener("click", (e) => {
+    if (e.target === changePasswordModal) {
+      closeChangePasswordPopup();
+    }
+  });
+}
+if (submitChangePasswordBtn) {
+  submitChangePasswordBtn.addEventListener("click", async () => {
+    const oldPassword = oldPasswordInput?.value?.trim() || "";
+    const newPassword = newPasswordInput?.value?.trim() || "";
+    const confirmPassword = confirmPasswordInput?.value?.trim() || "";
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      alert("Please fill in all password fields.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert("New password must be at least 6 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("New password and confirm password do not match.");
+      return;
+    }
+
+    const user = loginAuth.currentUser;
+    if (!user || !user.email) {
+      alert("User not found. Please login again.");
+      return;
+    }
+
+    try {
+      const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPassword);
+
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+
+      alert("Password changed successfully.");
+      closeChangePasswordPopup();
+    } catch (err) {
+      console.error("Change password error:", err);
+
+      if (err.code === "auth/wrong-password") {
+        alert("Old password is incorrect.");
+      } else if (err.code === "auth/too-many-requests") {
+        alert("Too many attempts. Please try again later.");
+      } else if (err.code === "auth/requires-recent-login") {
+        alert("Please login again and try changing password.");
+      } else {
+        alert(err.message || "Failed to change password.");
+      }
+    }
+  });
+}
+const userNameBtn = document.getElementById("userName");
+const dropdownContent = document.getElementById("dropdownContent");
+const THEME_KEY = "siteTheme";
+function closeUserDropdown() {
+  if (dropdownContent) {
+    dropdownContent.classList.remove("show");
+  }
+}
+
+function closeTabModuleSearch() {
+  document.querySelectorAll(".tab-module-search").forEach(wrap => {
+    wrap.classList.remove("list-open");
+
+    const action = wrap.querySelector(".tab-search-action");
+    if (action && typeof ICON_CLOSE !== "undefined") {
+      action.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <path d="${ICON_CLOSE}"></path>
+        </svg>
+      `;
+    }
+  });
+}
+
+function closeAllFloatingUi() {
+  closeUserDropdown();
+  closeSidebar();
+  closeTabModuleSearch();
+}
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+const themeToggleLabel = document.getElementById("themeToggleLabel");
+
+function applyTheme(theme) {
+  const finalTheme = theme === "dark" ? "dark" : "light";
+
+  document.body.classList.toggle("dark-theme", finalTheme === "dark");
+
+  if (themeToggleLabel) {
+    themeToggleLabel.textContent = finalTheme === "dark" ? "Dark Mode" : "Light Mode";
+  }
+
+  localStorage.setItem(THEME_KEY, finalTheme);
+
+  try {
+    const frame = document.getElementById("pageFrame");
+    const targetOrigin = frame?.src ? new URL(frame.src, location.origin).origin : "*";
+
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.postMessage(
+        { type: "theme-change", theme: finalTheme },
+        targetOrigin
+      );
+    }
+  } catch (err) {
+    console.warn("Theme postMessage failed:", err);
+  }
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.contains("dark-theme");
+  applyTheme(isDark ? "light" : "dark");
+}
+
+(function initTheme() {
+  const savedTheme = localStorage.getItem(THEME_KEY) || "light";
+  applyTheme(savedTheme);
+})();
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    toggleTheme();
+  });
+}
+if (userNameBtn && dropdownContent) {
+  userNameBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdownContent.classList.toggle("show");
+  });
+
+  document.addEventListener("click", (e) => {
+    const insideDropdown = e.target.closest(".user-dropdown");
+    if (!insideDropdown) {
+      closeUserDropdown();
+    }
+  });
+}
+async function logoutAccount() {
+  try {
+    await loginAuth.signOut();
+  } catch (err) {
+    console.error("Logout error:", err);
+  } finally {
+    localStorage.removeItem("loginUser");
+    localStorage.removeItem("username");
+    localStorage.removeItem("useremail");
+    localStorage.removeItem("userphoto");
+    localStorage.removeItem("adminName");
+    localStorage.removeItem("adminEmail");
+    localStorage.removeItem("adminPhoto");
+
+    window.location.replace(LOGIN_URL);
+  }
+}
+  // ✅ Interaksi user diperlukan agar audio bisa diputar
+  let userHasInteracted = false;
+  document.addEventListener('click', () => {
+    userHasInteracted = true;
+    console.log("✅ userHasInteracted = true");
+  });
+
+  let hasPlayed = false;
+  const notifiedKeys = new Set();
+  const livechatMeta = {};
+  let livechatTrackerStarted = false;
+
+  function playNotif() {
+    const audio = document.getElementById("notifSound");
+    if (audio && userHasInteracted) {
+      audio.currentTime = 0;
+      audio.play()
+        .then(() => console.log("✅ Audio diputar"))
+        .catch(err => console.warn("🔇 Audio gagal diputar:", err));
+    } else {
+      console.warn("❌ Tidak bisa play: belum ada interaksi user");
+    }
+  }
+let lastHeaderUnreadTotal = 0;
+const DEFAULT_PAGE_TITLE = "Back Office Editor Admin";
+let livechatTitleTimer = null;
+let livechatTitleIndex = 0;
+let livechatUnreadActive = false;
+let livechatUnreadCount = 0;
+let livechatLoopAudio = null;
+let livechatLoopPlaying = false;
+let userHasInteractedForAudio = false;
+
+function unlockLivechatAudio() {
+  if (userHasInteractedForAudio) return;
+  userHasInteractedForAudio = true;
+  initLivechatLoopAudio();
+}
+
+function initLivechatLoopAudio() {
+  if (livechatLoopAudio) return livechatLoopAudio;
+
+  const el = document.getElementById("notifSound");
+  if (el) {
+    livechatLoopAudio = el;
+  } else {
+    livechatLoopAudio = new Audio("/main/audio/audio.wav");
+  }
+
+  livechatLoopAudio.loop = true;
+  livechatLoopAudio.preload = "auto";
+  return livechatLoopAudio;
+}
+
+["click", "keydown", "touchstart", "mousedown", "pointerdown"].forEach(evt => {
+  window.addEventListener(evt, unlockLivechatAudio, { once: true, passive: true });
+  document.addEventListener(evt, unlockLivechatAudio, { once: true, passive: true });
+});
+
+function isAdminLivechatTabOpen() {
+  const activeUrl = pageFrame?.src || "";
+  return String(activeUrl).toLowerCase().includes("livechat");
+}
+
+function startLivechatLoopSound() {
+  if (!userHasInteractedForAudio) return;
+  if (isAdminLivechatTabOpen()) return;
+
+  const audio = initLivechatLoopAudio();
+  if (!audio) return;
+
+  audio.loop = true;
+
+  if (!audio.paused && livechatLoopPlaying) return;
+
+  audio.currentTime = 0;
+  audio.play().then(() => {
+    livechatLoopPlaying = true;
+  }).catch(() => {
+    livechatLoopPlaying = false;
+  });
+}
+
+function stopLivechatLoopSound() {
+  const audio = initLivechatLoopAudio();
+  if (!audio) return;
+
+  audio.pause();
+  audio.currentTime = 0;
+  livechatLoopPlaying = false;
+}
+
+function syncAdminLivechatAlertState(unreadCount = 0) {
+  const count = Number(unreadCount || 0);
+
+  livechatUnreadCount = count;
+  livechatUnreadActive = count > 0;
+
+  if (count > 0 && !isAdminLivechatTabOpen()) {
+    startLivechatTitleAlert(count);
+    startLivechatLoopSound();
+  } else {
+    stopLivechatTitleAlert(false);
+    stopLivechatLoopSound();
+  }
+}
+function startLivechatTitleAlert(unreadCount = 0) {
+  livechatUnreadActive = true;
+  livechatUnreadCount = Number(unreadCount || 0);
+
+  const label = livechatUnreadCount === 1 ? "New Message" : "New Messages";
+
+  if (document.hidden) {
+    document.title = `🔔 You Have (${livechatUnreadCount}) ${label}!`;
+    return;
+  }
+
+  if (livechatTitleTimer) return;
+
+  livechatTitleIndex = 0;
+  livechatTitleTimer = setInterval(() => {
+    if (!livechatUnreadActive) return;
+
+    const currentLabel = livechatUnreadCount === 1 ? "New Message" : "New Messages";
+    const text = `   🔔 You Have (${livechatUnreadCount}) ${currentLabel}!   `;
+    const rotated = text.slice(livechatTitleIndex) + text.slice(0, livechatTitleIndex);
+
+    document.title = rotated;
+    livechatTitleIndex = (livechatTitleIndex + 1) % text.length;
+  }, 220);
+}
+
+function stopLivechatTitleAlert(resetUnread = true) {
+  livechatUnreadActive = false;
+
+  if (resetUnread) {
+    livechatUnreadCount = 0;
+  }
+
+  if (livechatTitleTimer) {
+    clearInterval(livechatTitleTimer);
+    livechatTitleTimer = null;
+  }
+
+  document.title = DEFAULT_PAGE_TITLE;
+}
+document.addEventListener("visibilitychange", () => {
+  if (!livechatUnreadActive || livechatUnreadCount <= 0) return;
+
+  const label = livechatUnreadCount === 1 ? "New Message" : "New Messages";
+
+  if (document.hidden) {
+    if (livechatTitleTimer) {
+      clearInterval(livechatTitleTimer);
+      livechatTitleTimer = null;
+    }
+
+    document.title = `🔔 You Have (${livechatUnreadCount}) ${label}!`;
+    return;
+  }
+
+  if (!document.hidden) {
+    if (livechatTitleTimer) {
+      clearInterval(livechatTitleTimer);
+      livechatTitleTimer = null;
+    }
+
+    startLivechatTitleAlert(livechatUnreadCount);
+    if (!isAdminLivechatTabOpen()) {
+      startLivechatLoopSound();
+    }
+  }
+});
+function setLivechatBadgeCount(count) {
+  const badge = document.getElementById("livechatDot");
+  if (!badge) return;
+
+  const total = Number(count || 0);
+
+  if (total > 0) {
+    badge.textContent = total > 99 ? "99+" : String(total);
+    badge.style.display = "inline-flex";
+  } else {
+    badge.textContent = "0";
+    badge.style.display = "none";
+  }
+}
+db.ref("users").on("value", (snapshot) => {
+  const users = snapshot.val() || {};
+  let totalUnread = 0;
+
+  Object.values(users).forEach(user => {
+    totalUnread += Number(user?.unreadCountForAdmin || 0);
+  });
+
+  if (totalUnread > lastHeaderUnreadTotal) {
+    unlockLivechatAudio();
+  }
+
+  lastHeaderUnreadTotal = totalUnread;
+
+  setLivechatBadgeCount(totalUnread);
+  syncAdminLivechatAlertState(totalUnread);
+});
+function ensureHeaderChatTracker(userId) {
+  if (!userId) return;
+  if (livechatMeta[userId]?.listening) return;
+
+  livechatMeta[userId] = livechatMeta[userId] || {};
+  livechatMeta[userId].listening = true;
+  livechatMeta[userId].booted = false;
+
+  const lastRef = db.ref(`chats/${userId}`).limitToLast(1);
+
+  lastRef.on("child_added", (snap) => {
+    const msg = snap.val() || {};
+    const wasBooted = !!livechatMeta[userId].booted;
+    if (!wasBooted) {
+      livechatMeta[userId].booted = true;
+      return;
+    }
+
+    if (msg.from !== "user") return;
+    if (msg.readByAdmin === true) return;
+
+    db.ref(`users/${userId}`).transaction((userData) => {
+      userData = userData || {};
+      const current = Number(userData.unreadCountForAdmin || 0);
+
+      userData.unreadForAdmin = true;
+      userData.unreadCountForAdmin = current + 1;
+      userData.lastChatTime = Number(msg.time) || Date.now();
+      return userData;
+    });
+  });
+}
+
+function startHeaderLivechatTracker() {
+  if (livechatTrackerStarted) return;
+  livechatTrackerStarted = true;
+
+  db.ref("users").on("child_added", (snap) => {
+    const userId = snap.key;
+    ensureHeaderChatTracker(userId);
+  });
+
+  db.ref("users").once("value", (snap) => {
+    const users = snap.val() || {};
+    Object.keys(users).forEach((userId) => {
+      ensureHeaderChatTracker(userId);
+    });
+  });
+}
+  const tabBar = document.getElementById("tabBar");
+  const menuIcon = document.getElementById("menuIcon");
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
+  overlay.addEventListener("click", closeSidebar);
+  const container = document.getElementById("mainContainer");
+  const pageFrame = document.getElementById("pageFrame");
+  if (pageFrame) {
+  pageFrame.addEventListener("load", () => {
+    try {
+pageFrame.contentWindow.addEventListener("pointerdown", () => {
+  closeAllFloatingUi();
+});
+
+pageFrame.contentWindow.addEventListener("click", () => {
+  closeAllFloatingUi();
+});
+    } catch (err) {
+      // cross-origin iframe mungkin tak boleh inject event
+    }
+  });
+}
+  window.addEventListener("blur", () => {
+  setTimeout(() => {
+    if (document.activeElement === pageFrame) {
+      closeAllFloatingUi();
+    }
+  }, 0);
+});
+  menuIcon.addEventListener("click", () => {
+  if (sidebar.classList.contains("active")) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+});
+
+
+function openSidebar() {
+  sidebar.classList.add("active");
+  overlay.classList.add("active"); // ✅ desktop + mobile sama-sama aktif
+
+  container.classList.add("shrink");
+  document.querySelector('.header').classList.add('shrink');
+  document.getElementById("menuIcon").classList.add("active-menu-icon");
+}
+
+  function closeSidebar() {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+    container.classList.remove("shrink");
+    document.querySelector('.header').classList.remove('shrink');
+    document.getElementById("menuIcon").classList.remove("active-menu-icon");
+  }
+ document.addEventListener("click", (e) => {
+  const isSidebar = e.target.closest("#sidebar");
+  const isMenuIcon = e.target.closest("#menuIcon");
+  const isUserDropdown = e.target.closest(".user-dropdown");
+
+  if (!isSidebar && !isMenuIcon && sidebar.classList.contains("active")) {
+    closeSidebar();
+  }
+
+  if (!isUserDropdown) {
+    closeUserDropdown();
+  }
+});
+
+function saveTabs(tabs) {
+  localStorage.setItem(getCurrentUserStorageKey("openTabs"), JSON.stringify(tabs));
+}
+
+function getTabs() {
+  return JSON.parse(localStorage.getItem(getCurrentUserStorageKey("openTabs")) || "[]");
+}
+const sidebarSearchInput = document.getElementById("sidebarSearchInput");
+
+function initSidebarSearch() {
+  if (!sidebarSearchInput || !sidebar) return;
+
+  const sidebarLinks = sidebar.querySelectorAll("a");
+
+  sidebarSearchInput.addEventListener("input", function () {
+    const keyword = this.value.trim().toLowerCase();
+
+    sidebarLinks.forEach(link => {
+      const text = link.textContent.trim().toLowerCase();
+      link.style.display = text.includes(keyword) ? "" : "none";
+    });
+  });
+}
+function addTab(label, url) {
+  const existingTabs = getTabs();
+  const exists = existingTabs.some(tab => tab.label === label);
+  if (!exists) {
+    existingTabs.push({ label, url });
+    saveTabs(existingTabs);
+  }
+
+  renderTabs();
+  loadPage(url);
+
+  // ✅ Highlight tombol LiveChat jika tab ADMIN LIVECHAT dibuka
+  const liveBtn = document.getElementById("liveChatBtn");
+  const dot = document.getElementById("livechatDot");
+
+if (liveBtn) {
+  if (label === "ADMIN LIVECHAT" || label === "LIVE CHAT") {
+    liveBtn.classList.add("active-livechat");
+  } else {
+    liveBtn.classList.remove("active-livechat");
+  }
+
+  db.ref("users").once("value").then((snapshot) => {
+    const users = snapshot.val() || {};
+    let totalUnread = 0;
+
+    Object.values(users).forEach(user => {
+      totalUnread += Number(user?.unreadCountForAdmin || 0);
+    });
+
+    setLivechatBadgeCount(totalUnread);
+  });
+}
+  const detailBtn = document.getElementById("detailLoginBtn");
+
+if (detailBtn) {
+  if (label === "DETAIL LOGIN") {
+    detailBtn.classList.add("active-detail");
+  } else {
+    detailBtn.classList.remove("active-detail");
+  }
+}
+  const settingsBtn = document.getElementById("tabsettingsBtn");
+
+if (settingsBtn) {
+  if (label === "TAB SETTINGS") {
+    settingsBtn.classList.add("active-tabsettings");
+  } else {
+    settingsBtn.classList.remove("active-tabsettings");
+  }
+}
+const userhistory = document.getElementById("userhistory");
+
+if (userhistory) {
+  if (label === "USER HISTORY") {
+    userhistory.classList.add("active-history");
+  } else {
+    userhistory.classList.remove("active-history");
+  }
+}
+}
+
+  function closeTab(label) {
+    let tabs = getTabs().filter(tab => tab.label !== label);
+    saveTabs(tabs);
+    renderTabs();
+    if (tabs.length > 0) {
+      loadPage(tabs[tabs.length - 1].url);
+    } else {
+      pageFrame.src = "";
+    }
+  }
+function formatTabLabel(text) {
+  const specialWords = {
+    livechat: "LiveChat"
+  };
+
+  return String(text || "")
+    .toLowerCase()
+    .split(" ")
+    .map(word => specialWords[word] || word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+const ICON_SEARCH = `M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z`;
+
+const ICON_DOWN = `M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z`;
+
+const ICON_CLOSE = `m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 8.933-2.721-2.722c-.146-.146-.339-.219-.531-.219-.404 0-.75.324-.75.749 0 .193.073.384.219.531l2.722 2.722-2.728 2.728c-.147.147-.22.34-.22.531 0 .427.35.75.751.75.192 0 .384-.073.53-.219l2.728-2.728 2.729 2.728c.146.146.338.219.53.219.401 0 .75-.323.75-.75 0-.191-.073-.384-.22-.531l-2.727-2.728 2.717-2.717c.146-.147.219-.338.219-.531 0-.425-.346-.75-.75-.75-.192 0-.385.073-.531.22z`;
+
+function getSidebarModules(){
+  return Array.from(document.querySelectorAll(".sidebar a")).map(a => {
+    const onclickText = a.getAttribute("onclick") || "";
+    const match = onclickText.match(/addTab\('([^']+)'\s*,\s*'([^']+)'\)/);
+    return match ? {
+      label: match[1],
+      title: formatTabLabel(match[1]),
+      url: match[2]
+    } : null;
+  }).filter(Boolean);
+}
+
+function createTabModuleSearch(){
+  const wrap = document.createElement("div");
+  wrap.className = "tab-module-search";
+
+  wrap.innerHTML = `
+    <button class="tab-search-toggle" type="button" aria-label="Open module search">
+      <svg viewBox="64 64 896 896"><path d="${ICON_SEARCH}"></path></svg>
+    </button>
+
+    <div class="tab-search-box">
+      <input class="tab-search-input" type="text" placeholder="Select Module" autocomplete="off">
+      <button class="tab-search-action" type="button" aria-label="Search action">
+        <svg viewBox="64 64 896 896"><path d="${ICON_DOWN}"></path></svg>
+      </button>
+    </div>
+
+    <div class="tab-search-list"></div>
+  `;
+
+  const toggle = wrap.querySelector(".tab-search-toggle");
+  const input = wrap.querySelector(".tab-search-input");
+  const action = wrap.querySelector(".tab-search-action");
+  const list = wrap.querySelector(".tab-search-list");
+
+function setIcon(path, viewBox = "64 64 896 896", isClose = false){
+  action.innerHTML = `
+    <svg class="${isClose ? 'icon-close' : ''}" viewBox="${viewBox}">
+      <path d="${path}"></path>
+    </svg>
+  `;
+}
+
+  function renderList(){
+    const keyword = input.value.trim().toLowerCase();
+    const modules = getSidebarModules().filter(item =>
+      item.title.toLowerCase().includes(keyword)
+    );
+
+    list.innerHTML = modules.map(item => `
+      <button class="tab-search-item" type="button" data-label="${item.label}" data-url="${item.url}">
+        ${item.title}
+      </button>
+    `).join("");
+  }
+
+toggle.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  wrap.classList.add("open");
+  wrap.classList.remove("list-open");
+
+  setIcon(ICON_DOWN);
+
+  requestAnimationFrame(() => {
+    input.focus();
+    input.select();
+  });
+});
+
+input.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  const rect = wrap.getBoundingClientRect();
+  list.style.left = rect.left + "px";
+  list.style.top = (rect.bottom + 3) + "px";
+
+  wrap.classList.add("list-open");
+  setIcon(ICON_SEARCH);
+  renderList();
+});
+
+input.addEventListener("input", () => {
+  const rect = wrap.getBoundingClientRect();
+  list.style.left = rect.left + "px";
+  list.style.top = (rect.bottom + 3) + "px";
+
+  wrap.classList.add("list-open");
+  setIcon(ICON_SEARCH);
+  renderList();
+});
+
+  action.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    if (wrap.classList.contains("list-open")) {
+      wrap.classList.remove("list-open");
+      setIcon(ICON_CLOSE, "0 0 24 24", true);
+      return;
+    }
+
+    wrap.classList.remove("open", "list-open");
+    input.value = "";
+  });
+
+  list.addEventListener("click", (e) => {
+    const item = e.target.closest(".tab-search-item");
+    if (!item) return;
+
+    e.stopPropagation();
+    addTab(item.dataset.label, item.dataset.url);
+    wrap.classList.remove("open", "list-open");
+    input.value = "";
+  });
+
+  document.addEventListener("click", () => {
+    if (wrap.classList.contains("open")) {
+      wrap.classList.remove("list-open");
+      setIcon(ICON_CLOSE, "0 0 24 24", true);
+    }
+  });
+
+  wrap.addEventListener("click", e => e.stopPropagation());
+
+  return wrap;
+}
+  function renderTabs() {
+tabBar.innerHTML = "";
+tabBar.appendChild(createTabModuleSearch());
+
+const tabs = getTabs();
+
+    tabs.forEach((tab, index) => {
+      const tabElement = document.createElement("div");
+      tabElement.className = "tab";
+      tabElement.draggable = true;
+      tabElement.dataset.index = index;
+
+      tabElement.addEventListener("dragstart", function (e) {
+        e.dataTransfer.setData("text/plain", index);
+        tabElement.style.opacity = "0.5";
+      });
+
+      tabElement.addEventListener("dragend", function () {
+        tabElement.style.opacity = "1";
+      });
+
+      tabElement.addEventListener("dragover", function (e) {
+        e.preventDefault();
+      });
+
+      tabElement.addEventListener("drop", function (e) {
+        e.preventDefault();
+        const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
+        const toIndex = index;
+
+        if (fromIndex !== toIndex) {
+          const updatedTabs = getTabs();
+          const [movedTab] = updatedTabs.splice(fromIndex, 1);
+          updatedTabs.splice(toIndex, 0, movedTab);
+          saveTabs(updatedTabs);
+          renderTabs();
+        }
+      });
+
+      tabElement.onclick = () => loadPage(tab.url);
+
+      if (tab.url === pageFrame.src) {
+        tabElement.classList.add("active-tab");
+      }
+
+      const title = document.createElement("span");
+      title.textContent = formatTabLabel(tab.label);
+      title.style.pointerEvents = "none";
+
+const closeBtn = document.createElement("button");
+closeBtn.className = "close-tab";
+closeBtn.type = "button";
+closeBtn.setAttribute("aria-label", "Close tab");
+
+closeBtn.innerHTML = `
+  <svg viewBox="64 64 896 896" aria-hidden="true">
+    <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+  </svg>
+`;
+
+closeBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+closeBtn.addEventListener("mousedown", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+closeBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  closeTab(tab.label);
+});
+
+      tabElement.appendChild(title);
+      tabElement.appendChild(closeBtn);
+      tabBar.appendChild(tabElement);
+    });
+  }
+
+function loadPage(url) {
+  showPageLoading();
+
+  pageFrame.onload = () => {
+    setTimeout(() => {
+      hidePageLoading();
+    }, 300);
+  };
+
+  pageFrame.src = url;
+  setTimeout(() => {
+  if (isAdminLivechatTabOpen()) {
+    stopLivechatLoopSound();
+    stopLivechatTitleAlert(false);
+  } else if (livechatUnreadCount > 0) {
+    startLivechatTitleAlert(livechatUnreadCount);
+    startLivechatLoopSound();
+  }
+}, 150);
+  localStorage.setItem(getCurrentUserStorageKey("activeTabUrl"), url);
+  closeSidebar();
+
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.remove("active-tab");
+  });
+
+  const tabs = getTabs();
+  const tabElements = document.querySelectorAll(".tab");
+
+  tabs.forEach((tab, index) => {
+    if (tab.url === url && tabElements[index]) {
+      tabElements[index].classList.add("active-tab");
+    }
+  });
+
+  // ✅ Tambahan: aktifkan tombol header yang sesuai
+  const matchedTab = tabs.find(tab => tab.url === url);
+  const label = matchedTab?.label || "";
+
+  const liveBtn = document.getElementById("liveChatBtn");
+  const detailBtn = document.getElementById("detailLoginBtn");
+  const settingsBtn = document.getElementById("tabsettingsBtn");
+  const userhistory = document.getElementById("userhistory");
+
+if (liveBtn) {
+  if (label === "ADMIN LIVECHAT" || label === "LIVE CHAT") {
+    liveBtn.classList.add("active-livechat");
+  } else {
+    liveBtn.classList.remove("active-livechat");
+  }
+
+  db.ref("users").once("value").then((snapshot) => {
+    const users = snapshot.val() || {};
+    let totalUnread = 0;
+
+    Object.values(users).forEach(user => {
+      totalUnread += Number(user?.unreadCountForAdmin || 0);
+    });
+
+    setLivechatBadgeCount(totalUnread);
+  });
+}
+
+  if (detailBtn) {
+    if (label === "DETAIL LOGIN") {
+      detailBtn.classList.add("active-detail");
+    } else {
+      detailBtn.classList.remove("active-detail");
+    }
+  }
+    if (settingsBtn) {
+    if (label === "TAB SETTINGS") {
+      settingsBtn.classList.add("active-tabsettings");
+    } else {
+      settingsBtn.classList.remove("active-tabsettings");
+    }
+  }
+   if (userhistory) {
+    if (label === "USER HISTORY") {
+      userhistory.classList.add("active-history");
+    } else {
+      userhistory.classList.remove("active-history");
+    }
+  }
+}
+
+window.onload = () => {
+  renderTabs();
+  initSidebarSearch();
+  startHeaderLivechatTracker();
+
+  const tabs = getTabs();
+  const activeUrl = localStorage.getItem(getCurrentUserStorageKey("activeTabUrl"));
+  const match = tabs.find(tab => tab.url === activeUrl);
+
+  if (match) {
+    loadPage(match.url);
+  } else if (tabs.length > 0) {
+    loadPage(tabs[tabs.length - 1].url);
+  }
+
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+};
+
+  function formatTimestamp(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+  }
+function updateDateTime() {
+  const region = "Kuala_Lumpur";
+  const now = new Date();
+
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = monthNames[now.getMonth()];
+
+  const timeString = `${hours}:${minutes} ${month} ${day}`;
+
+  document.getElementById('dateTime').textContent =
+    `${region}: ${timeString}`;
+}
+updateDateTime();
+setInterval(updateDateTime, 1000);
+
+document.addEventListener("DOMContentLoaded", updateDateTime);
+window.addEventListener("load", updateDateTime);
+  function cleanUrl() {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+  </script>
+</body>
+</html>
