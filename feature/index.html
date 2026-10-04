@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/settings/logo.svg">
+  <title>Back Office Editor Admin</title>
+    <script>
+    (function () {
+      const MAIN_URL = "https://feature-settings.vercel.app/login";
+
+      // 🚫 Elak loop kalau sudah di main
+      if (location.hostname === "feature-settings.vercel.app/login") return;
+
+      // 🔥 Clear semua query & hash supaya tak ikut redirect lama
+      window.location.replace(MAIN_URL);
+    })();
+  </script>
+
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=https://feature-settings.vercel.app/login">
+  </noscript>
+<body></body>
+</html>
