@@ -126,21 +126,10 @@ window.applyAdminTheme =
 window.getAdminTheme =
   getAdminTheme;
 /* =======================================================
-   ADMIN WORKSPACE FRAME MODE
+   ADMIN FLAT-PAGE WORKSPACE MODE
+   Every admin page is a direct sibling HTML file.
 ======================================================= */
-
-const ADMIN_IS_WORKSPACE_FRAME = false; // V6: direct flat-page workspace, no iframe/frame mode
-
-
-if (ADMIN_IS_WORKSPACE_FRAME) {
-
-  document.documentElement.classList.add(
-    "admin-workspace-frame-page"
-  );
-
-}
-
-  /* =======================================================
+/* =======================================================
      ESCAPE TEXT
   ======================================================= */
 
@@ -2646,41 +2635,89 @@ function initSharedDropdowns(
     }
   );
 
+
+/* =======================================================
+   ADMIN FLAT PAGE HELPERS
+======================================================= */
+
+function normalizeAdminPageFile(file) {
+  const value = String(file || "").trim();
+
+  if (!value) {
+    return "";
+  }
+
+  const clean = value
+    .replace(/^\.?\//, "")
+    .split(/[?#]/)[0]
+    .split("/")
+    .pop();
+
+  return clean && clean.toLowerCase().endsWith(".html")
+    ? clean
+    : "";
+}
+
+function getCurrentAdminPageFile() {
+  return normalizeAdminPageFile(
+    window.location.pathname.split("/").pop() || "dashboard.html"
+  );
+}
+
+function getAdminPageUrl(file) {
+  const safeFile = normalizeAdminPageFile(file);
+
+  return safeFile
+    ? `./${encodeURIComponent(safeFile)}`
+    : "./dashboard.html";
+}
+
+function isSafeAdminMenuItem(item) {
+  return Boolean(
+    item &&
+    normalizeAdminPageFile(item.file) &&
+    String(item.name || "").trim()
+  );
+}
+
 /* =======================================================
    ADMIN WORKSPACE NAVIGATION
 ======================================================= */
 
-function navigateToTab(
-  tab
-) {
-
-  if (!tab?.file) {
+function navigateToTab(tab) {
+  if (!isSafeAdminMenuItem(tab)) {
     return;
   }
 
-sessionStorage.removeItem(
-  getAdminWorkspaceClosedStorageKey()
-);
-  addAdminWorkspaceTab(
-    tab
+  const safeTab = {
+    ...tab,
+    file: normalizeAdminPageFile(tab.file),
+    name: String(tab.name || "").trim()
+  };
+
+  sessionStorage.removeItem(
+    getAdminWorkspaceClosedStorageKey()
   );
 
+  addAdminWorkspaceTab(safeTab);
 
-localStorage.setItem(
-  getAdminWorkspaceActiveStorageKey(),
-  tab.file
-);
-
+  localStorage.setItem(
+    getAdminWorkspaceActiveStorageKey(),
+    safeTab.file
+  );
 
   sessionStorage.setItem(
     "adminShowContentLoading",
     "1"
   );
 
+  if (getCurrentAdminPageFile() === safeTab.file) {
+    return;
+  }
 
-  window.location.href =
-    `./${tab.file}`;
-
+  window.location.assign(
+    getAdminPageUrl(safeTab.file)
+  );
 }
 /* =======================================================
    ADMIN WORKSPACE TABS
@@ -2744,6 +2781,11 @@ function getAdminWorkspaceMenu() {
 
     return Array.isArray(data)
       ? data
+          .filter(isSafeAdminMenuItem)
+          .map(item => ({
+            file: normalizeAdminPageFile(item.file),
+            name: String(item.name || "").trim()
+          }))
       : [];
 
   }
@@ -2765,24 +2807,12 @@ function saveAdminWorkspaceMenu(
   }
 
   const safeMenu =
-    menuItems.map(
-      item => ({
-        file:
-          String(
-            item.file || ""
-          ),
-
-        name:
-          String(
-            item.name || ""
-          )
-      })
-    )
-    .filter(
-      item =>
-        item.file &&
-        item.name
-    );
+    menuItems
+      .filter(isSafeAdminMenuItem)
+      .map(item => ({
+        file: normalizeAdminPageFile(item.file),
+        name: String(item.name || "").trim()
+      }));
 
   localStorage.setItem(
     getAdminWorkspaceMenuStorageKey(),
@@ -3012,12 +3042,7 @@ localStorage.setItem(
 function initAdminWorkspaceTabs(
   menuItems
 ) {
-
- if (ADMIN_IS_WORKSPACE_FRAME) {
-    return;
-  }
-   
-  const adminNav =
+const adminNav =
     document.querySelector(
       ".admin-nav"
     );
@@ -3038,10 +3063,7 @@ if (existingWorkspace) {
 
 
 const currentPage =
-  window.location.pathname
-    .split("/")
-    .pop() ||
-  "";
+  getCurrentAdminPageFile();
 
 
 let tabs =
@@ -3072,7 +3094,7 @@ localStorage.setItem(
 
 
     window.location.replace(
-      `./${fallbackTab.file}`
+      getAdminPageUrl(fallbackTab.file)
     );
 
     return;
@@ -3558,7 +3580,7 @@ localStorage.setItem(
     ) {
 
       window.location.href =
-        `./${tab.file}`;
+        getAdminPageUrl(tab.file);
 
       return;
     }
@@ -4205,7 +4227,7 @@ localStorage.setItem(
 
 
 window.location.href =
-  `./${nextTab.file}`;
+  getAdminPageUrl(nextTab.file);
 
           }
         );
@@ -4619,12 +4641,7 @@ requestAnimationFrame(
 
 }
 function restoreCachedAdminWorkspace() {
-
-  if (ADMIN_IS_WORKSPACE_FRAME) {
-    return;
-  }
-
-  const cachedMenu =
+const cachedMenu =
     getAdminWorkspaceMenu();
 
   if (
@@ -4640,12 +4657,7 @@ function restoreCachedAdminWorkspace() {
 
 }
 function initAdminSidebar() {
-
- if (ADMIN_IS_WORKSPACE_FRAME) {
-    return;
-  }
-
-  const adminNav =
+const adminNav =
     document.querySelector(
       ".admin-nav"
     );
@@ -4703,10 +4715,7 @@ function initAdminSidebar() {
   ===================================================== */
 
   const currentPage =
-    window.location.pathname
-      .split("/")
-      .pop() ||
-    "index.html";
+    getCurrentAdminPageFile();
 /* =====================================================
    ADMIN HEADER MODULE MENU
 ===================================================== */
@@ -5035,6 +5044,24 @@ catch (error) {
 
 }
 
+
+
+/* Compatibility bridge for migrated feature pages. */
+window.addEventListener("admin-site-change", event => {
+  const siteIds = Array.isArray(event.detail?.siteIds)
+    ? event.detail.siteIds
+    : [];
+
+  window.dispatchEvent(
+    new CustomEvent("sitechange", {
+      detail: {
+        siteId: siteIds[0] || "",
+        siteIds,
+        allSites: siteIds.length === 0
+      }
+    })
+  );
+});
 
 window.addEventListener(
   "admin-profile-ready",
