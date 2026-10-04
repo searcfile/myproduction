@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/settings/logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Back Office Editor Admin</title>
+  <style>
+  :root{ 
+  --bg-main: #fff;
+  --sidebar: #001529;
+  --text-main: #000;
+  --text-soft: rgba(17,24,39,0.88);
+  --text-dim: rgba(17,24,39,0.72);
+  --colorbtn: rgba(0, 0, 0, 0.88);
+  --backgroundbtn: #ffffff;
+  --backgrounddrop: #ffffff;
+  --border: #303030;
+  --border2: #d9d9d9;
+  --panel-border: #d4dbe6;
+  --blur: rgba(0,0,0,0.25);
+  --border3: #f0f0f0;
+  --tab2: #ffffff;
+  --border-bottom: #ffffff;
+  --close: rgba(0, 0, 0, 0.88);
+   --border-input5:#f0f0f0;  
+
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #d4dbe6;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(17,24,39,0.88);
+  --btn-border: #d4dbe6;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(15,23,42,0.18);
+  --popup-bg: #ffffff;
+
+  --empty-text: rgba(17,24,39,.7);
+  --empty-title: rgba(17,24,39,.88);
+
+  --toggle-track: #cfd8e3;
+  --toggle-knob: #ffffff;
+  --btnfocus: #91caff;
+  --autofill:#b5bdcb;
+}
+
+body.dark-theme{
+  --bg-main: #141414;
+  --sidebar: #001529;
+  --text-main: #fff;
+  --text-soft: rgba(255,255,255,0.85);
+  --text-dim: rgba(255,255,255,0.65);
+  --colorbtn: rgba(255,255,255,0.85);
+  --backgroundbtn: #141414;
+  --backgrounddrop: #1f1f1f;
+  --border: #303030;
+  --border2: #424242;
+  --panel-border: #424242;
+  --blur: rgba(255,255,255,0.25);
+  --border3: #303030;
+  --tab2: #141414;
+  --border-bottom: #141414;
+  --close: rgba(255,255,255,0.45);
+   --border-input5:#303030;  
+
+  --tab-bg: rgba(255,255,255,0.04);
+  --tab-border: #303030;
+
+  --btn-bg: transparent;
+  --btn-text: rgba(255,255,255,0.85);
+  --btn-border: #424242;
+
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
+
+  --overlay-bg: rgba(0,0,0,0.5);
+  --popup-bg: #1f1f1f;
+
+  --empty-text: rgba(255,255,255,.7);
+  --empty-title: rgba(255,255,255,.85);
+
+  --toggle-track: #2c7be5;
+  --toggle-knob: #ffffff;
+  --btnfocus: #15325b;
+  --autofill:#28303e;   
+}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Segoe UI',sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg-main);
+      color:var(--text-soft);
+      padding:20px;
+    }
+
+.login-box{
+  width:100%;
+  max-width:420px;
+  background:var(--backgrounddrop);
+  border:1px solid var(--border-input5);
+  border-radius:12px;
+  padding:0;
+  overflow:hidden;
+  box-shadow:rgba(0,0,0,0.08) 0px 8px 24px;
+}
+.login-header{
+  width:100%;
+  padding:32px 40px 28px;
+  background:#1677ff;
+  text-align:center;
+  line-height: 1.5714285714285714;
+}
+
+.login-content{
+  padding:32px 40px;
+}
+
+.login-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.login-icon svg{
+  width:28px;
+  height:28px;
+  color:white;
+}
+
+.title{
+  text-align:center;
+  font-size:24px;
+  font-weight:600;
+  color:white;
+  line-height:1.5;
+}
+
+.sub{
+  text-align:center;
+  color:rgba(255,255,255,.65);
+  font-size:13px;
+}
+    .title{
+      text-align:center;
+      font-size:24px;
+      font-weight:600;
+      color:white;
+    }
+
+    .sub{
+      text-align:center;
+      color: rgba(255, 255, 255, 0.65);
+      font-size:13px;
+    }
+
+    .field{
+      margin-bottom:24px;
+    }
+
+    .label{
+      display:block;
+      margin-bottom:8px;
+      font-size:14px;
+      color:var(--text-soft);
+      font-weight:500;
+    }
+
+    .input-wrap{
+      position:relative;
+    }
+    .input-icon{
+  position:absolute;
+  left:11px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--close);
+  pointer-events:none;
+}
+
+.input-icon svg{
+  width:16px;
+  height:16px;
+  display:block;
+}
+
+.input.has-left-icon{
+  padding-left:32px;
+}
+
+.input.has-right-icon{
+  padding-right:52px;
+}
+
+.input-wrap:focus-within .input-icon{
+  color:var(--text-soft);
+  opacity:1;
+}
+    .input{
+      width:100%;
+      height:40px;
+      border-radius:8px;
+      border:1px solid var(--border2);
+      background:var(--backgroundbtn);
+      color:var(--text-soft);
+      padding:7px 11px;
+      outline:none;
+      transition:all .3s ease;
+      font-size:14px;
+    }
+
+    .input::placeholder{
+      color:var(--blur);
+    }
+    .input:hover:not(:focus){
+  border-color:var(--gold-hover);
+}
+    .field:has(.label:hover) .input:not(:focus){
+  border-color: var(--border2) !important;
+}
+    .input:focus{
+      border-color:#1668dc;
+    }
+
+.password-toggle{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:none;
+  border:none;
+  color: var(--close);
+  cursor:pointer;
+  padding:0;
+  transition:all .3s ease;
+  line-height:0;
+}
+
+.password-toggle svg{
+  width:16px;
+  height:16px;
+  display:block;
+}
+
+.password-toggle:hover{
+  color:var(--colorbtn);
+}
+.input-wrap:has(.password-toggle:hover) .input{
+  border-color: var(--gold-hover);
+}
+    .field-error{
+  display:none;
+  margin-top:6px;
+  font-size:12px;
+  color:#ff4d4f;
+}
+
+    .btn{
+      width:100%;
+      height:46px;
+      border:none;
+      border-radius:8px;
+      background:#1668dc;
+      color:#fff;
+      cursor:pointer;
+      transition:all .2s ease;
+      font-size:15px;
+      padding:0px 15px;
+      font-weight:600;
+    }
+
+    .btn:hover{
+      background:#3c89e8;
+    }
+
+    .btn:active{
+      background:#1554ad;
+    }
+    .loading{
+      opacity:.7;
+      pointer-events:none;
+    }
+  .turnstile-wrap{
+  width:100%;
+  margin:0 auto 0;
+  display:flex;
+  justify-content:center;
+  margin-bottom:10px;
+}
+
+#turnstileBox{
+  display:flex;
+  justify-content:center;
+  width:100%;
+   margin-top: 15px;
+}
+    .otp-row{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:8px;
+}
+
+.otp-input{
+  width:100%;
+  height:40px;
+  border-radius:8px;
+  border:1px solid var(--border2);
+  background:var(--backgroundbtn);
+  color:var(--text-soft);
+  text-align:center;
+  font-size:14px;
+  font-weight:500;
+  outline:none;
+}
+
+.otp-input:focus{
+  border-color:#1668dc;
+}
+.signin-card{
+  background:var(--backgroundbtn);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px 14px;
+  margin-bottom:24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.signin-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.signin-icon{
+  width:18px;
+  height:18px;
+  color:#1668dc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+}
+
+.signin-icon svg{
+  width:16px;
+  height:16px;
+  display:block;
+}
+
+.signin-label{
+  font-size:12px;
+  color:var(--text-dim);
+  line-height:1.2;
+}
+
+.signin-name{
+  font-weight:500;
+  color:var(--text-soft);
+  line-height:1.3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:170px;
+  font-size:14px;
+}
+
+.signin-change{
+  background:none;
+  border:none;
+  color:#1668dc;
+  cursor:pointer;
+  font-size:12px;
+  padding:4px 0;
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  transition:all .3s ease;
+}
+.signin-change svg{
+  width:14px;
+  height:14px;
+  display:block;
+  position:relative;
+  top:1px;
+}
+.signin-change:hover{
+  color:#3c89e8;
+}
+.signin-change:active{
+  color:#1554ad;
+}
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--backgroundbtn);
+  transition: all .2s ease;
+}
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active{
+  -webkit-text-fill-color: rgba(255,255,255,0.85) !important;
+  caret-color: #ffffff !important;
+  border:1px solid var(--border-input) !important;
+  transition:background-color 99999s ease-in-out 0s !important;
+  transition: border-color .3s !important;
+  font-size:15px;
+}
+
+#username:-webkit-autofill,
+#username:-webkit-autofill:active{
+  -webkit-box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -15px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -15px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+   transition: border-color .3s !important;
+   
+}
+
+#username:-webkit-autofill:hover{
+  border-color:var(--gold-hover) !important;
+}
+
+#username:-webkit-autofill:focus{
+  border-color:var(--gold) !important;
+  -webkit-box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -15px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -15px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+}
+
+#password:-webkit-autofill,
+#password:-webkit-autofill:active{
+  -webkit-box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -32px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -32px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+      transition: border-color .3s !important;
+}
+
+#password:-webkit-autofill:hover{
+  border-color:var(--gold-hover) !important;
+}
+
+#password:-webkit-autofill:focus{
+  border-color:var(--gold) !important;
+  -webkit-box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -32px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--backgroundbtn) inset,
+    32px 0 0 0 var(--backgroundbtn) inset,
+    -32px 0 0 0 var(--backgroundbtn) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+}
+.login-loading{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.20);
+  z-index:999999;
+}
+.login-loading.show{
+  display:flex;
+}
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  width:32px;
+  height:32px;
+  position:relative;
+  margin:0 auto;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.85);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  animation-delay:0s;
+}
+
+.loading-dots span:nth-child(2){
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.25s;
+}
+
+.loading-dots span:nth-child(3){
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  animation-delay:.5s;
+}
+
+.loading-dots span:nth-child(4){
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.75s;
+}
+
+@keyframes dotPulse{
+  0%{ opacity:.2; }
+  25%{ opacity:1; }
+  50%{ opacity:.4; }
+  100%{ opacity:.2; }
+}
+@keyframes loadingRotate{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
+.loading-text{
+  color:#fff;
+  font-size:14px;
+  font-weight:400;
+  text-align:center;
+}
+  </style>
+</head>
+<body>
+
+<div id="pageLoading" class="login-loading">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="loading-text">Please wait while fetching...</div>
+  </div>
+</div>
+
+<div class="login-box" id="loginBox">
+
+  <div class="login-header">
+    <div class="login-icon" id="loginIcon">
+      <svg viewBox="64 64 896 896">
+        <path fill="currentColor" d="M832 464h-68V240c0-70.7-57.3-128-128-128H388c-70.7 0-128 57.3-128 128v224h-68c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V496c0-17.7-14.3-32-32-32zM332 240c0-30.9 25.1-56 56-56h248c30.9 0 56 25.1 56 56v224H332V240zm460 600H232V536h560v304zM484 701v53c0 4.4 3.6 8 8 8h40c4.4 0 8-3.6 8-8v-53a48.01 48.01 0 10-56 0z"/>
+      </svg>
+    </div>
+
+    <div class="title" id="loginTitle">Log in</div>
+    <div class="sub" id="loginSub">Welcome back! Please sign in to continue.</div>
+  </div>
+
+  <div class="login-content">
+
+    <form id="loginForm">
+      <div class="field">
+        <label class="label" for="username">Username</label>
+        <div class="input-wrap">
+  <span class="input-icon">
+    <svg viewBox="64 64 896 896"><path fill="currentColor" d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"/></svg>
+  </span>
+<input id="username" class="input has-left-icon" type="text" placeholder="Username" autocomplete="off" autocapitalize="off" spellcheck="false" required />
+        </div>
+        <div class="field-error" id="usernameError"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <div class="input-wrap">
+         <span class="input-icon">
+          <svg viewBox="64 64 896 896"><path fill="currentColor" d="M832 464h-68V240c0-70.7-57.3-128-128-128H388c-70.7 0-128 57.3-128 128v224h-68c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V496c0-17.7-14.3-32-32-32zM332 240c0-30.9 25.1-56 56-56h248c30.9 0 56 25.1 56 56v224H332V240zm460 600H232V536h560v304zM484 701v53c0 4.4 3.6 8 8 8h40c4.4 0 8-3.6 8-8v-53a48.01 48.01 0 10-56 0z"/></svg>
+         </span>
+        <input id="password" class="input has-left-icon has-right-icon" type="password" placeholder="Masukkan password" autocomplete="new-password" required />
+<button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
+  <!-- HIDE / password tertutup -->
+  <svg id="eyeHide" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true">
+    <path d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"></path>
+    <path d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"></path>
+  </svg>
+
+  <!-- SHOW / password nampak -->
+  <svg id="eyeShow" viewBox="64 64 896 896" aria-hidden="true" style="display:none;">
+    <path d="M81.8 537.8a60.3 60.3 0 010-51.5C176.6 286.5 319.8 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 000 51.5C176.6 737.5 319.9 838 512 838c-192.1 0-335.4-100.5-430.2-300.2z" fill="#e6f4ff"></path>
+    <path d="M512 258c-161.3 0-279.4 81.8-362.7 254C232.6 684.2 350.7 766 512 766c161.4 0 279.5-81.8 362.7-254C791.4 339.8 673.3 258 512 258zm-4 430c-97.2 0-176-78.8-176-176s78.8-176 176-176 176 78.8 176 176-78.8 176-176 176z" fill="#e6f4ff"></path>
+    <path d="M942.2 486.2C847.4 286.5 704.1 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 000 51.5C176.6 737.5 319.9 838 512 838c192.2 0 335.4-100.5 430.2-300.3 7.7-16.2 7.7-35 0-51.5zM512 766c-161.3 0-279.4-81.8-362.7-254C232.6 339.8 350.7 258 512 258s279.4 81.8 362.7 254C791.5 684.2 673.4 766 512 766z" fill="#1677ff"></path>
+    <path d="M508 336c-97.2 0-176 78.8-176 176s78.8 176 176 176 176-78.8 176-176-78.8-176-176-176zm0 288c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112z" fill="#1677ff"></path>
+  </svg>
+
+</button>
+        </div>
+        <div class="field-error" id="passwordError"></div>
+      </div>
+      <div class="turnstile-wrap">
+<div id="turnstileBox"></div>
+</div>
+      <button type="submit" class="btn" id="loginBtn">Log in</button>
+    </form>
+    <div id="secondPassPanel" style="display:none;">
+  <div class="field">
+<div class="signin-card">
+  <div class="signin-left">
+    <div class="signin-icon">
+      <svg viewBox="64 64 896 896" fill="currentColor">
+        <path d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="signin-label">Signing in as</div>
+      <div id="secondUserName" class="signin-name">client</div>
+    </div>
+  </div>
+
+<button type="button" id="changeLoginBtn" class="signin-change" aria-label="Change user">
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M9.474 5.209s-4.501 4.505-6.254 6.259c-.147.146-.22.338-.22.53s.073.384.22.53c1.752 1.754 6.252 6.257 6.252 6.257.145.145.336.217.527.217.191-.001.383-.074.53-.221.293-.293.294-.766.004-1.057l-4.976-4.976h14.692c.414 0 .75-.336.75-.75s-.336-.75-.75-.75H5.557l4.978-4.979c.289-.289.287-.761-.006-1.054-.147-.147-.339-.221-.53-.221-.191-.001-.38.071-.525.215z"/>
+  </svg>
+  <span>Change</span>
+</button>
+</div>
+
+    <label class="label">2nd password</label>
+    <div class="otp-row">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+      <input class="otp-input" maxlength="1" inputmode="numeric">
+    </div>
+
+    <div class="field-error" id="secondPassError"></div>
+  </div>
+
+  <button type="button" class="btn" id="verifySecondBtn">Verify</button>
+</div>
+  </div>
+</div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCIYYpl-1psexPB_-CadD1smsc_e6rhu1U",
+  authDomain: "page-login2.firebaseapp.com",
+  databaseURL: "https://page-login2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "page-login2",
+  storageBucket: "page-login2.firebasestorage.app",
+  messagingSenderId: "860837620702",
+  appId: "1:860837620702:web:db51c2a50d414a4de44b4f"
+};
+
+  // ✅ guna NAMA APP YANG SAMA macam settings page
+  const loginApp = firebase.apps.find(app => app.name === "loginApp")
+    || firebase.initializeApp(firebaseConfig, "loginApp");
+
+  const auth = loginApp.auth();
+const db = loginApp.database();
+let pendingUser = null;
+  const loginForm = document.getElementById("loginForm");
+  const usernameEl = document.getElementById("username");
+  const passwordEl = document.getElementById("password");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginBox = document.getElementById("loginBox");
+  const togglePassword = document.getElementById("togglePassword");
+  const usernameError = document.getElementById("usernameError");
+  const passwordError = document.getElementById("passwordError");
+
+function clearFieldErrors(){
+  usernameError.textContent = "";
+  passwordError.textContent = "";
+  usernameError.style.display = "none";
+  passwordError.style.display = "none";
+  usernameEl.classList.remove("invalid");
+  passwordEl.classList.remove("invalid");
+}
+
+function setFieldError(type, text){
+  const el = type === "username" ? usernameError : passwordError;
+  const input = type === "username" ? usernameEl : passwordEl;
+
+  el.textContent = text;
+  el.style.display = "block";
+  input.classList.add("invalid");
+}
+
+  const SETTINGS_URL = "/settings/";
+  const USER_DOMAIN = "@5g88.local";
+
+  let hasRedirected = false;
+  let isSubmitting = false;
+let turnstileWidgetId = null;
+
+function renderTurnstile(){
+  if (!window.turnstile) return;
+
+  const box = document.getElementById("turnstileBox");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  turnstileWidgetId = turnstile.render("#turnstileBox", {
+    sitekey: "0x4AAAAAAC1xHeoFIKqZZywR",
+    theme: document.body.classList.contains("dark-theme") ? "light" : "dark"
+  });
+}
+
+  function normalizeEmailFromUsername(input) {
+    const v = String(input || "").trim().toLowerCase();
+    if (!v) return "";
+    if (v.includes("@")) return v;
+    return v + USER_DOMAIN;
+  }
+
+function showPageLoading(){
+  document.getElementById("pageLoading")?.classList.add("show");
+}
+
+function hidePageLoading(){
+  document.getElementById("pageLoading")?.classList.remove("show");
+}
+
+function setLoading(state) {
+  loginBtn.disabled = state;
+  loginBox.classList.toggle("loading", state);
+
+  if (state) showPageLoading();
+  else hidePageLoading();
+}
+
+togglePassword.addEventListener("click", () => {
+  const isPwd = passwordEl.type === "password";
+  const eyeHide = document.getElementById("eyeHide");
+  const eyeShow = document.getElementById("eyeShow");
+
+  passwordEl.type = isPwd ? "text" : "password";
+
+  eyeHide.style.display = isPwd ? "none" : "block";
+  eyeShow.style.display = isPwd ? "block" : "none";
+
+  togglePassword.setAttribute(
+    "aria-label",
+    isPwd ? "Hide password" : "Show password"
+  );
+
+  passwordEl.focus();
+});
+  // ✅ pastikan session disimpan local
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .catch(err => console.error("Persistence error:", err));
+
+  // ✅ hanya redirect dari sini
+auth.onAuthStateChanged((user) => {
+  if (!user) return;
+  pendingUser = user;
+});
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+
+clearFieldErrors();
+
+if (!username) {
+  setFieldError("username", "Username wajib isi.");
+  usernameEl.focus();
+  return;
+}
+
+if (!password) {
+  setFieldError("password", "Password wajib isi.");
+  passwordEl.focus();
+  return;
+}
+
+    const email = normalizeEmailFromUsername(username);
+
+    try {
+      isSubmitting = true;
+      setLoading(true);
+const cred = await auth.signInWithEmailAndPassword(email, password);
+pendingUser = cred.user;
+
+      
+document.getElementById("loginForm").style.display = "none";
+document.getElementById("secondPassPanel").style.display = "block";
+document.getElementById("secondUserName").textContent = username;
+// 🔥 tukar header ke mode 2FA
+document.getElementById("loginTitle").textContent = "Two-Factor Authentication";
+document.getElementById("loginSub").textContent = "Enter the 6-digit code your 2nd password.";
+
+// tukar icon
+document.getElementById("loginIcon").innerHTML = `
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.334 11.96c-.713-.726-.872-1.829-.393-2.727.342-.64.366-1.401.064-2.062-.301-.66-.893-1.142-1.601-1.302-.991-.225-1.722-1.067-1.803-2.081-.059-.723-.451-1.378-1.062-1.77-.609-.393-1.367-.478-2.05-.229-.956.347-2.026.032-2.642-.776-.44-.576-1.124-.915-1.85-.915-.725 0-1.409.339-1.849.915-.613.809-1.683 1.124-2.639.777-.682-.248-1.44-.163-2.05.229-.61.392-1.003 1.047-1.061 1.77-.082 1.014-.812 1.857-1.803 2.081-.708.16-1.3.642-1.601 1.302s-.277 1.422.065 2.061c.479.897.32 2.001-.392 2.727-.509.517-.747 1.242-.644 1.96s.536 1.347 1.17 1.7c.888.495 1.352 1.51 1.144 2.505-.147.71.044 1.448.519 1.996.476.549 1.18.844 1.902.798 1.016-.063 1.953.54 2.317 1.489.259.678.82 1.195 1.517 1.399.695.204 1.447.072 2.031-.357.819-.603 1.936-.603 2.754 0 .584.43 1.336.562 2.031.357.697-.204 1.258-.722 1.518-1.399.363-.949 1.301-1.553 2.316-1.489.724.046 1.427-.249 1.902-.798.475-.548.667-1.286.519-1.996-.207-.995.256-2.01 1.145-2.505.633-.354 1.065-.982 1.169-1.7s-.135-1.443-.643-1.96zm-12.584 5.43l-4.5-4.364 1.857-1.857 2.643 2.506 5.643-5.784 1.857 1.857-7.5 7.642z"/>
+  </svg>
+`;
+
+setLoading(false);
+isSubmitting = false;
+
+setTimeout(() => {
+  document.querySelector(".otp-input")?.focus();
+}, 100);
+
+    } catch (err) {
+      console.error("Login error:", err);
+
+      let msg = "Login gagal.";
+      if (err.code === "auth/user-not-found") msg = "User tidak ditemukan.";
+      else if (err.code === "auth/wrong-password") msg = "Password salah.";
+      else if (err.code === "auth/invalid-login-credentials") msg = "Username atau password salah.";
+      else if (err.code === "auth/invalid-email") msg = "Format username/email tidak sah.";
+      else if (err.code === "auth/too-many-requests") msg = "Terlalu banyak percubaan. Cuba lagi nanti.";
+
+if (
+  err.code === "auth/user-not-exist" ||
+  err.code === "auth/invalid-email"
+) {
+  setFieldError("username", "Username salah.");
+  usernameEl.focus();
+} else if (err.code === "auth/wrong-password") {
+  setFieldError("password", "Password salah.");
+  passwordEl.focus();
+} else {
+  setFieldError("password", "Username atau password salah.");
+}
+      isSubmitting = false;
+      setLoading(false);
+    }
+  });
+const secondPassPanel = document.getElementById("secondPassPanel");
+const verifySecondBtn = document.getElementById("verifySecondBtn");
+const changeLoginBtn = document.getElementById("changeLoginBtn");
+const secondPassError = document.getElementById("secondPassError");
+const otpInputs = Array.from(document.querySelectorAll(".otp-input"));
+
+otpInputs.forEach((input, index) => {
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(/\D/g, "").slice(0, 1);
+
+    if (input.value && otpInputs[index + 1]) {
+      otpInputs[index + 1].focus();
+    }
+  });
+
+  input.addEventListener("paste", (e) => {
+    e.preventDefault();
+
+    const pasteText = (e.clipboardData || window.clipboardData)
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, otpInputs.length);
+
+    if (!pasteText) return;
+
+    otpInputs.forEach((box, i) => {
+      box.value = pasteText[i] || "";
+    });
+
+    const nextIndex = Math.min(pasteText.length, otpInputs.length) - 1;
+    otpInputs[nextIndex]?.focus();
+  });
+
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    const code = otpInputs.map(i => i.value).join("");
+
+    if (code.length === 6) {
+      verifySecondBtn.click();
+    }
+
+    return;
+  }
+
+  if (e.key === "Backspace" && !input.value && otpInputs[index - 1]) {
+    otpInputs[index - 1].focus();
+  }
+});
+});
+
+changeLoginBtn.addEventListener("click", async () => {
+  await auth.signOut();
+  pendingUser = null;
+  otpInputs.forEach(i => i.value = "");
+  secondPassError.style.display = "none";
+  secondPassPanel.style.display = "none";
+  loginForm.style.display = "block";
+  passwordEl.value = "";
+  usernameEl.focus();
+});
+
+verifySecondBtn.addEventListener("click", async () => {
+  if (!pendingUser) return;
+
+  const code = otpInputs.map(i => i.value).join("");
+
+  secondPassError.style.display = "none";
+  secondPassError.textContent = "";
+
+  if (code.length !== 6) {
+    secondPassError.textContent = "Sila isi 6 digit 2nd password.";
+    secondPassError.style.display = "block";
+    return;
+  }
+
+verifySecondBtn.disabled = true;
+showPageLoading();
+
+  try {
+    const snap = await db.ref("users/" + pendingUser.uid + "/secondPassword").get();
+    const savedCode = String(snap.val() || "");
+
+    if (code !== savedCode) {
+      secondPassError.textContent = "2nd password salah.";
+      secondPassError.style.display = "block";
+verifySecondBtn.disabled = false;
+hidePageLoading();
+      return;
+    }
+
+    localStorage.setItem("loginUser", JSON.stringify({
+      uid: pendingUser.uid,
+      email: pendingUser.email || "",
+      username: (pendingUser.email || "").replace("@5g88.local", ""),
+      lastLogin: Date.now()
+    }));
+
+    window.location.replace(SETTINGS_URL);
+
+  } catch (err) {
+    console.error(err);
+    secondPassError.textContent = "Gagal semak 2nd password.";
+    secondPassError.style.display = "block";
+verifySecondBtn.disabled = false;
+hidePageLoading();
+  }
+});
+  const THEME_KEY = "siteTheme";
+
+function applyTheme(theme) {
+  const finalTheme = theme === "dark" ? "dark" : "light";
+  document.body.classList.toggle("dark-theme", finalTheme === "dark");
+
+  setTimeout(renderTurnstile, 200);
+}
+
+  // apply masa mula load
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+  // dengar dari parent
+  window.addEventListener("message", (event) => {
+    if (event.data?.type === "theme-change") {
+      applyTheme(event.data.theme);
+    }
+  });
+// 🔥 show loading sebaik sahaja page start load
+showPageLoading();
+
+// 🔥 hide bila page sudah fully load
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    hidePageLoading();
+  }, 300); // boleh adjust (300–800ms nampak smooth)
+});
+</script>
+</body>
+</html>
