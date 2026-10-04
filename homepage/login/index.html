@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/main/logo.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="stylesheet" href="../login/login.css" />
+  <title>Back Office Editor 5G88</title>
+  <meta name="google-site-verification" content="eNASufqHE1646w04SZEOYrhItdoY2gD8MWWPQ4tdBFc" />
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta property="og:site_name" content="5G88">
+  <meta name="description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Home Editor">
+  <meta property="og:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
+  <meta property="og:image" content="https://5g88-main.vercel.app/logo-home/logo.png">
+  <meta property="og:url" content="https://5g88-main.vercel.app">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Home Editor">
+  <meta name="twitter:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
+  <meta name="twitter:image" content="https://5g88-main.vercel.app/logo-home/logo.png">
+<meta http-equiv="Content-Security-Policy"
+content="
+  default-src 'self';
+  img-src 'self' data: https://i.imgur.com https://*.googleusercontent.com;
+  script-src 'self' 'unsafe-inline'
+    https://www.gstatic.com
+    https://cdn.jsdelivr.net
+    https://openfpcdn.io
+    https://www.googleapis.com
+    https://accounts.google.com
+    https://apis.google.com
+    https://*.firebaseio.com
+    https://*.firebasedatabase.app
+    https://challenges.cloudflare.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self'
+    https://www.gstatic.com
+    https://*.googleapis.com
+    https://*.firebaseio.com
+    https://*.firebasedatabase.app
+    wss://*.firebaseio.com
+    wss://*.firebasedatabase.app
+    https://www.googleapis.com
+    https://identitytoolkit.googleapis.com
+    https://securetoken.googleapis.com
+    https://apis.google.com
+    https://challenges.cloudflare.com;
+  frame-src 'self'
+    https://accounts.google.com
+    https://logins-d615f.firebaseapp.com
+    https://logins-d615f.web.app
+    https://challenges.cloudflare.com;
+  child-src 'self'
+    https://accounts.google.com
+    https://logins-d615f.firebaseapp.com
+    https://logins-d615f.web.app
+    https://challenges.cloudflare.com;
+  base-uri 'self';
+  form-action 'self' https://accounts.google.com;
+">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+  <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
+  <svg id="loginThemeLightIcon" viewBox="64 64 896 896" aria-hidden="true">
+    <path fill="currentColor" d="M548 818v126a16 16 0 01-16 16h-40a16 16 0 01-16-16V818c15.85 1.64 27.84 2.46 36 2.46 8.15 0 20.16-.82 36-2.46m205.25-115.66l89.1 89.1a16 16 0 010 22.62l-28.29 28.29a16 16 0 01-22.62 0l-89.1-89.1c12.37-10.04 21.43-17.95 27.2-23.71 5.76-5.77 13.67-14.84 23.71-27.2m-482.5 0c10.04 12.36 17.95 21.43 23.71 27.2 5.77 5.76 14.84 13.67 27.2 23.71l-89.1 89.1a16 16 0 01-22.62 0l-28.29-28.29a16 16 0 010-22.63zM512 278c129.24 0 234 104.77 234 234S641.24 746 512 746 278 641.24 278 512s104.77-234 234-234m0 72c-89.47 0-162 72.53-162 162s72.53 162 162 162 162-72.53 162-162-72.53-162-162-162M206 476c-1.64 15.85-2.46 27.84-2.46 36 0 8.15.82 20.16 2.46 36H80a16 16 0 01-16-16v-40a16 16 0 0116-16zm738 0a16 16 0 0116 16v40a16 16 0 01-16 16H818c1.64-15.85 2.46-27.84 2.46-36 0-8.15-.82-20.16-2.46-36zM814.06 180.65l28.29 28.29a16 16 0 010 22.63l-89.1 89.09c-10.04-12.37-17.95-21.43-23.71-27.2-5.77-5.76-14.84-13.67-27.2-23.71l89.1-89.1a16 16 0 0122.62 0m-581.5 0l89.1 89.1c-12.37 10.04-21.43 17.95-27.2 23.71-5.76 5.77-13.67 14.84-23.71 27.2l-89.1-89.1a16 16 0 010-22.62l28.29-28.29a16 16 0 0122.62 0M532 64a16 16 0 0116 16v126c-15.85-1.64-27.84-2.46-36-2.46-8.15 0-20.16.82-36 2.46V80a16 16 0 0116-16z"/>
+  </svg>
+
+  <svg id="loginThemeDarkIcon" viewBox="64 64 896 896" aria-hidden="true" style="display:none;">
+    <path fill="currentColor" d="M489.5 111.66c30.65-1.8 45.98 36.44 22.58 56.33A243.35 243.35 0 00426 354c0 134.76 109.24 244 244 244 72.58 0 139.9-31.83 186.01-86.08 19.87-23.38 58.07-8.1 56.34 22.53C900.4 745.82 725.15 912 512.5 912 291.31 912 112 732.69 112 511.5c0-211.39 164.29-386.02 374.2-399.65l.2-.01zm-81.15 79.75l-4.11 1.36C271.1 237.94 176 364.09 176 511.5 176 697.34 326.66 848 512.5 848c148.28 0 274.94-96.2 319.45-230.41l.63-1.93-.11.07a307.06 307.06 0 01-159.73 46.26L670 662c-170.1 0-308-137.9-308-308 0-58.6 16.48-114.54 46.27-162.47z"/>
+  </svg>
+</button>
+  <!-- Welcome popup -->
+  <div class="popup-overlay" id="popup">
+    <div class="popup-box" id="popupBox">
+      <button class="popup-close" onclick="closePopup()">✕</button>
+      <p class="popup-title">Welcome to 5G88!</p>
+      <img src="https://i.imgur.com/x1b1tj8.png" alt="5G88 Logo" class="popup-logo">
+      <div style="font-size:12px; opacity:.9; text-align:center;">
+      By continuing, you agree to our Terms and acknowledge our Privacy Policy.
+    </div>
+      <button class="popup-btn" onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+  <!-- BLOCKED POPUP -->
+  <div class="blocked-overlay" id="blockedPopup" aria-hidden="true">
+    <div class="blocked-box" role="dialog" aria-modal="true" aria-labelledby="blockedTitle" tabindex="-1">
+      <button class="popup-close" onclick="hideBlockedPopup()" aria-label="Close">✕</button>
+      <h2 id="blockedTitle" class="blocked-title">Access Denied</h2>
+      <p class="blocked-sub">You need permission to access 5G88.</p>
+      <div id="blockedInfo" class="blocked-info"></div>
+      <div class="blocked-actions">
+        <button class="btn-cancel" onclick="hideBlockedPopup()">Cancel</button>
+        <a class="btn-contact" id="contactBtn" href="mailto:support@5g88.local">Contact us</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-box">
+  <div class="login-header">
+  <div class="login-icon">
+    <svg viewBox="64 64 896 896">
+      <path fill="currentColor"
+      d="M832 464h-68V240c0-70.7-57.3-128-128-128H388c-70.7 0-128 57.3-128 128v224h-68c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V496c0-17.7-14.3-32-32-32zM332 240c0-30.9 25.1-56 56-56h248c30.9 0 56 25.1 56 56v224H332V240zm460 600H232V536h560v304zM484 701v53c0 4.4 3.6 8 8 8h40c4.4 0 8-3.6 8-8v-53a48.01 48.01 0 10-56 0z"/>
+    </svg>
+  </div>
+
+  <h2 class="login-title">Log in</h2>
+  <p class="login-sub">Welcome back! Please sign in to continue.</p>
+</div>
+<div class="login-content">
+
+  <div class="label-row">
+    <label class="label" for="username">Username</label>
+
+    <div class="tabs">
+      <button type="button" class="tab active" id="tab-userpass" aria-label="Username Login">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm7.753 18.305c-.261-.586-.789-.991-1.871-1.241-2.293-.529-4.428-.993-3.393-2.945 3.145-5.942.833-9.119-2.489-9.119-3.388 0-5.644 3.299-2.489 9.119 1.066 1.964-1.148 2.427-3.393 2.945-1.084.25-1.608.658-1.867 1.246-1.405-1.723-2.251-3.919-2.251-6.31 0-5.514 4.486-10 10-10s10 4.486 10 10c0 2.389-.845 4.583-2.247 6.305z"/>
+        </svg>
+      </button>
+
+      <button type="button" class="tab" id="tab-google" aria-label="Google Login">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2.917 16.083c-2.258 0-4.083-1.825-4.083-4.083s1.825-4.083 4.083-4.083c1.103 0 2.024.402 2.735 1.067l-1.107 1.068c-.304-.292-.834-.63-1.628-.63-1.394 0-2.531 1.155-2.531 2.579 0 1.424 1.138 2.579 2.531 2.579 1.616 0 2.224-1.162 2.316-1.762h-2.316v-1.4h3.855c.036.204.064.408.064.677.001 2.332-1.563 3.988-3.919 3.988zm9.917-3.5h-1.75v1.75h-1.167v-1.75h-1.75v-1.166h1.75v-1.75h1.167v1.75h1.75v1.166z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Username/Password Form -->
+  <form id="form-userpass" class="form active" autocomplete="off">
+    <input type="text" style="display:none">
+    <input type="password" style="display:none">
+
+    <div class="group">
+      <div class="field field-user">
+        <span class="field-icon left-icon" aria-hidden="true">
+          <svg viewBox="64 64 896 896" width="1em" height="1em">
+            <path fill="currentColor" d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"></path>
+            <path d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"></path>
+          </svg>
+        </span>
+
+        <input class="input has-left-icon" id="username"
+               name="login_user_5g88"
+               autocomplete="off"
+               autocorrect="off"
+               autocapitalize="off"
+               spellcheck="false"
+               placeholder="Username"
+               required>
+      </div>
+      <div id="usernameErr" class="login-error"></div>
+    </div>
+<div class="group password-wrap">
+  <label class="label" for="password">Password</label>
+
+<div class="field field-pass">
+  <span class="field-icon left-icon" aria-hidden="true">
+    <svg viewBox="64 64 896 896" width="1em" height="1em">
+      <path fill="currentColor" d="M832 464h-68V240c0-70.7-57.3-128-128-128H388c-70.7 0-128 57.3-128 128v224h-68c-17.7 0-32 14.3-32 32v384c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V496c0-17.7-14.3-32-32-32zM332 240c0-30.9 25.1-56 56-56h248c30.9 0 56 25.1 56 56v224H332V240zm460 600H232V536h560v304zM484 701v53c0 4.4 3.6 8 8 8h40c4.4 0 8-3.6 8-8v-53a48.01 48.01 0 10-56 0z"></path>
+    </svg>
+  </span>
+
+  <input class="input has-left-icon has-right-icon" id="password" type="password"
+         name="login_pass_5g88"
+         autocomplete="new-password"
+         placeholder="Password"
+         required>
+
+<button type="button" class="toggle-eye" id="eyeBtn"
+        aria-label="Show password" aria-pressed="false" data-state="hide">
+
+  <!-- HIDDEN PASSWORD ICON / GARIS -->
+  <svg id="eyeHide" viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+    <path d="M942.2 486.2Q889.47 375.11 816.7 305l-50.88 50.88C807.31 395.53 843.45 447.4 874.7 512 791.5 684.2 673.4 766 512 766q-72.67 0-133.87-22.38L323 798.75Q408 838 512 838q288.3 0 430.2-300.3a60.29 60.29 0 000-51.5zm-63.57-320.64L836 122.88a8 8 0 00-11.32 0L715.31 232.2Q624.86 186 512 186q-288.3 0-430.2 300.3a60.3 60.3 0 000 51.5q56.69 119.4 136.5 191.41L112.48 835a8 8 0 000 11.31L155.17 889a8 8 0 0011.31 0l712.15-712.12a8 8 0 000-11.32zM149.3 512C232.6 339.8 350.7 258 512 258c54.54 0 104.13 9.36 149.12 28.39l-70.3 70.3a176 176 0 00-238.13 238.13l-83.42 83.42C223.1 637.49 183.3 582.28 149.3 512zm246.7 0a112.11 112.11 0 01146.2-106.69L401.31 546.2A112 112 0 01396 512z"></path>
+    <path d="M508 624c-3.46 0-6.87-.16-10.25-.47l-52.82 52.82a176.09 176.09 0 00227.42-227.42l-52.82 52.82c.31 3.38.47 6.79.47 10.25a111.94 111.94 0 01-112 112z"></path>
+  </svg>
+
+  <!-- SHOW PASSWORD ICON / BIRU -->
+  <svg id="eyeShow" viewBox="64 64 896 896" width="1em" height="1em" aria-hidden="true" style="display:none;">
+    <path d="M81.8 537.8a60.3 60.3 0 010-51.5C176.6 286.5 319.8 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 000 51.5C176.6 737.5 319.9 838 512 838c-192.1 0-335.4-100.5-430.2-300.2z" fill="#e6f4ff"></path>
+    <path d="M512 258c-161.3 0-279.4 81.8-362.7 254C232.6 684.2 350.7 766 512 766c161.4 0 279.5-81.8 362.7-254C791.4 339.8 673.3 258 512 258zm-4 430c-97.2 0-176-78.8-176-176s78.8-176 176-176 176 78.8 176 176-78.8 176-176 176z" fill="#e6f4ff"></path>
+    <path d="M942.2 486.2C847.4 286.5 704.1 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 000 51.5C176.6 737.5 319.9 838 512 838c192.2 0 335.4-100.5 430.2-300.3 7.7-16.2 7.7-35 0-51.5zM512 766c-161.3 0-279.4-81.8-362.7-254C232.6 339.8 350.7 258 512 258s279.4 81.8 362.7 254C791.5 684.2 673.4 766 512 766z" fill="#1677ff"></path>
+    <path d="M508 336c-97.2 0-176 78.8-176 176s78.8 176 176 176 176-78.8 176-176-78.8-176-176-176zm0 288c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112z" fill="#1677ff"></path>
+  </svg>
+
+</button>
+  </div>
+  <div id="passwordErr" class="login-error"></div>
+</div>
+
+  <div class="turnstile-wrap">
+  <div class="cf-turnstile"
+       data-sitekey="0x4AAAAAAC1xHeoFIKqZZywR"
+       data-theme="auto"
+       data-callback="onTurnstileSuccess"
+       data-expired-callback="onTurnstileExpired"
+       data-error-callback="onTurnstileError">
+  </div>
+</div>
+      <button class="btn" id="btnUserpass">Login</button>
+      <!-- (Opsional) Buat akaun baru -->
+      <!-- <button type="button" class="btn ghost" onclick="createAccount()">Create Account</button> -->
+    </form>
+
+    <!-- Google Login Form -->
+    <div id="form-google" class="form">
+        <div class="turnstile-wrap">
+    <div class="cf-turnstile"
+         data-sitekey="0x4AAAAAAC1xHeoFIKqZZywR"
+         data-theme="auto"
+         data-callback="onTurnstileGoogleSuccess"
+         data-expired-callback="onTurnstileGoogleExpired"
+         data-error-callback="onTurnstileGoogleError">
+    </div>
+  </div>
+      <button class="btn" id="googleLoginBtn">Login with Google</button>
+    </div>
+<div class="forgot-row">
+  <button type="button" id="createBtn" class="link-btn">Create username</button>
+  <button type="button" id="forgotBtn" class="link-btn">Forgot password?</button>
+</div>
+    <div class="sep"><span>or</span></div>
+    <div style="font-size:12px; opacity:.9; text-align:center;display:none;">
+      By continuing, you agree to our Terms and acknowledge our Privacy Policy.
+    </div>
+  </div>
+</div>
+<!-- 2ND PASSWORD PAGE -->
+<div class="twofa-box" id="twofaBox" style="display:none;">
+  <div class="login-header">
+    <div class="login-icon">
+      <svg viewBox="64 64 896 896">
+        <path fill="currentColor"
+          d="M866.9 169.9L527.1 54.1C523 52.7 517.5 52 512 52s-11 .7-15.1 2.1L157.1 169.9c-8.3 2.8-15.1 12.4-15.1 21.2v482.4c0 8.8 5.7 20.4 12.6 25.9L499.3 968c3.5 2.7 8 4.1 12.6 4.1s9.2-1.4 12.6-4.1l344.7-268.6c6.9-5.4 12.6-17 12.6-25.9V191.1c.2-8.8-6.6-18.3-14.9-21.2zM810 654.3L512 886.5 214 654.3V226.7l298-101.6 298 101.6v427.6zm-405.8-201c-3-4.1-7.8-6.6-13-6.6H336c-6.5 0-10.3 7.4-6.5 12.7l126.4 174a16.1 16.1 0 0026 0l212.6-292.7c3.8-5.3 0-12.7-6.5-12.7h-55.2c-5.1 0-10 2.5-13 6.6L468.9 542.4l-64.7-89.1z"/>
+      </svg>
+    </div>
+
+    <h2 class="login-title">Two-Factor Authentication</h2>
+    <p class="login-sub">Enter your 6 digit 2nd password to continue.</p>
+  </div>
+
+  <div class="login-content">
+<div class="twofa-user-card">
+  <div class="twofa-user-left">
+    <span class="twofa-user-icon" aria-hidden="true">
+      <svg viewBox="64 64 896 896">
+        <path fill="currentColor" d="M858.5 763.6a374 374 0 00-80.6-119.5 375.63 375.63 0 00-119.5-80.6c-.4-.2-.8-.3-1.2-.5C719.5 518 760 444.7 760 362c0-137-111-248-248-248S264 225 264 362c0 82.7 40.5 156 102.8 201.1-.4.2-.8.3-1.2.5-44.8 18.9-85 46-119.5 80.6a375.63 375.63 0 00-80.6 119.5A371.7 371.7 0 00136 901.8a8 8 0 008 8.2h60c4.4 0 7.9-3.5 8-7.8 2-77.2 33-149.5 87.8-204.3 56.7-56.7 132-87.9 212.2-87.9s155.5 31.2 212.2 87.9C779 752.7 810 825 812 902.2c.1 4.4 3.6 7.8 8 7.8h60a8 8 0 008-8.2c-1-47.8-10.9-94.3-29.5-138.2zM512 534c-45.9 0-89.1-17.9-121.6-50.4S340 407.9 340 362c0-45.9 17.9-89.1 50.4-121.6S466.1 190 512 190s89.1 17.9 121.6 50.4S684 316.1 684 362c0 45.9-17.9 89.1-50.4 121.6S557.9 534 512 534z"/>
+      </svg>
+    </span>
+
+    <div>
+      <small>Signing in as</small>
+      <b id="twofaUsername">-</b>
+    </div>
+  </div>
+
+  <button type="button" id="twofaChange">
+    <svg viewBox="64 64 896 896" aria-hidden="true">
+      <path fill="currentColor" d="M872 474H286.9l350.2-304c5.6-4.9 2.2-14-5.2-14h-88.5c-3.9 0-7.6 1.4-10.5 3.9L155 487.8a31.96 31.96 0 000 48.3L535.1 866c1.5 1.3 3.3 2 5.2 2h91.5c7.4 0 10.8-9.2 5.2-14L286.9 550H872c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z"/>
+    </svg>
+    <span>Change</span>
+  </button>
+</div>
+
+    <label class="label">2nd Password</label>
+
+<div class="otp-wrap" id="otpWrap">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+  <input class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+
+  <div id="twofaErr" class="login-error"></div>
+</div>
+
+    <button type="button" class="btn" id="twofaVerify">Verify</button>
+  </div>
+</div>
+<!-- FORGOT PASSWORD POPUP -->
+<div id="forgotOverlay" class="blocked-overlay" aria-hidden="true">
+  <div class="blocked-box forgot-box zoom-in" role="dialog" aria-modal="true">
+    <button class="popup-close" id="forgotClose" aria-label="Close">✕</button>
+    <h3 class="popup-title" style="margin-bottom:14px">Forgot Password</h3>
+
+    <div class="group">
+      <label class="label" for="fpUsername">Username register</label>
+      <input id="fpUsername" class="input" placeholder="Username">
+      <div id="fpUserErr" class="err-msg" style="display:none">Username not register</div>
+    </div>
+
+    <div class="group" style="margin-bottom:6px">
+      <label class="label" for="fpNote">Optional (forgot password)</label>
+      <input id="fpNote" class="input" placeholder="(opsional)">
+    </div>
+
+    <div class="actions-row">
+      <button id="fpCancel" class="btn-cfp" type="button">Cancel</button>
+      <button id="fpRequest" class="btn-req" type="button">Request</button>
+    </div>
+  </div>
+</div>
+<!-- CREATE ACCOUNT POPUP -->
+<div id="createOverlay" class="blocked-overlay" aria-hidden="true">
+  <div class="blocked-box forgot-box zoom-in" role="dialog" aria-modal="true">
+    <button class="popup-close" id="createClose" aria-label="Close">✕</button>
+    <h3 class="popup-title" style="margin-bottom:14px">Create Account</h3>
+
+    <p style="var(--page-text); line-height:1.6; margin:6px 0 16px;">
+      Contact our 5G88 LiveChat admin to create a login username &amp; password,Click Create Now!
+    </p>
+
+    <div class="actions-row">
+      <button id="createCancel" class="btn-cfp" type="button">Cancel</button>
+      <button id="createNow" class="btn-req" type="button">Create Now</button>
+    </div>
+  </div>
+</div>
+<!-- Live Chat floating widget -->
+<div class="lc-wrap" id="lcWrap">
+  <button class="lc-btn" id="lcToggle" aria-label="Open live chat" aria-expanded="false" type="button">
+    <svg id="lcIcon" class="lc-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path id="lcIconPath" fill="currentColor"
+        d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10S6.486 2 12 2zm0-2C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-.001 5.75c.69 0 1.251.56 1.251 1.25s-.561 1.25-1.251 1.25-1.249-.56-1.249-1.25.559-1.25 1.249-1.25zm2.001 12.25h-4v-1c.484-.179 1-.201 1-.735v-4.467c0-.534-.516-.618-1-.797v-1h3v6.265c0 .535.517.558 1 .735v.999z">
+      </path>
+    </svg>
+
+    <span class="lc-badge" id="lcBadge">0</span>
+  </button>
+
+  <div class="lc-panel" id="lcPanel" aria-hidden="true">
+    <iframe id="lcFrame" class="lc-iframe"
+      title="Live Chat"
+      sandbox="allow-scripts allow-same-origin allow-popups"
+      referrerpolicy="no-referrer">
+    </iframe>
+  </div>
+</div>
+<!-- LOGIN LOADING -->
+<div id="loginLoading" class="login-loading">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="loading-text">Please wait while fetching...</div>
+  </div>
+</div>
+<audio id="livechatSound" src="https://5g88-main.vercel.app/main/audio/audio.wav" preload="auto"></audio>
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="../login/login.js"></script>
+</body>
+</html>
