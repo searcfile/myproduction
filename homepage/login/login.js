@@ -31,19 +31,6 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("popupBox")?.classList.add("zoom-in");
 });
 
-/* ====== Firebase Config ====== */
-const firebaseConfig = {
-  apiKey: "AIzaSyCZ9zUxDf3V9TvI3vOdgeZD7pLE4IuPrOE",
-  authDomain: "logins-d615f.firebaseapp.com",
-  databaseURL: "https://logins-d615f-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "logins-d615f",
-  storageBucket: "logins-d615f.appspot.com",
-  messagingSenderId: "580872784703",
-  appId: "1:580872784703:web:07957551c3214f3d32618a"
-};
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.database();
 let turnstileVerifiedUser = false;
 let turnstileVerifiedGoogle = false;
 let pending2FA = null;
@@ -531,35 +518,22 @@ db.ref("logins/" + emailKey).set({
   tz: Intl.DateTimeFormat().resolvedOptions().timeZone || ""
 }).then(async ()=>{
 
-  // ✅ sync juga ke blurphp/users supaya admin livechat boleh baca
-  try {
-    const blurphpApp = firebase.apps.find(app => app.name === "blurphpSync")
-      || firebase.initializeApp({
-        apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-        authDomain: "blurphp.firebaseapp.com",
-        databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "blurphp",
-        storageBucket: "blurphp.appspot.com",
-        messagingSenderId: "593904200464",
-        appId: "1:593904200464:web:cea7bc1360532c20d99395"
-      }, "blurphpSync");
-
-    const blurphpDb = blurphpApp.database();
-
-    await blurphpDb.ref("users/" + emailKey).update({
-      name,
-      email,
-      deviceId,
-      deviceSource,
-      browser,
-      deviceType,
-      ua: navigator.userAgent || "",
-      lastLoginTime: Date.now(),
-      online: true
-    });
-  } catch (err) {
-    console.warn("❌ Sync device info ke blurphp/users gagal:", err);
-  }
+// ✅ simpan user ke Firebase utama myproduction-v2
+try {
+  await db.ref("users/" + emailKey).update({
+    name,
+    email,
+    deviceId,
+    deviceSource,
+    browser,
+    deviceType,
+    ua: navigator.userAgent || "",
+    lastLoginTime: Date.now(),
+    online: true
+  });
+} catch (err) {
+  console.warn("❌ Sync device info ke users gagal:", err);
+}
 
   localStorage.setItem("gmailLogin", JSON.stringify({ name, email, photo }));
 
