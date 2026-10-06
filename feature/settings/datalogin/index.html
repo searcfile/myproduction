@@ -1419,10 +1419,9 @@ if (document.getElementById('createUserModal')?.style.display !== 'none') {
       if (e.target === overlay) closeCreateUserModal();
     });
     // Esc untuk tutup, Enter untuk Create
-    overlay.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape') closeCreateUserModal();
-      if (e.key === 'Enter') handleCreateUser();
-    });
+overlay.addEventListener('keydown', (e)=>{
+  if (e.key === 'Escape') closeCreateUserModal();
+});
 
     // Enter dari input fokus juga trigger create
     [uEl, pEl, spEl].forEach(el=>{
@@ -1432,20 +1431,16 @@ if (document.getElementById('createUserModal')?.style.display !== 'none') {
     });
   }
 
-  // Tambahkan panggilan setup ini ke init() yang sudah ada
-  (function hookInit(){
-    const oldInit = window.init;
-    window.init = function(){
-      if (typeof oldInit === 'function') oldInit();
-      setupCreateUserModal();
-    };
-  })();
-  // --------- Startup ----------
-  function init(){
-    startRealtime();
-    setupSearchListener();
-    setupClearButton();
-    setupCustomStatusSelect();
+
+// --------- Startup ----------
+function init(){
+  startRealtime();
+  setupSearchListener();
+  setupClearButton();
+  setupCustomStatusSelect();
+
+  setupCreateUserModal();
+  setupResetPwModal();
 
       // Same IP button
   const sameBtn = document.getElementById('sameDeviceBtn');
@@ -1767,14 +1762,6 @@ function setupResetPwModal(){
   });
 }
 
-// panggil saat init
-(function hookInitReset(){
-  const oldInit = window.init;
-  window.init = function(){
-    if (typeof oldInit === 'function') oldInit();
-    setupResetPwModal();
-  };
-})();
   window.addEventListener('DOMContentLoaded', init);
   const THEME_KEY = "siteTheme";
 
