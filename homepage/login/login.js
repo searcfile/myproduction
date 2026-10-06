@@ -244,8 +244,8 @@ async function ensureGuestAuth(){
   return localGuest;
 }
 /* ===== Helpers (dipakai lintas fitur, diletak di awal agar siap pakai) ===== */
-const MAIN_PATH = "/main";
-const LOGIN_PATH = "/login"; 
+const MAIN_PATH = "/myproduction/homepage/main/";
+const LOGIN_PATH = "/myproduction/homepage/login/"; 
 const toPseudoEmail = (uname) =>`${String(uname || '').trim().toLowerCase()}@5g88.local`;
 function formatTimestamp(date){
   const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
