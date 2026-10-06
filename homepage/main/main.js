@@ -262,17 +262,41 @@ function sendThemeToIframe() {
     }, origin);
   } catch (_) {}
 }
+const MAIN_BASE_PATH = "/myproduction/homepage/main";
+
 function getMainSlugFromPath() {
-  const parts = location.pathname.split("/").filter(Boolean);
-  if (parts[0] !== "main") return null;
-  return parts[1] ? parts[1].toLowerCase() : null;
+  const path = location.pathname
+    .replace(/\/+$/, "")
+    .toLowerCase();
+
+  const base = MAIN_BASE_PATH.toLowerCase();
+
+  if (path === base) return null;
+  if (!path.startsWith(base + "/")) return null;
+
+  const rest = path.slice(base.length + 1);
+  return rest.split("/")[0] || null;
 }
 
 function setBrowserRoute(tab) {
   if (tab && tab.route) {
-    history.replaceState({}, "", tab.route);
+    const slug = String(tab.route)
+      .replace(/^\/?main\/?/i, "")
+      .replace(/^\/+|\/+$/g, "");
+
+    history.replaceState(
+      {},
+      "",
+      slug
+        ? `${MAIN_BASE_PATH}/${slug}/`
+        : `${MAIN_BASE_PATH}/`
+    );
   } else {
-    history.replaceState({}, "", "/main");
+    history.replaceState(
+      {},
+      "",
+      `${MAIN_BASE_PATH}/`
+    );
   }
 }
 const TAB_ROUTE_MAP = {
