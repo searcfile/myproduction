@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>5G88 • Setting Homepage</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <script>if (window.top === window.self) {window.location.replace("/settings");}</script>
 <style>
   :root{
     --bg:#020617;
@@ -623,29 +622,15 @@ select:focus-visible{
 </div>
 
 <!-- ====== FIREBASE ====== -->
+<!-- ====== FIREBASE ====== -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
+<script src="../../../firebase.js"></script>
 <script>
-// ==== Firebase blurphp ====
-const blurphpConfig = {
-  apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-  authDomain: "blurphp.firebaseapp.com",
-  databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blurphp",
-  storageBucket: "blurphp.appspot.com",
-  messagingSenderId: "593904200464",
-  appId: "1:593904200464:web:cea7bc1360532c20d99395"
-};
-
-const blurphpApp = firebase.initializeApp(blurphpConfig, "blurphp-settings");
-const db        = blurphpApp.database();
-const auth      = blurphpApp.auth();
-
 // login anon supaya rules `auth != null` aman
 auth.signInAnonymously().catch(err => {
-  console.error("Anon auth blurphp gagal:", err);
+ console.error("Anonymous auth gagal:", err);
 });
 
 // Toast helper
