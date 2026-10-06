@@ -1131,8 +1131,8 @@ select:focus-visible{
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="../../firebase.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
-<script>if (window.top === window.self) {window.location.replace("/main");}</script>
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 <script>
 const IS_EMBEDDED = window.top !== window.self;
@@ -1309,18 +1309,7 @@ function bindUserTyping(){
     typingRef.set(false).catch(()=>{});
   });
 }
-const firebaseConfig = {
-  apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-  authDomain: "blurphp.firebaseapp.com",
-  databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blurphp",
-  storageBucket: "blurphp.appspot.com",
-  messagingSenderId: "593904200464",
-  appId: "1:593904200464:web:cea7bc1360532c20d99395"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+
 const CLOUDINARY_CLOUD_NAME = "dqctvbenv";
 const CLOUDINARY_UPLOAD_PRESET = "chat_upload";
 const ADMIN_PRESENCE_PATH = "adminPresence/main";
@@ -1482,8 +1471,8 @@ function bindPresenceAndNotif(){
 
   presenceBoundFor = currentActiveId;
 
-  userConnectedRef = firebase.database().ref(".info/connected");
-  userRefForPresence = firebase.database().ref(userPath);
+  userConnectedRef = db.ref(".info/connected");
+  userRefForPresence = db.ref(userPath);
 
   userConnectedRef.on("value", (snap) => {
     if (snap.val() === true) {
@@ -1504,7 +1493,7 @@ function bindPresenceAndNotif(){
 
   // notifikasi admin -> user
   if (notifPath){
-    const nr = firebase.database().ref(notifPath);
+    const nr = db.ref(notifPath);
     nr.off();
     nr.on("value", (snapshot) => {
       const notif = snapshot.val();
