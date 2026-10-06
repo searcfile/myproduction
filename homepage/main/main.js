@@ -1,42 +1,4 @@
 
-/*Mcng 112 updated 232131*/
-const firebaseConfig = {
-  apiKey: "AIzaSyBTeofEXBlzZmELtVAVZ-dctZmOGvf0Y34",
-  authDomain: "notice-83ae5.firebaseapp.com",
-  databaseURL: "https://notice-83ae5-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "notice-83ae5",
-  storageBucket: "notice-83ae5.appspot.com",
-  messagingSenderId: "268106877488",
-  appId: "1:268106877488:web:798beadfe45104297e7bf5",
-  measurementId: "G-8EY4MCZKK2"
-};
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.database();
-const blurphpApp = firebase.initializeApp({
-  apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-  authDomain: "blurphp.firebaseapp.com",
-  databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blurphp",
-  storageBucket: "blurphp.appspot.com",
-  messagingSenderId: "593904200464",
-  appId: "1:593904200464:web:cea7bc1360532c20d99395",
-  measurementId: "G-R494S2DPZ5"
-}, "blurphpApp");
-const blurphpDb = blurphpApp.database();
-const loginApp = firebase.initializeApp({
-  apiKey: "AIzaSyCZ9zUxDf3V9TvI3vOdgeZD7pLE4IuPrOE",
-  authDomain: "logins-d615f.firebaseapp.com",
-  databaseURL: "https://logins-d615f-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "logins-d615f",
-  storageBucket: "logins-d615f.appspot.com",
-  messagingSenderId: "648022690285",
-  appId: "1:648022690285:web:aefad61a2f46e6cf39f05b"
-}, "loginApp");
-
-const loginDb = loginApp.database();
-const loginAuth = loginApp.auth();
 async function sha256Hex(text){
   const enc = new TextEncoder().encode(String(text || ''));
   const buf = await crypto.subtle.digest('SHA-256', enc);
@@ -446,7 +408,7 @@ sessionStorage.removeItem("forceLogout");
 
     const token = makeToken();
     const key = keyify(ownerId);
-    const sessRef = loginDb.ref(`${SESS_ROOT}/${key}`);
+    const sessRef = db.ref(`${SESS_ROOT}/${key}`);
 
     try { await sessRef.onDisconnect().remove(); } catch(_){}
 
@@ -475,7 +437,7 @@ sessionStorage.removeItem("forceLogout");
       try { sessRef.off('value', onValue); } catch(_){}
       try { clearInterval(hb); } catch(_){}
       try { await sessRef.remove(); } catch(_){}
-      try { await loginAuth.signOut(); } catch(_){}
+      try { await auth.signOut(); } catch(_){}
 
       if (typeof onForcedLogout === 'function') {
         onForcedLogout(reason);
@@ -543,7 +505,7 @@ sessionStorage.removeItem("forceLogout");
 async function doLogout(reason="timeout"){
   try { clearInterval(checkTimer); } catch {}
 
-  try { await loginAuth.signOut(); } catch(_) {}
+  try { await auth.signOut(); } catch(_) {}
 
   try { localStorage.removeItem("gmailLogin"); } catch(_) {}
   try { localStorage.removeItem("useremail"); } catch(_) {}
@@ -1459,7 +1421,7 @@ function syncTabsToFirebase(tabs) {
     const path = getUserTabsDbPath();
     if (!path) return;
 
-    blurphpDb.ref(path).set({
+    db.ref(path).set({
       tabs: Array.isArray(tabs) ? tabs : [],
       activeTabUrl: getActiveTabUrl() || "",
       updatedAt: Date.now()
@@ -1534,7 +1496,7 @@ function startTabHistorySession(tabName, tabUrl = "") {
 
   sessionStorage.setItem(getHistorySessionStorageKey(tab), sessionId);
 
-  blurphpDb.ref(`tabHistory/${emailKey}/sessions/${sessionId}`).set({
+  db.ref(`tabHistory/${emailKey}/sessions/${sessionId}`).set({
     sessionId,
     tab,
     tabUrl,
@@ -1563,7 +1525,7 @@ function closeTabHistorySession(tabName) {
 
   if (!sessionId) return;
 
-  blurphpDb.ref(`tabHistory/${emailKey}/sessions/${sessionId}`).update({
+  db.ref(`tabHistory/${emailKey}/sessions/${sessionId}`).update({
     closedAt: Date.now(),
     updatedAt: Date.now()
   });
@@ -1599,7 +1561,7 @@ function saveUserTabAction(tabName, actionName, extra = {}) {
 
   const basePath = `tabHistory/${emailKey}/sessions/${sessionId}`;
 
-  blurphpDb.ref(`${basePath}/logs`).push({
+  db.ref(`${basePath}/logs`).push({
     action,
     extra,
     time: Date.now()
@@ -1610,17 +1572,17 @@ function saveUserTabAction(tabName, actionName, extra = {}) {
     .replace(/[.#$[\]/]/g, "_")
     .replace(/\s+/g, "_");
 
-  blurphpDb.ref(`${basePath}/actions/${safeActionKey}`).transaction(count => {
+  db.ref(`${basePath}/actions/${safeActionKey}`).transaction(count => {
     return (Number(count) || 0) + 1;
   });
 
-  blurphpDb.ref(`${basePath}/actionLabels/${safeActionKey}`).set(action);
+  db.ref(`${basePath}/actionLabels/${safeActionKey}`).set(action);
 
-  blurphpDb.ref(`${basePath}/totalActions`).transaction(count => {
+  db.ref(`${basePath}/totalActions`).transaction(count => {
     return (Number(count) || 0) + 1;
   });
 
-  blurphpDb.ref(basePath).update({
+  db.ref(basePath).update({
     lastAction: action,
     lastActionAt: Date.now(),
     updatedAt: Date.now()
@@ -2500,7 +2462,7 @@ function initLivechatNotifListener(userIdParam) {
   const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
   if (!login?.email || !userIdParam) return;
 
-  blurphpDb.ref("chats/" + userIdParam).on("value", (snapshot) => {
+  db.ref("chats/" + userIdParam).on("value", (snapshot) => {
     let unreadCount = 0;
 
     snapshot.forEach((child) => {
@@ -2535,7 +2497,7 @@ function markLivechatAsRead() {
   const cur = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
   if (!cur?.email || !userId) return;
 
-  const chatRef = blurphpDb.ref("chats/" + userId);
+  const chatRef = db.ref("chats/" + userId);
 
   chatRef.once("value", (snapshot) => {
     if (!snapshot.exists()) return;
@@ -2871,18 +2833,15 @@ if (themeToggleBtn) {
     return;
   }
 try {
-  await loginAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+  await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 } catch (_) {}
 
-// try {
-//  await loginAuth.signOut();
-// } catch (_) {}
   // ✅ 1) RTDB rules `auth != null` → login anon di project loginApp
 async function ensureAnonAuth(maxRetries = 2) {
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      if (loginAuth.currentUser) return true;
-      await loginAuth.signInAnonymously();
+      if (auth.currentUser) return true;
+      await auth.signInAnonymously();
       return true;
     } catch (err) {
       console.warn(`[AnonAuth] Percobaan ${i + 1} gagal:`, err?.message || err);
@@ -2919,7 +2878,7 @@ await window.startSingleSession(ownerId, () => {
   userId = (sessionData.email || '').toLowerCase().replace(/\./g, '_');
 
 // Admin override (paksa logout user tertentu)
-const myOverrideRef = loginDb.ref('logins/admin_override/' + userId);
+const myOverrideRef = db.ref('logins/admin_override/' + userId);
 let adminOverrideProcessing = false;
 
 myOverrideRef.on('value', async (snap) => {
@@ -2934,7 +2893,7 @@ myOverrideRef.on('value', async (snap) => {
   // ✅ buang command Firebase dulu supaya login balik tidak kena baca command lama
   try { await myOverrideRef.remove(); } catch (_) {}
 
-  try { await loginAuth.signOut(); } catch (_) {}
+  try { await auth.signOut(); } catch (_) {}
 
   // ✅ memang clear semua storage kalau admin logout
   try { localStorage.clear(); } catch (_) {}
@@ -2948,9 +2907,9 @@ myOverrideRef.on('value', async (snap) => {
 });
 
   // User diblok
-  loginDb.ref(`logins/blocked_users/${userId}`).on("value", async (s) => {
+  db.ref(`logins/blocked_users/${userId}`).on("value", async (s) => {
     if (s.val() === true) {
-      try { if (loginAuth) await loginAuth.signOut(); } catch(_) {}
+      try { if (auth) await auth.signOut(); } catch(_) {}
       localStorage.removeItem("gmailLogin");
       try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(_){}
       window.location.href = "/login?blocked=1";
@@ -2960,7 +2919,7 @@ myOverrideRef.on('value', async (snap) => {
 // Simpan info user di blurphp + status online
 const sanitizedEmail = sessionData.email.toLowerCase().replace(/\./g, '_');
 
-blurphpDb.ref('users/' + sanitizedEmail).update({
+db.ref('users/' + sanitizedEmail).update({
   name: sessionData.name,
   email: sessionData.email,
   photoURL: sessionData.photo || '',
@@ -2968,8 +2927,8 @@ blurphpDb.ref('users/' + sanitizedEmail).update({
   pageLoginTime: Date.now()
 });
 
-  const connectedRef = blurphpDb.ref(".info/connected");
-  const onlineRef = blurphpDb.ref("users/" + sanitizedEmail + "/online");
+  const connectedRef = db.ref(".info/connected");
+  const onlineRef = db.ref("users/" + sanitizedEmail + "/online");
   connectedRef.on("value", (snap) => {
     if (snap.val() === true) {
       onlineRef.set(true);
@@ -2978,9 +2937,9 @@ blurphpDb.ref('users/' + sanitizedEmail).update({
   });
 
   window.addEventListener("beforeunload", () => {
-    try { blurphpDb.ref("users/" + sanitizedEmail + "/online").set(false); } catch (_){}
-    try { blurphpDb.ref("chats/" + userId).off(); } catch (_){}
-    try { loginDb.ref("logins/admin_override/" + userId).off(); } catch (_){}
+    try { db.ref("users/" + sanitizedEmail + "/online").set(false); } catch (_){}
+    try { db.ref("chats/" + userId).off(); } catch (_){}
+    try { db.ref("logins/admin_override/" + userId).off(); } catch (_){}
   });
 
   // Livechat: bunyi + dot notifikasi
@@ -2988,7 +2947,7 @@ blurphpDb.ref('users/' + sanitizedEmail).update({
   let userHasInteracted = false;
   document.body.addEventListener("click", () => { userHasInteracted = true; });
 
-const chatsRef = blurphpDb.ref("chats/" + userId);
+const chatsRef = db.ref("chats/" + userId);
 chatsRef.off("child_added");
 
 chatsRef.on("child_added", (snapshot) => {
@@ -3006,7 +2965,7 @@ const timestamp = Number(msg.time || msg.atMs || Date.now());
 if (timestamp > lastNotifTime) {
   lastNotifTime = timestamp;
 
-  blurphpDb.ref("chats/" + userId).once("value", (snap) => {
+  db.ref("chats/" + userId).once("value", (snap) => {
     let unreadCount = 0;
 
     snap.forEach((child) => {
@@ -3083,7 +3042,7 @@ if (!isLivechatTabActive()) {
     });
   }
   // === BACA GLOBAL UI VISIBILITY DARI BLURPHP (SATU NODE SAJA) ===
-blurphpDb.ref('settings/uiVisibility').on('value', (snap) => {
+db.ref('settings/uiVisibility').on('value', (snap) => {
   uiVisibility = snap.val() || {};
   applyHeaderVisibility();
   applySidebarVisibility();
@@ -3099,7 +3058,7 @@ blurphpDb.ref('settings/uiVisibility').on('value', (snap) => {
   // ✅ kalau custom tabs render ikut hide/show, re-render sekali
   renderCustomTabs();
 });
-  blurphpDb.ref('settings/uiCustomTabs').on('value', (snap) => {
+  db.ref('settings/uiCustomTabs').on('value', (snap) => {
   uiCustomTabs = snap.val() || {};
   renderCustomTabs();
 });
@@ -3332,7 +3291,7 @@ async function doChange(){
     const uname = email.split('@')[0];
 
     // 1) ambil akun dari RTDB
-    const ref  = loginDb.ref(`logins/user_accounts/${uname}`);
+    const ref  = db.ref(`logins/user_accounts/${uname}`);
     const snap = await ref.get();
     if (!snap.exists()) { showErr('Username does not exist.'); return; }
     const user = snap.val();
@@ -3352,7 +3311,7 @@ async function doChange(){
 
     // 4) (opsional) catat audit
     try {
-      await loginDb.ref(`logins/password_change_logs/${uname}`).push({
+      await db.ref(`logins/password_change_logs/${uname}`).push({
         at: Date.now(),
         ua: navigator.userAgent || '',
         result: 'ok'
@@ -3471,7 +3430,7 @@ function closeCp2(){
 
       const uname = email.split('@')[0];
 
-      const ref = loginDb.ref(`logins/user_accounts/${uname}`);
+      const ref = db.ref(`logins/user_accounts/${uname}`);
       const snap = await ref.get();
 
       if (!snap.exists()){
@@ -3507,7 +3466,7 @@ function closeCp2(){
       });
 
       try{
-        await loginDb.ref(`logins/second_password_change_logs/${uname}`).push({
+        await db.ref(`logins/second_password_change_logs/${uname}`).push({
           at: Date.now(),
           ua: navigator.userAgent || '',
           result: 'ok'
