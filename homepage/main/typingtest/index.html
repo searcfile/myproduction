@@ -1057,20 +1057,8 @@ select:focus-visible{
 </div>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script>if (window.top === window.self) {window.location.replace("/main");}</script>
+  <script src="../../firebase.js"></script>
   <script>
-    // === FIREBASE CONFIG ===
-    // Replace with the SAME blurphp config from your main page.
-    const firebaseConfig = {
-      apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-      authDomain: "blurphp.firebaseapp.com",
-      databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "blurphp",
-      storageBucket: "blurphp.appspot.com",
-      messagingSenderId: "593904200464",
-      appId: "1:593904200464:web:cea7bc1360532c20d99395"
-    };
-
     const WORD_BANK = {
       english: {
         words: ["these","use","what","much","leave","man","who","against","two","one","help","very","why","most","week","work","time","system","then","there","government","really","need","small","life","case","part","few","good","hand","state","hear","only","while","also","like","which","after","before","where","think","world","sound","great","still","around","again","place","every","young","point","home","water","thing","group","under","never","start","right","house","become","friend","family","money","story","light","today","night","learn","power","order","among","change","follow","answer","study","close","country","example","during","important","simple","future","people","better","strong","quick","typing"],
@@ -1443,17 +1431,16 @@ function getLeaderboardPointColor(value, min, max) {
 
   return `rgb(${r},${g},${b})`;
 }
-    function initFirebase(){
-      try {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        state.dbReady = true;
-        els.syncState.textContent = 'Total user online';
-      } catch(err){
-        console.warn('Firebase init failed:', err);
-        els.syncState.textContent = 'Firebase config missing';
-      }
-    }
+function initFirebase(){
+  try {
+    state.dbReady = !!db;
+    els.syncState.textContent = 'Total user online';
+  } catch(err){
+    console.warn('Firebase init failed:', err);
+    state.dbReady = false;
+    els.syncState.textContent = 'Firebase unavailable';
+  }
+}
 
 function setUser(user){
   if (!user?.email) return;
