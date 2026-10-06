@@ -509,9 +509,6 @@ select:focus-visible{
   pointer-events:none;
 }
 </style>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -697,21 +694,13 @@ select:focus-visible{
     </div>
   </div>
 </div>
-<script>if (window.top === window.self) {window.location.replace("/settings");}</script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="../../../firebase.js"></script>
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCZ9zUxDf3V9TvI3vOdgeZD7pLE4IuPrOE",
-    authDomain: "logins-d615f.firebaseapp.com",
-    databaseURL: "https://logins-d615f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "logins-d615f",
-    storageBucket: "logins-d615f.appspot.com",
-    messagingSenderId: "580872784703",
-    appId: "1:580872784703:web:07957551c3214f3d32618a"
-  };
-  firebase.initializeApp(firebaseConfig);
-
-  const dbRef       = firebase.database().ref('logins');
-  const blockedRef  = firebase.database().ref('logins/blocked_users');
+const dbRef      = db.ref('logins');
+const blockedRef = db.ref('logins/blocked_users');
 
   // ---------- Utils ----------
   function esc(s){
@@ -920,7 +909,7 @@ function clearSameDeviceFilter(){
   // ---------- Actions ----------
 function forceLogoutUser(email){
   const key = sanitizeEmail(email);
-  const overrideRef = firebase.database().ref('logins/admin_override/' + key);
+  const overrideRef = db.ref('logins/admin_override/' + key);
 
   const payload = {
     forceLogout: true,
@@ -1248,7 +1237,7 @@ function doForceLogoutAll(){
     };
   });
 
-  firebase.database().ref().update(updates)
+  db.ref().update(updates)
     .then(() => {
       let delay = 0;
       emails.forEach(email => {
@@ -1265,14 +1254,14 @@ function doForceLogoutAll(){
           cleanUpdates['logins/admin_override/' + key] = null;
         });
 
-        firebase.database().ref().update(cleanUpdates).catch(() => {});
+        db.ref().update(cleanUpdates).catch(() => {});
       }, 1500);
     })
     .catch(err => showToast(`Error force logout all: ${err.message}`, "error"));
 }
     // === Username Store Reference ===
   // Disimpan di: logins/user_accounts/{username}
-  const userAcctRef = firebase.database().ref('logins/user_accounts');
+  const userAcctRef = db.ref('logins/user_accounts');
 
   // Validasi dan sanitasi username
   function sanitizeUsername(u){
