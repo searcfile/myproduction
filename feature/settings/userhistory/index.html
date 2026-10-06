@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <title>Admin User History</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
 <style>
 :root{
     --bg-main: #fff;
@@ -766,20 +762,11 @@ select:focus-visible{
     </div>
   </div>
 </div>
-
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="../../../firebase.js"></script>
 <script>
-const blurphpApp = firebase.initializeApp({
-  apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-  authDomain: "blurphp.firebaseapp.com",
-  databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blurphp",
-  storageBucket: "blurphp.appspot.com",
-  messagingSenderId: "593904200464",
-  appId: "1:593904200464:web:cea7bc1360532c20d99395"
-}, "adminHistoryApp");
-
-const blurphpDb = blurphpApp.database();
-
 const userList = document.getElementById("userList");
 const userSearch = document.getElementById("userSearch");
 const userCount = document.getElementById("userCount");
@@ -1236,7 +1223,7 @@ cancelDeleteBtn.addEventListener("click", closeDeleteConfirm);
 confirmDeleteBtn.addEventListener("click", () => {
   if (!deleteTargetKey) return;
 
-  blurphpDb.ref(`tabHistory/${deleteTargetKey}`).remove()
+ db.ref(`tabHistory/${deleteTargetKey}`).remove()
     .then(() => {
       if (selectedUserKey === deleteTargetKey) {
         selectedUserKey = "";
@@ -1334,7 +1321,8 @@ document.addEventListener("click", (e) => {
   }
 });
 setActiveRange("today");
-blurphpDb.ref("tabHistory").on("value", snap => {
+
+db.ref("tabHistory").on("value", snap => {
   historyData = snap.val() || {};
 
   if (selectedUserKey && !historyData[selectedUserKey]) {
