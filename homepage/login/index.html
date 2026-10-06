@@ -46,22 +46,19 @@ content="
     https://securetoken.googleapis.com
     https://apis.google.com
     https://challenges.cloudflare.com;
-  frame-src 'self'
-    https://accounts.google.com
-    https://logins-d615f.firebaseapp.com
-    https://logins-d615f.web.app
-    https://challenges.cloudflare.com;
-  child-src 'self'
-    https://accounts.google.com
-    https://logins-d615f.firebaseapp.com
-    https://logins-d615f.web.app
-    https://challenges.cloudflare.com;
+frame-src 'self'
+  https://accounts.google.com
+  https://myproduction-v2.firebaseapp.com
+  https://myproduction-v2.web.app
+  https://challenges.cloudflare.com;
+child-src 'self'
+  https://accounts.google.com
+  https://myproduction-v2.firebaseapp.com
+  https://myproduction-v2.web.app
+  https://challenges.cloudflare.com;
   base-uri 'self';
   form-action 'self' https://accounts.google.com;
 ">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
@@ -359,6 +356,10 @@ content="
 <audio id="livechatSound" src="https://5g88-main.vercel.app/main/audio/audio.wav" preload="auto"></audio>
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../firebase.js"></script>
 <script src="../login/login.js"></script>
 </body>
 </html>
