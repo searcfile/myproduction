@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script>if (window.top === window.self) {window.location.replace("/settings");}</script>
   <title>Admin Notice</title>
 
   <style>
@@ -616,23 +615,11 @@ select:focus-visible{
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBTeofEXBlzZmELtVAVZ-dctZmOGvf0Y34",
-      authDomain: "notice-83ae5.firebaseapp.com",
-      databaseURL: "https://notice-83ae5-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "notice-83ae5",
-      storageBucket: "notice-83ae5.appspot.com",
-      messagingSenderId: "268106877488",
-      appId: "1:268106877488:web:798beadfe45104297e7bf5"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="../../../firebase.js"></script>
+<script>
     let isCreating = false;
     let noticeData = [];
     const noticeList = document.getElementById('noticeList');
