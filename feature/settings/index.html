@@ -1364,21 +1364,9 @@ select:focus-visible{
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../firebase.js"></script>
 <script>
-  // ✅ Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCKmrlS4qrZCrMNRIfIRCWCbNgZT1uQ3ZI",
-    authDomain: "blurphp.firebaseapp.com",
-    databaseURL: "https://blurphp-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "blurphp",
-    storageBucket: "blurphp.firebasedatabase.app",
-    messagingSenderId: "593904200464",
-    appId: "1:593904200464:web:cea7bc1360532c20d99395",
-    measurementId: "G-R494S2DPZ5"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
 function showPageLoading(){
   document.getElementById("pageLoading")?.classList.add("show");
 }
@@ -1394,22 +1382,7 @@ window.addEventListener("load", () => {
     hidePageLoading();
   }, 300);
 });
-  // ✅ Firebase login app
-  const loginFirebaseConfig = {
-    apiKey: "AIzaSyCIYYpl-1psexPB_-CadD1smsc_e6rhu1U",
-    authDomain: "page-login2.firebaseapp.com",
-    databaseURL: "https://page-login2-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "page-login2",
-    storageBucket: "page-login2.firebasestorage.app",
-    messagingSenderId: "860837620702",
-    appId: "1:860837620702:web:db51c2a50d414a4de44b4f"
-  };
 
-  const loginApp = firebase.apps.find(app => app.name === "loginApp")
-    || firebase.initializeApp(loginFirebaseConfig, "loginApp");
-
-  const loginAuth = loginApp.auth();
-  const loginDb = loginApp.database();
 function syncAdminIdentityForLivechat() {
   const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
   if (!savedLoginUser) return;
@@ -1441,7 +1414,7 @@ function getCurrentUserStorageKey(baseKey) {
   const LOGIN_URL = "/login/";
   let authChecked = false;
 
-loginAuth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged((user) => {
   authChecked = true;
 
   if (!user) {
@@ -1565,7 +1538,7 @@ if (submitChangeSecondPasswordBtn) {
       return;
     }
 
-    const user = loginAuth.currentUser;
+    const user = auth.currentUser;
 
     if (!user) {
       alert("User not found. Please login again.");
@@ -1576,7 +1549,7 @@ if (submitChangeSecondPasswordBtn) {
       submitChangeSecondPasswordBtn.disabled = true;
       submitChangeSecondPasswordBtn.textContent = "Changing...";
 
-      const ref = loginDb.ref("users/" + user.uid + "/secondPassword");
+      const ref = db.ref("users/" + user.uid + "/secondPassword");
       const snap = await ref.get();
       const savedCode = String(snap.val() || "");
 
@@ -1661,7 +1634,7 @@ if (submitChangePasswordBtn) {
       return;
     }
 
-    const user = loginAuth.currentUser;
+    const user = auth.currentUser;
     if (!user || !user.email) {
       alert("User not found. Please login again.");
       return;
@@ -1778,7 +1751,7 @@ if (userNameBtn && dropdownContent) {
 }
 async function logoutAccount() {
   try {
-    await loginAuth.signOut();
+    await auth.signOut();
   } catch (err) {
     console.error("Logout error:", err);
   } finally {
