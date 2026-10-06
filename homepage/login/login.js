@@ -741,10 +741,14 @@ if (inputHash !== pending2FA.acc.secondPasswordHash){
       photoURL: ""
     });
 
-  }catch(err){
-    hideLoginLoading();
-    showTwofaError(err?.message || 'Failed to verify 2nd password.');
-  }
+}catch(err){
+  console.error("❌ 2FA LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  hideLoginLoading();
+  showTwofaError(err?.message || 'Failed to verify 2nd password.');
+}
 }
 
 function setupTwofaInputs(){
@@ -858,11 +862,18 @@ if (!acc.secondPasswordHash){
 
 openTwofaPage(uname, acc);
 
-  }catch(err){
-    showLoginError('password', 'Login failed. Try again.');
-  }finally{
-    setLoading(false,'userpass');
-  }
+}catch(err){
+  console.error("❌ USERNAME LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  showLoginError(
+    'password',
+    err?.message || 'Login failed. Try again.'
+  );
+}finally{
+  setLoading(false,'userpass');
+}
 }
 // Optional createAccount (tetap sama)
 async function createAccount(){
