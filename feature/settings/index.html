@@ -1411,7 +1411,7 @@ function getCurrentUserStorageKey(baseKey) {
   return `${baseKey}_${userKey}`;
 }
 // ✅ Guard: kalau belum login, terus balik ke login page
-  const LOGIN_URL = "/login/";
+  const LOGIN_URL = "/myproduction/feature/login/";
   let authChecked = false;
 
 auth.onAuthStateChanged((user) => {
