@@ -60,6 +60,953 @@ child-src 'self'
   form-action 'self' https://accounts.google.com;
 ">
 </head>
+  <style>
+          :root{
+    --page-bg: #141414;
+    --page-text: rgba(255,255,255,0.85);
+    --page-input: #141414;
+    --border-input:#424242;
+    --page-bg2:#1f1f1f;
+    --name:#1668dc;
+    --blur:rgba(255,255,255,0.25);
+    --icon:rgba(255, 255, 255, 0.45);
+    --icon-focus: rgba(255,255,255,0.75);
+    --border-input5:#303030;
+    --bg-box:rgba(255, 255, 255, 0.06);
+    --border-box:#303030;
+    --disable: rgba(255, 255, 255, 0.25);
+    --disable-bg:rgba(255, 255, 255, 0.08);
+            
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+
+   --hdr-h:0px;                 /* header fixed */
+   --flt-h:120px;                /* tinggi filters (diupdate JS) */
+   --line-h:64px;                /* tinggi bar adjust line */
+   --safe-b: env(safe-area-inset-bottom, 0px);
+   --offset: 0px;
+  --autofill:#28303e;         
+  }
+
+  body.light-theme{
+    --page-bg: #f0f2f5;
+    --page-text: rgba(0,0,0,0.88);
+    --page-input: #ffffff;
+    --border-input:#d9d9d9;
+    --page-bg2:#ffffff;
+    --name:#1668dc;
+    --blur:#00000063;
+    --icon:rgba(0, 0, 0, 0.45);
+    --icon-focus: #000000;
+     --border-input5:f0f0f0;   
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+     --disable: rgba(0, 0, 0, 0.25);
+    --disable-bg:rgba(0, 0, 0, 0.04);
+        
+    --bg-box:rgb(245, 245, 245);
+    --border-box: rgb(232, 232, 232);
+    --autofill:#b5bdcb;   
+  }
+
+/* ===== Base & Layout ===== */
+*, *::before, *::after { box-sizing: border-box; }   /* anti overflow */
+html, body { height: 100%; }
+body{
+  background: var(--page-bg);
+  color:var(--page-text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+  margin:0; display:flex; align-items:center; justify-content:center; min-height:100svh;padding:24px;
+}
+
+/* ===== Login Card ===== */
+.login-box{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  max-width:420px;
+  margin:0 auto;
+  padding:0;
+  border:1px solid var(--border-input5);
+  border-radius:12px;
+  background-color:var(--page-bg2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform .3s ease, box-shadow .3s ease;
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 8px 24px;
+  overflow:hidden;
+}
+.login-content{
+  width:100%;
+  padding:32px 40px;
+}
+.sep{display:none !important;}
+/* ===== Tabs (Username / Google) ===== */
+.label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 0 8px;
+}
+
+.label-row .label{
+  padding:0;
+}
+
+.tabs{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0;
+  width:auto;
+}
+.tab{
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--icon);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition: all 0.3s;
+}
+
+.tab svg{
+  width:18px;
+  height:18px;
+}
+
+.tab:hover{ color:var(--blue-hover); }
+.tab:active{ color:var(--blue-active); }
+.tab.active{ color:var(--blue); }
+
+.form{ width:100%; display:none; }
+.form.active{ display:block; }
+
+/* ===== Inputs & Buttons ===== */
+.group{
+  margin-bottom:24px;
+  width:100%;
+  margin-left:auto;
+  margin-right:auto;
+ position:relative;
+}
+.label{ display:block; font-size:14px; color:var(--page-text);font-weight:500;padding:0 0 8px; }
+.input{
+  width:100%;
+  height:40px;
+  padding:7px 11px;
+  border-radius:8px;
+  border:1px solid var(--border-input);
+  background:var(--page-input);
+  color:var(--page-text); outline:none;
+  transition: all 0.3s;
+}
+.input::placeholder{ color:var(--blur); opacity:.9; }
+.input:focus{
+  border-color:var(--blue);
+}
+
+.input:hover:not(:focus){
+  border-color: var(--blue-hover);
+}
+
+/* kalau hover label, input jangan hover */
+.group:has(.label:hover) .input:not(:focus){
+  border-color: var(--border-input) !important;
+}
+
+/* hover eye icon sahaja -> input ikut hover */
+.field:has(.toggle-eye:hover) .input:not(:focus){
+  border-color: var(--blue-hover) !important;
+}
+/* ===== Password eye (tengah tepat) ===== */
+.password-wrap { /* boleh kosong atau biarkan seperti ini */ }
+.password-wrap .field {              /* NEW */
+  position: relative;
+}
+.password-wrap .field .input{ padding-right:46px; }       
+.toggle-eye{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--icon);
+  cursor: pointer;
+  line-height: 0;
+  padding: 0;
+  z-index: 3;
+  font-size:16px;
+transition: all 0.3s;
+}
+.toggle-eye:hover{color:var(--page-text);transition: all 0.3s;}
+.toggle-eye:focus{ outline:none; }
+.toggle-eye svg{ width:1em; height:1em; display:block; }
+
+/* ===== Buttons ===== */
+.btn,
+.login-btn{
+  width:100%;
+  height:46px;
+  padding:0px 15px;
+  border-radius:8px;
+  border:1px solid transparent;
+  background:var(--blue);
+  color:white;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+     box-shadow: 0 2px 0 rgba(0, 60, 180, 0.15);
+}
+.btn:hover, .login-btn:hover{
+  background:var(--blue-hover);
+}
+.btn:active, .login-btn:active{
+  background:var(--blue-active);
+}
+.turnstile-wrap{
+  width:100%;
+  max-width:300px;
+  margin:0 auto 0;
+  display:flex;
+  justify-content:center;
+  margin-bottom:10px;
+}
+
+.turnstile-wrap .cf-turnstile{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin-top: 15px;
+}
+
+#btnUserpass:disabled,
+#googleLoginBtn:disabled{
+  cursor:not-allowed;
+  border-color:var(--border-input);
+  color: var(--disable);
+  background: var(--disable-bg);
+  box-shadow: none;
+}
+.btn-req{width:100%;padding:12px 14px;margin-top:10px;border-radius:6px;border:1px solid transparent;background:var(--blue); color:white;font-size:14px; cursor:pointer;font-weight:bold; transition:.2s;}
+.btn-req:hover{background:var(--blue-hover);}.btn-req:active{background:var(--blue-active);}
+.btn-cfp:hover{ color:var(--blue-hover); border-color:var(--blue-hover);}.btn-cfp:active{ color:var(--blue-active); border-color:var(--blue-active);}
+.btn-cfp{width:100%;padding:12px 14px;margin-top:10px;border-radius:6px;border:1px solid var(--border-input);background:transparent; color:var(--page-text);font-size:14px;cursor:pointer; transition:.2s;}
+
+/* ===== Welcome Popup123 ===== */
+/*@keyframes zoomIn{ from{transform:scale(.7);opacity:0} to{transform:scale(1);opacity:1} } */
+/*.zoom-in{ animation: zoomIn .3s ease forwards; }*/
+/*.popup-overlay{
+/* position: fixed; inset: 0; background: rgba(0,0,0,0.7);*/
+  /*display: flex; align-items: center; justify-content: center; z-index: 9999;*/
+/*}*/
+#popupBox{display:none !important;}
+/*#popupBox{ position: relative; }*/
+/*#popupBox .popup-btn{*/
+/*  position: absolute;*/
+/*  left: 11px; */         /* samakan dengan padding kiri */
+ /* right: 11px;  */       /* samakan dengan padding kanan */
+/*  bottom: 15px;  */       /* seberapa dekat ke tepi bawah */
+/*  width: auto;   */      /* biar ikut left/right */
+/*  margin-top: 0;*/
+/*  border-radius:6px;height:40px;*/
+/*  background:gold;color:black;transition:.2s;font-weight:bold;*/
+/*}*/
+/*.popup-btn:hover{ background:#ffe34d !important;}.popup-btn:active{ background:#dbb900 !important;}*/
+.popup-box{display:none !important;}
+.popup-box{
+  border: 1px solid gold; border-radius: 12px; padding: 40px 20px 30px; text-align: center; position: relative;
+  width:min(520px,92vw); min-height: 500px; box-shadow: 0 0 10px rgba(255,215,0,.7);
+  background-color: rgba(0,0,0,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+}
+.popup-box img {max-width: 280px; margin-bottom: 18px;}
+.popup-title { font-size: 24px; font-weight: 600; margin: 0 0 10px; color: var(--page-text);text-shadow: 0 0 #000000;     text-align: center;    padding-bottom: 30px;}
+.popup-btn{
+  border:1px solid var(--border-input); background:transparent; color: va(--page-text); padding: 10px 20px; border-radius: 8px; cursor:pointer; transition:.2s;
+}
+
+.btn-contact{background:var(--blue); color: white; padding: 10px 20px; border-radius: 6px;text-decoration:none; cursor:pointer; transition:.2s;}
+.btn-contact:hover{background:var(--blue-hover);}.btn-contact:active{background:var(--blue-active);}
+.btn-cancel{border:1px solid var(--border-input); background:var(--page-input); color: var(--page-text); padding: 10px 20px; border-radius: 6px; cursor:pointer; transition:.2s;}
+.btn-cancel:hover{border:1px solid var(--blue-hover);color: var(--blue-hover);}
+.btn-cancel:active{border:1px solid va(--blue-active);color:var(--blue-active);}
+/* === Posisi tombol X di pojok kanan atas === */
+.popup-box .popup-close,
+.blocked-box .popup-close{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border: 0; background: transparent;
+  color: var(--page-text); cursor: pointer;
+  line-height: 1; font-size: 14px;   /* ikon ✕ jelas */
+  border-radius: 6px;
+  z-index: 1;
+  transition:.2s;
+}
+/* beri ruang kanan agar X tidak menimpa judul/konten */
+.popup-box,
+.blocked-box{
+  padding-right: 24px !important;   /* samakan dengan kiri */
+  padding-left: 24px !important;    /* (opsional) biar simetris */
+  padding-top: 56px !important;     /* ruang aman untuk tombol X */
+}
+.popup-close:hover{color:var(--blue-hover); }.popup-close:active{color:var(--blue-active); }
+/* ===== Blocked Popup ===== */
+.blocked-overlay::before{
+  content:""; position: fixed; inset: 0; backdrop-filter: brightness(.55); -webkit-backdrop-filter: brightness(.55); pointer-events: none;
+}
+.blocked-overlay{ position:fixed; inset:0; background:transparent; display:none; align-items:center; justify-content:center; z-index:10000; }
+.blocked-overlay.show{ display:flex; }
+.blocked-box{
+  position:relative; width:min(650px, 92vw);
+  border:1px solid var(--border-input); border-radius:6px; background:var(--page-bg2);
+  backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important;
+  padding:26px 22px 20px; animation: zoomIn .25s ease forwards; color:var(--page-text); text-align:left;
+}
+.blocked-title{ margin:6px 6px 2px; font-size:26px; font-weight:700; color:#d50000; }
+.blocked-sub{ margin:0 6px 12px; color:var(--page-text); opacity:.9; }
+.blocked-info{
+  margin:8px 6px 18px; padding:12px; border:1px dashed #d50000; border-radius:6px;
+  background: var(--page-input); font-size:14px; line-height:1.5; color:var(--page-text);
+}
+.blocked-actions{ display:flex; gap:10px; justify-content:flex-end; align-items:center; margin-top:6px; }
+
+
+/* ===== Small screens ===== */
+@media (max-width: 480px){
+  .login-content{ padding:30px; }
+  .input{
+    height: 40px;
+    padding: 7px 11px;
+  }
+
+  .input.has-left-icon{
+    padding-left: 32px !important;
+  }
+
+  .input.has-right-icon{
+    padding-right: 32px !important;
+  }
+
+  .btn{
+    padding: 0 15px;
+  }
+  .tab-label-img{
+    height: 18px;
+  }
+}
+/* === Forgot Password UI === */
+.forgot-row{display:none !important;}
+.forgot-row{
+  width:100%;
+  max-width:300px;        /* sama dengan input & button */
+  margin:6px auto 10px;
+  display:flex;
+  gap:10px;               /* jarak antara 2 button */
+}
+.link-btn{flex: 1; background:transparent; border:0; color:var(--page-text); font-size:12px; cursor:pointer; text-decoration:underline; padding:0;transition:all .2s; }
+.link-btn:hover{ color:var(--blue-hover); }.link-btn:active{ color:var(--blue-active); }
+#createBtn{text-align: left;}
+#forgotBtn{text-align: right;}
+.err-msg{ color:#d50000; font-size:12px; margin-top:6px; }
+
+
+.forgot-box{ width:min(650px,92vw); text-align:left; align-items:stretch; }
+.actions-row{ display:flex; gap:10px; justify-content:flex-end; margin-top:8px; }
+#forgotOverlay .popup-close{ top:12px; right:12px; }
+  /* Livechat floating widget */
+ .lc-wrap{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  z-index:9999;
+  font-family:inherit;
+}
+.lc-btn{
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  min-height:40px;
+  padding:2px 4px;
+  border-radius:999px;
+  border:1px solid transparent;
+  background:var(--blue);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+.lc-btn:hover{
+  background:var(--blue-hover);
+}
+.lc-btn:active{
+  background:var(--blue-active);
+}
+.lc-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  pointer-events:none;
+  flex:0 0 auto;
+}
+.lc-badge{
+  position:absolute;
+  top:-5px;
+  left:-7px;
+  min-width:14px;
+  height:14px;
+  padding:0 2px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:#d32029;
+  color:#fff;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1;
+  box-shadow: 0 0 8px rgba(255, 43, 43, 0.45);
+  pointer-events:none;
+}
+.lc-badge.show{
+  display:flex;
+}
+.lc-panel{
+  position:absolute;
+  right:0;
+  bottom:56px;
+  width:min(420px, 92vw);
+  height:620px;
+
+  background:var(--page-bg2);
+  border:1px solid var(--border-input);
+  border-radius:6px;
+  overflow:hidden;
+
+  /* penting */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px) scale(0.98);
+  transition: opacity .2s ease, transform .2s ease;
+
+  will-change: transform, opacity;
+}
+
+.lc-panel.active{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.lc-iframe{
+  width:100%;
+  height:100%;
+  border:0;
+}
+.field{
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.field-icon{
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1em;
+  height: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--icon);
+  z-index: 10;
+}
+
+.field-icon svg{
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+.toggle-eye{
+  z-index:10 !important;
+}
+
+.field-icon svg,
+.toggle-eye svg{
+  position:relative;
+  z-index:11;
+}
+.input.has-left-icon{
+  padding-left: 32px !important;
+}
+
+.input.has-right-icon{
+  padding-right: 32px !important;
+}
+/* kalau mahu icon ikut focus */
+.field:focus-within .field-icon{
+  color: var(--icon-focus);
+}
+.tab-image{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-label-img{
+  display: block;
+  max-width: 100%;
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active{
+  -webkit-text-fill-color: rgba(255,255,255,0.85) !important;
+  caret-color: #ffffff !important;
+  border:1px solid var(--border-input) !important;
+  transition:background-color 99999s ease-in-out 0s !important;
+  transition: border-color .3s !important;
+  font-size:15px;
+}
+
+#username:-webkit-autofill,
+#username:-webkit-autofill:active{
+  -webkit-box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -15px 0 0 0 var(--page-input) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -15px 0 0 0 var(--page-input) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+   transition: border-color .3s !important;
+   
+}
+
+#username:-webkit-autofill:hover{
+  border-color:var(--blue-hover) !important;
+}
+
+#username:-webkit-autofill:focus{
+  border-color:var(--blue) !important;
+  -webkit-box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -15px 0 0 0 var(--page-input) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -15px 0 0 0 var(--page-input) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+}
+
+#password:-webkit-autofill,
+#password:-webkit-autofill:active{
+  -webkit-box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -32px 0 0 0 var(--page-input) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -32px 0 0 0 var(--page-input) inset,
+    0 0 0 1000px var(--autofill) inset !important;
+      transition: border-color .3s !important;
+}
+
+#password:-webkit-autofill:hover{
+  border-color:var(--blue-hover) !important;
+}
+
+#password:-webkit-autofill:focus{
+  border-color:var(--blue) !important;
+  -webkit-box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -32px 0 0 0 var(--page-input) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+  box-shadow:
+    0 0 0 7px var(--page-input) inset,
+    32px 0 0 0 var(--page-input) inset,
+    -32px 0 0 0 var(--page-input) inset,
+    0 0 0 2px rgba(0,60,180,.15),
+    0 0 0 1000px var(--autofill) inset !important;
+}
+/* ===== HEADER LOGIN ===== */
+.login-header{
+  width:100%;
+  padding:32px 40px 28px;
+  background:#1677ff;
+  text-align:center;
+  line-height: 1.5714285714285714;
+}
+
+.login-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  background: rgba(255, 255, 255, 0.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+ border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.login-icon svg{
+  width:28px;
+  height:28px;
+  color:white;
+}
+
+.login-title{
+  font-size:24px;
+  font-weight:600;
+  color:white;
+  margin:0;
+  line-height: 1.5;
+}
+
+.login-sub{
+  font-size:13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+.login-error{
+  display:none;
+  color:#ff4d4f;
+  font-size:12px;
+  margin-top:6px;
+  line-height:1.35;
+}
+#twofaErr{
+  position:absolute !important;
+  left:0;
+  bottom:-20px;
+  display:none;
+  color:#dc4446;
+  font-size:12px;
+  line-height:1.35;
+  margin:0;
+  grid-column:1 / -1;
+}
+.twofa-box{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  max-width:420px;
+  margin:0 auto;
+  padding:0;
+  border:1px solid var(--border-input5);
+  border-radius:12px;
+  background-color:var(--page-bg2);
+  box-shadow:rgba(0,0,0,.08) 0 8px 24px;
+  overflow:hidden;
+}
+
+.twofa-user-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border:1px solid var(--border-input);
+  border-radius:8px;
+  margin-bottom:24px;
+  background:var(--page-input);
+}
+
+.twofa-user-card small{
+  display:block;
+  color:var(--page-text);
+  font-size:12px;
+}
+
+.twofa-user-card b{
+  display:block;
+  color:var(--page-text);
+  font-size:14px;
+  margin-top:3px;
+}
+
+#twofaChange{
+  border:0;
+  background:transparent;
+  color:var(--blue);
+  cursor:pointer;
+  font-size:12px;
+}
+
+#twofaChange:hover{ color:var(--blue-hover); }
+
+.otp-wrap{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:8px;
+  margin-bottom:24px;
+  position:relative;
+}
+
+.otp-input{
+  width:100%;
+  border-radius:8px;
+  border:1px solid var(--border-input);
+  background:var(--page-input);
+  color:var(--page-text);
+  outline:none;
+  text-align:center;
+  font-size:16px;
+  font-weight:400;
+  padding:4px 11px;
+  height:40px;
+  transition:all .3s;
+}
+
+.otp-input:focus{
+  border-color:var(--blue);
+}
+
+.otp-input:hover:not(:focus){
+  border-color:var(--blue-hover);
+}
+
+.group .login-error{
+  position:absolute;
+  bottom:-20px;
+  left:0;
+  display:none;
+  color:#dc4446;
+  font-size:12px;
+  line-height:1.35;
+  margin:0;
+}
+
+.otp-input.invalid{
+  border-color:#dc4446 !important;
+}
+.twofa-user-card{
+  padding:10px 14px;
+  background:var(--bg-box);
+  border:1px solid var(--border-box);
+}
+
+.twofa-user-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.twofa-user-icon{
+  color:#1677ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+}
+
+.twofa-user-icon svg{
+  width:16px;
+  height:16px;
+  display:block;
+}
+
+.twofa-user-left small{
+  display:block;
+  color:var(--icon);
+  font-size:11px;
+  line-height: 1.5714285714285714;
+}
+
+.twofa-user-left b{
+  display:block;
+  color:var(--page-text);
+  font-size:14px;
+  line-height: 1.5714285714285714;
+  font-weight:600;
+}
+
+#twofaChange{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:0;
+  background:transparent;
+  color:var(--blue);
+  cursor:pointer;
+  font-size:12px;
+  padding:4px 0;
+  white-space:nowrap;
+  transition:all .3s;
+}
+
+#twofaChange svg{
+  width:12px;
+  height:12px;
+  display:block;
+}
+
+#twofaChange:hover{
+  color:var(--blue-hover);
+}
+
+#twofaChange:active{
+  color:var(--blue-active);
+}
+.login-loading{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.25);
+  z-index:999999;
+}
+
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  width:32px;
+  height:32px;
+  position:relative;
+  margin:0 auto;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.85);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  animation-delay:0s;
+}
+
+.loading-dots span:nth-child(2){
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.25s;
+}
+
+.loading-dots span:nth-child(3){
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  animation-delay:.5s;
+}
+
+.loading-dots span:nth-child(4){
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.75s;
+}
+
+@keyframes dotPulse{
+  0%{ opacity:.2; }
+  25%{ opacity:1; }
+  50%{ opacity:.4; }
+  100%{ opacity:.2; }
+}
+@keyframes loadingRotate{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
+.loading-text{
+  color:#fff;
+  font-size:14px;
+  font-weight:400;
+  text-align:center;
+}
+:where(button, .btn):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, textarea):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--page-input);
+  transition: all .2s ease;
+}
+.login-theme-btn{
+  position:fixed;
+  top:16px;
+  right:16px;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid var(--border-input);
+  background:var(--page-bg2);
+  color:var(--page-text);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  z-index:999999;
+  transition:.3s;
+}
+
+.login-theme-btn:hover{
+  border-color:var(--blue-hover);
+  color:var(--blue-hover);
+}
+.login-theme-btn:active{
+  border-color:var(--blue-active);
+  color:var(--blue-active);
+}
+.login-theme-btn svg{
+  width:14px;
+  height:14px;
+  display:block;
+}
+  </style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
   <svg id="loginThemeLightIcon" viewBox="64 64 896 896" aria-hidden="true">
@@ -360,6 +1307,1390 @@ child-src 'self'
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="../firebase.js"></script>
-<script src="../login/login.js"></script>
+<script>
+  let FP_PROMISE = null;
+
+function initFingerprint(){
+  if (FP_PROMISE) return FP_PROMISE;
+
+  FP_PROMISE = (async () => {
+    try{
+      if (!window.FingerprintJS) return null;  // CDN tak load / blocked
+      const fp  = await FingerprintJS.load();
+      const res = await fp.get();
+      return res?.visitorId || null;
+    }catch(e){
+      return null;
+    }
+  })();
+
+  return FP_PROMISE;
+}
+
+// warm-up awal supaya masa klik login dah siap
+document.addEventListener("DOMContentLoaded", () => {
+  initFingerprint();
+});
+/* ====== Popup welcome ====== */
+function closePopup(){ document.getElementById("popup").style.display="none"; }
+window.addEventListener("click", (e) => {
+  const overlay = document.getElementById("popup");
+  if (e.target === overlay) overlay.style.display = "none";
+});
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("popupBox")?.classList.add("zoom-in");
+});
+
+let turnstileVerifiedUser = false;
+let turnstileVerifiedGoogle = false;
+let pending2FA = null;
+const LOGIN_THEME_KEY = 'siteTheme';
+
+function applyLoginTheme(theme){
+  const finalTheme = theme === 'light' ? 'light' : 'dark';
+
+  document.body.classList.toggle('light-theme', finalTheme === 'light');
+  localStorage.setItem(LOGIN_THEME_KEY, finalTheme);
+
+  const lightIcon = document.getElementById('loginThemeLightIcon');
+  const darkIcon = document.getElementById('loginThemeDarkIcon');
+
+  if (lightIcon) lightIcon.style.display = finalTheme === 'dark' ? 'block' : 'none';
+  if (darkIcon) darkIcon.style.display = finalTheme === 'light' ? 'block' : 'none';
+}
+
+function setupLoginThemeToggle(){
+  applyLoginTheme(localStorage.getItem(LOGIN_THEME_KEY) || 'dark');
+
+  document.getElementById('loginThemeBtn')?.addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light-theme');
+    applyLoginTheme(isLight ? 'dark' : 'light');
+
+    if (window.turnstile) {
+      setTimeout(applyTurnstileTheme, 80);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setupLoginThemeToggle);
+function showLoginLoading(){
+  const el = document.getElementById('loginLoading');
+  if (el) el.style.display = 'flex';
+}
+
+function hideLoginLoading(){
+  const el = document.getElementById('loginLoading');
+  if (el) el.style.display = 'none';
+}
+window.addEventListener('load', () => {
+  hideLoginLoading();
+});
+
+setTimeout(() => {
+  hideLoginLoading();
+}, 3000);
+function onTurnstileSuccess(token){
+  turnstileVerifiedUser = !!token;
+  const btn = document.getElementById('btnUserpass');
+  if (btn) btn.disabled = !turnstileVerifiedUser;
+}
+
+function onTurnstileExpired(){
+  turnstileVerifiedUser = false;
+  const btn = document.getElementById('btnUserpass');
+  if (btn) btn.disabled = true;
+}
+
+function onTurnstileError(){
+  turnstileVerifiedUser = false;
+  const btn = document.getElementById('btnUserpass');
+  if (btn) btn.disabled = true;
+}
+
+function onTurnstileGoogleSuccess(token){
+  turnstileVerifiedGoogle = !!token;
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) btn.disabled = !turnstileVerifiedGoogle;
+}
+
+function onTurnstileGoogleExpired(){
+  turnstileVerifiedGoogle = false;
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) btn.disabled = true;
+}
+
+function onTurnstileGoogleError(){
+  turnstileVerifiedGoogle = false;
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) btn.disabled = true;
+}
+function getTurnstileTheme(){
+  return document.body.classList.contains('light-theme') ? 'dark' : 'light';
+}
+
+function applyTurnstileTheme(){
+  if (!window.turnstile) return;
+
+  const currentTheme = getTurnstileTheme();
+
+  document.querySelectorAll('.cf-turnstile').forEach((el) => {
+    try{
+      const sitekey = el.getAttribute('data-sitekey');
+      const callback = el.getAttribute('data-callback');
+      const expiredCallback = el.getAttribute('data-expired-callback');
+      const errorCallback = el.getAttribute('data-error-callback');
+
+      // buang widget lama betul-betul
+      el.innerHTML = '';
+      el.removeAttribute('data-widget-id');
+
+      // render semula dengan theme baru
+      const widgetId = turnstile.render(el, {
+        sitekey: sitekey,
+        theme: currentTheme,
+        callback: window[callback],
+        'expired-callback': window[expiredCallback],
+        'error-callback': window[errorCallback]
+      });
+
+      el.setAttribute('data-widget-id', widgetId);
+    }catch(err){
+      console.log('Turnstile theme rerender failed:', err);
+    }
+  });
+
+  turnstileVerifiedUser = false;
+  turnstileVerifiedGoogle = false;
+
+  const btnUser = document.getElementById('btnUserpass');
+  const btnGoogle = document.getElementById('googleLoginBtn');
+
+  if (btnUser) btnUser.disabled = true;
+  if (btnGoogle) btnGoogle.disabled = true;
+}
+// ====== HANYA EMAIL DOMAIN INI YANG DIIJINKAN ======
+const ALLOWED_GOOGLE_DOMAIN = 'b88gaming.page';
+
+function isAllowedGoogleEmail(email){
+  if (!email) return false;
+  const parts = String(email).toLowerCase().split('@');
+  const domain = parts[1] || '';
+  return domain === ALLOWED_GOOGLE_DOMAIN;
+}
+
+function showUnsupportedDomainPopup(email){
+  const msg = `
+    <b>${email}</b> not supported!<br>
+    Please contact admin 5G88 at Livechat/Telegram.<br>
+  `;
+  showBlockedPopup({ email, displayName: email.split('@')[0] }, msg);
+}
+  
+let ANON_STATE = localStorage.getItem('anon.state') || 'unknown';
+const sanitizeKey = (s) => String(s || '').replace(/[.$#[\]/]/g, "_");
+
+function getOrCreateLocalGuest() {
+  let uid = localStorage.getItem('guest.uid');
+  if (!uid) {
+    uid = 'g_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+    localStorage.setItem('guest.uid', uid);
+  }
+  if (!localStorage.getItem('guest.name')) {
+    localStorage.setItem('guest.name', 'Guest-' + uid.slice(-5).toUpperCase());
+  }
+  return { uid, name: localStorage.getItem('guest.name') };
+}
+
+// --- Anonymous Auth + fallback lokal bila dinonaktifkan ---
+async function ensureGuestAuth(){
+  // sumber utama guest mesti localStorage, bukan UID anonymous Firebase
+  const localGuest = getOrCreateLocalGuest();
+
+  // kalau anon auth memang disabled, terus pakai guest lokal
+  if (ANON_STATE === 'disabled') return localGuest;
+
+  try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+
+    const u = auth.currentUser;
+    if (u && u.isAnonymous){
+      ANON_STATE = 'enabled';
+      localStorage.setItem('anon.state', 'enabled');
+
+      // ✅ JANGAN overwrite guest.uid / guest.name dengan u.uid
+      // guest lokal kekal sama walaupun anonymous UID berubah
+      localStorage.setItem('guest.uid', localGuest.uid);
+      localStorage.setItem('guest.name', localGuest.name);
+
+      return localGuest;
+    }
+  }catch(e){
+    if (e?.code === 'auth/admin-restricted-operation' || e?.code === 'auth/operation-not-allowed'){
+      ANON_STATE = 'disabled';
+      localStorage.setItem('anon.state', 'disabled');
+      return localGuest;
+    }
+
+    return localGuest;
+  }
+
+  return localGuest;
+}
+/* ===== Helpers (dipakai lintas fitur, diletak di awal agar siap pakai) ===== */
+const MAIN_PATH = "/myproduction/homepage/main/";
+const LOGIN_PATH = "/myproduction/homepage/login/"; 
+const toPseudoEmail = (uname) =>`${String(uname || '').trim().toLowerCase()}@5g88.local`;
+function formatTimestamp(date){
+  const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
+  const hh=String(date.getHours()).padStart(2,'0'), mm=String(date.getMinutes()).padStart(2,'0'), ss=String(date.getSeconds()).padStart(2,'0');
+  return `${y} - ${m} - ${d} ${hh}:${mm}:${ss}`;
+}
+
+/* ===== Forgot Password (final) ===== */
+const PATH_RESET = 'password_reset_requests';
+const USERNAME_INDEX = 'user_index/usernames';
+// Elemen
+const forgotOverlay = document.getElementById('forgotOverlay'); // gunakan class="blocked-overlay"
+const forgotClose   = document.getElementById('forgotClose');
+const forgotBtn     = document.getElementById('forgotBtn');
+const fpCancel      = document.getElementById('fpCancel');
+const fpRequest     = document.getElementById('fpRequest');
+const fpUserInput   = document.getElementById('fpUsername');
+const fpUserErr     = document.getElementById('fpUserErr');
+const fpNote        = document.getElementById('fpNote');
+
+// Utils
+const _sanitizeUsername = (u)=> (u || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');
+function _clearFpErr(){ if(fpUserInput){ fpUserErr.style.display='none'; fpUserInput.classList.remove('invalid'); } }
+
+// Open/close (pakai gaya "blocked")
+function openForgot(){
+  // tutup welcome kalau masih terbuka agar tidak dobel layer
+  const welcome = document.getElementById('popup');
+  if (welcome) welcome.style.display = 'none';
+
+  if (forgotOverlay){
+    if (forgotOverlay.classList.contains('blocked-overlay')) {
+      forgotOverlay.classList.add('show');
+    } else {
+      // fallback jika belum ganti class di HTML
+      forgotOverlay.style.display = 'flex';
+    }
+    forgotOverlay.removeAttribute('hidden');
+    forgotOverlay.setAttribute('aria-hidden','false');
+  }
+  setTimeout(()=> fpUserInput?.focus(), 10);
+
+  const esc = (e)=>{ if (e.key === 'Escape') closeForgot(); };
+  document.addEventListener('keydown', esc, { once:true });
+}
+function closeForgot(){
+  if (!forgotOverlay) return;
+  if (forgotOverlay.classList.contains('blocked-overlay')){
+    forgotOverlay.classList.remove('show');
+  } else {
+    forgotOverlay.style.display = 'none';
+  }
+  forgotOverlay.setAttribute('aria-hidden','true');
+  forgotOverlay.setAttribute('hidden','');
+
+  if (fpUserInput) fpUserInput.value = '';
+  if (fpNote)      fpNote.value = '';
+  _clearFpErr();
+}
+
+// Cek di RTDB dulu, Auth jadi fallback saja
+async function usernameExists(uname){
+  const u = _sanitizeUsername(uname);
+  if (!u) return null;
+
+  // 1) Cek index di RTDB (paling akurat & cepat)
+  try{
+    const snap = await db.ref(`${USERNAME_INDEX}/${u}`).once('value');
+    const v = snap.val();
+    if (v === true || v === 'true') return true;   // boolean true (atau string 'true')
+  }catch(e){
+    console.warn('index read failed:', e);
+  }
+
+  // 2) Fallback ke Auth; kalau tidak yakin → return null (jangan merah)
+  try{
+    const methods = await auth.fetchSignInMethodsForEmail(toPseudoEmail(u));
+    return (Array.isArray(methods) && methods.includes('password')) ? true : null;
+  }catch(e){
+    console.warn('fetchSignInMethodsForEmail failed:', e?.code || e);
+    return null; // unknown → jangan blok user
+  }
+}
+
+// Event bindings
+forgotBtn?.addEventListener('click', openForgot);
+forgotClose?.addEventListener('click', closeForgot);
+fpCancel?.addEventListener('click', closeForgot);
+forgotOverlay?.addEventListener('click', (e)=>{ if (e.target === forgotOverlay) closeForgot(); });
+fpUserInput?.addEventListener('input', _clearFpErr);
+
+// Validasi on blur (render merah hanya jika yakin tidak ada)
+fpUserInput?.addEventListener('blur', async () => {
+  const u = _sanitizeUsername(fpUserInput.value);
+  if (!u) return;
+  const ok = await usernameExists(u); // true/false/null
+  if (ok === false){
+    fpUserErr.style.display = 'block';
+    fpUserInput.classList.add('invalid');
+  } else {
+    _clearFpErr(); // ok===true atau null (unknown) → jangan merah
+  }
+});
+
+// Submit request
+fpRequest?.addEventListener('click', async () => {
+  const u = _sanitizeUsername(fpUserInput.value);
+  const note = (fpNote?.value || '').trim();
+  if (!u){ fpUserInput?.focus(); return; }
+
+  const ok = await usernameExists(u); // true/false/null
+  if (ok === false){
+    fpUserErr.style.display = 'block';
+    fpUserInput.classList.add('invalid');
+    return;
+  }
+
+  try{
+    fpRequest.disabled = true;
+    await db.ref(PATH_RESET).push({
+      username: u,
+      email: toPseudoEmail(u),
+      note,
+      createdAt: Date.now(),
+      status: 'pending',
+      verify: ok === true ? 'exists' : 'unknown',  // catat hasil verifikasi
+      ua: navigator.userAgent
+    });
+closeForgot();
+
+lcPinnedOpen = true;
+await openLiveChat();
+  }catch(e){
+    console.error(e);
+    alert('Request error. Try again.');
+  }finally{
+    fpRequest.disabled = false;
+  }
+});
+
+function showBlockedPopup(user, customSubHTML){
+  const t = document.getElementById('blockedTitle');
+  const s = document.getElementById('blockedSub') || document.querySelector('.blocked-sub');
+  const infoEl = document.getElementById('blockedInfo');
+
+  // Judul
+  if (t) t.textContent = 'Access Denied';
+
+  // Subteks:
+  // - jika customSubHTML ada → pakai itu
+  // - kalau tidak → pakai teks default "mistake/request access"
+  if (s) {
+    if (customSubHTML) {
+      s.innerHTML = customSubHTML;
+    } else {
+      s.textContent = 'You need permission to access 5G88.';
+    }
+  }
+
+  // Info user
+  const email = user?.email || '';
+  const name  = user?.displayName || user?.email?.split('@')?.[0] || '';
+  if (infoEl){
+    infoEl.innerHTML = `
+      <div><strong>User:</strong> ${name || '—'}</div>
+      <div><strong>Email:</strong> ${email || '—'}</div>
+      <div style="margin-top:10px">If you believe this is a mistake, please contact admin to request access.</div>
+    `;
+  }
+
+  // Tombol Telegram (biarkan seperti punyamu)
+  const contactBtn = document.getElementById('contactBtn');
+  if (contactBtn){
+    contactBtn.textContent = 'Contact us on Telegram';
+    contactBtn.href = 'https://t.me/Kiwi5G88';
+    contactBtn.target = '_blank';
+    contactBtn.rel = 'noopener';
+    contactBtn.onclick = (e) => {
+      e.preventDefault();
+      const webLink = 'https://t.me/Kiwi5G88';
+      const tgScheme = 'tg://resolve?domain=Kiwi5G88';
+      const androidIntent =
+        'intent://resolve?domain=Kiwi5G88#Intent;scheme=tg;package=org.telegram.messenger;'
+        + 'S.browser_fallback_url=' + encodeURIComponent(webLink) + ';end';
+      const ua = navigator.userAgent;
+      if (/Android/i.test(ua)) { window.location.href = androidIntent; return; }
+      if (/iPhone|iPad|iPod/i.test(ua)) {
+        let done=false; const t=setTimeout(()=>{ if(!done){done=true; window.location.href=webLink;} },800);
+        window.location.href = tgScheme;
+        window.addEventListener('pagehide', ()=>{ done=true; clearTimeout(t); }, {once:true});
+        return;
+      }
+      window.open(webLink,'_blank','noopener');
+    };
+  }
+
+  // Tampilkan overlay
+  const overlay = document.getElementById('blockedPopup');
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden','false');
+  overlay.querySelector('.blocked-box')?.focus();
+  const escHandler = (e)=>{ if(e.key==='Escape'){ hideBlockedPopup(); } };
+  document.addEventListener('keydown', escHandler, { once:true });
+}
+function hideBlockedPopup(){
+  const overlay = document.getElementById('blockedPopup');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden','true');
+}
+
+function getFallbackDeviceId(){
+  // fallback paling stabil: simpan localStorage per device
+  let id = localStorage.getItem("fallbackDeviceId");
+  if (!id){
+    id = "fb_" + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+    localStorage.setItem("fallbackDeviceId", id);
+  }
+  return id;
+}
+
+async function getVisitorId(){
+  const fpId = await initFingerprint(); // dari preload
+  if (fpId) return fpId;
+
+  // kalau FingerprintJS blocked → jangan bagi "unknown"
+  return getFallbackDeviceId();
+}
+
+function getBrowserName(){
+  const ua = navigator.userAgent || "";
+  if (/Edg\//i.test(ua)) return "Edge";
+  if (/Firefox\//i.test(ua)) return "Firefox";
+  if (/Chrome\//i.test(ua)) return "Chrome";
+  if (/Safari\//i.test(ua)) return "Safari";
+  return "Unknown";
+}
+function getDeviceType(){
+  const ua = navigator.userAgent || "";
+
+  if (/Android/i.test(ua)) return "Android";
+  if (/iPhone/i.test(ua)) return "iPhone";
+  if (/iPad/i.test(ua)) return "iPad";
+  if (/iPod/i.test(ua)) return "iPod";
+  if (/Windows NT/i.test(ua)) return "Windows";
+  if (/Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua)) return "Mac";
+  if (/Linux/i.test(ua) && !/Android/i.test(ua)) return "Linux";
+
+  return "Unknown";
+}
+async function finishLogin(userLike){
+  const email = userLike.email;
+  const name  = userLike.displayName || email.split('@')[0];
+  const photo = userLike.photoURL || "";
+  const emailKey = sanitizeKey(email.toLowerCase());
+
+  // ✅ ambil device fingerprint + browser
+const fpId = await initFingerprint();
+const deviceId = fpId || getFallbackDeviceId();
+const deviceSource = fpId ? "fingerprintjs" : "fallback";
+const browser  = getBrowserName();
+const deviceType = getDeviceType();
+
+  db.ref("logins/blocked_users/" + emailKey).once("value").then(async snap=>{
+    const isBlocked = snap.val();
+    if (isBlocked === true){
+      showBlockedPopup(userLike);
+      auth.signOut().catch(()=>{});
+      setLoading(false);
+      return;
+    }
+
+    // ✅ simpan sekali deviceId
+db.ref("logins/" + emailKey).set({
+  name,
+  email,
+  loginAt: formatTimestamp(new Date()),
+
+  deviceId,
+  deviceSource,
+  browser,
+  deviceType,
+  ua: navigator.userAgent || "",
+  tz: Intl.DateTimeFormat().resolvedOptions().timeZone || ""
+}).then(async ()=>{
+
+// ✅ simpan user ke Firebase utama myproduction-v2
+try {
+  await db.ref("users/" + emailKey).update({
+    name,
+    email,
+    deviceId,
+    deviceSource,
+    browser,
+    deviceType,
+    ua: navigator.userAgent || "",
+    lastLoginTime: Date.now(),
+    online: true
+  });
+} catch (err) {
+  console.warn("❌ Sync device info ke users gagal:", err);
+}
+
+  localStorage.setItem("gmailLogin", JSON.stringify({ name, email, photo }));
+
+  // Optional: simpan deviceId juga dalam localStorage kalau kau nak guna di tempat lain
+  localStorage.setItem("deviceId", deviceId);
+
+  const q = new URLSearchParams({ name, email, photo }).toString();
+  window.location.href = `${MAIN_PATH}?${q}`;
+}).catch(err=>{
+  console.error("❌ Gagal simpan ke Firebase:", err);
+  alert("Gagal simpan data login. Coba lagi.");
+  setLoading(false);
+});
+  });
+}
+
+function setLoading(state, which='both'){
+  const btnG = document.getElementById('googleLoginBtn');
+  const btnU = document.getElementById('btnUserpass');
+
+  if (which === 'google' || which === 'both'){
+    if (btnG) btnG.disabled = !!state;
+  }
+
+  if (which === 'userpass' || which === 'both'){
+    if (btnU) btnU.disabled = !!state;
+  }
+
+  if (state) showLoginLoading();
+  else hideLoginLoading();
+}
+
+function signInWithGoogle(){
+  if (!turnstileVerifiedGoogle){
+    alert("Sila complete verification dulu.");
+    return;
+  }
+
+  setLoading(true,'google');
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  auth.signInWithPopup(provider)
+    .then(res => {
+      const user = res.user;
+      if (!user || !user.email) throw new Error("User not found");
+
+      // ✅ CEK DOMAIN
+      if (!isAllowedGoogleEmail(user.email)) {
+        // tampilkan popup blocked + pesan khusus
+        showUnsupportedDomainPopup(user.email);
+
+        // pastikan tidak lanjut menulis ke RTDB / redirect
+        auth.signOut().catch(()=>{});
+        setLoading(false,'google');
+        return; // ⛔ stop flow di sini
+      }
+
+      // ✅ email domain diizinkan → lanjut flow normal
+      finishLogin(user);
+    })
+    .catch(err => {
+  console.error("❌ Login Google gagal:", err);
+  alert("Login Google gagal. Coba lagi.");
+  setLoading(false,'google');
+
+  turnstileVerifiedGoogle = false;
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) btn.disabled = true;
+
+  if (window.turnstile) {
+    const widgetEl = document.querySelector('#form-google .cf-turnstile');
+    if (widgetEl) turnstile.reset(widgetEl);
+  }
+});
+}
+
+// --- helper hash (taruh sekali saja, di luar fungsi kalau belum ada) ---
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function clearLoginErrors(){
+  const username = document.getElementById('username');
+  const password = document.getElementById('password');
+  const usernameErr = document.getElementById('usernameErr');
+  const passwordErr = document.getElementById('passwordErr');
+
+  username?.classList.remove('invalid');
+  password?.classList.remove('invalid');
+
+  if (usernameErr){
+    usernameErr.textContent = '';
+    usernameErr.style.display = 'none';
+  }
+
+  if (passwordErr){
+    passwordErr.textContent = '';
+    passwordErr.style.display = 'none';
+  }
+  clearTwofaError();
+}
+
+function showLoginError(type, message){
+  const input = document.getElementById(type);
+  const err = document.getElementById(type + 'Err');
+
+  input?.classList.add('invalid');
+
+  if (err){
+    err.textContent = message;
+    err.style.display = 'block';
+  }
+}
+function showTwofaError(message){
+  const err = document.getElementById('twofaErr');
+  document.querySelectorAll('.otp-input').forEach(i => i.classList.add('invalid'));
+
+  if (err){
+    err.textContent = message;
+    err.style.display = 'block';
+  }
+}
+
+function clearTwofaError(){
+  const err = document.getElementById('twofaErr');
+  document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('invalid'));
+
+  if (err){
+    err.textContent = '';
+    err.style.display = 'none';
+  }
+}
+
+function openTwofaPage(uname, acc){
+  pending2FA = { uname, acc };
+
+  document.querySelector('.login-box').style.display = 'none';
+  document.getElementById('twofaBox').style.display = 'flex';
+  document.getElementById('twofaUsername').textContent = uname;
+
+  clearTwofaError();
+
+  document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+
+  setTimeout(() => {
+    document.querySelector('.otp-input')?.focus();
+  }, 80);
+}
+
+function closeTwofaPage(){
+  pending2FA = null;
+
+  document.getElementById('twofaBox').style.display = 'none';
+  document.querySelector('.login-box').style.display = 'flex';
+
+  clearTwofaError();
+
+  document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+
+  setTimeout(() => {
+    document.getElementById('username')?.focus();
+  }, 80);
+}
+
+function getOtpValue(){
+  return Array.from(document.querySelectorAll('.otp-input'))
+    .map(i => i.value.trim())
+    .join('');
+}
+
+async function verifyTwofa(){
+  if (!pending2FA) return;
+
+  const code = getOtpValue();
+  clearTwofaError();
+
+  if (!/^\d{6}$/.test(code)){
+    showTwofaError('Please enter 6 digit 2nd password.');
+    return;
+  }
+
+  showLoginLoading();
+
+  try{
+    const inputHash = await sha256Hex(code);
+
+if (inputHash !== pending2FA.acc.secondPasswordHash){
+  hideLoginLoading();
+  showTwofaError('2nd password incorrect.');
+
+  const inputs = document.querySelectorAll('.otp-input');
+  inputs[inputs.length - 1]?.focus();
+
+  return;
+}
+
+    const uname = pending2FA.uname;
+
+    await ensureGuestAuth();
+
+    await finishLogin({
+      email: `${uname}@5g88.local`,
+      displayName: uname,
+      photoURL: ""
+    });
+
+}catch(err){
+  console.error("❌ 2FA LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  hideLoginLoading();
+  showTwofaError(err?.message || 'Failed to verify 2nd password.');
+}
+}
+
+function setupTwofaInputs(){
+  const inputs = Array.from(document.querySelectorAll('.otp-input'));
+
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      clearTwofaError();
+
+      input.value = input.value.replace(/\D/g, '').slice(0, 1);
+
+      if (input.value && inputs[index + 1]){
+        inputs[index + 1].focus();
+      }
+
+      if (getOtpValue().length === 6){
+        verifyTwofa();
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && inputs[index - 1]){
+        inputs[index - 1].focus();
+      }
+
+      if (e.key === 'Enter'){
+        verifyTwofa();
+      }
+    });
+
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+
+      inputs.forEach((box, i) => {
+        box.value = text[i] || '';
+      });
+
+      if (text.length === 6){
+        verifyTwofa();
+      } else {
+        inputs[text.length]?.focus();
+      }
+    });
+  });
+
+  document.getElementById('twofaVerify')?.addEventListener('click', verifyTwofa);
+  document.getElementById('twofaChange')?.addEventListener('click', closeTwofaPage);
+}
+document.getElementById('username')?.addEventListener('input', clearLoginErrors);
+document.getElementById('password')?.addEventListener('input', clearLoginErrors);
+// --- LOGIN VIA REALTIME DB ---
+async function loginWithUsername(){
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+
+  const uname = String(usernameInput.value || '').trim().toLowerCase();
+  const pass  = String(passwordInput.value || '');
+
+  clearLoginErrors();
+
+  if (!uname){
+    showLoginError('username', 'Please fill the username.');
+    usernameInput.focus();
+    return;
+  }
+
+  if (!pass){
+    showLoginError('password', 'Please fill the password.');
+    passwordInput.focus();
+    return;
+  }
+
+  if (!turnstileVerifiedUser){
+    showLoginError('password', 'Please complete the verification.');
+    return;
+  }
+
+  setLoading(true,'userpass');
+
+  try{
+    const snap = await db.ref(`logins/user_accounts/${uname}`).get();
+
+    if (!snap.exists()){
+      showLoginError('username', 'Username does not exist');
+      usernameInput.focus();
+      return;
+    }
+
+    const acc = snap.val();
+
+    if (acc.active === false){
+      showLoginError('username', 'This ID Already got banned.');
+      usernameInput.focus();
+      return;
+    }
+
+    const inputHash = await sha256Hex(pass);
+
+    if (inputHash !== acc.passwordHash){
+      showLoginError('password', 'Password does not exist.');
+      passwordInput.focus();
+      return;
+    }
+
+if (!acc.secondPasswordHash){
+  showLoginError('password', '2nd password belum diset. Please contact admin.');
+  passwordInput.focus();
+  return;
+}
+
+openTwofaPage(uname, acc);
+
+}catch(err){
+  console.error("❌ USERNAME LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  showLoginError(
+    'password',
+    err?.message || 'Login failed. Try again.'
+  );
+}finally{
+  setLoading(false,'userpass');
+}
+}
+// Optional createAccount (tetap sama)
+async function createAccount(){
+  const uname = String(document.getElementById('username').value || '').trim();
+  const pass  = String(document.getElementById('password').value || '');
+  if (!uname || !pass){ alert("Masukkan username & password."); return; }
+  const email = toPseudoEmail(uname);
+  try{
+    setLoading(true,'userpass');
+    await auth.createUserWithEmailAndPassword(email, pass);
+    finishLogin({ email, displayName: uname, photoURL:"" });
+  }catch(e){
+    console.error("Create user gagal:", e);
+    alert(e?.message || "Gagal membuat akaun.");
+    setLoading(false,'userpass');
+  }
+}
+
+/* ===== Password eye ===== */
+function togglePassword(){
+  const input = document.getElementById('password');
+  const btn   = document.getElementById('eyeBtn');
+  const eyeShow = document.getElementById('eyeShow'); // biru
+  const eyeHide = document.getElementById('eyeHide'); // garis
+
+  const isHidden = btn.dataset.state !== 'show';
+
+  input.focus(); // click eye terus focus input
+
+  if (isHidden){
+    input.type = 'text';
+    btn.dataset.state = 'show';
+    btn.setAttribute('aria-pressed','true');
+    btn.setAttribute('aria-label','Hide password');
+
+    eyeShow.style.display = 'block';
+    eyeHide.style.display = 'none';
+  } else {
+    input.type = 'password';
+    btn.dataset.state = 'hide';
+    btn.setAttribute('aria-pressed','false');
+    btn.setAttribute('aria-label','Show password');
+
+    eyeShow.style.display = 'none';
+    eyeHide.style.display = 'block';
+  }
+}
+(function addHoldToPeek(){
+  const input = document.getElementById('password');
+  const btn   = document.getElementById('eyeBtn');
+  let holding = false;
+  btn.addEventListener('mousedown', ()=>{ holding=true; input.type='text'; });
+  btn.addEventListener('mouseup',   ()=>{ if(holding){ holding=false; if(btn.dataset.state!=='show') input.type='password'; }});
+  btn.addEventListener('mouseleave',()=>{ if(holding){ holding=false; if(btn.dataset.state!=='show') input.type='password'; }});
+  btn.addEventListener('touchstart', ()=>{ input.type='text'; }, {passive:true});
+  btn.addEventListener('touchend',   ()=>{ if(btn.dataset.state!=='show') input.type='password'; });
+})();
+
+/* ===== Misc ===== */
+(function preventDoubleSubmit(){
+  const form = document.getElementById('form-userpass');
+  if (!form) return;
+  let busy = false;
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (busy) return;
+    busy = true;
+    try { await loginWithUsername(); } finally { busy = false; }
+  });
+})();
+const tabUser = document.getElementById('tab-userpass');
+const tabGoo  = document.getElementById('tab-google');
+const formUser= document.getElementById('form-userpass');
+const formGoo = document.getElementById('form-google');
+const userLabel = document.querySelector('.label-row .label');
+
+tabUser?.addEventListener('click', () => {
+  tabUser.classList.add('active');
+  tabGoo.classList.remove('active');
+  formUser.classList.add('active');
+  formGoo.classList.remove('active');
+
+  if (userLabel) userLabel.style.visibility = 'visible';
+});
+
+tabGoo?.addEventListener('click', () => {
+  tabGoo.classList.add('active');
+  tabUser.classList.remove('active');
+  formGoo.classList.add('active');
+  formUser.classList.remove('active');
+
+  if (userLabel) userLabel.style.visibility = 'hidden';
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("googleLoginBtn")?.addEventListener("click", signInWithGoogle);
+  document.getElementById("eyeBtn")?.addEventListener("click", togglePassword);
+ setupTwofaInputs();
+  setTimeout(() => {
+    applyTurnstileTheme();
+  }, 300);
+});
+  // ====== CONFIG ======
+  const LC_ICON_OPEN = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-.001 5.75c.69 0 1.251.56 1.251 1.25s-.561 1.25-1.251 1.25-1.249-.56-1.249-1.25.559-1.25 1.249-1.25zm2.001 12.25h-4v-1c.484-.179 1-.201 1-.735v-4.467c0-.534-.516-.618-1-.797v-1h3v6.265c0 .535.517.558 1 .735v.999z";
+  const LC_ICON_CLOSE = "M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z";
+  const LC_URL = "https://5g88-main.vercel.app/main/livechat";   // URL app livechat kamu
+  const LC_ORIGIN = new URL(LC_URL).origin;
+
+  // ====== Elemen ======
+const lcWrap   = document.getElementById("lcWrap");
+const lcToggle = document.getElementById("lcToggle");
+const lcPanel  = document.getElementById("lcPanel");
+const lcFrame  = document.getElementById("lcFrame");
+const lcBadge  = document.getElementById("lcBadge");
+const lcIcon   = document.getElementById("lcIcon");
+const lcIconPath = document.getElementById("lcIconPath");
+
+let lcUnreadCount = 0;
+let lcLoaded = false;
+let lcPinnedOpen = false;     // buka sebab klik
+let lcHovering = false;       // mouse sedang atas button/panel
+let lcCloseTimer = null;
+
+function updateLiveChatButton(isOpen){
+  if (!lcToggle || !lcIcon || !lcIconPath) return;
+
+  if (isOpen){
+    lcIcon.setAttribute("viewBox", "0 0 1024 1024");
+    lcIconPath.setAttribute("d", LC_ICON_CLOSE);
+    lcToggle.setAttribute("aria-label", "Close live chat");
+    lcToggle.setAttribute("aria-expanded", "true");
+  } else {
+    lcIcon.setAttribute("viewBox", "0 0 24 24");
+    lcIconPath.setAttribute("d", LC_ICON_OPEN);
+    lcToggle.setAttribute("aria-label", "Open live chat");
+    lcToggle.setAttribute("aria-expanded", "false");
+  }
+}
+function renderLivechatBadge(count){
+  if (!lcBadge) return;
+
+  const safeCount = Math.max(0, Number(count) || 0);
+  lcUnreadCount = safeCount;
+
+  try {
+    localStorage.setItem("login.livechatUnreadCount", String(safeCount));
+  } catch {}
+
+  if (safeCount <= 0){
+    lcBadge.textContent = "0";
+    lcBadge.classList.remove("show");
+    return;
+  }
+
+  lcBadge.textContent = safeCount > 99 ? "99+" : String(safeCount);
+  lcBadge.classList.add("show");
+}
+async function openLiveChat() {
+  if (!lcPanel || !lcToggle) return;
+
+  lcPanel.classList.add("active");
+  lcPanel.setAttribute("aria-hidden", "false");
+  updateLiveChatButton(true);
+
+  await ensureGuestAuth();
+
+  if (!lcLoaded) {
+    lcFrame.src = LC_URL;
+    lcFrame.addEventListener("load", async () => {
+      lcLoaded = true;
+
+      await ensureGuestAuth();
+
+      // ✅ hanya bila panel dibuka baru hantar identity guest/user ke iframe
+      postIdentityToChat();
+      setTimeout(postIdentityToChat, 250);
+      setTimeout(postIdentityToChat, 600);
+
+      requestLivechatUnreadCount();
+      setTimeout(requestLivechatUnreadCount, 400);
+      setTimeout(requestLivechatUnreadCount, 1000);
+    }, { once: true });
+  } else {
+    postIdentityToChat();
+    setTimeout(postIdentityToChat, 200);
+
+    requestLivechatUnreadCount();
+  }
+}
+
+function closeLiveChat() {
+  if (!lcPanel || !lcToggle) return;
+
+  lcPanel.classList.remove("active");
+  lcPanel.setAttribute("aria-hidden", "true");
+  updateLiveChatButton(false);
+
+  // ✅ beritahu iframe bahawa panel sudah tutup
+  if (lcFrame?.contentWindow) {
+    lcFrame.contentWindow.postMessage(
+      { type: "livechat-panel-closed" },
+      LC_ORIGIN
+    );
+  }
+}
+
+// ===== CREATE ACCOUNT POPUP =====
+const createOverlay = document.getElementById('createOverlay');
+const createBtn     = document.getElementById('createBtn');
+const createClose   = document.getElementById('createClose');
+const createCancel  = document.getElementById('createCancel');
+const createNow     = document.getElementById('createNow');
+
+function openCreate(){
+  closeLiveChat();
+  const welcome = document.getElementById('popup');
+  if (welcome) welcome.style.display = 'none';
+
+  if (createOverlay){
+    createOverlay.classList.add('show');
+    createOverlay.setAttribute('aria-hidden','false');
+    // fokus ke dialog untuk aksesibilitas
+    const box = createOverlay.querySelector('.blocked-box');
+    box && box.focus();
+  }
+  const esc = (e)=>{ if (e.key === 'Escape') closeCreate(); };
+  document.addEventListener('keydown', esc, { once:true });
+}
+
+function closeCreate(){
+  if (!createOverlay) return;
+  createOverlay.classList.remove('show');
+  createOverlay.setAttribute('aria-hidden','true');
+}
+
+// Bind events
+createBtn?.addEventListener('click', openCreate);
+createClose?.addEventListener('click', closeCreate);
+createCancel?.addEventListener('click', closeCreate);
+// klik luar kotak untuk tutup
+createOverlay?.addEventListener('click', (e)=>{ if (e.target === createOverlay) closeCreate(); });
+
+// Create Now: tutup popup lalu buka livechat
+createNow?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  closeCreate();
+  lcPinnedOpen = true;
+  await openLiveChat();
+});
+auth.onAuthStateChanged(async (user) => {
+  if (!user || user.isAnonymous) {
+    localStorage.removeItem("gmailLogin");
+    localStorage.removeItem("useremail");
+  }
+
+  // ✅ jangan paksa hantar identity ke iframe kalau livechat belum dibuka
+  if (lcPanel?.classList.contains("active")) {
+    try {
+      await ensureGuestAuth();
+    } catch (err) {
+      console.log("ensureGuestAuth after state change failed:", err);
+    }
+
+    postIdentityToChat();
+    requestLivechatUnreadCount();
+  }
+});
+
+
+function getPrechatUser(){
+  const cu = auth.currentUser;
+
+  // ✅ kalau ada gmailLogin, pastikan useremail memang masih ada
+  // kalau useremail sudah dibuang masa logout, jangan guna gmailLogin lama
+  try {
+    const gl = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+    const savedEmail = (localStorage.getItem("useremail") || "").trim();
+
+    if (gl?.email && savedEmail && gl.email === savedEmail) {
+      return {
+        name: gl.name || gl.email || "User",
+        email: gl.email,
+        photo: gl.photo || "",
+        uid: null,
+        isGuest: false
+      };
+    }
+  } catch {}
+
+  // ✅ currentUser normal
+  if (cu && !cu.isAnonymous) {
+    return {
+      name: cu.displayName || cu.email || "User",
+      email: cu.email || "",
+      photo: cu.photoURL || "",
+      uid: null,
+      isGuest: false
+    };
+  }
+
+  // ✅ guest anonymous
+  if (cu && cu.isAnonymous){
+    const localGuest = getOrCreateLocalGuest();
+    return {
+      name: localStorage.getItem("guest.name") || localGuest.name,
+      email: "",
+      photo: "",
+      uid: localGuest.uid, // pakai local guest uid supaya konsisten
+      isGuest: true
+    };
+  }
+
+  // ✅ fallback guest lokal
+  const g = getOrCreateLocalGuest();
+  return {
+    name: g.name,
+    email: "",
+    photo: "",
+    uid: g.uid,
+    isGuest: true
+  };
+}
+
+  function postIdentityToChat(){
+    if (!lcFrame?.contentWindow) return;
+    const u = getPrechatUser();
+    lcFrame.contentWindow.postMessage({ type: "user-login", user: u }, LC_ORIGIN);
+  }
+function requestLivechatUnreadCount(){
+  if (!lcFrame?.contentWindow) return;
+
+  const u = getPrechatUser();
+
+  lcFrame.contentWindow.postMessage({
+    type: "request-livechat-unread-count",
+    user: u
+  }, LC_ORIGIN);
+}
+lcToggle?.addEventListener("click", async (e) => {
+  e.stopPropagation();
+
+  const isOpen = lcPanel.classList.contains("active");
+
+  if (isOpen && lcPinnedOpen) {
+    lcPinnedOpen = false;
+    closeLiveChat();
+  } else {
+    lcPinnedOpen = true;
+    await openLiveChat();
+  }
+});
+function isDesktopHover() {
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
+
+function scheduleCloseLiveChat() {
+  clearTimeout(lcCloseTimer);
+
+  lcCloseTimer = setTimeout(() => {
+    if (!lcPinnedOpen && !lcHovering) {
+      closeLiveChat();
+    }
+  }, 180);
+}
+lcToggle?.addEventListener("mouseenter", async () => {
+  if (!isDesktopHover()) return;
+
+  lcHovering = true;
+  clearTimeout(lcCloseTimer);
+
+  if (!lcPinnedOpen) {
+    await openLiveChat();
+  }
+});
+
+lcToggle?.addEventListener("mouseleave", () => {
+  if (!isDesktopHover()) return;
+
+  lcHovering = false;
+  scheduleCloseLiveChat();
+});
+
+lcPanel?.addEventListener("mouseenter", () => {
+  if (!isDesktopHover()) return;
+
+  lcHovering = true;
+  clearTimeout(lcCloseTimer);
+});
+
+lcPanel?.addEventListener("mouseleave", () => {
+  if (!isDesktopHover()) return;
+
+  lcHovering = false;
+  scheduleCloseLiveChat();
+});
+document.addEventListener("click", (e) => {
+  const target = e.target;
+
+  if (!lcWrap) return;
+
+  if (!lcWrap.contains(target)) {
+    lcPinnedOpen = false;
+    lcHovering = false;
+    closeLiveChat();
+  }
+});
+updateLiveChatButton(false);
+try {
+  const savedUnread = Number(localStorage.getItem("login.livechatUnreadCount") || 0);
+  if (savedUnread > 0) {
+    renderLivechatBadge(savedUnread);
+  }
+} catch {}
+document.getElementById("username")?.addEventListener("blur", () => {
+  if (lcPanel.classList.contains("active")) {
+    postIdentityToChat();
+  }
+});
+
+  // ====== Notifikasi dari iframe -> tampilkan dot merah ======
+const livechatSound = document.getElementById("livechatSound");
+let lastSoundTime = 0;
+
+window.addEventListener("message", (e) => {
+  if (e.origin !== LC_ORIGIN) return;
+  const data = e.data || {};
+
+  if (data.action === "livechat-unread-count") {
+    renderLivechatBadge(data.count || 0);
+
+    const now = Date.now();
+    if ((Number(data.count) || 0) > 0 && livechatSound && now - lastSoundTime > 1500) {
+      livechatSound.currentTime = 0;
+      livechatSound.play().catch((err) => {
+        console.log("Autoplay sound blocked:", err);
+      });
+      lastSoundTime = now;
+    }
+    return;
+  }
+
+  if (data.action === "show-livechat-notif") {
+    renderLivechatBadge(Math.max(1, lcUnreadCount + 1));
+
+    const now = Date.now();
+    if (livechatSound && now - lastSoundTime > 1500) {
+      livechatSound.currentTime = 0;
+      livechatSound.play().catch((err) => {
+        console.log("Autoplay sound blocked:", err);
+      });
+      lastSoundTime = now;
+    }
+    return;
+  }
+
+  if (data.action === "hide-livechat-notif") {
+    const isManualOpen =
+      lcPinnedOpen === true &&
+      lcPanel &&
+      lcPanel.classList.contains("active");
+
+    if (isManualOpen) {
+      renderLivechatBadge(0);
+    }
+    return;
+  }
+});
+// ✅ LOGIN PAGE GUARD (letak paling bawah sekali)
+(function loginPageGuard(){
+  const path = location.pathname;
+  if (!path.startsWith("/login")) return;
+  let gl = null;
+  try { gl = JSON.parse(localStorage.getItem("gmailLogin") || "null"); } catch {}
+  if (gl?.email){
+    location.replace("/main");
+  }
+})();
+(function () {
+  const THEME_KEY = "siteTheme";
+
+function applyChildTheme(theme) {
+  document.body.classList.remove("light-theme", "dark-theme");
+  document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+
+  setTimeout(() => {
+    applyTurnstileTheme();
+  }, 100);
+}
+
+  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+
+  window.addEventListener("message", function (e) {
+    const allowedOrigins = [
+      "https://5g88-main.vercel.app"
+    ];
+    if (!allowedOrigins.includes(e.origin)) return;
+
+    const data = e.data || {};
+    if (data.type === "theme-change") {
+      const theme = data.theme === "dark" ? "dark" : "light";
+      localStorage.setItem(THEME_KEY, theme);
+      applyChildTheme(theme);
+    }
+  });
+})();
+</script>
 </body>
 </html>
