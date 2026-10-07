@@ -128,11 +128,6 @@
       group: "tools"
     },
     {
-      file: "whatsapp.html",
-      name: "WHATSAPP",
-      group: "tools"
-    },
-    {
       file: "history.html",
       name: "HISTORY",
       group: "tools"
