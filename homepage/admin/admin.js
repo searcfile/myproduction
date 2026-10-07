@@ -187,8 +187,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
   document.title = DEFAULT_PAGE_TITLE;
 }
 
-const ADMIN_BASE_PATH = "/myproduction/homepage/admin";
-
 function getCurrentAdminFile() {
   const file = location.pathname.split("/").pop();
   return file || "index.html";
