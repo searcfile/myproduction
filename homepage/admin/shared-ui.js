@@ -2902,28 +2902,51 @@ function getSharedDb() {
     }
 
 button?.addEventListener("click", event => {
+
   event.stopPropagation();
 
   const message =
     button.dataset.message ||
-    localStorage.getItem("latestNotifMessage") ||
+    localStorage.getItem(
+      "latestNotifMessage"
+    ) ||
     "";
 
   const timestamp =
     Number(
       button.dataset.timestamp ||
-      localStorage.getItem("latestNotifTimestamp") ||
-      Date.now()
+      localStorage.getItem(
+        "latestNotifTimestamp"
+      ) ||
+      0
     );
 
-  if (!message) {
-    console.warn("[Notice] No notice message available.");
+
+  /* ADA NOTICE */
+  if (message) {
+
+    if (
+      openNoticeModal(
+        message,
+        timestamp || Date.now()
+      )
+    ) {
+
+      if (timestamp) {
+        markNoticeSeen(timestamp);
+      }
+    }
+
     return;
   }
 
-  if (openNoticeModal(message, timestamp)) {
-    markNoticeSeen(timestamp);
-  }
+
+  /* TIADA NOTICE */
+  openNoticeModal(
+    "No Data",
+    0
+  );
+
 });
 
     document.getElementById("noticeClose")
@@ -2979,78 +3002,182 @@ function initFloatingFab() {
 
   if (!fabWrap || !mainBtn) return;
 
-  let isOpen = false;
 
-  function setOpen(open) {
-    isOpen = !!open;
+  /* ==========================================================
+     HIDE FLOATING HANYA DI WHATSAPP
+     ========================================================== */
 
-    fabWrap.classList.toggle("open", isOpen);
+  const currentFile = getCurrentFile();
 
-    if (infoIcon) {
-      infoIcon.style.display = isOpen ? "none" : "";
-    }
-
-    if (closeIcon) {
-      closeIcon.style.display = isOpen ? "" : "none";
-    }
-  }
-
-  mainBtn.addEventListener("click", event => {
-    event.stopPropagation();
-    setOpen(!isOpen);
-  });
-
-noticeBtn?.addEventListener("click", event => {
-  event.stopPropagation();
-
-  const notifButton =
-    document.getElementById("notifButton");
-
-  const message =
-    notifButton?.dataset.message ||
-    localStorage.getItem("latestNotifMessage") ||
-    "";
-
-  const timestamp =
-    Number(
-      notifButton?.dataset.timestamp ||
-      localStorage.getItem("latestNotifTimestamp") ||
-      Date.now()
-    );
-
-  if (!message) {
-    console.warn("[Floating Notice] No notice message available.");
-    setOpen(false);
+  if (currentFile === "whatsapp.html") {
+    fabWrap.style.display = "none";
     return;
   }
 
-  if (openNoticeModal(message, timestamp)) {
-    markNoticeSeen(timestamp);
-  }
+  fabWrap.style.display = "";
 
-  setOpen(false);
-});
 
-  liveBtn?.addEventListener("click", event => {
-    event.stopPropagation();
+  /* ==========================================================
+     OPEN / CLOSE
+     ========================================================== */
 
-    addTab(
-      "LIVE CHAT",
-      "livechat.html",
-      "main"
+  let isOpen = false;
+
+  function setOpen(open) {
+
+    isOpen = !!open;
+
+    fabWrap.classList.toggle(
+      "open",
+      isOpen
     );
 
-    setOpen(false);
-  });
+    if (infoIcon) {
+      infoIcon.style.display =
+        isOpen ? "none" : "";
+    }
 
-  document.addEventListener("click", event => {
-    if (
-      isOpen &&
-      !fabWrap.contains(event.target)
-    ) {
+    if (closeIcon) {
+      closeIcon.style.display =
+        isOpen ? "" : "none";
+    }
+  }
+
+
+  /* ==========================================================
+     DESKTOP - HOVER
+     ========================================================== */
+
+  fabWrap.addEventListener(
+    "mouseenter",
+    () => {
+      setOpen(true);
+    }
+  );
+
+  fabWrap.addEventListener(
+    "mouseleave",
+    () => {
       setOpen(false);
     }
-  });
+  );
+
+
+  /* ==========================================================
+     MOBILE / TOUCH - CLICK MAIN BUTTON
+     ========================================================== */
+
+  mainBtn.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      if (
+        window.matchMedia(
+          "(hover: none)"
+        ).matches
+      ) {
+        setOpen(!isOpen);
+      }
+    }
+  );
+
+
+  /* ==========================================================
+     NOTICE BUTTON
+     ========================================================== */
+
+  noticeBtn?.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      const notifButton =
+        document.getElementById(
+          "notifButton"
+        );
+
+      const message =
+        notifButton?.dataset.message ||
+        localStorage.getItem(
+          "latestNotifMessage"
+        ) ||
+        "";
+
+      const timestamp =
+        Number(
+          notifButton?.dataset.timestamp ||
+          localStorage.getItem(
+            "latestNotifTimestamp"
+          ) ||
+          0
+        );
+
+      if (message) {
+
+        if (
+          openNoticeModal(
+            message,
+            timestamp || Date.now()
+          )
+        ) {
+          if (timestamp) {
+            markNoticeSeen(timestamp);
+          }
+        }
+
+      } else {
+
+        openNoticeModal(
+          "No Data",
+          0
+        );
+      }
+
+      setOpen(false);
+    }
+  );
+
+
+  /* ==========================================================
+     LIVECHAT BUTTON
+     ========================================================== */
+
+  liveBtn?.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      addTab(
+        "LIVE CHAT",
+        "livechat.html",
+        "main"
+      );
+
+      setOpen(false);
+    }
+  );
+
+
+  /* ==========================================================
+     MOBILE - CLICK LUAR UNTUK CLOSE
+     ========================================================== */
+
+  document.addEventListener(
+    "click",
+    event => {
+
+      if (
+        isOpen &&
+        !fabWrap.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    }
+  );
 }
   function isUsernameLoginNow() {
     try {
