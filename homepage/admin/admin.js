@@ -39,7 +39,9 @@ function initLivechatLoopAudio() {
   if (livechatLoopAudio) return livechatLoopAudio;
 
   const existing = document.getElementById("notifSound");
-  livechatLoopAudio = existing || new Audio("/main/audio/audio.wav");
+ livechatLoopAudio =
+  existing ||
+  new Audio("./audio/audio.wav");
 
   livechatLoopAudio.loop = true;
   livechatLoopAudio.preload = "auto";
@@ -99,34 +101,7 @@ function unlockLivechatAudio() {
   window.addEventListener(evt, unlockLivechatAudio, { passive: true, capture: true });
   document.addEventListener(evt, unlockLivechatAudio, { passive: true, capture: true });
 });
-function bindIframeInteractionUnlock(iframe) {
-  if (!iframe) return;
 
-  function attach() {
-    try {
-      const win = iframe.contentWindow;
-      const doc = win?.document;
-      if (!doc) return;
-
-      if (doc._livechatAudioUnlockBound) return;
-      doc._livechatAudioUnlockBound = true;
-
-      const triggerUnlock = () => {
-        unlockLivechatAudio();
-      };
-
-      ["pointerdown", "mousedown", "touchstart", "click", "keydown"].forEach(evt => {
-        doc.addEventListener(evt, triggerUnlock, true);
-        win.addEventListener(evt, triggerUnlock, true);
-      });
-    } catch (err) {
-      console.warn("Gagal bind interaction iframe:", err);
-    }
-  }
-
-  iframe.addEventListener("load", attach);
-  attach();
-}
 function startLivechatLoopSound() {
   if (!userHasInteractedForAudio) return;
   if (isLivechatTabActive()) return;
@@ -224,189 +199,44 @@ function getSavedTheme() {
   return saved === "dark" ? "dark" : "light";
 }
 
-function applyTheme(theme, syncToIframe = true) {
+function applyTheme(theme) {
   const body = document.body;
   if (!body) return;
 
   body.classList.remove("light-theme", "dark-theme");
-  body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+  body.classList.add(
+    theme === "light" ? "light-theme" : "dark-theme"
+  );
 
   localStorage.setItem(THEME_KEY, theme);
 
   const label = document.getElementById("themeToggleLabel");
-  if (label) {
-    label.textContent = theme === "light" ? "Light Mode" : "Dark Mode";
-  }
 
-  if (syncToIframe) {
-    sendThemeToIframe();
+  if (label) {
+    label.textContent =
+      theme === "light"
+        ? "Light Mode"
+        : "Dark Mode";
   }
 }
 
 function toggleTheme() {
-  const next = getSavedTheme() === "dark" ? "light" : "dark";
-  applyTheme(next, true);
+  const next =
+    getSavedTheme() === "dark"
+      ? "light"
+      : "dark";
+
+  applyTheme(next);
 }
 
-function sendThemeToIframe() {
-  const frame = document.getElementById("pageFrame");
-  if (!frame || !frame.contentWindow) return;
 
-  const origin = getChildOriginFromSrc(frame.src);
-  if (!origin) return;
+const ADMIN_BASE_PATH = "/myproduction/homepage/admin";
 
-  try {
-    frame.contentWindow.postMessage({
-      type: "theme-change",
-      theme: getSavedTheme()
-    }, origin);
-  } catch (_) {}
-}
-const MAIN_BASE_PATH = "/myproduction/homepage/main";
-
-function getMainSlugFromPath() {
-  const path = location.pathname
-    .replace(/\/+$/, "")
-    .toLowerCase();
-
-  const base = MAIN_BASE_PATH.toLowerCase();
-
-  if (path === base) return null;
-  if (!path.startsWith(base + "/")) return null;
-
-  const rest = path.slice(base.length + 1);
-  return rest.split("/")[0] || null;
+function getCurrentAdminFile() {
+  const file = location.pathname.split("/").pop();
+  return file || "index.html";
 }
 
-function setBrowserRoute(tab) {
-  if (tab && tab.route) {
-    const slug = String(tab.route)
-      .replace(/^\/?main\/?/i, "")
-      .replace(/^\/+|\/+$/g, "");
-
-    history.replaceState(
-      {},
-      "",
-      slug
-        ? `${MAIN_BASE_PATH}/${slug}/`
-        : `${MAIN_BASE_PATH}/`
-    );
-  } else {
-    history.replaceState(
-      {},
-      "",
-      `${MAIN_BASE_PATH}/`
-    );
-  }
-}
-const TAB_ROUTE_MAP = {
-  "918kiss": {
-    label: "918KISS",
-    url: "/main//918kiss/index.html",
-    group: "gamelog",
-    route: "/main/918kiss"
-  },
-  "mega888": {
-    label: "MEGA888",
-    url: "/main//mega888/index.html",
-    group: "gamelog",
-    route: "/main/mega888"
-  },
-  "pussy888": {
-    label: "PUSSY888",
-    url: "/main//pussy888/index.html",
-    group: "gamelog",
-    route: "/main/pussy888"
-  },
-  "evo888": {
-    label: "EVO888",
-    url: "/main//evo888/index.html",
-    group: "gamelog",
-    route: "/main/evo888"
-  },
-  "scr888h5": {
-    label: "SCR888H5",
-    url: "/main//scr888h5/index.html",
-    group: "gamelog",
-    route: "/main/scr888h5"
-  }
-};
-(function captureMainQuery(){
-  if (!location.pathname.startsWith("/main")) return;
-
-  try {
-    const qs = new URLSearchParams(location.search);
-    const name  = qs.get("name");
-    const email = qs.get("email");
-    const photo = qs.get("photo") || "";
-    const openTab = (qs.get("openTab") || "").toLowerCase();
-
-    const restoreTabsRaw = qs.get("restoreTabs") || "";
-    const restoreActiveTab = qs.get("restoreActiveTab") || "";
-
-    if (!email) return;
-
-    const decodedName  = decodeURIComponent(name || "");
-    const decodedEmail = decodeURIComponent(email).toLowerCase();
-    const decodedPhoto = decodeURIComponent(photo || "");
-
-    const currentLogin = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-    const currentEmail = String(currentLogin.email || "").toLowerCase();
-
-localStorage.setItem("gmailLogin", JSON.stringify({
-  name: decodedName,
-  email: decodedEmail,
-  photo: decodedPhoto
-}));
-
-localStorage.setItem("useremail", decodedEmail);
-sessionStorage.setItem("justLoggedIn", "1");
-sessionStorage.removeItem("forceLogout");
-
-    if (restoreTabsRaw) {
-      try {
-        const parsedTabs = JSON.parse(decodeURIComponent(restoreTabsRaw));
-        if (Array.isArray(parsedTabs)) {
-          const suffix = decodedEmail.replace(/[^a-z0-9]/g, "_");
-          localStorage.setItem(`openTabs_${suffix}`, JSON.stringify(parsedTabs));
-        }
-      } catch (err) {
-        console.warn("[captureMainQuery] restoreTabs parse gagal:", err);
-      }
-    }
-
-    if (restoreActiveTab) {
-      try {
-        const suffix = decodedEmail.replace(/[^a-z0-9]/g, "_");
-        localStorage.setItem(`activeTabUrl_${suffix}`, restoreActiveTab);
-      } catch (err) {
-        console.warn("[captureMainQuery] restoreActiveTab gagal:", err);
-      }
-    }
-
-    if (openTab) {
-      sessionStorage.setItem("autoOpenTab", openTab);
-    }
-
-    const appliedKey = "queryUserAppliedOnce";
-    const needReload =
-      currentEmail !== decodedEmail &&
-      sessionStorage.getItem(appliedKey) !== "1";
-
-    if (needReload) {
-      sessionStorage.setItem(appliedKey, "1");
-      location.replace(location.pathname);
-      return;
-    }
-
-    sessionStorage.removeItem(appliedKey);
-    history.replaceState({}, document.title, location.pathname);
-  } catch (_) {}
-})();
-(function autoOpenTabAfterQuery(){
-  if (!location.pathname.startsWith("/main")) return;
-  sessionStorage.removeItem("autoOpenTab");
-})();
 (function(){
   const SESS_ROOT = 'singleSessions';
   const HB_MS = 15000;
@@ -497,7 +327,7 @@ sessionStorage.removeItem("forceLogout");
 (function(){
   // === SETTING MUDAH ===
   const DEFAULT_MINUTES = 10080; // ganti default di sini (contoh: 20)
-  const LOGIN_URL = "/login";
+  const LOGIN_URL = "./login.html";
   const STORAGE_EXPIRE = "autoLogout.expireAt";
   const STORAGE_MIN = "autoLogout.minutes"; // kalau di-set, override DEFAULT_MINUTES
   const CHANNEL = "autoLogout-5g88";
@@ -1012,7 +842,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (headerLiveBtn) {
         headerLiveBtn.click();
       } else if (typeof addTab === "function") {
-        addTab("LIVE CHAT", "https://5g88-main.vercel.app/main/livechat");
+addTab(
+  "LIVE CHAT",
+  "./livechat.html"
+);
       }
     });
   }
@@ -1089,26 +922,12 @@ const bankResitDropdown = document.getElementById("bankResitDropdown");
 const gameLinksBtn      = document.getElementById("gameLinksBtn");
 const gameLinksDropdown = document.getElementById("gameLinksDropdown");
 
-function closeStickyNotesDropdown(){
-  const frame = document.getElementById("pageFrame");
-  if (!frame || !frame.contentWindow) return;
 
-  const origin = getChildOriginFromSrc(frame.src);
-  if (!origin) return;
-
-  try {
-    frame.contentWindow.postMessage({
-      type: "close-sticky-dropdown"
-    }, origin);
-  } catch (_) {}
-}
 
 function closeAllDropdowns() {
   if (gameLogDropdown)   gameLogDropdown.style.display   = "none";
   if (bankResitDropdown) bankResitDropdown.style.display = "none";
   if (gameLinksDropdown) gameLinksDropdown.style.display = "none";
-
-  closeStickyNotesDropdown();
 }
 
 function toggleDropdown(btnEl, ddEl) {
@@ -1151,30 +970,6 @@ refreshHeaderBtn?.addEventListener("click", (e) => {
   refreshCurrentPage();
 });
 
-const pageFrame = document.getElementById("pageFrame");
-if (pageFrame) {
-  bindIframeInteractionUnlock(pageFrame);
-  pageFrame.addEventListener("load", () => {
-    try {
-   pageFrame.contentWindow.document.addEventListener("click", () => {
-  closeAllDropdowns();
-  window.closeTabSearchList && window.closeTabSearchList();
-  window.closeHeaderTabSearchList && window.closeHeaderTabSearchList();
-  });
-    } catch (_) {}
-
-    const origin = getChildOriginFromSrc(pageFrame.src);
-    if (origin) {
-      sendLoginToIframeReliable(pageFrame, 6, 200, origin);
-      setTimeout(() => sendLoginToIframeReliable(pageFrame, 6, 250, origin), 800);
-
-      setTimeout(() => sendThemeToIframe(), 120);
-      setTimeout(() => sendThemeToIframe(), 500);
-      setTimeout(() => notifyLivechatPanelStateToIframe(), 200);
-      setTimeout(() => notifyLivechatPanelStateToIframe(), 700);
-    }
-  });
-}
 // Blur/ESC -> tutup semuanya
 window.addEventListener("blur", closeAllDropdowns);
 window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllDropdowns(); });
@@ -1613,42 +1408,10 @@ function saveUserTabAction(tabName, actionName, extra = {}) {
   });
 }
 
-window.addEventListener("message", function(e) {
-  const allowedOrigins = [
-    "https://5g88-main.vercel.app"
-  ];
-
-  if (!allowedOrigins.includes(e.origin)) return;
-
-  const data = e.data || {};
-  if (data.type !== "user-tab-action") return;
-
-  saveUserTabAction(data.tab, data.action, data.extra || {});
-});
-function notifyLivechatPanelStateToIframe() {
-  const frame = document.getElementById("pageFrame");
-  if (!frame || !frame.contentWindow) return;
-
-  const origin = getChildOriginFromSrc(frame.src);
-  if (!origin) return;
-
-  const activeUrl = String(getActiveTabUrl() || "").toLowerCase();
-  const isLivechatActive = activeUrl.includes("/main/livechat");
-if (isLivechatActive) {
-  syncLivechatAlertState(0);
-} else {
-  syncLivechatAlertState(livechatUnreadCount);
-}
-  try {
-    frame.contentWindow.postMessage(
-      { action: isLivechatActive ? "panel-open" : "panel-close" },
-      origin
-    );
-  } catch (_) {}
-}
 function isLivechatTabActive() {
-  const activeUrl = String(getActiveTabUrl() || "").toLowerCase();
-  return activeUrl.includes("/main/livechat");
+  return location.pathname
+    .toLowerCase()
+    .endsWith("/livechat.html");
 }
 const FLOATING_LIVECHAT_HIDE_TABS = new Set([
   "WHATSAPP"
@@ -1660,14 +1423,22 @@ const FLOATING_LIVECHAT_HIDE_URLS = [
 
 function shouldHideFloatingFabGroup() {
   const activeTabEl = document.querySelector(".tab.active-tab");
-  const activeLabel = String(activeTabEl?.dataset?.label || "")
+
+  const activeLabel = String(
+    activeTabEl?.dataset?.label || ""
+  )
     .trim()
     .toUpperCase();
 
-  const activeUrl = String(getActiveTabUrl() || "").toLowerCase();
+  const currentUrl = location.href.toLowerCase();
 
-  const hideByLabel = FLOATING_LIVECHAT_HIDE_TABS.has(activeLabel);
-  const hideByUrl = FLOATING_LIVECHAT_HIDE_URLS.some(key => activeUrl.includes(key));
+  const hideByLabel =
+    FLOATING_LIVECHAT_HIDE_TABS.has(activeLabel);
+
+  const hideByUrl =
+    FLOATING_LIVECHAT_HIDE_URLS.some(key =>
+      currentUrl.includes(key)
+    );
 
   return hideByLabel || hideByUrl;
 }
@@ -1700,62 +1471,48 @@ function applyActiveTabFromStorage(){
 }
 function navigateToTab(tab) {
   if (!tab?.url) return;
-  const url = normUrl(tab.url);
-  setActiveTabUrl(url);
-  sessionStorage.setItem("mainShowContentLoading", "1");
-  window.location.href = url;
+  const url = new URL(tab.url, location.href);
+  setActiveTabUrl(url.href);
+  sessionStorage.setItem("adminShowContentLoading", "1");
+  window.location.href = url.href;
 }
 function addTab(label, url, opt = {}) {
   const L = String(label || "").trim().toUpperCase();
   const group = String(opt?.group || "none").toLowerCase();
-  const route = String(opt?.route || "").trim();
 
-  if (typeof isTabAllowed === "function" && !isTabAllowed(L)) return;
+  if (
+    typeof isTabAllowed === "function" &&
+    !isTabAllowed(L)
+  ) {
+    return;
+  }
 
   const existingTabs = getTabs();
   const newUrl = normUrl(url);
 
   const idx = existingTabs.findIndex(tab =>
-    String(tab.label || "").trim().toUpperCase() === L
+    String(tab.label || "")
+      .trim()
+      .toUpperCase() === L
   );
 
-if (idx === -1) {
-  existingTabs.push({ label: L, url: newUrl, group, route });
-} else {
-  existingTabs[idx].url = newUrl;
-  existingTabs[idx].group = group;
-  existingTabs[idx].route = route;
-}
+  const tabData = {
+    label: L,
+    url: newUrl,
+    group
+  };
 
-switchTabHistorySession(L, newUrl);
-saveTabs(existingTabs);
-
-navigateToTab({
-  label: L,
-  url: newUrl,
-  group,
-  route
-});
-
-return;
-
-  const liveBtn = document.getElementById("liveChatBtn");
-  const linkBtn = document.getElementById("linkDownloadBtn");
-  const itemBtn = document.getElementById("itemBtn");
-  const liveDot = document.getElementById("livechatDot");
-
-if (liveBtn) {
-  if (L === "LIVE CHAT") {
-    liveBtn.classList.add("active-livechat");
+  if (idx === -1) {
+    existingTabs.push(tabData);
   } else {
-    liveBtn.classList.remove("active-livechat");
+    existingTabs[idx] = tabData;
   }
-}
 
-  linkBtn?.classList.toggle("active-linkdownload", L === "LINK DOWNLOAD");
-  itemBtn?.classList.toggle("active-itemBtn", L === "ITEM COLLECTION");
+  switchTabHistorySession(L, newUrl);
 
-  setBrowserRoute({ route });
+  saveTabs(existingTabs);
+
+  navigateToTab(tabData);
 }
 function setHeaderActiveByGroup(group, labelUpper){
   const gameLogBtnEl = document.getElementById("gameLogBtn");
@@ -1780,96 +1537,36 @@ function setHeaderActiveByGroup(group, labelUpper){
     if (gameLinksLabels.includes(labelUpper)) listBtnEl?.classList.add("active-gamelog");
   }
 }
-// === Kirim login ke iframe secara andal dgn retries + delay ===
-function getLoginPayload() {
-  const u = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-  if (!u?.email) return null;
-  return {
-    type: "user-login",
-    user: { name: u.name || "", email: u.email, photo: u.photo || "" }
-  };
-}
-function getChildOriginFromSrc(src){
-  try {
-    const u = new URL(src);
-    if (u.protocol === 'https:' || u.protocol === 'http:') return u.origin;
-  } catch(_) {}
-  return null; // << jangan fallback ke domain lain
-}
-function sendLoginToIframeReliable(iframe, tries=10, gap=250, forceOrigin=null){
-  if (!iframe || !iframe.contentWindow) return;
-  const payload = getLoginPayload();
-  if (!payload) return;
 
-  if (iframe._loginTicker) clearInterval(iframe._loginTicker);
-  let count = 0;
-
-  iframe._loginTicker = setInterval(() => {
-    if (count++ >= tries) { clearInterval(iframe._loginTicker); iframe._loginTicker=null; return; }
-    const origin = forceOrigin || getChildOriginFromSrc(iframe.src);
-    if (!origin) return;
-    try { iframe.contentWindow.postMessage(payload, origin); } catch(_) {}
-  }, gap);
-}
-
-// 🔁 Jalankan saat tab LiveChat diklik — pakai fungsi RELIABLE
-const liveChatBtn = document.getElementById("liveChatBtn");
-if (liveChatBtn) {
-  liveChatBtn.addEventListener("click", () => {
-    setTimeout(() => {
-      const frame = document.getElementById("pageFrame");
-      if (frame) sendLoginToIframeReliable(frame, 8, 200);
-    }, 250);
-  });
-}
 function closeTab(label) {
-  closeTabHistorySession(label);
+  const targetLabel =
+    String(label || "").trim().toUpperCase();
 
-  if (sessionStorage.getItem("historyActiveTab") === String(label).trim().toUpperCase()) {
+  closeTabHistorySession(targetLabel);
+
+  if (
+    sessionStorage.getItem("historyActiveTab") === targetLabel
+  ) {
     sessionStorage.removeItem("historyActiveTab");
   }
-  let tabs = getTabs().filter(tab => tab.label !== label);
+
+  const tabs = getTabs().filter(tab =>
+    String(tab.label || "")
+      .trim()
+      .toUpperCase() !== targetLabel
+  );
+
   saveTabs(tabs);
-  renderTabs();
-  updateGameLogCheckmarks();
-  updateBankResitCheckmarks();
-  updateGameLinksCheckmarks();
-  updateEmptyState();
-  updateFloatingLivechatVisibility();
-  const gameLogBtn = document.getElementById("gameLogBtn");
-  const liveBtn = document.getElementById("liveChatBtn");
-  const linkBtn = document.getElementById("linkDownloadBtn");
-  const bankResitBtnEl = document.getElementById("bankResitBtn");
-  const gameLinksBtnEl = document.getElementById("gameLinksBtn");
-  const itemBtn = document.getElementById("itemBtn");
 
-if (tabs.length > 0) {
-  const lastTab = tabs[tabs.length - 1];
-  loadPage(lastTab.url);
-  setBrowserRoute(lastTab);
-
-    // Set status aktif tombol sesuai tab terakhir
-    const gameLogLabels = ["MEGA888", "PUSSY888", "918KISS", "SCR888H5","EVO888"];
-    const bankResitLabels = ["MAYBANK", "CIMB BANK","BANK ISLAM","RHB BANK","MAYBANK2U"];
-    const gameLinksLabels = ["FIND GAME","TIPS GAME","LOGO GAME"];
-    
-    gameLinksBtnEl?.classList.toggle("active-gamelog", gameLinksLabels.includes(lastTab.label));
-    gameLogBtn?.classList.toggle("active-gamelog", gameLogLabels.includes(lastTab.label));
-    bankResitBtnEl?.classList.toggle("active-gamelog", bankResitLabels.includes(lastTab.label));
-    liveBtn?.classList.toggle("active-livechat", lastTab.label === "LIVE CHAT");
-    linkBtn?.classList.toggle("active-linkdownload", lastTab.label === "LINK DOWNLOAD");
-    itemBtn?.classList.toggle("active-itemBtn", lastTab.label === "ITEM COLLECTION");
-  } else {
-    // Tidak ada tab tersisa → matikan semua status aktif
-    pageFrame.src = "";
-    gameLogBtn?.classList.remove("active-gamelog");
-    bankResitBtnEl?.classList.remove("active-gamelog");
-    liveBtn?.classList.remove("active-livechat");
-    linkBtn?.classList.remove("active-linkdownload");
-    itemBtn?.classList.remove("active-itemBtn");
-    gameLinksBtnEl?.classList.remove("active-gamelog");
-    setBrowserRoute(null);
+  if (tabs.length > 0) {
+    const nextTab = tabs[tabs.length - 1];
+    navigateToTab(nextTab);
+    return;
   }
+
+  localStorage.removeItem(getActiveTabStorageKey());
+
+  window.location.href = "./index.html";
 }
  
 function renderTabs() {
@@ -1887,42 +1584,16 @@ function renderTabs() {
 tabElement.onclick = (e) => {
   if (e.target.closest(".close-tab")) return;
 
-const u = normUrl(tab.url);
+  const u = normUrl(tab.url);
 
-switchTabHistorySession(tab.label, u);
+  switchTabHistorySession(tab.label, u);
 
-setActiveTabUrl(u);
-loadPage(u);
-setBrowserRoute(tab);
+  navigateToTab({
+    ...tab,
+    url: u
+  });
+};
 
-      const gameLogBtn = document.getElementById("gameLogBtn");
-      const liveBtn = document.getElementById("liveChatBtn");
-      const linkBtn = document.getElementById("linkDownloadBtn");
-      const bankResitBtnEl = document.getElementById("bankResitBtn");
-      const gameLinksBtnEl = document.getElementById("gameLinksBtn");
-      const itemBtn = document.getElementById("itemBtn");
-
-      liveBtn?.classList.toggle("active-livechat", tab.label === "LIVE CHAT");
-      linkBtn?.classList.toggle("active-linkdownload", tab.label === "LINK DOWNLOAD");
-      itemBtn?.classList.toggle("active-itemBtn", tab.label === "ITEM COLLECTION");
-
-      if (gameLogBtn) {
-        const gameLogLabels = ["MEGA888", "PUSSY888", "918KISS", "SCR888H5", "EVO888"];
-        gameLogBtn.classList.toggle("active-gamelog", gameLogLabels.includes(tab.label));
-      }
-      if (bankResitBtnEl) {
-        const bankResitLabels = ["MAYBANK", "CIMB BANK", "BANK ISLAM", "RHB BANK", "MAYBANK2U"];
-        bankResitBtnEl.classList.toggle("active-gamelog", bankResitLabels.includes(tab.label));
-      }
-      if (gameLinksBtnEl) {
-        const gameLinksLabels = ["FIND GAME", "TIPS GAME", "LOGO GAME"];
-        gameLinksBtnEl.classList.toggle("active-gamelog", gameLinksLabels.includes(tab.label));
-      }
-
-      applyActiveTabFromStorage(); // ✅ update highlight
-      updateFloatingLivechatVisibility();
-    };
-    
 const title = document.createElement("span");
 title.textContent = String(tab.label || "")
   .toLowerCase()
@@ -2279,40 +1950,7 @@ function initSortableTabs() {
     }
   });
 }
-function loadPage(url) {
-  if (emptyState) emptyState.classList.add('hidden');
-  const iframeLoader = document.getElementById("iframeLoader");
-  const frame = document.getElementById("pageFrame");
-  if (!frame) return;
 
-  // Tunjuk loader
-  iframeLoader.style.display = "flex";
-
-  // Fungsi helper: pastikan hide hanya sekali
-  let loaderDone = false;
-  function hideLoader() {
-    if (loaderDone) return;
-    loaderDone = true;
-    iframeLoader.style.display = "none";
-    frame.onload = null;
-  }
-
-  // 1) Bila iframe betul-betul siap → hide
-  frame.onload = hideLoader;
-
-  // 2) Fallback: maksimum tunggu 1.5s saja
-  setTimeout(hideLoader, 1500);  // boleh ubah jadi 1000 / 2000 ms ikut rasa
-
-  // Load URL
-frame.src = url;
-setActiveTabUrl(url);
-closeSidebar();
-applyActiveTabFromStorage();
-updateFloatingLivechatVisibility();
-
-setTimeout(() => notifyLivechatPanelStateToIframe(), 150);
-setTimeout(() => notifyLivechatPanelStateToIframe(), 500);
-}
 function refreshCurrentPage() {
   const btn = document.getElementById("refreshHeaderBtn");
 
@@ -2378,78 +2016,116 @@ function updateGameLinksCheckmarks() {
     }
   });
 }
+function syncCurrentPageTab() {
+  const currentUrl = normUrl(location.href);
+  const currentFile = getCurrentAdminFile().toLowerCase();
 
-window.addEventListener("load", () => {
-  const slug = getMainSlugFromPath();
+  const pageMap = {
+    "livechat.html": {
+      label: "LIVE CHAT",
+      group: "none"
+    },
+    "linkdownload.html": {
+      label: "LINK DOWNLOAD",
+      group: "none"
+    },
+    "item.html": {
+      label: "ITEM COLLECTION",
+      group: "none"
+    },
 
-  if (slug && TAB_ROUTE_MAP[slug]) {
-    const cfg = TAB_ROUTE_MAP[slug];
-    addTab(cfg.label, cfg.url, {
-      group: cfg.group,
-      route: cfg.route
-    });
+    "mega888.html": {
+      label: "MEGA888",
+      group: "gamelog"
+    },
+    "pussy888.html": {
+      label: "PUSSY888",
+      group: "gamelog"
+    },
+    "918kiss.html": {
+      label: "918KISS",
+      group: "gamelog"
+    },
+    "scr888h5.html": {
+      label: "SCR888H5",
+      group: "gamelog"
+    },
+    "evo888.html": {
+      label: "EVO888",
+      group: "gamelog"
+    },
+
+    "maybank.html": {
+      label: "MAYBANK",
+      group: "bank"
+    },
+    "cimbclick.html": {
+      label: "CIMB BANK",
+      group: "bank"
+    },
+    "bankislam.html": {
+      label: "BANK ISLAM",
+      group: "bank"
+    },
+    "maybank2u.html": {
+      label: "MAYBANK2U",
+      group: "bank"
+    },
+
+    "findgame.html": {
+      label: "FIND GAME",
+      group: "list"
+    },
+    "tipsgame.html": {
+      label: "TIPS GAME",
+      group: "list"
+    },
+    "logogame.html": {
+      label: "LOGO GAME",
+      group: "list"
+    }
+  };
+
+  const page = pageMap[currentFile];
+
+  // index.html bukan tab feature
+  if (!page) {
+    setActiveTabUrl(currentUrl);
     return;
   }
-renderTabs();
-applyTabVisibility();  // <-- opsional, double check awal
-const tabs = getTabs();
-updateEmptyState();
-updateGameLogCheckmarks();
-updateGameLinksCheckmarks();
 
-setTimeout(() => {
-  updateFloatingLivechatVisibility();
-}, 100);
+  const tabs = getTabs();
 
-const activeUrl = getActiveTabUrl();
-  const match = tabs.find(tab => normUrl(tab.url) === activeUrl);
+  const exists = tabs.some(tab =>
+    String(tab.label || "").trim().toUpperCase() === page.label
+  );
 
-  const liveBtn = document.getElementById("liveChatBtn");
-  const linkBtn = document.getElementById("linkDownloadBtn");
-  const gameLogBtn = document.getElementById("gameLogBtn");
-  const bankResitBtnEl = document.getElementById("bankResitBtn");
-  const gameLinksBtnEl = document.getElementById("gameLinksBtn");
-  const itemBtn = document.getElementById("itemBtn");
+  if (!exists) {
+    tabs.push({
+      label: page.label,
+      url: currentUrl,
+      group: page.group
+    });
 
-  if (itemBtn) itemBtn.classList.remove("active-itemBtn");
-  if (liveBtn) liveBtn.classList.remove("active-livechat");
-  if (linkBtn) linkBtn.classList.remove("active-linkdownload");
-  if (gameLogBtn) gameLogBtn.classList.remove("active-gamelog");
-  if (bankResitBtnEl) bankResitBtnEl.classList.remove("active-gamelog");
-  if (gameLinksBtnEl) gameLinksBtnEl.classList.remove("active-gamelog");
+    saveTabs(tabs);
+  }
 
-  if (match) {
-    loadPage(match.url);
-    updateGameLogCheckmarks();
-    updateBankResitCheckmarks();
-    updateGameLinksCheckmarks();
-    updateEmptyState();
-    
-    if (match.label === "LIVE CHAT") {
-      liveBtn.classList.add("active-livechat");
-    }
+  setActiveTabUrl(currentUrl);
+}
+window.addEventListener("load", () => {
+    syncCurrentPageTab();
+  renderTabs();
+  applyTabVisibility();
 
-    if (match.label === "LINK DOWNLOAD") {
-      linkBtn.classList.add("active-linkdownload");
-    }
-    if (match.label === "ITEM COLLECTION") {
-      itemBtn.classList.add("active-itemBtn");
-    }
-    const bankResitLabels = ["MAYBANK", "CIMB BANK","BANK ISLAM","RHB BANK","MAYBANK2U"];
-    if (bankResitBtnEl && match && bankResitLabels.includes(match.label)) {
-    bankResitBtnEl.classList.add("active-gamelog");
-    }
-    const gameLinksLabels = ["FIND GAME","TIPS GAME","LOGO GAME"];
-    if (gameLinksBtnEl && match && gameLinksLabels.includes(match.label)) {
-    gameLinksBtnEl.classList.add("active-gamelog");
-    }
-    const gameLogLabels = ["MEGA888", "PUSSY888", "918KISS", "SCR888H5"];
-    if (gameLogBtn && gameLogLabels.includes(match.label)) {
-      gameLogBtn.classList.add("active-gamelog");
-    }
-    } else if (tabs.length > 0) {
-    loadPage(tabs[tabs.length - 1].url);
-   }
+  updateEmptyState();
+  updateGameLogCheckmarks();
+  updateBankResitCheckmarks();
+  updateGameLinksCheckmarks();
+  applyActiveTabFromStorage();
+
+  setTimeout(() => {
+    updateFloatingLivechatVisibility();
+  }, 100);
 });
 
 function formatTimestamp(date) {
@@ -2854,12 +2530,14 @@ if (themeToggleBtn) {
   } catch (e) {
     console.error("❌ Failed to parse login data:", e);
     localStorage.removeItem("gmailLogin");
-    window.location.href = "https://5g88-main.vercel.app/";
+    window.location.href =
+  "./login.html";
     return;
   }
 
   if (!sessionData || !sessionData.email) {
-    window.location.href = "https://5g88-main.vercel.app/";
+    window.location.href =
+  "./login.html";
     return;
   }
 try {
@@ -2898,7 +2576,7 @@ await window.startSingleSession(ownerId, () => {
   try { localStorage.removeItem('useremail'); } catch (_){}
   try { sessionStorage.setItem('forceLogout','1'); } catch (_){}
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_){}
-  window.location.replace("/login?dup=1");
+  window.location.replace("./login.html?dup=1");
 });
   } catch (e) {
     console.warn('[single-session] gagal start:', e);
@@ -3159,69 +2837,7 @@ function updateDateTime() {
 
 setInterval(updateDateTime, 1000);
 updateDateTime();
-// ✅ SATU handler postMessage gabungan (aman & rapi)
-window.addEventListener("message", async (e) => {
-  const allowedOrigins = new Set([
-    "https://5g88-main.vercel.app",
-  ]);
-  if (!allowedOrigins.has(e.origin)) {
-    console.warn("❌ Diterima dari origin tidak dibenarkan:", e.origin);
-    return;
-  }
 
-  // pastikan pesan benar-benar dari iframe kita
-  const frame = document.getElementById("pageFrame");
-  if (!frame || e.source !== frame.contentWindow) return;
-
-  const data = e.data || {};
-
-  // 1) Handshake login
-if (data.type === "child-ready" || data.type === "request-login") {
-  const payload = getLoginPayload();
-  if (payload) e.source.postMessage(payload, e.origin);  // balas langsung ke origin pengirim
-  try { sendLoginToIframeReliable(frame, 4, 200, e.origin); } catch(_) {}
-  return;
-}
-
-  // 2) Aksi lain
-  const livechatDot = document.getElementById("livechatDot");
-  if (data.action === "show-livechat-notif" && livechatDot) { livechatDot.style.display = "block"; return; }
-  if (data.action === "hide-livechat-notif" && livechatDot) { livechatDot.style.display = "none";  return; }
-
-  // Fallback salin gambar bila ClipboardItem tidak didukung
-  async function copyBlobFrom(urlOrData) {
-    const resp = await fetch(urlOrData);
-    const blob = await resp.blob();
-
-    if (window.ClipboardItem && navigator.clipboard?.write) {
-      const item = new ClipboardItem({ [blob.type]: blob });
-      await navigator.clipboard.write([item]);
-    } else if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(urlOrData);
-      alert("Browser tidak mendukung salin gambar langsung. URL gambar telah disalin.");
-    } else {
-      alert("Clipboard API tidak didukung di browser ini.");
-    }
-  }
-
-  if (data.action === "copy-image-base64" && data.base64) {
-    try { await copyBlobFrom(data.base64); console.log("✅ Gambar (base64) disalin."); }
-    catch (err) { console.error("❌ Gagal:", err); alert("❌ Gagal salin gambar."); }
-    return;
-  }
-
-if (data.action === "copy-image" && data.url) {
-  try {
-    await copyBlobFrom(data.url);
-    e.source.postMessage({ action: "copy-image-success" }, e.origin);
-    console.log("✅ Gambar (URL) disalin.");
-  } catch (err) {
-    e.source.postMessage({ action: "copy-image-failed", message: String(err?.message || err) }, e.origin);
-    console.error("❌ Gagal:", err);
-  }
-  return;
-}
-});
 
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
