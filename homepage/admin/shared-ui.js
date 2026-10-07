@@ -2043,8 +2043,21 @@ function positionList() {
       item.type =
         "button";
 
-      item.className =
-        "tab-search-item";
+      const currentFile =
+  getCurrentFile();
+
+const isActive =
+  String(page.file || "")
+    .trim()
+    .toLowerCase() ===
+  String(currentFile || "")
+    .trim()
+    .toLowerCase();
+
+item.className =
+  isActive
+    ? "tab-search-item active"
+    : "tab-search-item";
 
       item.textContent =
         String(
