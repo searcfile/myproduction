@@ -527,18 +527,33 @@ function isValidEmail(email) {
 
 function checkLogin() {
   try {
-    const gl = JSON.parse(localStorage.getItem("gmailLogin") || "null");
-    if (gl && gl.email) return true;
+    const gl = JSON.parse(
+      localStorage.getItem("gmailLogin") || "null"
+    );
+
+    if (gl && gl.email) {
+      return true;
+    }
   } catch (_) {}
 
   if (sessionStorage.getItem("justLoggedIn") === "1") {
     return true;
   }
 
-  if (!location.pathname.startsWith("/login")) {
+  const currentFile =
+    location.pathname
+      .split("/")
+      .pop()
+      ?.toLowerCase() || "";
+
+  if (currentFile !== "login.html") {
     const returnTo = encodeURIComponent(location.href);
-    location.replace(`/login?redirect=${returnTo}`);
+
+    location.replace(
+      `./login.html?redirect=${returnTo}`
+    );
   }
+
   return false;
 }
 
@@ -783,7 +798,7 @@ myOverrideRef.on('value', async (snap) => {
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
 
   setTimeout(() => {
-    window.location.replace("/login?blocked=1");
+    window.location.replace("./login?blocked=1");
   }, 300);
 });
 
@@ -793,7 +808,7 @@ myOverrideRef.on('value', async (snap) => {
       try { if (auth) await auth.signOut(); } catch(_) {}
       localStorage.removeItem("gmailLogin");
       try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(_){}
-      window.location.href = "/login?blocked=1";
+      window.location.href = "./login?blocked=1";
     }
   });
 
