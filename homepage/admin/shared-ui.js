@@ -11,7 +11,9 @@
    - Search
    - Responsive shell
 
-   NO FIREBASE DEPENDENCY
+   Firebase:
+   - Uses global `db` from ../firebase.js when available
+   - Still renders the shell if Firebase is unavailable
    ========================================================== */
 
 (() => {
@@ -353,15 +355,45 @@
   }
 
 
+  function getUserTabsDbPath() {
+    try {
+      const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+      const email = String(login.email || "").trim().toLowerCase();
+      if (!email) return "";
+      return `users/${email.replace(/\./g, "_")}/mainOpenTabs`;
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function syncTabsToFirebase(tabs) {
+    try {
+      if (!window.db || typeof window.db.ref !== "function") return;
+
+      const path = getUserTabsDbPath();
+      if (!path) return;
+
+      window.db.ref(path).set({
+        tabs: Array.isArray(tabs) ? tabs : [],
+        activeTabUrl: normalizeUrl(`./${getActiveFile()}`),
+        updatedAt: Date.now()
+      }).catch(err => {
+        console.warn("[shared-ui] tab sync failed:", err);
+      });
+    } catch (err) {
+      console.warn("[shared-ui] tab sync error:", err);
+    }
+  }
+
   function saveTabs(tabs) {
+    const finalTabs = Array.isArray(tabs) ? tabs : [];
+
     localStorage.setItem(
       getTabsStorageKey(),
-      JSON.stringify(
-        Array.isArray(tabs)
-          ? tabs
-          : []
-      )
+      JSON.stringify(finalTabs)
     );
+
+    syncTabsToFirebase(finalTabs);
   }
 
 
@@ -2338,30 +2370,20 @@ function createShell() {
      ========================================================== */
 
   function updateClock() {
-
-    const element =
-      document.getElementById(
-        "dateTime"
-      );
-
+    const element = document.getElementById("dateTime");
     if (!element) return;
 
-
-    const now =
-      new Date();
-
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
 
     element.textContent =
-      now.toLocaleString(
-        undefined,
-        {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit"
-        }
-      );
+      `Kuala_Lumpur: ${hours}:${minutes} ${monthNames[now.getMonth()]} ${day}`;
   }
 
 
@@ -2583,9 +2605,8 @@ document
     window.addEventListener(
       "resize",
       () => {
-
         closeHeaderDropdowns();
-
+        updateChangePwVisibility();
       }
     );
 
@@ -2607,6 +2628,542 @@ document
   }
 
 
+
+  /* ==========================================================
+     SHARED FIREBASE / VISIBILITY / NOTIFICATION / PASSWORD
+     ========================================================== */
+
+  let uiVisibility = {};
+
+  function getSharedDb() {
+    return window.db && typeof window.db.ref === "function"
+      ? window.db
+      : null;
+  }
+
+  function isFeatureHidden(label) {
+    return !!uiVisibility[String(label || "").trim().toUpperCase()];
+  }
+
+  const HEADER_FEATURE_MAP = {
+    "LIVE CHAT": "liveChatBtn",
+    "LINK DOWNLOAD": "linkDownloadBtn",
+    "GAMELOG": "gameLogBtn",
+    "BANK RECEIPT": "bankResitBtn",
+    "LIST TYPE": "gameLinksBtn",
+    "ITEM COLLECTION": "itemBtn"
+  };
+
+  function applySharedVisibility() {
+    Object.entries(HEADER_FEATURE_MAP).forEach(([label, id]) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = isFeatureHidden(label) ? "none" : "";
+    });
+
+    document.querySelectorAll("#sidebar a, #gameLogDropdown a, #bankResitDropdown a, #gameLinksDropdown a")
+      .forEach(link => {
+        const label = String(
+          link.getAttribute("data-feature") ||
+          link.getAttribute("data-label") ||
+          link.textContent ||
+          ""
+        ).trim().toUpperCase();
+
+        link.style.display = isFeatureHidden(label) ? "none" : "";
+      });
+
+    const tabs = getTabs();
+    const filtered = tabs.filter(tab => {
+      const label = String(tab.name || tab.label || "").trim().toUpperCase();
+      return !isFeatureHidden(label);
+    });
+
+    if (filtered.length !== tabs.length) {
+      saveTabs(filtered);
+      renderTabs();
+      renderSidebarTabs();
+      updateHeaderActiveState();
+    }
+  }
+
+  function initUiVisibility() {
+    const sharedDb = getSharedDb();
+    if (!sharedDb) return;
+
+    sharedDb.ref("settings/uiVisibility").on("value", snap => {
+      const raw = snap.val() || {};
+      uiVisibility = {};
+
+      Object.entries(raw).forEach(([key, value]) => {
+        uiVisibility[String(key).trim().toUpperCase()] = !!value;
+      });
+
+      applySharedVisibility();
+    });
+  }
+
+  function syncMenuNotifDot() {
+    const notifDot = document.getElementById("notifDot");
+    const menuDot = document.getElementById("menuNotifDot");
+    if (!notifDot || !menuDot) return;
+
+    const hasNotice = getComputedStyle(notifDot).display !== "none";
+
+    if (window.innerWidth <= 815 && hasNotice) {
+      menuDot.style.display = "flex";
+      menuDot.textContent = (notifDot.textContent || "1").trim() || "1";
+    } else {
+      menuDot.style.display = "none";
+      menuDot.textContent = "";
+    }
+  }
+
+  function moveNotifButtonResponsive() {
+    const button = document.getElementById("notifButton");
+    const sidebarSlot = document.getElementById("sidebarNotifSlot");
+    const desktopSlot = document.getElementById("desktopNotifSlot");
+
+    if (!button || !sidebarSlot || !desktopSlot) return;
+
+    const target = window.innerWidth <= 600
+      ? sidebarSlot
+      : desktopSlot;
+
+    if (button.parentElement !== target) {
+      target.appendChild(button);
+    }
+  }
+
+  function closeNoticeModal() {
+    const modal = document.getElementById("noticeModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function openNoticeModal(message, timestamp) {
+    const modal = document.getElementById("noticeModal");
+    const text = document.getElementById("noticeMessageText");
+    const time = document.getElementById("noticeMessageTime");
+
+    if (!modal || !text || !time) return false;
+
+    const dateObj = new Date(Number(timestamp));
+    const valid = !Number.isNaN(dateObj.getTime());
+
+    text.textContent = message || "";
+    time.textContent = valid
+      ? `${String(dateObj.getDate()).padStart(2,"0")}/${String(dateObj.getMonth()+1).padStart(2,"0")}/${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2,"0")}:${String(dateObj.getMinutes()).padStart(2,"0")}:${String(dateObj.getSeconds()).padStart(2,"0")}`
+      : "Waktu tidak valid";
+
+    modal.style.display = "flex";
+    return true;
+  }
+
+  function markNoticeSeen(timestamp) {
+    const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+    const email = String(login.email || "guest").toLowerCase();
+    localStorage.setItem(`seenNotif_${timestamp}_${email}`, "1");
+
+    const dot = document.getElementById("notifDot");
+    if (dot) {
+      dot.style.display = "none";
+      dot.textContent = "";
+    }
+
+    syncMenuNotifDot();
+
+    if (window.updateFloatingFabNoticeDot) {
+      window.updateFloatingFabNoticeDot(0);
+    }
+  }
+
+  function showNotification(message, timestamp) {
+    const button = document.getElementById("notifButton");
+    const dot = document.getElementById("notifDot");
+    if (!button) return;
+
+    const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+    const email = String(login.email || "guest").toLowerCase();
+    const seenKey = `seenNotif_${timestamp}_${email}`;
+
+    button.dataset.message = message;
+    button.dataset.timestamp = String(timestamp);
+
+    localStorage.setItem("latestNotifMessage", message);
+    localStorage.setItem("latestNotifTimestamp", String(timestamp));
+
+    if (!localStorage.getItem(seenKey) && dot) {
+      dot.style.display = "flex";
+      dot.textContent = "1";
+      syncMenuNotifDot();
+
+      if (window.updateFloatingFabNoticeDot) {
+        window.updateFloatingFabNoticeDot(1);
+      }
+    }
+  }
+
+  function initNotifications() {
+    const button = document.getElementById("notifButton");
+    const dot = document.getElementById("notifDot");
+
+    moveNotifButtonResponsive();
+    syncMenuNotifDot();
+
+    const savedMessage = localStorage.getItem("latestNotifMessage");
+    const savedTimestamp = localStorage.getItem("latestNotifTimestamp");
+
+    if (button && savedMessage && savedTimestamp) {
+      showNotification(savedMessage, savedTimestamp);
+    }
+
+    button?.addEventListener("click", event => {
+      event.stopPropagation();
+
+      const message = button.dataset.message;
+      const timestamp = Number(button.dataset.timestamp);
+      if (!message || !timestamp) return;
+
+      if (openNoticeModal(message, timestamp)) {
+        markNoticeSeen(timestamp);
+      }
+    });
+
+    document.getElementById("noticeClose")
+      ?.addEventListener("click", closeNoticeModal);
+
+    document.getElementById("noticeOkBtn")
+      ?.addEventListener("click", closeNoticeModal);
+
+    document.getElementById("noticeModal")
+      ?.addEventListener("click", event => {
+        if (event.target.id === "noticeModal") {
+          closeNoticeModal();
+        }
+      });
+
+    if (dot) {
+      new MutationObserver(syncMenuNotifDot).observe(dot, {
+        attributes: true,
+        childList: true,
+        characterData: true,
+        subtree: true,
+        attributeFilter: ["style", "class"]
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      moveNotifButtonResponsive();
+      syncMenuNotifDot();
+    });
+
+    const sharedDb = getSharedDb();
+    if (sharedDb) {
+      sharedDb.ref("notifikasi/pesanTerbaru").on("value", snapshot => {
+        const data = snapshot.val();
+        if (!data || !data.message || !data.timestamp) return;
+        showNotification(data.message, data.timestamp);
+      });
+    }
+  }
+
+  function isUsernameLoginNow() {
+    try {
+      const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+      return String(login.email || "").toLowerCase().endsWith("@5g88.local");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setBtnLoading(button, loading, label) {
+    if (!button) return;
+    button.disabled = !!loading;
+    button.textContent = label;
+  }
+
+  function updateChangePwVisibility() {
+    const visible = isUsernameLoginNow();
+
+    const pw = document.getElementById("changePwBtn");
+    const pw2 = document.getElementById("change2ndPwBtn");
+
+    if (pw) pw.style.display = visible ? "" : "none";
+    if (pw2) pw2.style.display = visible ? "" : "none";
+  }
+
+  async function sha256Hex(text) {
+    const enc = new TextEncoder().encode(String(text || ""));
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+
+    return [...new Uint8Array(buf)]
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  function initPasswordModals() {
+    updateChangePwVisibility();
+
+    const sharedDb = getSharedDb();
+
+    const btn = document.getElementById("changePwBtn");
+    const modal = document.getElementById("cpModal");
+    const closeX = document.getElementById("cpClose");
+    const cancel = document.getElementById("cpCancel");
+    const submit = document.getElementById("cpSubmit");
+    const oldInput = document.getElementById("cpOld");
+    const newInput = document.getElementById("cpNew");
+    const confirmInput = document.getElementById("cpNew2");
+    const errBox = document.getElementById("cpErr");
+    const okBox = document.getElementById("cpOk");
+
+    const showErr = message => {
+      if (!errBox || !okBox) return;
+      errBox.textContent = message;
+      errBox.style.display = "block";
+      okBox.style.display = "none";
+    };
+
+    const showOk = message => {
+      if (!errBox || !okBox) return;
+      okBox.textContent = message;
+      okBox.style.display = "block";
+      errBox.style.display = "none";
+    };
+
+    const closePw = () => {
+      if (modal) modal.style.display = "none";
+      setBtnLoading(submit, false, "Change");
+      if (cancel) cancel.disabled = false;
+    };
+
+    const openPw = () => {
+      if (!isUsernameLoginNow() || !modal) return;
+
+      if (errBox) {
+        errBox.style.display = "none";
+        errBox.textContent = "";
+      }
+      if (okBox) {
+        okBox.style.display = "none";
+        okBox.textContent = "";
+      }
+
+      if (oldInput) oldInput.value = "";
+      if (newInput) newInput.value = "";
+      if (confirmInput) confirmInput.value = "";
+
+      setBtnLoading(submit, false, "Change");
+      if (cancel) cancel.disabled = false;
+
+      modal.style.display = "flex";
+      setTimeout(() => oldInput?.focus(), 0);
+    };
+
+    const changePw = async () => {
+      if (!sharedDb) {
+        showErr("Firebase database is not ready.");
+        return;
+      }
+
+      const oldPw = oldInput?.value.trim() || "";
+      const newPw = newInput?.value.trim() || "";
+      const newPw2 = confirmInput?.value.trim() || "";
+
+      if (!oldPw || !newPw || !newPw2) return showErr("All fields are required to be filled in.");
+      if (newPw.length < 6) return showErr("New password must be at least 6 characters.");
+      if (newPw !== newPw2) return showErr("Confirm password does not match.");
+      if (newPw === oldPw) return showErr("New password cannot be the same as current.");
+
+      setBtnLoading(submit, true, "Change...");
+      if (cancel) cancel.disabled = true;
+
+      try {
+        const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+        const email = String(login.email || "").toLowerCase();
+
+        if (!email.endsWith("@5g88.local")) {
+          return showErr("This account type cannot change password here.");
+        }
+
+        const uname = email.split("@")[0];
+        const ref = sharedDb.ref(`logins/user_accounts/${uname}`);
+        const snap = await ref.get();
+
+        if (!snap.exists()) return showErr("Username does not exist.");
+
+        const user = snap.val();
+        if (user.active === false) return showErr("This account is deactivated.");
+
+        if (await sha256Hex(oldPw) !== user.passwordHash) {
+          return showErr("Wrong current password.");
+        }
+
+        await ref.update({
+          passwordHash: await sha256Hex(newPw),
+          updatedAt: Date.now(),
+          passwordVersion: (user.passwordVersion || 0) + 1
+        });
+
+        showOk("Password changed successfully.");
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        localStorage.removeItem("gmailLogin");
+        window.location.href = "./login.html?pw_changed=1";
+
+      } catch (err) {
+        showErr("Failed to change password. " + (err?.message || ""));
+      } finally {
+        if (modal?.style.display !== "none" && okBox?.style.display !== "block") {
+          setBtnLoading(submit, false, "Change");
+          if (cancel) cancel.disabled = false;
+        }
+      }
+    };
+
+    btn?.addEventListener("click", openPw);
+    closeX?.addEventListener("click", closePw);
+    cancel?.addEventListener("click", closePw);
+    submit?.addEventListener("click", changePw);
+
+    [oldInput, newInput, confirmInput].filter(Boolean).forEach(input => {
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") changePw();
+      });
+    });
+
+    const btn2 = document.getElementById("change2ndPwBtn");
+    const modal2 = document.getElementById("cp2Modal");
+    const close2 = document.getElementById("cp2Close");
+    const cancel2 = document.getElementById("cp2Cancel");
+    const submit2 = document.getElementById("cp2Submit");
+    const old2 = document.getElementById("cp2Old");
+    const new2 = document.getElementById("cp2New");
+    const confirm2 = document.getElementById("cp2New2");
+    const err2 = document.getElementById("cp2Err");
+    const ok2 = document.getElementById("cp2Ok");
+
+    const showErr2 = message => {
+      if (!err2 || !ok2) return;
+      err2.textContent = message;
+      err2.style.display = "block";
+      ok2.style.display = "none";
+    };
+
+    const closePw2 = () => {
+      if (modal2) modal2.style.display = "none";
+      setBtnLoading(submit2, false, "Save");
+      if (cancel2) cancel2.disabled = false;
+    };
+
+    const openPw2 = () => {
+      if (!isUsernameLoginNow() || !modal2) return;
+
+      if (err2) {
+        err2.style.display = "none";
+        err2.textContent = "";
+      }
+      if (ok2) {
+        ok2.style.display = "none";
+        ok2.textContent = "";
+      }
+
+      [old2, new2, confirm2].filter(Boolean).forEach(input => {
+        input.value = "";
+      });
+
+      setBtnLoading(submit2, false, "Save");
+      if (cancel2) cancel2.disabled = false;
+
+      modal2.style.display = "flex";
+      setTimeout(() => old2?.focus(), 0);
+    };
+
+    const changePw2 = async () => {
+      if (!sharedDb) {
+        showErr2("Firebase database is not ready.");
+        return;
+      }
+
+      const oldPw = old2?.value.trim() || "";
+      const newPw = new2?.value.trim() || "";
+      const newPw2 = confirm2?.value.trim() || "";
+
+      if (!/^\d{6}$/.test(oldPw)) return showErr2("Current 2nd password must be 6 digits.");
+      if (!/^\d{6}$/.test(newPw)) return showErr2("New 2nd password must be 6 digits.");
+      if (newPw !== newPw2) return showErr2("Confirm 2nd password does not match.");
+      if (newPw === oldPw) return showErr2("New 2nd password cannot be the same as current.");
+
+      setBtnLoading(submit2, true, "Save...");
+      if (cancel2) cancel2.disabled = true;
+
+      try {
+        const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+        const email = String(login.email || "").toLowerCase();
+
+        if (!email.endsWith("@5g88.local")) {
+          return showErr2("This account type cannot change 2nd password here.");
+        }
+
+        const uname = email.split("@")[0];
+        const ref = sharedDb.ref(`logins/user_accounts/${uname}`);
+        const snap = await ref.get();
+
+        if (!snap.exists()) return showErr2("Username does not exist.");
+
+        const user = snap.val();
+        if (user.active === false) return showErr2("This account is deactivated.");
+        if (!user.secondPasswordHash) return showErr2("2nd password is not set. Please contact admin.");
+
+        if (await sha256Hex(oldPw) !== user.secondPasswordHash) {
+          return showErr2("Wrong current 2nd password.");
+        }
+
+        await ref.update({
+          secondPasswordHash: await sha256Hex(newPw),
+          secondPasswordUpdatedAt: Date.now(),
+          secondPasswordVersion: (user.secondPasswordVersion || 0) + 1
+        });
+
+        if (ok2 && err2) {
+          ok2.textContent = "2nd password changed successfully.";
+          ok2.style.display = "block";
+          err2.style.display = "none";
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        closePw2();
+
+      } catch (err) {
+        showErr2("Failed to change 2nd password. " + (err?.message || ""));
+      } finally {
+        if (modal2?.style.display !== "none" && ok2?.style.display !== "block") {
+          setBtnLoading(submit2, false, "Save");
+          if (cancel2) cancel2.disabled = false;
+        }
+      }
+    };
+
+    [old2, new2, confirm2].filter(Boolean).forEach(input => {
+      input.addEventListener("input", () => {
+        input.value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
+      });
+
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") changePw2();
+      });
+    });
+
+    btn2?.addEventListener("click", openPw2);
+    close2?.addEventListener("click", closePw2);
+    cancel2?.addEventListener("click", closePw2);
+    submit2?.addEventListener("click", changePw2);
+
+    window.addEventListener("click", event => {
+      if (event.target === modal) closePw();
+      if (event.target === modal2) closePw2();
+    });
+  }
+
   /* ==========================================================
      INITIALIZE
      ========================================================== */
@@ -2615,13 +3172,13 @@ document
 
     createShell();
 
-renderDropdown(
-  "bankResitDropdown",
-  "bank"
-);
+    renderDropdown(
+      "gameLogDropdown",
+      "gamelog"
+    );
 
     renderDropdown(
-      "bankDropdown",
+      "bankResitDropdown",
       "bank"
     );
 
@@ -2658,6 +3215,12 @@ setupDropdown(
     applyTheme();
 
     renderUserInfo();
+
+    initUiVisibility();
+
+    initNotifications();
+
+    initPasswordModals();
 
     syncCurrentPageTab();
 
