@@ -1388,41 +1388,74 @@ window.addEventListener('load', () => {
 setTimeout(() => {
   hideLoginLoading();
 }, 3000);
-function onTurnstileSuccess(token){
+window.onTurnstileSuccess = function(token){
   turnstileVerifiedUser = !!token;
-  const btn = document.getElementById('btnUserpass');
-  if (btn) btn.disabled = !turnstileVerifiedUser;
-}
 
-function onTurnstileExpired(){
+  const btn = document.getElementById('btnUserpass');
+
+  if (btn) {
+    btn.disabled = !turnstileVerifiedUser;
+  }
+
+  console.log("Turnstile USER success:", turnstileVerifiedUser);
+};
+
+window.onTurnstileExpired = function(){
   turnstileVerifiedUser = false;
-  const btn = document.getElementById('btnUserpass');
-  if (btn) btn.disabled = true;
-}
 
-function onTurnstileError(){
+  const btn = document.getElementById('btnUserpass');
+
+  if (btn) {
+    btn.disabled = true;
+  }
+};
+
+window.onTurnstileError = function(){
   turnstileVerifiedUser = false;
-  const btn = document.getElementById('btnUserpass');
-  if (btn) btn.disabled = true;
-}
 
-function onTurnstileGoogleSuccess(token){
+  const btn = document.getElementById('btnUserpass');
+
+  if (btn) {
+    btn.disabled = true;
+  }
+
+  console.error("Turnstile USER error");
+};
+
+
+window.onTurnstileGoogleSuccess = function(token){
   turnstileVerifiedGoogle = !!token;
-  const btn = document.getElementById('googleLoginBtn');
-  if (btn) btn.disabled = !turnstileVerifiedGoogle;
-}
 
-function onTurnstileGoogleExpired(){
-  turnstileVerifiedGoogle = false;
   const btn = document.getElementById('googleLoginBtn');
-  if (btn) btn.disabled = true;
-}
 
-function onTurnstileGoogleError(){
+  if (btn) {
+    btn.disabled = !turnstileVerifiedGoogle;
+  }
+
+  console.log("Turnstile GOOGLE success:", turnstileVerifiedGoogle);
+};
+
+window.onTurnstileGoogleExpired = function(){
   turnstileVerifiedGoogle = false;
+
   const btn = document.getElementById('googleLoginBtn');
-  if (btn) btn.disabled = true;
-}
+
+  if (btn) {
+    btn.disabled = true;
+  }
+};
+
+window.onTurnstileGoogleError = function(){
+  turnstileVerifiedGoogle = false;
+
+  const btn = document.getElementById('googleLoginBtn');
+
+  if (btn) {
+    btn.disabled = true;
+  }
+
+  console.error("Turnstile GOOGLE error");
+};
 function getTurnstileTheme(){
   return document.body.classList.contains('light-theme') ? 'dark' : 'light';
 }
