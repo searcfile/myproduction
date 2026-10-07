@@ -17,7 +17,6 @@ function setBtnLoading(btn, state, text){
     delete btn.dataset.oldHtml;
   }
 }
-const THEME_KEY = "siteTheme";
 
 const DEFAULT_PAGE_TITLE = "Back Office Editor 5G88";
 let livechatTitleTimer = null;
@@ -187,41 +186,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
 
   document.title = DEFAULT_PAGE_TITLE;
 }
-function getSavedTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  return saved === "dark" ? "dark" : "light";
-}
-
-function applyTheme(theme) {
-  const body = document.body;
-  if (!body) return;
-
-  body.classList.remove("light-theme", "dark-theme");
-  body.classList.add(
-    theme === "light" ? "light-theme" : "dark-theme"
-  );
-
-  localStorage.setItem(THEME_KEY, theme);
-
-  const label = document.getElementById("themeToggleLabel");
-
-  if (label) {
-    label.textContent =
-      theme === "light"
-        ? "Light Mode"
-        : "Dark Mode";
-  }
-}
-
-function toggleTheme() {
-  const next =
-    getSavedTheme() === "dark"
-      ? "light"
-      : "dark";
-
-  applyTheme(next);
-}
-
 
 const ADMIN_BASE_PATH = "/myproduction/homepage/admin";
 
@@ -457,55 +421,6 @@ async function doLogout(reason="timeout"){
   };
 })();
 
-// === Helper: cek tipe login & update tombol Change Password ===
-function isUsernameLoginNow() {
-  try {
-    const login = JSON.parse(localStorage.getItem('gmailLogin') || '{}');
-    const email = (login?.email || '').toLowerCase();
-    return email.endsWith('@5g88.local');
-  } catch {
-    return false;
-  }
-}
-
-function updateChangePwVisibility() {
-  const btn1 = document.getElementById('changePwBtn');
-  const btn2 = document.getElementById('change2ndPwBtn');
-
-  if (btn1) btn1.style.display = 'flex';
-  if (btn2) btn2.style.display = 'flex';
-}
-window.addEventListener('load', () => {
-  updateChangePwVisibility();
-});
-window.addEventListener('storage', (e)=> {
-  if (e.key === 'gmailLogin') {
-    updateChangePwVisibility();
-  }
-});
-
-
-const emptyState = document.getElementById('emptyState');
-function updateEmptyState(){
-  if (!emptyState) return;
-  const tabs = getTabs();
-  if (tabs.length === 0) emptyState.classList.remove('hidden');
-  else emptyState.classList.add('hidden');
-}
-
-window.addEventListener("load", () => {
-  applyTabVisibility();
-
-  updateEmptyState();
-  updateGameLogCheckmarks();
-  updateBankResitCheckmarks();
-  updateGameLinksCheckmarks();
-  applyActiveTabFromStorage();
-
-  setTimeout(() => {
-    updateFloatingLivechatVisibility();
-  }, 100);
-});
 function formatTimestamp(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -702,14 +617,6 @@ if (!checkLogin()) return;
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
 
-applyTheme(getSavedTheme(), false);
-const themeToggleBtn = document.getElementById("themeToggleBtn");
-if (themeToggleBtn) {
-  themeToggleBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleTheme();
-  });
-}
   const loginDataRaw = localStorage.getItem("gmailLogin");
   let sessionData = null;
 
@@ -968,7 +875,7 @@ if (logoutBtn) {
     if (window.google?.accounts?.id) {
       google.accounts.id.disableAutoSelect();
     }
-    window.location.href = "./login";
+    window.location.href = "./login.html";
   });
 }
 window.renderMobileUserBtn = function renderMobileUserBtn(){ 
