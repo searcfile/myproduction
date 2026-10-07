@@ -2950,7 +2950,84 @@ function getSharedDb() {
       });
     }
   }
+/* ==========================================================
+   FLOATING FAB
+   ========================================================== */
 
+function initFloatingFab() {
+
+  const fabWrap = document.getElementById("floatingFabWrap");
+  const mainBtn = document.getElementById("floatingMainBtn");
+  const noticeBtn = document.getElementById("floatingNoticeBtn");
+  const liveBtn = document.getElementById("floatingLivechatBtn");
+
+  const infoIcon = document.getElementById("floatingMainInfoIcon");
+  const closeIcon = document.getElementById("floatingMainCloseIcon");
+
+  if (!fabWrap || !mainBtn) return;
+
+  let isOpen = false;
+
+  function setOpen(open) {
+    isOpen = !!open;
+
+    fabWrap.classList.toggle("open", isOpen);
+
+    if (infoIcon) {
+      infoIcon.style.display = isOpen ? "none" : "";
+    }
+
+    if (closeIcon) {
+      closeIcon.style.display = isOpen ? "" : "none";
+    }
+  }
+
+  mainBtn.addEventListener("click", event => {
+    event.stopPropagation();
+    setOpen(!isOpen);
+  });
+
+  noticeBtn?.addEventListener("click", event => {
+    event.stopPropagation();
+
+    const notifButton =
+      document.getElementById("notifButton");
+
+    const message =
+      notifButton?.dataset.message;
+
+    const timestamp =
+      Number(notifButton?.dataset.timestamp);
+
+    if (message && timestamp) {
+      openNoticeModal(message, timestamp);
+      markNoticeSeen(timestamp);
+    }
+
+    setOpen(false);
+  });
+
+  liveBtn?.addEventListener("click", event => {
+    event.stopPropagation();
+
+    addTab(
+      "LIVE CHAT",
+      "livechat.html",
+      "main"
+    );
+
+    setOpen(false);
+  });
+
+  document.addEventListener("click", event => {
+    if (
+      isOpen &&
+      !fabWrap.contains(event.target)
+    ) {
+      setOpen(false);
+    }
+  });
+}
   function isUsernameLoginNow() {
     try {
       const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
@@ -3251,11 +3328,11 @@ function updateChangePwVisibility() {
      INITIALIZE
      ========================================================== */
 
-  function init() {
+function init() {
+  createShell();
+  initFloatingFab();
 
-    createShell();
-
-    renderDropdown(
+  renderDropdown(
       "gameLogDropdown",
       "gamelog"
     );
