@@ -1127,15 +1127,15 @@ select:focus-visible{
   </div>
 </div>
 </main>
-<audio id="notifSound" src="/main/audio/audio.wav" preload="auto"></audio>
+<audio id="notifSound" src="./audio/audio.wav" preload="auto"></audio>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="../../firebase.js"></script>
+
+<script src="../firebase.js"></script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 <script type="module">
-const IS_EMBEDDED = window.top !== window.self;
 function escapeHTML(s){
   return String(s).replace(/[&<>"']/g, m => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -1498,9 +1498,9 @@ function bindPresenceAndNotif(){
     nr.on("value", (snapshot) => {
       const notif = snapshot.val();
       if (notif && notif.unread) {
-        if (shouldPlayIframeSound()) {
-          playNotificationSound();
-        }
+if (shouldPlayNotificationSound()) {
+  playNotificationSound();
+}
         notifyUnread();
         setTimeout(() => { nr.child("unread").set(false); }, 2000);
       } else {
@@ -1545,80 +1545,12 @@ async function writeUserProfile(){
     console.warn("writeUserProfile failed:", err?.message || err);
   });
 }
-// ===== parent origins yang diizinkan =====
-const ALLOWED_PARENTS = [
-  "https://5g88-main.vercel.app"
-];
 
-// deteksi origin parent dari referrer (fallback "*")
-function getParentOrigin(){
-  try { return new URL(document.referrer).origin; } catch { return "*"; }
-}
-const PARENT_ORIGIN = getParentOrigin();
-
-// PATCH START: postMessage handler
-window.addEventListener("message", async (e) => {
-  if (!ALLOWED_PARENTS.includes(e.origin)) return;
-
-  const data = e.data || {};
-  if (data.type === "user-login" && data.user){
-    const { name, email, photo, uid, isGuest } = data.user;
-
-    if (name) {
-      localStorage.setItem("username", name);
-    } else {
-      localStorage.removeItem("username");
-    }
-
-    localStorage.setItem("userphoto", photo || "");
-
-    if (isGuest && uid) {
-      currentIsGuest   = true;
-      currentActiveId  = String(uid);          // gunakan UID guest
-      currentUserEmail = null;
-      localStorage.removeItem("useremail");
-       ensureGuestDisplayName();
-      
-    } else if (email) {
-      currentIsGuest   = false;
-      currentUserEmail = email;
-      currentActiveId  = sanitizeEmail(email); // email_sanitized
-      localStorage.setItem("useremail", email);
-    } else {
-      return; // identitas tak valid
-    }
-
-await writeUserProfile(); 
-bindPresenceAndNotif();
-initChatWithUserData();
-notifyRead();
-  }
-if (data.type === "livechat-panel-closed") {
-  livechatPanelOpen = false;
-  stopUserPresence(true);
-  return;
-}
-  // opsional status dari parent
-if (data.action === "panel-open") {
-  livechatPanelOpen = true;
-  bindPresenceAndNotif();
-  writeUserProfile();
-  notifyRead();
-}
-
-if (data.action === "panel-close") {
-  livechatPanelOpen = false;
-  stopUserPresence(true);
-}
-});
-  
 
 let userHasInteracted = false;
 
-let livechatPanelOpen = false;
-
-function shouldPlayIframeSound() {
-  return livechatPanelOpen && document.visibilityState === "visible";
+function shouldPlayNotificationSound() {
+  return document.visibilityState === "visible";
 }
 function cleanDuplicateName(name) {
   const parts = name.trim().split(/\s+/);
@@ -2598,12 +2530,10 @@ function onNewMessageRendered({ forceToBottom = false, instant = false } = {}){
   if (lastQuery) doSearch(lastQuery);
 }
 function notifyUnread(){
-  const target = ALLOWED_PARENTS.includes(PARENT_ORIGIN) ? PARENT_ORIGIN : "*";
-  window.parent.postMessage({ action: "show-livechat-notif" }, target);
+  localStorage.setItem("livechatUnread", "1");
 }
 function notifyRead(){
-  const target = ALLOWED_PARENTS.includes(PARENT_ORIGIN) ? PARENT_ORIGIN : "*";
-  window.parent.postMessage({ action: "hide-livechat-notif" }, target);
+  localStorage.removeItem("livechatUnread");
 }
 function playNotificationSound() {
   const audio = document.getElementById("notifSound");
@@ -2617,68 +2547,43 @@ window.addEventListener("beforeunload", () => {
 });
 window.addEventListener("DOMContentLoaded", async () => {
   initFingerprint();
-  const sendBoxEl = document.querySelector('.send-box');
+
+  const sendBoxEl = document.querySelector(".send-box");
 
   function setFabOffset() {
     if (!sendBoxEl) return;
-    document.documentElement.style.setProperty('--composer-h', sendBoxEl.offsetHeight + 'px');
+
+    document.documentElement.style.setProperty(
+      "--composer-h",
+      sendBoxEl.offsetHeight + "px"
+    );
   }
 
   setFabOffset();
 
   if (window.ResizeObserver && sendBoxEl) {
-    new ResizeObserver(() => setFabOffset()).observe(sendBoxEl);
+    new ResizeObserver(() => {
+      setFabOffset();
+    }).observe(sendBoxEl);
   } else {
-    window.addEventListener('resize', setFabOffset);
+    window.addEventListener("resize", setFabOffset);
   }
 
-  // 1) kalau sebelumnya sudah login email, pakai dulu
   const email = localStorage.getItem("useremail");
+
   if (!currentActiveId && email) {
     currentIsGuest = false;
     currentUserEmail = email;
     currentActiveId = sanitizeEmail(email);
   }
 
-  if (IS_EMBEDDED) {
-    const target = getParentOrigin();
-    window.parent.postMessage({ type: "request-login" }, target);
-
-    // 2) di iframe: tunggu parent. kalau 2.5s masih belum ada ID, pakai ID lokal
-    if (!currentActiveId) {
-      setTimeout(() => {
-        if (!currentActiveId) {
-          const id = getOrCreateLocalGuestId();
-          currentIsGuest = true;
-          localStorage.removeItem("useremail");
-          currentActiveId = id;
-
-          ensureGuestDisplayName();
-initChatWithUserData();
-
-if (livechatPanelOpen) {
-  writeUserProfile();
-  bindPresenceAndNotif();
-}
-        }
-      }, 2500);
-    } else {
-      // sudah ada ID dari email/parent → langsung jalan
-     initChatWithUserData();
-
-if (livechatPanelOpen) {
-  writeUserProfile();
-  bindPresenceAndNotif();
-}
-    }
+  if (!currentActiveId) {
+    await ensureGuestLocalIdentity();
   } else {
-    if (!currentActiveId) {
-      await ensureGuestLocalIdentity();
-    } else {
-      await writeUserProfile();
-      bindPresenceAndNotif();
-      initChatWithUserData();
-    }
+    await writeUserProfile();
+    bindPresenceAndNotif();
+    initChatWithUserData();
+    notifyRead();
   }
 });
 const imageLightbox = document.getElementById('imageLightbox');
@@ -2803,11 +2708,6 @@ document.addEventListener('mouseup', () => {
   lightboxImage.classList.remove('is-dragging');
 });
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && imageLightbox && !imageLightbox.hidden) {
-    closeImageLightbox();
-  }
-});
 if (imageLightbox) {
   imageLightbox.addEventListener('click', (e) => {
     const clickedImage = e.target === lightboxImage;
@@ -2837,47 +2737,46 @@ if (lightboxImage) {
   }, { passive: false });
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && imageLightbox && !imageLightbox.hidden) {
-    closeImageLightbox();
-  }
-});
 (function () {
   const THEME_KEY = "siteTheme";
 
-  function applyChildTheme(theme) {
+  function applyPageTheme(theme) {
     document.body.classList.remove("light-theme", "dark-theme");
-    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+    document.body.classList.add(
+      theme === "light" ? "light-theme" : "dark-theme"
+    );
   }
 
-  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+  const savedTheme =
+    localStorage.getItem(THEME_KEY) === "dark"
+      ? "dark"
+      : "light";
 
-  window.addEventListener("message", function (e) {
-    const allowedOrigins = [
-      "https://5g88-main.vercel.app"
-    ];
-    if (!allowedOrigins.includes(e.origin)) return;
+  applyPageTheme(savedTheme);
 
-    const data = e.data || {};
-    if (data.type === "theme-change") {
-      const theme = data.theme === "dark" ? "dark" : "light";
-      localStorage.setItem(THEME_KEY, theme);
-      applyChildTheme(theme);
-    }
+  window.addEventListener("storage", (e) => {
+    if (e.key !== THEME_KEY) return;
+
+    applyPageTheme(
+      e.newValue === "dark" ? "dark" : "light"
+    );
   });
 })();
-// ✅ Tukar ikut page
 window.HISTORY_TAB_NAME = "LIVE CHAT";
-// ✅ Hantar ke main page
+
 function sendUserAction(actionName, extra = {}) {
   if (!actionName) return;
-  window.parent.postMessage({
-    type: "user-tab-action",
-    tab: window.HISTORY_TAB_NAME,
-    action: actionName,
-    extra,
-    time: Date.now()
-  }, "https://5g88-main.vercel.app");
+
+  window.dispatchEvent(
+    new CustomEvent("user-tab-action", {
+      detail: {
+        tab: window.HISTORY_TAB_NAME,
+        action: actionName,
+        extra,
+        time: Date.now()
+      }
+    })
+  );
 }
 /* =========================
    AUTO TRACK CLICK - COUNT SEMUA CLICK
