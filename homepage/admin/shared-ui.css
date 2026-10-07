@@ -1724,6 +1724,18 @@ body.tab-dragging-active *{
 .tab-search-item:active{
   color:var(--gold-active);
 }
+/* ACTIVE MODULE */
+
+.tab-search-item.active{
+  background:var(--close-hover2) !important;
+  color:var(--text-main) !important;
+  font-weight:600;
+}
+
+.tab-search-item.active:hover{
+  background:var(--close-hover2) !important;
+  color:var(--text-main) !important;
+}
 /* ==========================================================
    HEADER TAB SEARCH
    ========================================================== */
