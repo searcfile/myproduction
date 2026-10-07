@@ -366,24 +366,26 @@
     }
   }
 
-  function syncTabsToFirebase(tabs) {
-    try {
-      if (!window.db || typeof window.db.ref !== "function") return;
+function syncTabsToFirebase(tabs) {
+  try {
+    const sharedDb = getSharedDb();
+    if (!sharedDb) return;
 
-      const path = getUserTabsDbPath();
-      if (!path) return;
+    const path = getUserTabsDbPath();
+    if (!path) return;
 
-      window.db.ref(path).set({
-        tabs: Array.isArray(tabs) ? tabs : [],
-        activeTabUrl: normalizeUrl(`./${getActiveFile()}`),
-        updatedAt: Date.now()
-      }).catch(err => {
-        console.warn("[shared-ui] tab sync failed:", err);
-      });
-    } catch (err) {
-      console.warn("[shared-ui] tab sync error:", err);
-    }
+    sharedDb.ref(path).set({
+      tabs: Array.isArray(tabs) ? tabs : [],
+      activeTabUrl: normalizeUrl(`./${getActiveFile()}`),
+      updatedAt: Date.now()
+    }).catch(err => {
+      console.warn("[shared-ui] tab sync failed:", err);
+    });
+
+  } catch (err) {
+    console.warn("[shared-ui] tab sync error:", err);
   }
+}
 
   function saveTabs(tabs) {
     const finalTabs = Array.isArray(tabs) ? tabs : [];
@@ -2304,65 +2306,59 @@ function createShell() {
      USER INFO
      ========================================================== */
 
-  function renderUserInfo() {
+function renderUserInfo() {
+  const userNameText = document.getElementById("userNameText");
+  const userEmail = document.getElementById("userEmail");
+  const userButton = document.getElementById("userName");
 
-    let login = {};
+  let login = {};
 
-    try {
-
-      login =
-        JSON.parse(
-          localStorage.getItem(
-            "gmailLogin"
-          ) || "{}"
-        );
-
-    } catch (_) {}
-
-
-    const email =
-      String(
-        login.email || ""
-      ).trim();
-
-
-    const name =
-      String(
-        login.name ||
-        login.displayName ||
-        ""
-      ).trim();
-
-
-    const userName =
-      document.getElementById(
-        "userNameText"
-      );
-
-    const userEmail =
-      document.getElementById(
-        "userEmail"
-      );
-
-
-    if (userName) {
-
-      userName.textContent =
-        name ||
-        (
-          email
-            ? email.split("@")[0]
-            : "Admin"
-        );
-    }
-
-
-    if (userEmail) {
-
-      userEmail.textContent =
-        email || "-";
-    }
+  try {
+    login = JSON.parse(
+      localStorage.getItem("gmailLogin") || "{}"
+    );
+  } catch (_) {
+    login = {};
   }
+
+  const email = String(login.email || "").trim();
+
+  let displayName = String(
+    login.name ||
+    login.username ||
+    ""
+  ).trim();
+
+  // Username login:
+  // contoh admin@5g88.local -> admin
+  if (
+    !displayName &&
+    email.toLowerCase().endsWith("@5g88.local")
+  ) {
+    displayName = email.split("@")[0];
+  }
+
+  // Google/email login fallback
+  if (!displayName && email) {
+    displayName = email.split("@")[0];
+  }
+
+  if (!displayName) {
+    displayName = "Admin";
+  }
+
+  if (userNameText) {
+    userNameText.textContent = displayName;
+  }
+
+  if (userEmail) {
+    userEmail.textContent = email || "-";
+  }
+
+  if (userButton) {
+    userButton.title = email || displayName;
+  }
+}
 
 
   /* ==========================================================
@@ -2635,11 +2631,28 @@ document
 
   let uiVisibility = {};
 
-  function getSharedDb() {
-    return window.db && typeof window.db.ref === "function"
-      ? window.db
-      : null;
-  }
+function getSharedDb() {
+  try {
+    if (
+      typeof db !== "undefined" &&
+      db &&
+      typeof db.ref === "function"
+    ) {
+      return db;
+    }
+  } catch (_) {}
+
+  try {
+    if (
+      window.db &&
+      typeof window.db.ref === "function"
+    ) {
+      return window.db;
+    }
+  } catch (_) {}
+
+  return null;
+}
 
   function isFeatureHidden(label) {
     return !!uiVisibility[String(label || "").trim().toUpperCase()];
