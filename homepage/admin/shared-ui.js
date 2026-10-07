@@ -2246,6 +2246,16 @@ function createSharedTabSearch(target, options = {}) {
       renderResults
   };
 }
+function initTabBarSearch() {
+
+  return createSharedTabSearch(
+    "#tabBar",
+    {
+      placeholder:
+        "Select Module"
+    }
+  );
+}
   /* ==========================================================
      RENDER TABS
      ========================================================== */
