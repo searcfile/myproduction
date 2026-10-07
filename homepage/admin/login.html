@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/main/logo.svg">
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Back Office Editor 5G88</title>
   <meta name="google-site-verification" content="eNASufqHE1646w04SZEOYrhItdoY2gD8MWWPQ4tdBFc" />
@@ -1299,7 +1299,7 @@ transition: all 0.3s;
     <div class="loading-text">Please wait while fetching...</div>
   </div>
 </div>
-<audio id="livechatSound" src="https://5g88-main.vercel.app/main/audio/audio.wav" preload="auto"></audio>
+<audio id="livechatSound" src="./audio/audio.wav" preload="auto"></audio>
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -1572,9 +1572,8 @@ async function ensureGuestAuth(){
 
   return localGuest;
 }
-/* ===== Helpers (dipakai lintas fitur, diletak di awal agar siap pakai) ===== */
-const MAIN_PATH = "/myproduction/homepage/main/";
-const LOGIN_PATH = "/myproduction/homepage/login/"; 
+const MAIN_PATH = "./index.html";
+const LOGIN_PATH = "./login.html";
 const toPseudoEmail = (uname) =>`${String(uname || '').trim().toLowerCase()}@5g88.local`;
 function formatTimestamp(date){
   const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
@@ -2321,8 +2320,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====== CONFIG ======
   const LC_ICON_OPEN = "M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-.001 5.75c.69 0 1.251.56 1.251 1.25s-.561 1.25-1.251 1.25-1.249-.56-1.249-1.25.559-1.25 1.249-1.25zm2.001 12.25h-4v-1c.484-.179 1-.201 1-.735v-4.467c0-.534-.516-.618-1-.797v-1h3v6.265c0 .535.517.558 1 .735v.999z";
   const LC_ICON_CLOSE = "M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z";
-  const LC_URL = "https://5g88-main.vercel.app/main/livechat";   // URL app livechat kamu
-  const LC_ORIGIN = new URL(LC_URL).origin;
+const LC_URL = new URL(
+  "./livechat.html",
+  window.location.href
+).href;
+
+const LC_ORIGIN = window.location.origin;
 
   // ====== Elemen ======
 const lcWrap   = document.getElementById("lcWrap");
@@ -2685,15 +2688,29 @@ window.addEventListener("message", (e) => {
     return;
   }
 });
-// ✅ LOGIN PAGE GUARD (letak paling bawah sekali)
+// ===== LOGIN PAGE GUARD =====
 (function loginPageGuard(){
+
   const path = location.pathname;
-  if (!path.startsWith("/login")) return;
-  let gl = null;
-  try { gl = JSON.parse(localStorage.getItem("gmailLogin") || "null"); } catch {}
-  if (gl?.email){
-    location.replace("/main");
+
+  // Guard hanya untuk halaman login admin
+  if (!path.endsWith("/homepage/admin/login.html")) {
+    return;
   }
+
+  let gl = null;
+
+  try {
+    gl = JSON.parse(
+      localStorage.getItem("gmailLogin") || "null"
+    );
+  } catch {}
+
+// Kalau sudah login, terus masuk Admin Homepage
+if (gl?.email) {
+  location.replace(MAIN_PATH);
+}
+
 })();
 (function () {
   const THEME_KEY = "siteTheme";
@@ -2709,10 +2726,9 @@ function applyChildTheme(theme) {
 
   applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
 
-  window.addEventListener("message", function (e) {
-    const allowedOrigins = [
-      "https://5g88-main.vercel.app"
-    ];
+const allowedOrigins = [
+  window.location.origin
+];
     if (!allowedOrigins.includes(e.origin)) return;
 
     const data = e.data || {};
