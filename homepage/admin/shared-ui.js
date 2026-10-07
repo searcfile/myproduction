@@ -1883,7 +1883,9 @@ function createSharedTabSearch(target, options = {}) {
   if (!tabBar) return null;
 
 
-  /* buang instance lama jika ada */
+  /*
+   * Buang instance lama.
+   */
   const old =
     tabBar.querySelector(
       ":scope > .tab-module-search"
@@ -1906,16 +1908,25 @@ function createSharedTabSearch(target, options = {}) {
     "tab-module-search";
 
 
+  /*
+   * SATU CONTROL SAHAJA.
+   *
+   * Closed:
+   * [ search icon ]
+   *
+   * Open:
+   * [ Select Module       X ]
+   */
   wrapper.innerHTML = `
-    <button
-      type="button"
-      class="tab-search-toggle"
-      title="Search Module"
-      aria-label="Search Module">
-      ${ICON_SEARCH}
-    </button>
+    <div class="tab-search-control">
 
-    <div class="tab-search-box">
+      <button
+        type="button"
+        class="tab-search-toggle"
+        title="Search Module"
+        aria-label="Search Module">
+        ${ICON_SEARCH}
+      </button>
 
       <input
         type="text"
@@ -1943,8 +1954,7 @@ function createSharedTabSearch(target, options = {}) {
 
 
   /*
-   * Search mesti berada
-   * paling kiri Tab Bar.
+   * Search sentiasa paling kiri.
    */
   tabBar.prepend(wrapper);
 
@@ -1982,10 +1992,7 @@ function createSharedTabSearch(target, options = {}) {
       `${rect.bottom + 3}px`;
 
     list.style.width =
-      `${Math.max(
-        wrapper.offsetWidth,
-        150
-      )}px`;
+      `${wrapper.offsetWidth}px`;
   }
 
 
@@ -2017,7 +2024,6 @@ function createSharedTabSearch(target, options = {}) {
       input.value
         .trim()
         .toLowerCase();
-
 
     list.innerHTML = "";
 
@@ -2095,12 +2101,8 @@ function createSharedTabSearch(target, options = {}) {
 
 
   /*
-   * CLOSED:
-   * hanya button search 32px.
-   *
-   * CLICK:
-   * button hilang,
-   * input muncul di tempat sama.
+   * Search button:
+   * 32px -> expand.
    */
   toggle.addEventListener(
     "click",
@@ -2153,9 +2155,8 @@ function createSharedTabSearch(target, options = {}) {
 
 
   /*
-   * X sebelah kanan input:
-   * tutup search dan kembali
-   * menjadi button 32px.
+   * X:
+   * kembali jadi search button 32px.
    */
   action.addEventListener(
     "click",
@@ -2169,9 +2170,6 @@ function createSharedTabSearch(target, options = {}) {
   );
 
 
-  /*
-   * Escape pun tutup search.
-   */
   input.addEventListener(
     "keydown",
     event => {
@@ -2187,10 +2185,8 @@ function createSharedTabSearch(target, options = {}) {
 
 
   /*
-   * Klik luar:
-   * tutup result sahaja.
-   * Search input kekal terbuka
-   * seperti component biasa.
+   * Klik luar hanya tutup dropdown.
+   * Search control tidak collapse.
    */
   document.addEventListener(
     "click",
@@ -2225,7 +2221,9 @@ function createSharedTabSearch(target, options = {}) {
 
 
   return {
-    element: wrapper,
+
+    element:
+      wrapper,
 
     open() {
 
@@ -2247,17 +2245,6 @@ function createSharedTabSearch(target, options = {}) {
     refresh:
       renderResults
   };
-}
-
-function initTabBarSearch() {
-
-  return createSharedTabSearch(
-    "#tabBar",
-    {
-      placeholder:
-        "Select Module"
-    }
-  );
 }
   /* ==========================================================
      RENDER TABS
