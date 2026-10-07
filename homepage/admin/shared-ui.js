@@ -250,7 +250,11 @@
     return file.toLowerCase();
   }
 
+function isLivechatTabActive() {
+  return getCurrentFile() === "livechat.html";
+}
 
+window.isLivechatTabActive = isLivechatTabActive;
   function findPageByFile(file) {
     const target = String(file || "")
       .trim()
