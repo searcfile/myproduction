@@ -1973,7 +1973,7 @@ function createSharedTabSearch(target, options = {}) {
     wrapper.querySelector(
       ".tab-search-list"
     );
-
+let isDefaultActiveValue = false;
 function getActiveModuleName() {
 
   const currentFile =
@@ -2038,22 +2038,27 @@ function positionList() {
   }
 
 
-  function closeSearch() {
+function closeSearch() {
 
-    wrapper.classList.remove(
-      "open"
-    );
+  wrapper.classList.remove(
+    "open"
+  );
 
-    closeList();
-
-    input.value = "";
-  }
+  closeList();
+  isDefaultActiveValue = false;
+  input.value = "";
+  action.innerHTML =
+    ICON_SEARCH;
+  updateActionIcon();
+}
 
 
   function renderResults() {
 
-    const keyword =
-      input.value
+ const keyword =
+  isDefaultActiveValue
+    ? ""
+    : input.value
         .trim()
         .toLowerCase();
 
@@ -2161,23 +2166,26 @@ toggle.addEventListener(
     );
 
     /*
-     * Bila dibuka:
-     * masukkan nama tab active.
+     * Paparkan nama module active,
+     * tetapi BELUM dianggap keyword.
      */
     input.value =
       getActiveModuleName();
+
+    isDefaultActiveValue = true;
+
+    action.innerHTML =
+      ICON_SEARCH;
 
     updateActionIcon();
 
     requestAnimationFrame(() => {
 
       input.focus();
-      const end =
-        input.value.length;
 
       input.setSelectionRange(
-        end,
-        end
+        0,
+        0
       );
 
       renderResults();
@@ -2185,16 +2193,26 @@ toggle.addEventListener(
   }
 );
 
+input.addEventListener(
+  "click",
+  event => {
 
-  input.addEventListener(
-    "click",
-    event => {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    if (isDefaultActiveValue) {
 
-      renderResults();
+      requestAnimationFrame(() => {
+
+        input.setSelectionRange(
+          0,
+          0
+        );
+      });
     }
-  );
+
+    renderResults();
+  }
+);
 
 
   input.addEventListener(
@@ -2205,10 +2223,44 @@ toggle.addEventListener(
     }
   );
 
+input.addEventListener(
+  "beforeinput",
+  event => {
 
+    if (!isDefaultActiveValue) {
+      return;
+    }
+
+
+    if (
+      event.inputType ===
+        "insertText" ||
+      event.inputType ===
+        "insertCompositionText"
+    ) {
+
+      isDefaultActiveValue = false;
+      input.value = "";
+    }
+
+    if (
+      event.inputType ===
+        "deleteContentBackward" ||
+      event.inputType ===
+        "deleteContentForward"
+    ) {
+
+      isDefaultActiveValue = false;
+
+      input.value = "";
+    }
+  }
+);
 input.addEventListener(
   "input",
   () => {
+
+    isDefaultActiveValue = false;
 
     updateActionIcon();
 
@@ -2216,13 +2268,6 @@ input.addEventListener(
   }
 );
 
-
-/*
- * Hover icon kanan.
- *
- * Ada text:
- * search -> circle X
- */
 action.addEventListener(
   "mouseenter",
   () => {
@@ -2259,7 +2304,7 @@ action.addEventListener(
     ) {
 
       input.value = "";
-
+isDefaultActiveValue = false;
       action.innerHTML =
         ICON_SEARCH;
 
