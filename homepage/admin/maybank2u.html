@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <title>Maybank2u Transfer</title>
+</head>
+  <style>
+        :root{
+      --green:#3b9b73;
+      --bg:#e7e7e7;
+      --card:#fff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --danger:#e11d48;
+      --shadow:0 10px 30px rgba(0,0,0,.10);
+      --radius:10px;
+
+    --page-bg: #000;
+    --page-text: rgba(255,255,255,0.85);
+    --page-input: #141414;
+    --border-input:#424242;
+    --page-bg2:#1f1f1f;
+    --name:#1668dc;
+    --blur:rgba(255,255,255,0.25);
+
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+  }
+
+  body.light-theme{
+    --page-bg: #ffffff;
+    --page-text: rgba(0,0,0,0.88);
+    --page-input: #ffffff;
+    --border-input:#d9d9d9;
+    --page-bg2:#ffffff;
+    --name:#1668dc;
+    --blur:rgba(0,0,0,0.25);
+
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+  }
+    *{box-sizing:border-box}
+    body{
+      font-family: "Lato", Calibri, Helvetica, Arial, sans-serif;
+      margin:0;
+      background: var(--page-bg) !important;
+      color:var(--text);
+    }
+
+.wrap{
+  max-width: 1200px;
+  margin: 16px 12px;
+  display: grid;
+  grid-template-columns: 540px minmax(560px, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.panel{
+  width: 540px;
+  max-width: 540px;
+  overflow: hidden;
+}
+
+.receipt{
+  width: 100%;
+  min-width: 560px;
+  max-width: 100%;
+  background: var(--card);
+  overflow: hidden;
+}
+
+@media (max-width: 1235px){
+  .wrap{
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    padding: 0 8px;
+  }
+
+  .panel{
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .receipt{
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .nameRow,
+  .dateRow{
+    width: 100%;
+  }
+
+  .nameRow input,
+  .dateRow input{
+    min-width: 0;
+  }
+}
+
+    /* ====== LEFT: BUILDER PANEL ====== */
+    .panel{
+      overflow:hidden;
+    }
+
+    .field{ margin-bottom: 10px; }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--page-text);
+      margin-bottom:6px;
+    }
+    select,input{
+      width:100%;
+      height:32px;
+      border:1px solid var(--border-input);
+      border-radius:6px;
+      padding: 4px 11px;
+      outline:none;
+      background:var(--page-input);
+      color:var(--page-text);
+      font-size:14px;
+      transition: all 0.2s
+    }
+    input:hover,select:hover{
+      border-color:var(--blue-hover);
+    }
+    input:focus,select:focus{
+      border-color:var(--blue);
+    }
+
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+    }
+    .hint{
+      margin-top:6px;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.3;
+    }
+
+    .btns{
+      display:flex;
+      gap:8px;
+    }
+#blurBtn,
+#copyImageBtn{
+  width:120px;
+}
+
+.btns > button{
+  min-width: 0;
+}
+    button{
+      height:32px;
+      border-radius:6px;
+      padding: 0 15px;
+      cursor:pointer;
+      transition: all 0.2s
+    }
+    .btn-create{
+      flex:1;
+      background:var(--blue);
+      color:#ffffff;
+      border-color:transparent;
+      transition: all 0.2s
+    }
+    .btn-reset{
+      width:120px;
+      color:var(--page-text);
+      background:var(--page-input);
+      border:1px solid var(--border-input);
+      transition: all 0.2s
+    }
+    .btn-reset:hover {border-color:var(--blue-hover);}
+    .btn-reset:active {border-color:var(--blue-active);}
+    .btn-create:hover {background:var(--blue-hover);}
+    .btn-create:active {background:var(--blue-active);}
+    /* ====== RIGHT: RECEIPT ====== */
+    .receipt{
+      background: var(--card);
+      overflow:hidden;
+    }
+
+    .topbar{
+      background:#389a6e;
+      color:#fff;
+      padding: 14px 15px 35px;
+      position:relative;
+    }
+    .topgrid{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:12px;
+      align-items:start;
+    }
+    .leftTitle{
+      display:flex;
+      gap:4px;
+      align-items:flex-start;
+    }
+.check{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background: #389a6e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.check-icon{
+  width:12px;
+  height:11px;
+  display:block;
+}
+    .t1{
+      font-size:12px;
+      line-height:1.2;
+      margin:0;
+    }
+    #accountNumber{font-size: 12px;}
+    #holderNameTitle{
+    font-weight:600;
+    }
+    .sub{
+      font-size:13px;
+      opacity:.95;
+    }
+    .sub .acc{ display:block;margin-top: 3px; }
+    .sub .amtTop{ font-weight:400; display:block; margin-top:2px;font-size: 14px; }
+
+    .fav{
+      background:#fff;
+      color:#373737;
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-weight:500;
+      border:1px solid #adadad;
+      display:flex;
+      gap:3px;
+      font-size:12px;
+      align-items:center;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .fav .star{ color:#f59e0b; font-size:16px; margin-top:-1px; }
+    .divider{
+      height:1px; border: 1px solid #F5A623;
+      margin: 0;
+    }
+
+    .rows{
+      padding: 10px 15px 12px;
+      border-top:1px solid #F5A623;
+    }
+    .r{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:12px;
+      padding: 6px 0;
+      font-size:14px;
+    }
+    .r .l{ color:#171717; }
+    .r .v{ color:#7d7d7d; }
+    .r .v.strong{ color:#7d7d7d;}
+
+    .footer{
+      border-top: 1px solid var(--line);
+      padding: 15px 16px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      align-items:center;
+      font-size:14px;
+      border-top: 6px solid #e7e7e7;
+    }
+    .footer .totalLabel{ color:#171717; }
+    .footer .totalVal{ font-weight:400; color:#da4747; }
+
+    /* Holder masking (blur) */
+    .maskWrap{ display:inline-flex; align-items:baseline; gap:0; }
+    .maskFirst{
+      letter-spacing:.2px;
+    }
+    .maskBlur{
+      display:inline-block;
+      filter: blur(4px);
+      opacity:.9;
+      transform: translateZ(0);
+    }
+    .fav-star{
+  width:22px;
+  height:21px;
+  display:block;
+}
+    .nameRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.nameRow input{
+  flex:1;
+}
+
+.autoBtn{
+  height:32px;
+  padding:0 15px;
+  border-radius:6px;
+  border:1px solid var(--border-input);
+  background:var(--border-input);
+  color:var(--page-text);
+  cursor:pointer;
+  white-space:nowrap;
+  transition: all 0.2s
+}
+
+.autoBtn.on{
+  border-color: rgb(34, 197, 94);
+  background:rgb(34, 197, 94);
+  color:#fff;
+}
+.dateRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.dateRow input{
+  flex:1;
+}
+
+.dateBtn{
+  height:32px;
+  padding:0 15px;
+  border-radius:6px;
+  border:1px solid transparent;
+  background:var(--blue);
+  cursor:pointer;
+  color:#fff;
+  transition: all 0.2s
+}
+.dateBtn:hover {background:var(--blue-hover);}
+.dateBtn:active {background:var(--blue-active)}
+  .completedBar{
+  background:#e7e7e7;
+  padding: 10px 5px;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:center;
+}
+
+.completedText{
+  font-size:12.5px;
+  color:#9b9b9b;
+  text-align:right;
+}
+    /* hide native select */
+.nativeSelectHidden{
+  position:absolute !important;
+  left:-9999px !important;
+  width:1px !important;
+  height:1px !important;
+  overflow:hidden !important;
+}
+
+/* custom dropdown */
+.cselect{ position:relative; }
+
+.cselect-btn{
+  width:100%;
+  height:32px;
+  border:1px solid var(--border-input);
+  border-radius:6px;
+  background:var(--page-input);
+  color:var(--page-text);
+  padding:4px 11px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  font-size:14px;
+  transition: all 0.2s;
+    outline:none;
+}
+.cselect-btn:hover:{border:1px solid var(--blue-hover);}
+.cselect-btn:focus:{border:1px solid var(--blue);}
+.cselect-caret{ color:#6b7280; }
+
+.cselect-menu{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  right:0;
+  background:#111;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  box-shadow:0 18px 40px rgba(0,0,0,.25);
+  padding:6px;
+  display:none;
+  z-index:9999;
+  max-height:260px;
+  overflow:auto;
+  transition: all 0.2s
+}
+.cselect.open .cselect-menu{ display:block; }
+
+.cselect-item{
+  padding:10px 10px;
+  border-radius:5px;
+  color:#fff;
+  cursor:pointer;
+  user-select:none;
+  font-size:14px;
+  transition: all 0.2s
+}
+.cselect-item:hover{
+  background: #389a6e4d;
+}
+.cselect-item.active{
+  background: #389a6e;
+  outline: none;
+}
+
+/* remove number input arrows (spinner) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"]{
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+    /* Chrome / Edge / Brave */
+.cselect-menu::-webkit-scrollbar{
+  width: 10px;
+}
+
+.cselect-menu::-webkit-scrollbar-track{
+  background: #0b0b0b;
+  border-radius: 12px;
+}
+
+.cselect-menu::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, #ffd86a, #ffc83d);
+  border-radius: 12px;
+  border: 2px solid #0b0b0b;   /* bagi nampak macam inset */
+}
+
+.cselect-menu::-webkit-scrollbar-thumb:hover{
+  background: linear-gradient(180deg, #ffeaa0, #ffcc33);
+}
+
+.cselect-menu::-webkit-scrollbar-thumb:active{
+  background: linear-gradient(180deg, #b17f00, #d89b00);
+}
+
+/* Firefox */
+.cselect-menu{
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .16) transparent;
+}
+input::placeholder{
+  color: var(--blur);
+}
+/* ================= SCROLLBAR GLOBAL ================= */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px; /* nipis */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--page-input);
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: var(--page-input);
+  transition: all .2s ease;
+}
+  </style>
+<body>
+ <div class="wrap">
+    <!-- LEFT BUILDER -->
+    <div class="panel">
+      <div class="ph">
+      </div>
+      <div class="pb">
+<div class="field">
+
+
+  <!-- hidden select untuk simpan value + guna event change yg kau sudah ada -->
+  <select id="bankSelect" class="nativeSelectHidden" aria-hidden="true" tabindex="-1"></select>
+
+  <!-- custom dropdown -->
+  <div class="cselect" id="bankCSelect">
+    <button type="button" class="cselect-btn" id="bankCBtn" aria-haspopup="listbox" aria-expanded="false">
+      <span id="bankCLabel">Select bank</span>
+      <span class="cselect-caret">▾</span>
+    </button>
+    <div class="cselect-menu" id="bankCMenu" role="listbox"></div>
+  </div>
+</div>
+        
+<div class="field">
+
+  <div class="nameRow">
+    <input id="holderInput" type="text" placeholder="tien ci cun" />
+    <button type="button" class="autoBtn" id="autoNameBtn" aria-pressed="false">
+      Auto: OFF
+    </button>
+  </div>
+</div>
+
+<div class="field">
+
+  <div class="dateRow">
+    <input id="dateInput" type="text" placeholder="Today 06 Jan 2026" />
+  </div>
+</div>
+      <div class="field">
+<div class="dateRow">
+  <input id="completedInput" type="text" placeholder="Tuesday 06 January 2026 at 16:16:36" />
+  <button type="button" class="dateBtn" id="nowBtn">Now</button>
+</div>
+</div>
+
+        <div class="row2">
+          <div class="field">
+            <input id="refPrefix" type="text" inputmode="numeric" maxlength="4" placeholder="8292" />
+          </div>
+
+          <div class="field">
+            <input id="amountInput" type="text" inputmode="decimal" placeholder="100.00" autocomplete="off" />
+          </div>
+        </div>
+
+<div class="btns">
+  <button class="btn-reset" id="resetBtn">Reset</button>
+  <button class="btn-create" id="createBtn">Create</button>
+  <button class="btn-create" id="blurBtn" type="button">Blur</button>
+  <button class="btn-create" id="copyImageBtn" type="button">Copy Image</button>
+</div>
+
+        
+
+      </div>
+    </div>
+
+    <!-- RIGHT RECEIPT -->
+    <div class="receipt" id="receiptCard">
+      <div class="topbar">
+        <div class="topgrid">
+          <div>
+            <div class="leftTitle">
+              <div class="check">
+  <svg class="check-icon" viewBox="128 346 18 16" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M135.311038,356.608328 L132.870751,354.010733
+      C132.441066,353.553349 131.751949,353.553349 131.322264,354.010733
+      C130.892579,354.468117 130.892579,355.201657 131.322264,355.659041
+      L134.540848,359.085104
+      C134.751637,359.309481 135.035391,359.430299 135.311038,359.430299
+      C135.586685,359.430299 135.87044,359.318111 136.081229,359.085104
+      L143.677736,350.998904
+      C144.107421,350.54152 144.107421,349.80798 143.677736,349.350597
+      C143.256158,348.884583 142.558934,348.884583 142.129249,349.341967
+      L135.311038,356.608328 Z"
+      fill="#ffffff"
+    />
+  </svg>
+</div>
+              <div>
+                <p class="t1">Transfer To <span id="holderNameTitle">BABABABABA</span></p>
+                <div class="sub">
+                  <span class="acc mono" id="accountNumber">12345678910</span>
+                  <span class="amtTop" id="topAmount">RM 1000.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+<div class="fav">
+  <svg class="fav-star" viewBox="470 340 30 25" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M491.4446,348.998603 L485.870003,348.220873 L483.361434,343.270045
+      C483.277081,343.104417 483.104709,343 482.917666,343
+      C482.730624,343 482.558252,343.104417 482.473899,343.273646
+      L479.998338,348.238876 L474.42374,349.052612
+      C474.236698,349.081417 474.082663,349.207438 474.023983,349.383867
+      C473.965303,349.560297 474.016648,349.754729 474.152346,349.88075
+      L478.197596,353.729794 L477.262384,359.181105
+      C477.229377,359.364736 477.306394,359.548366 477.460429,359.656384
+      C477.544781,359.717595 477.647471,359.75 477.750161,359.75
+      C477.830846,359.75 477.907864,359.731997 477.981214,359.69239
+      L482.958009,357.103558 L487.949474,359.663586
+      C488.022824,359.699592 488.099842,359.717595 488.176859,359.717595
+      C488.448254,359.717595 488.671971,359.497958 488.671971,359.231513
+      C488.671971,359.191907 488.668304,359.155901 488.657301,359.119895
+      L487.692749,353.700989 L491.712327,349.830342
+      C491.85536,349.70072 491.903037,349.506288 491.844357,349.329858
+      C491.785677,349.153429 491.631642,349.027408 491.4446,348.998603 Z"
+      fill="none"
+      stroke="#F5A623"
+      stroke-width="1"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <span>Add to Favourite</span>
+</div>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <div class="rows">
+          <div class="r">
+            <div class="l">Recipient's bank</div>
+            <div class="v strong" id="bankValue">Please Select</div>
+          </div>
+<div class="r" id="rowTxnType">
+  <div class="l">Transaction Type</div>
+  <div class="v">Funds Transfer</div>
+</div>
+
+<div class="r" id="rowTransferMode">
+  <div class="l">Transfer Mode</div>
+  <div class="v">DuitNow Transfer</div>
+</div>
+          <div class="r">
+            <div class="l">Effective date</div>
+            <div class="v" id="dateValue">Today 06 Jan 2026</div>
+          </div>
+          <div class="r">
+            <div class="l">Recipient Reference</div>
+            <div class="v">Payment</div>
+          </div>
+          <div class="r">
+            <div class="l">Status</div>
+            <div class="v">Successful</div>
+          </div>
+          <div class="r">
+            <div class="l">Reference ID</div>
+            <div class="v" id="refValue">8292256805</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="totalLabel">Total Amount</div>
+          <div class="totalVal" id="bottomAmount">RM 100.00</div>
+        </div>
+        <div class="completedBar">
+        <div></div>
+       <div class="completedText" id="completedText">
+      Completed on Tuesday 06 January 2026 at 16:16:36
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script type="module">
+   // ============================
+    //  FULL RECEIPT BUILDER v1
+    // ============================
+    const LS_KEY = "receipt.builder.v1";
+const BANK_CONFIG = {
+  "CIMB BANK BERHAD": { len: 10, prefix: "7" },
+  "Maybank / Maybank Islamic":{ len: 12, prefix: "1" },
+  "TOUCH N GO eWALLET":{ len: 12, prefix: "1" },
+  "HONG LEONG BANK": { len: 11, prefix: "1" },
+  "AmBANK BERHAD": { len: 13, prefix: "88" },
+  "BANK SIMPANAN NASIONAL BERHAD": { len: 16, start: "0" },
+  "RHB BANK":{ len: 14, prefix: "16" },
+  "PUBLIC BANK":{ len: 10, start: "6" },
+  "Merchantrade":{ len: 12, start: "5" },
+  "BANK ISLAM MALAYSIA":{ len: 14, start: "1" },
+  "GXBANK": { len: 13, prefix: "88" }
+};
+    const DEFAULT_STATE = {
+      bank: "Please Select",
+      effectiveDate: "",
+      amount: 100.00,
+      amountText: "1000.00",
+      refPrefix4: "",
+      referenceId10: "",
+      holderName: "",
+      autoName: false,
+      completedText: "",
+      created: false,
+      // store generated accounts per bank
+      accountsByBank: {
+        "Select Bank": []
+      },
+      selectedAccountByBank: {}
+    };
+
+    // Elements
+    const rowTxnType = document.getElementById("rowTxnType");
+    const rowTransferMode = document.getElementById("rowTransferMode");
+    const bankSelect   = document.getElementById("bankSelect");
+    const dateInput    = document.getElementById("dateInput");
+    const refPrefix    = document.getElementById("refPrefix");
+    const amountInput  = document.getElementById("amountInput");
+    const createBtn    = document.getElementById("createBtn");
+    const resetBtn     = document.getElementById("resetBtn");
+    const blurBtn      = document.getElementById("blurBtn");
+
+    const bankValue    = document.getElementById("bankValue");
+    const dateValue    = document.getElementById("dateValue");
+    const refValue     = document.getElementById("refValue");
+    const accountNumber= document.getElementById("accountNumber");
+
+    const holderNameTitle = document.getElementById("holderNameTitle");
+    const topAmount    = document.getElementById("topAmount");
+    const bottomAmount = document.getElementById("bottomAmount");
+    const holderInput = document.getElementById("holderInput");
+    const autoNameBtn = document.getElementById("autoNameBtn");
+    const completedInput = document.getElementById("completedInput");
+    const completedTextEl = document.getElementById("completedText");
+
+    // Helpers
+function rm(n){
+  const v = Number(n || 0);
+  return "RM " + format2(v); // ✅ akan jadi 1,000.00
+}
+    function formatMoneyInput(raw){
+  raw = String(raw || "").replace(/,/g, "").trim();
+  if(raw === "") return "";
+
+  // keep digits + one dot
+  raw = raw.replace(/[^\d.]/g, "");
+  const parts = raw.split(".");
+  const intPart = parts[0] || "0";
+  const decPart = (parts[1] || "").slice(0, 2);
+
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  // kalau user sedang taip decimal
+  if(parts.length > 1) return intFormatted + "." + decPart;
+
+  return intFormatted;
+}
+
+function normalizeMoney(raw){
+  const s = String(raw || "").replace(/,/g, "").trim();
+  const v = Number(s);
+  return isNaN(v) ? 0 : v;
+}
+
+function format2(v){
+  return Number(v || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+   function formatToday(){
+  const d = new Date();
+  const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `Today ${String(d.getDate()).padStart(2,"0")} ${m[d.getMonth()]} ${d.getFullYear()}`;
+}
+    function formatCompletedNow(){
+  const d = new Date();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  const dayName = days[d.getDay()];
+  const dd = String(d.getDate()).padStart(2,"0");
+  const monthName = months[d.getMonth()];
+  const yyyy = d.getFullYear();
+
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  const ss = String(d.getSeconds()).padStart(2,"0");
+
+  return `${dayName} ${dd} ${monthName} ${yyyy} at ${hh}:${mm}:${ss}`;
+}
+    function onlyDigits(str){ return String(str || "").replace(/\D/g, ""); }
+
+    function randomDigits(len){
+      let out = "";
+      for(let i=0;i<len;i++) out += Math.floor(Math.random()*10);
+      return out;
+    }
+
+    function makeReferenceId(prefix4){
+      const p = onlyDigits(prefix4).slice(0,4).padEnd(4, "0");
+      return p + randomDigits(6);
+    }
+function getBankCfg(bank){
+  return BANK_CONFIG[bank] || { len: 10, prefix: "" };
+}
+
+function makeAccountDigits(bank){
+  const cfg = getBankCfg(bank);
+  const len = cfg.len || 10;
+
+  // ✅ prefix boleh 1-4 digit (atau lebih), akan kekal di depan
+  let prefix = (cfg.prefix ?? cfg.start ?? "").toString().replace(/\D/g, "");
+  if(prefix.length === 0){
+    prefix = String(Math.floor(Math.random() * 9) + 1); // fallback 1-9
+  }
+
+  // kalau prefix lebih panjang dari len, potong
+  if(prefix.length > len) prefix = prefix.slice(0, len);
+
+  const remaining = Math.max(0, len - prefix.length);
+  return prefix + randomDigits(remaining);
+}
+
+function genAccountsForBank(bank, count = 10){
+  const cfg = getBankCfg(bank);
+  const expectedLen = cfg.len || 10;
+
+  const set = new Set();
+  while(set.size < count){
+    const acc = makeAccountDigits(bank);
+    if(String(acc).length === expectedLen) set.add(acc);
+  }
+  return Array.from(set);
+}
+    function randLetter(){
+  return String.fromCharCode(65 + Math.floor(Math.random() * 26)); // A-Z
+}
+
+function randomWord(min=3, max=8){
+  const len = Math.floor(Math.random() * (max - min + 1)) + min;
+  let w = "";
+  for(let i=0;i<len;i++) w += randLetter();
+  return w;
+}
+
+function randomHolderName(){
+  // contoh: 3-5 perkataan huruf besar semua
+  const parts = Math.floor(Math.random()*3) + 3; // 3..5
+  const arr = [];
+  for(let i=0;i<parts;i++) arr.push(randomWord());
+  return arr.join(" ");
+}
+
+    function saveState(s){
+      localStorage.setItem(LS_KEY, JSON.stringify(s));
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return structuredClone(DEFAULT_STATE);
+        const parsed = JSON.parse(raw);
+
+        // merge with defaults to avoid missing keys
+        return {
+          ...structuredClone(DEFAULT_STATE),
+          ...parsed,
+          accountsByBank: { ...(structuredClone(DEFAULT_STATE).accountsByBank), ...(parsed.accountsByBank || {}) },
+          selectedAccountByBank: { ...(parsed.selectedAccountByBank || {}) }
+        };
+      }catch(e){
+        return structuredClone(DEFAULT_STATE);
+      }
+    }
+
+    function setHolderMasked(isMasked, fullName){
+      const name = fullName || "";
+      if(!isMasked){
+        holderNameTitle.textContent = name;
+        return;
+      }
+      // show first 2 letters, rest blur
+      const first2 = name.trim().slice(0,2) || "Ch";
+      const rest   = name.trim().slice(2) || "";
+
+      holderNameTitle.innerHTML =
+        `<span class="maskWrap">
+          <span class="maskFirst">${escapeHtml(first2)}</span>
+          <span class="maskBlur">${escapeHtml(rest)}</span>
+        </span>`;
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+function maskAccountFront2Back1(acc){
+  const s = String(acc || "").trim();
+  if(!s) return { head:"", mid:"", tail:"" };
+
+  const head = s.slice(0, 2);      // 2 digit depan
+  const tail = s.slice(-1);        // 1 digit belakang
+  const mid  = s.slice(2, -1);     // yang tengah blur
+  return { head, mid, tail };
+}
+function setAccountMasked(isMasked, acc){
+  if(!isMasked){
+    accountNumber.textContent = acc;
+    return;
+  }
+
+  const m = maskAccountFront2Back1(acc);
+  accountNumber.innerHTML =
+    `<span class="maskWrap">
+      <span class="maskFirst mono">${escapeHtml(m.head)}</span>
+      <span class="maskBlur mono">${escapeHtml(m.mid)}</span>
+      <span class="maskFirst mono">${escapeHtml(m.tail)}</span>
+    </span>`;
+}
+function ensureAccountsForBank(state, bank){
+  state.accountsByBank ||= {};
+  state.selectedAccountByBank ||= {};
+
+  const cfg = getBankCfg(bank);
+  const expectedLen = cfg.len || 10;
+
+  const list = state.accountsByBank[bank] || [];
+  const badLen = list.some(a => String(a).length !== expectedLen);
+
+  if(list.length !== 10 || badLen){
+    state.accountsByBank[bank] = genAccountsForBank(bank, 10);
+  }
+
+  if(!state.selectedAccountByBank[bank]){
+    state.selectedAccountByBank[bank] = state.accountsByBank[bank][0];
+  }
+
+  return state;
+}
+
+    function render(state){
+      // Inputs
+      bankSelect.value = state.bank;
+      dateInput.value  = state.effectiveDate;
+      refPrefix.value  = state.refPrefix4;
+      amountInput.value = (state.amountText != null ? state.amountText : format2(state.amount));
+      completedInput.value = state.completedText || "";
+      
+      holderInput.value = state.holderName || "";
+      autoNameBtn.classList.toggle("on", !!state.autoName);
+      autoNameBtn.textContent = state.autoName ? "Auto: ON" : "Auto: OFF";
+      autoNameBtn.setAttribute("aria-pressed", state.autoName ? "true" : "false");
+
+      // Receipt values
+      bankValue.textContent = state.bank;
+      dateValue.textContent = state.effectiveDate;
+
+      topAmount.textContent = rm(state.amount);
+      bottomAmount.textContent = rm(state.amount);
+
+      refValue.textContent = state.referenceId10;
+      completedTextEl.textContent = `Completed on ${state.completedText || ""}`;
+      const isMaybank = state.bank === "Maybank / Maybank Islamic";
+
+      // hide untuk Maybank sahaja
+      if (rowTxnType) rowTxnType.style.display = isMaybank ? "none" : "";
+      if (rowTransferMode) rowTransferMode.style.display = isMaybank ? "none" : "";
+
+      // account number (from bank)
+      state = ensureAccountsForBank(state, state.bank);
+      const acc = state.selectedAccountByBank[state.bank];
+      setAccountMasked(!!state.created, acc);
+
+      // holder name mask only after Create
+      setHolderMasked(!!state.created, state.holderName);
+
+      saveState(state);
+      return state;
+    }
+
+function initBanks(){
+  const banks = Object.keys(BANK_CONFIG);
+
+  // hidden select options
+  bankSelect.innerHTML = banks
+    .map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`)
+    .join("");
+
+  // custom UI elements
+  const wrapEl  = document.getElementById("bankCSelect");
+  const btnEl   = document.getElementById("bankCBtn");
+  const labelEl = document.getElementById("bankCLabel");
+  const menuEl  = document.getElementById("bankCMenu");
+
+  function renderMenu(active){
+    menuEl.innerHTML = "";
+    banks.forEach(b => {
+      const item = document.createElement("div");
+      item.className = "cselect-item" + (b === active ? " active" : "");
+      item.textContent = b;
+      item.addEventListener("click", () => {
+        bankSelect.value = b;
+        bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
+        closeMenu();
+      });
+      menuEl.appendChild(item);
+    });
+  }
+
+  function openMenu(){
+    wrapEl.classList.add("open");
+    btnEl.setAttribute("aria-expanded","true");
+  }
+  function closeMenu(){
+    wrapEl.classList.remove("open");
+    btnEl.setAttribute("aria-expanded","false");
+  }
+
+  btnEl.addEventListener("click", (e) => {
+    e.preventDefault();
+    wrapEl.classList.contains("open") ? closeMenu() : openMenu();
+  });
+
+  document.addEventListener("click", (e) => {
+    if(!wrapEl.contains(e.target)) closeMenu();
+  });
+
+  // sync label bila select berubah (render() akan set bankSelect.value)
+  bankSelect.addEventListener("change", () => {
+    labelEl.textContent = bankSelect.value || banks[0] || "Select bank";
+    renderMenu(bankSelect.value);
+  });
+
+  // init label/menu
+  labelEl.textContent = bankSelect.value || banks[0] || "Select bank";
+  renderMenu(bankSelect.value || banks[0] || "");
+}
+
+// Live update amount/date/bank (but "mask name" only after Create)
+function attachLiveHandlers(){
+
+  bankSelect.addEventListener("change", () => {
+    state.bank = bankSelect.value;
+
+    // regenerate accounts when bank changed
+    state = ensureAccountsForBank(state, state.bank);
+
+    // pick random 1
+    const list = state.accountsByBank[state.bank] || [];
+    state.selectedAccountByBank[state.bank] = list[Math.floor(Math.random() * list.length)] || "";
+
+    state.created = false; // switch bank -> uncreated view
+    state = render(state);
+  });
+
+  dateInput.addEventListener("input", () => {
+    state.effectiveDate = dateInput.value.trim() || DEFAULT_STATE.effectiveDate;
+    state = render(state);
+  });
+
+  // ✅ Amount: auto comma on typing, keep editable
+  amountInput.addEventListener("input", () => {
+    const formatted = formatMoneyInput(amountInput.value);
+    amountInput.value = formatted;
+
+    state.amountText = formatted;
+    state.amount = Math.max(0, normalizeMoney(formatted));
+
+    // update receipt amounts without full render
+    topAmount.textContent = rm(state.amount);
+    bottomAmount.textContent = rm(state.amount);
+
+    saveState(state);
+  });
+
+  // ✅ Amount: on blur, force 2 decimals + comma
+  amountInput.addEventListener("blur", () => {
+    state.amount = Math.max(0, normalizeMoney(amountInput.value));
+    state.amountText = format2(state.amount);
+    amountInput.value = state.amountText;
+
+    topAmount.textContent = rm(state.amount);
+    bottomAmount.textContent = rm(state.amount);
+
+    saveState(state);
+  });
+
+  holderInput.addEventListener("input", () => {
+    state.holderName = holderInput.value;
+    state = render(state);
+  });
+
+  autoNameBtn.addEventListener("click", () => {
+    state.autoName = !state.autoName;
+    state = render(state);
+  });
+
+  completedInput.addEventListener("input", () => {
+    state.completedText = completedInput.value.trim() || DEFAULT_STATE.completedText;
+    state = render(state);
+  });
+
+  document.getElementById("nowBtn").addEventListener("click", () => {
+    state.effectiveDate = formatToday();
+    state.completedText = formatCompletedNow();
+    state = render(state);
+  });
+
+  refPrefix.addEventListener("input", () => {
+    const d = onlyDigits(refPrefix.value).slice(0,4);
+    refPrefix.value = d;
+    state.refPrefix4 = d || DEFAULT_STATE.refPrefix4;
+    saveState(state);
+  });
+
+  createBtn.addEventListener("click", () => {
+    // Build referenceId10
+    state.referenceId10 = makeReferenceId(state.refPrefix4);
+
+    // Ensure accounts exist
+    state = ensureAccountsForBank(state, state.bank);
+
+    // pick random account
+    const list = state.accountsByBank[state.bank] || [];
+    if(list.length){
+      state.selectedAccountByBank[state.bank] = list[Math.floor(Math.random() * list.length)];
+    }
+blurBtn?.addEventListener("click", () => {
+  state.created = true;
+  state = render(state);
+});
+    // auto name (if ON)
+    if(state.autoName){
+      state.holderName = randomHolderName();
+      holderInput.value = state.holderName;
+    }
+
+    // ✅ sync + force format amount on create
+    state.amount = Math.max(0, normalizeMoney(amountInput.value));
+    state.amountText = format2(state.amount);
+    amountInput.value = state.amountText;
+
+    // completed now every create
+    state.completedText = completedInput.value.trim() || state.completedText;
+
+    state.created = false;
+    state = render(state);
+  });
+
+  resetBtn.addEventListener("click", () => {
+    localStorage.removeItem(LS_KEY);
+    state = structuredClone(DEFAULT_STATE);
+    state = ensureAccountsForBank(state, state.bank);
+    state = render(state);
+  });
+}
+
+    // Boot
+initBanks();
+let state = loadState();
+
+// ✅ penting: set value & trigger change supaya custom dropdown label/menu ikut state
+bankSelect.value = state.bank;
+bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
+
+state = ensureAccountsForBank(state, state.bank);
+state = render(state);
+attachLiveHandlers();
+(function () {
+  const THEME_KEY = "siteTheme";
+
+  function applyChildTheme(theme) {
+    document.body.classList.remove("light-theme", "dark-theme");
+    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+  }
+
+  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+
+  window.addEventListener("message", function (e) {
+    const allowedOrigins = [
+      "https://5g88-main.vercel.app"
+    ];
+    if (!allowedOrigins.includes(e.origin)) return;
+
+    const data = e.data || {};
+    if (data.type === "theme-change") {
+      const theme = data.theme === "dark" ? "dark" : "light";
+      localStorage.setItem(THEME_KEY, theme);
+      applyChildTheme(theme);
+    }
+  });
+})();
+// ✅ Tukar ikut page
+window.HISTORY_TAB_NAME = "MAYBANK2U";
+// ✅ Hantar ke main page
+function sendUserAction(actionName, extra = {}) {
+  if (!actionName) return;
+  window.parent.postMessage({
+    type: "user-tab-action",
+    tab: window.HISTORY_TAB_NAME,
+    action: actionName,
+    extra,
+    time: Date.now()
+  }, "https://5g88-main.vercel.app");
+}
+/* =========================
+   AUTO TRACK CLICK - COUNT SEMUA CLICK
+========================= */
+document.addEventListener("click", function(e) {
+  const el = e.target.closest("button, [onclick], a, .btn, [data-action]");
+  if (!el) return;
+
+  if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
+
+  let name =
+    el.getAttribute("data-action") ||
+    el.getAttribute("title") ||
+    el.getAttribute("aria-label") ||
+    el.innerText ||
+    el.textContent ||
+    el.id ||
+    "";
+
+  name = String(name)
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!name || name.length < 2) return;
+
+  name = name.slice(0, 40);
+
+  sendUserAction(name);
+}, true);
+/* =========================
+   AUTO TRACK CTRL + C / COPY IMAGE
+========================= */
+async function copyReceiptImage(method = "button") {
+  const target = document.getElementById("receiptCard");
+  if (!target) return;
+
+  try {
+    const canvas = await html2canvas(target, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true
+    });
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob })
+      ]);
+
+      if (typeof sendUserAction === "function") {
+        sendUserAction("COPY IMAGE", { method });
+      }
+
+      const btn = document.getElementById("copyImageBtn");
+      if (btn) {
+        const oldText = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = oldText, 1200);
+      }
+    }, "image/png");
+
+  } catch (err) {
+    console.error("Copy image failed:", err);
+    alert("Copy image failed. Please allow clipboard permission.");
+  }
+}
+
+document.getElementById("copyImageBtn")?.addEventListener("click", () => {
+  copyReceiptImage("button");
+});
+
+document.addEventListener("keydown", function(e) {
+  const key = String(e.key || "").toLowerCase();
+
+  if ((e.ctrlKey || e.metaKey) && key === "c") {
+    const active = document.activeElement;
+    const isTyping = active && (
+      active.tagName === "INPUT" ||
+      active.tagName === "TEXTAREA" ||
+      active.isContentEditable
+    );
+
+    if (isTyping) return;
+
+    e.preventDefault();
+    copyReceiptImage("keyboard");
+  }
+}, true);
+/* =========================
+   AUTO TRACK BROWSER COPY EVENT
+========================= */
+document.addEventListener("copy", function() {
+  sendUserAction("COPY IMAGE", {
+    method: "copy-event"
+  });
+}, true);
+</script>
+</body>
+</html>
