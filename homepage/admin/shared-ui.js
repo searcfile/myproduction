@@ -69,6 +69,11 @@
       name: "EVO888",
       group: "gamelog"
     },
+    {
+      file: "jilislot.html",
+      name: "JILISLOT",
+      group: "gamelog"
+    },
 
     {
       file: "maybank.html",
