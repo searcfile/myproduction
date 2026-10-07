@@ -1882,15 +1882,22 @@ function createSharedTabSearch(target, options = {}) {
 
   if (!tabBar) return null;
 
+
+  /* buang instance lama jika ada */
   const old =
-    tabBar.querySelector(".tab-module-search");
+    tabBar.querySelector(
+      ":scope > .tab-module-search"
+    );
 
   if (old) {
     old.remove();
   }
 
+
   const placeholder =
-    options.placeholder || "Select Module";
+    options.placeholder ||
+    "Select Module";
+
 
   const wrapper =
     document.createElement("div");
@@ -1898,12 +1905,13 @@ function createSharedTabSearch(target, options = {}) {
   wrapper.className =
     "tab-module-search";
 
+
   wrapper.innerHTML = `
     <button
       type="button"
       class="tab-search-toggle"
-      title="Search"
-      aria-label="Search module">
+      title="Search Module"
+      aria-label="Search Module">
       ${ICON_SEARCH}
     </button>
 
@@ -1924,7 +1932,7 @@ function createSharedTabSearch(target, options = {}) {
         type="button"
         class="tab-search-action"
         title="Close"
-        aria-label="Close search">
+        aria-label="Close Search">
         ${ICON_CLOSE}
       </button>
 
@@ -1933,9 +1941,10 @@ function createSharedTabSearch(target, options = {}) {
     <div class="tab-search-list"></div>
   `;
 
+
   /*
-   * Module Search mesti sentiasa
-   * berada paling kiri Tab Bar.
+   * Search mesti berada
+   * paling kiri Tab Bar.
    */
   tabBar.prepend(wrapper);
 
@@ -1961,7 +1970,27 @@ function createSharedTabSearch(target, options = {}) {
     );
 
 
+  function positionList() {
+
+    const rect =
+      wrapper.getBoundingClientRect();
+
+    list.style.left =
+      `${rect.left}px`;
+
+    list.style.top =
+      `${rect.bottom + 3}px`;
+
+    list.style.width =
+      `${Math.max(
+        wrapper.offsetWidth,
+        150
+      )}px`;
+  }
+
+
   function closeList() {
+
     wrapper.classList.remove(
       "list-open"
     );
@@ -1982,25 +2011,13 @@ function createSharedTabSearch(target, options = {}) {
   }
 
 
-  function positionList() {
-
-    const rect =
-      wrapper.getBoundingClientRect();
-
-    list.style.left =
-      `${rect.left}px`;
-
-    list.style.top =
-      `${rect.bottom + 3}px`;
-  }
-
-
   function renderResults() {
 
     const keyword =
       input.value
         .trim()
         .toLowerCase();
+
 
     list.innerHTML = "";
 
@@ -2012,7 +2029,9 @@ function createSharedTabSearch(target, options = {}) {
           return true;
         }
 
-        return page.name
+        return String(
+          page.name || ""
+        )
           .toLowerCase()
           .includes(keyword);
       });
@@ -2032,7 +2051,10 @@ function createSharedTabSearch(target, options = {}) {
         "tab-search-item";
 
       item.textContent =
-        page.name
+        String(
+          page.name ||
+          page.file
+        )
           .toLowerCase()
           .replace(
             /\b\w/g,
@@ -2064,6 +2086,7 @@ function createSharedTabSearch(target, options = {}) {
 
     positionList();
 
+
     wrapper.classList.toggle(
       "list-open",
       results.length > 0
@@ -2071,6 +2094,14 @@ function createSharedTabSearch(target, options = {}) {
   }
 
 
+  /*
+   * CLOSED:
+   * hanya button search 32px.
+   *
+   * CLICK:
+   * button hilang,
+   * input muncul di tempat sama.
+   */
   toggle.addEventListener(
     "click",
     event => {
@@ -2082,10 +2113,11 @@ function createSharedTabSearch(target, options = {}) {
         "open"
       );
 
-      renderResults();
-
       requestAnimationFrame(() => {
+
         input.focus();
+
+        renderResults();
       });
     }
   );
@@ -2120,6 +2152,11 @@ function createSharedTabSearch(target, options = {}) {
   );
 
 
+  /*
+   * X sebelah kanan input:
+   * tutup search dan kembali
+   * menjadi button 32px.
+   */
   action.addEventListener(
     "click",
     event => {
@@ -2132,6 +2169,29 @@ function createSharedTabSearch(target, options = {}) {
   );
 
 
+  /*
+   * Escape pun tutup search.
+   */
+  input.addEventListener(
+    "keydown",
+    event => {
+
+      if (event.key === "Escape") {
+
+        event.preventDefault();
+
+        closeSearch();
+      }
+    }
+  );
+
+
+  /*
+   * Klik luar:
+   * tutup result sahaja.
+   * Search input kekal terbuka
+   * seperti component biasa.
+   */
   document.addEventListener(
     "click",
     event => {
@@ -2166,16 +2226,28 @@ function createSharedTabSearch(target, options = {}) {
 
   return {
     element: wrapper,
+
     open() {
-      wrapper.classList.add("open");
-      renderResults();
-      input.focus();
+
+      wrapper.classList.add(
+        "open"
+      );
+
+      requestAnimationFrame(() => {
+
+        input.focus();
+
+        renderResults();
+      });
     },
-    close: closeSearch,
-    refresh: renderResults
+
+    close:
+      closeSearch,
+
+    refresh:
+      renderResults
   };
 }
-
 
 function initTabBarSearch() {
 
