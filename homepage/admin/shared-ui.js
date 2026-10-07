@@ -172,7 +172,11 @@
         c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"/>
     </svg>
   `;
-
+const ICON_SEARCH = `
+  <svg viewBox="64 64 896 896" aria-hidden="true">
+    <path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/>
+  </svg>
+`;
   const ICON_ARROW = `
     <svg class="sidebar-arrow-icon"
          viewBox="0 0 24 24"
@@ -1864,7 +1868,325 @@ function createShell() {
     }
   }
 
+/* ==========================================================
+   SHARED TAB MODULE SEARCH
+   Reusable component
+   ========================================================== */
 
+function createSharedTabSearch(target, options = {}) {
+
+  const tabBar =
+    typeof target === "string"
+      ? document.querySelector(target)
+      : target;
+
+  if (!tabBar) return null;
+
+  const old =
+    tabBar.querySelector(".tab-module-search");
+
+  if (old) {
+    old.remove();
+  }
+
+  const placeholder =
+    options.placeholder || "Select Module";
+
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className =
+    "tab-module-search";
+
+  wrapper.innerHTML = `
+    <button
+      type="button"
+      class="tab-search-toggle"
+      title="Search"
+      aria-label="Search module">
+      ${ICON_SEARCH}
+    </button>
+
+    <div class="tab-search-box">
+
+      <input
+        type="text"
+        class="tab-search-input"
+        placeholder="${placeholder}"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        inputmode="search"
+      >
+
+      <button
+        type="button"
+        class="tab-search-action"
+        title="Close"
+        aria-label="Close search">
+        ${ICON_CLOSE}
+      </button>
+
+    </div>
+
+    <div class="tab-search-list"></div>
+  `;
+
+  /*
+   * Module Search mesti sentiasa
+   * berada paling kiri Tab Bar.
+   */
+  tabBar.prepend(wrapper);
+
+
+  const toggle =
+    wrapper.querySelector(
+      ".tab-search-toggle"
+    );
+
+  const input =
+    wrapper.querySelector(
+      ".tab-search-input"
+    );
+
+  const action =
+    wrapper.querySelector(
+      ".tab-search-action"
+    );
+
+  const list =
+    wrapper.querySelector(
+      ".tab-search-list"
+    );
+
+
+  function closeList() {
+    wrapper.classList.remove(
+      "list-open"
+    );
+
+    list.innerHTML = "";
+  }
+
+
+  function closeSearch() {
+
+    wrapper.classList.remove(
+      "open"
+    );
+
+    closeList();
+
+    input.value = "";
+  }
+
+
+  function positionList() {
+
+    const rect =
+      wrapper.getBoundingClientRect();
+
+    list.style.left =
+      `${rect.left}px`;
+
+    list.style.top =
+      `${rect.bottom + 3}px`;
+  }
+
+
+  function renderResults() {
+
+    const keyword =
+      input.value
+        .trim()
+        .toLowerCase();
+
+    list.innerHTML = "";
+
+
+    const results =
+      ADMIN_PAGES.filter(page => {
+
+        if (!keyword) {
+          return true;
+        }
+
+        return page.name
+          .toLowerCase()
+          .includes(keyword);
+      });
+
+
+    results.forEach(page => {
+
+      const item =
+        document.createElement(
+          "button"
+        );
+
+      item.type =
+        "button";
+
+      item.className =
+        "tab-search-item";
+
+      item.textContent =
+        page.name
+          .toLowerCase()
+          .replace(
+            /\b\w/g,
+            char =>
+              char.toUpperCase()
+          );
+
+      item.title =
+        item.textContent;
+
+
+      item.addEventListener(
+        "click",
+        event => {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          closeSearch();
+
+          addTab(page);
+        }
+      );
+
+
+      list.appendChild(item);
+    });
+
+
+    positionList();
+
+    wrapper.classList.toggle(
+      "list-open",
+      results.length > 0
+    );
+  }
+
+
+  toggle.addEventListener(
+    "click",
+    event => {
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      wrapper.classList.add(
+        "open"
+      );
+
+      renderResults();
+
+      requestAnimationFrame(() => {
+        input.focus();
+      });
+    }
+  );
+
+
+  input.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      renderResults();
+    }
+  );
+
+
+  input.addEventListener(
+    "focus",
+    () => {
+
+      renderResults();
+    }
+  );
+
+
+  input.addEventListener(
+    "input",
+    () => {
+
+      renderResults();
+    }
+  );
+
+
+  action.addEventListener(
+    "click",
+    event => {
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      closeSearch();
+    }
+  );
+
+
+  document.addEventListener(
+    "click",
+    event => {
+
+      if (
+        !wrapper.contains(
+          event.target
+        )
+      ) {
+
+        closeList();
+      }
+    }
+  );
+
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      if (
+        wrapper.classList.contains(
+          "list-open"
+        )
+      ) {
+
+        positionList();
+      }
+    }
+  );
+
+
+  return {
+    element: wrapper,
+    open() {
+      wrapper.classList.add("open");
+      renderResults();
+      input.focus();
+    },
+    close: closeSearch,
+    refresh: renderResults
+  };
+}
+
+
+function initTabBarSearch() {
+
+  return createSharedTabSearch(
+    "#tabBar",
+    {
+      placeholder:
+        "Select Module"
+    }
+  );
+}
   /* ==========================================================
      RENDER TABS
      ========================================================== */
@@ -1998,7 +2320,7 @@ function createShell() {
 
     });
 
-
+    initTabBarSearch(); 
     updateOpenIndicators();
   }
 
@@ -3572,25 +3894,26 @@ setupDropdown(
      PUBLIC API
      ========================================================== */
 
-  window.HomepageSharedUI = {
-    addTab,
-    closeTab,
-    navigateToTab,
-    renderTabs,
-    renderSidebarTabs,
-    syncCurrentPageTab,
-    getTabs,
-    getCurrentFile,
-    findPageByFile,
-    closeSidebar
-  };
+window.HomepageSharedUI = {
+  addTab,
+  closeTab,
+  navigateToTab,
+  renderTabs,
+  renderSidebarTabs,
+  syncCurrentPageTab,
+  getTabs,
+  getCurrentFile,
+  findPageByFile,
+  closeSidebar,
+  createSharedTabSearch,
+  initTabBarSearch
+};
+window.createSharedTabSearch =
+  createSharedTabSearch;
 
+window.initTabBarSearch =
+  initTabBarSearch;
 
-  /*
-   * Compatibility.
-   * Existing HTML/admin.js mungkin masih
-   * memanggil addTab().
-   */
   window.addTab = function(
     label,
     url,
