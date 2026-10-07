@@ -177,6 +177,11 @@ const ICON_SEARCH = `
     <path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/>
   </svg>
 `;
+const ICON_CLEAR = `
+  <svg viewBox="64 64 896 896" aria-hidden="true">
+    <path d="M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.05-.09l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 00-.07 0z"/>
+  </svg>
+`;
   const ICON_ARROW = `
     <svg class="sidebar-arrow-icon"
          viewBox="0 0 24 24"
@@ -1929,13 +1934,13 @@ function createSharedTabSearch(target, options = {}) {
         inputmode="search"
       >
 
-      <button
-        type="button"
-        class="tab-search-action"
-        title="Close"
-        aria-label="Close Search">
-        ${ICON_CLOSE}
-      </button>
+<button
+  type="button"
+  class="tab-search-action"
+  title="Search"
+  aria-label="Search Module">
+  ${ICON_SEARCH}
+</button>
 
     </div>
 
@@ -1969,7 +1974,44 @@ function createSharedTabSearch(target, options = {}) {
       ".tab-search-list"
     );
 
+function getActiveModuleName() {
 
+  const currentFile =
+    getCurrentFile();
+
+  const page =
+    findPageByFile(
+      currentFile
+    );
+
+  if (!page) {
+    return "";
+  }
+
+  return String(
+    page.name ||
+    page.file ||
+    ""
+  )
+    .toLowerCase()
+    .replace(
+      /\b\w/g,
+      char =>
+        char.toUpperCase()
+    );
+}
+
+
+function updateActionIcon() {
+
+  action.innerHTML =
+    ICON_SEARCH;
+
+  action.classList.toggle(
+    "has-value",
+    input.value.trim().length > 0
+  );
+}
 function positionList() {
 
   const rect =
@@ -2107,25 +2149,41 @@ item.className =
    * Search button:
    * 32px -> expand.
    */
-  toggle.addEventListener(
-    "click",
-    event => {
+toggle.addEventListener(
+  "click",
+  event => {
 
-      event.preventDefault();
-      event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
 
-      wrapper.classList.add(
-        "open"
+    wrapper.classList.add(
+      "open"
+    );
+
+    /*
+     * Bila dibuka:
+     * masukkan nama tab active.
+     */
+    input.value =
+      getActiveModuleName();
+
+    updateActionIcon();
+
+    requestAnimationFrame(() => {
+
+      input.focus();
+      const end =
+        input.value.length;
+
+      input.setSelectionRange(
+        end,
+        end
       );
 
-      requestAnimationFrame(() => {
-
-        input.focus();
-
-        renderResults();
-      });
-    }
-  );
+      renderResults();
+    });
+  }
+);
 
 
   input.addEventListener(
@@ -2148,29 +2206,71 @@ item.className =
   );
 
 
-  input.addEventListener(
-    "input",
-    () => {
+input.addEventListener(
+  "input",
+  () => {
+
+    updateActionIcon();
+
+    renderResults();
+  }
+);
+
+
+/*
+ * Hover icon kanan.
+ *
+ * Ada text:
+ * search -> circle X
+ */
+action.addEventListener(
+  "mouseenter",
+  () => {
+
+    if (
+      input.value.trim()
+    ) {
+
+      action.innerHTML =
+        ICON_CLEAR;
+    }
+  }
+);
+
+
+action.addEventListener(
+  "mouseleave",
+  () => {
+
+    action.innerHTML =
+      ICON_SEARCH;
+  }
+);
+
+action.addEventListener(
+  "click",
+  event => {
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (
+      input.value.trim()
+    ) {
+
+      input.value = "";
+
+      action.innerHTML =
+        ICON_SEARCH;
+
+      updateActionIcon();
+
+      input.focus();
 
       renderResults();
     }
-  );
-
-
-  /*
-   * X:
-   * kembali jadi search button 32px.
-   */
-  action.addEventListener(
-    "click",
-    event => {
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      closeSearch();
-    }
-  );
+  }
+);
 
 
   input.addEventListener(
