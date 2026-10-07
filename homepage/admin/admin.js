@@ -1698,6 +1698,13 @@ function applyActiveTabFromStorage(){
     el.classList.toggle("active-tab", u === activeUrl);
   });
 }
+function navigateToTab(tab) {
+  if (!tab?.url) return;
+  const url = normUrl(tab.url);
+  setActiveTabUrl(url);
+  sessionStorage.setItem("mainShowContentLoading", "1");
+  window.location.href = url;
+}
 function addTab(label, url, opt = {}) {
   const L = String(label || "").trim().toUpperCase();
   const group = String(opt?.group || "none").toLowerCase();
@@ -1721,17 +1728,16 @@ if (idx === -1) {
 }
 
 switchTabHistorySession(L, newUrl);
+saveTabs(existingTabs);
 
-  saveTabs(existingTabs);
+navigateToTab({
+  label: L,
+  url: newUrl,
+  group,
+  route
+});
 
-  loadPage(newUrl);
-  renderTabs();
-  updateGameLogCheckmarks();
-  updateBankResitCheckmarks();
-  updateGameLinksCheckmarks();
-  updateEmptyState();
-  updateFloatingLivechatVisibility();
-  setHeaderActiveByGroup(group, L);
+return;
 
   const liveBtn = document.getElementById("liveChatBtn");
   const linkBtn = document.getElementById("linkDownloadBtn");
