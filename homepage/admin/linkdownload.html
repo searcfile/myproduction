@@ -32,16 +32,21 @@
     --blue-hover: #3c89e8;
     --blue-active: #1554ad;
   }
-    body {
-      position: relative;
-      background: var(--page-bg);
-      font-family: 'Arial', sans-serif;
-      color: var(--page-text);
-      margin:16px 12px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      overflow-y: scroll;
-    }
+body {
+  position: relative;
+  background: var(--page-bg);
+  font-family: 'Arial', sans-serif;
+  color: var(--page-text);
+  margin: 0;
+  padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow-y: scroll;
+}
+
+body > .container {
+  margin-top: 16px;
+}
     body::-webkit-scrollbar {
       display: none;
     }
