@@ -451,8 +451,7 @@ select:focus-visible{
 <div class="copy-toast" id="copyToast">
   <span>Image copied!</span>
 </div>
-<script>if (window.top === window.self) {window.location.replace("/main");}</script>
-<script>
+<script type="module">
   function showToast(){
     const toast = document.getElementById('copyToast');
     toast.classList.add('show');
