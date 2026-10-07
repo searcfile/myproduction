@@ -1441,18 +1441,12 @@ body.tab-dragging-active *{
 
 .tab-module-search{
   position:relative;
-
   width:32px;
   height:32px;
-
   flex:0 0 32px;
-
-  margin:0 4px 4px 0;
-
+  margin-bottom:4px;
   white-space:nowrap;
-
   z-index:4;
-
   transition:
     width .18s ease,
     flex-basis .18s ease;
@@ -1473,20 +1467,14 @@ body.tab-dragging-active *{
 
 .tab-search-control{
   position:relative;
-
   width:100%;
   height:32px;
-
   display:flex;
   align-items:center;
-
   border:1px solid var(--border2);
   border-radius:6px;
-
   background:var(--tab2);
-
   overflow:hidden;
-
   transition:
     border-color .2s ease;
 }
@@ -1572,7 +1560,7 @@ body.tab-dragging-active *{
 
   font-family:inherit;
   font-size:14px;
-  line-height:30px;
+  line-height:32px;
 
   box-shadow:none !important;
 }
