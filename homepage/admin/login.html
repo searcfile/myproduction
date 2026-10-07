@@ -2729,15 +2729,20 @@ function applyChildTheme(theme) {
 const allowedOrigins = [
   window.location.origin
 ];
-    if (!allowedOrigins.includes(e.origin)) return;
 
-    const data = e.data || {};
-    if (data.type === "theme-change") {
-      const theme = data.theme === "dark" ? "dark" : "light";
-      localStorage.setItem(THEME_KEY, theme);
-      applyChildTheme(theme);
-    }
-  });
+window.addEventListener("message", (e) => {
+  if (!allowedOrigins.includes(e.origin)) return;
+
+  const data = e.data || {};
+
+  if (data.type === "theme-change") {
+    const theme = data.theme === "dark" ? "dark" : "light";
+
+    localStorage.setItem(THEME_KEY, theme);
+    applyChildTheme(theme);
+  }
+});
+
 })();
 </script>
 </body>
