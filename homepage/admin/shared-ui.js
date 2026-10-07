@@ -2881,15 +2881,13 @@ document
     button.textContent = label;
   }
 
-  function updateChangePwVisibility() {
-    const visible = isUsernameLoginNow();
+function updateChangePwVisibility() {
+  const pw = document.getElementById("changePwBtn");
+  const pw2 = document.getElementById("change2ndPwBtn");
 
-    const pw = document.getElementById("changePwBtn");
-    const pw2 = document.getElementById("change2ndPwBtn");
-
-    if (pw) pw.style.display = visible ? "" : "none";
-    if (pw2) pw2.style.display = visible ? "" : "none";
-  }
+  if (pw) pw.style.display = "";
+  if (pw2) pw2.style.display = "";
+}
 
   async function sha256Hex(text) {
     const enc = new TextEncoder().encode(String(text || ""));
@@ -2937,7 +2935,7 @@ document
     };
 
     const openPw = () => {
-      if (!isUsernameLoginNow() || !modal) return;
+      if (!modal) return;
 
       if (errBox) {
         errBox.style.display = "none";
@@ -3056,7 +3054,7 @@ document
     };
 
     const openPw2 = () => {
-      if (!isUsernameLoginNow() || !modal2) return;
+      if (!modal2) return;
 
       if (err2) {
         err2.style.display = "none";
