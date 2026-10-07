@@ -2901,17 +2901,30 @@ function getSharedDb() {
       showNotification(savedMessage, savedTimestamp);
     }
 
-    button?.addEventListener("click", event => {
-      event.stopPropagation();
+button?.addEventListener("click", event => {
+  event.stopPropagation();
 
-      const message = button.dataset.message;
-      const timestamp = Number(button.dataset.timestamp);
-      if (!message || !timestamp) return;
+  const message =
+    button.dataset.message ||
+    localStorage.getItem("latestNotifMessage") ||
+    "";
 
-      if (openNoticeModal(message, timestamp)) {
-        markNoticeSeen(timestamp);
-      }
-    });
+  const timestamp =
+    Number(
+      button.dataset.timestamp ||
+      localStorage.getItem("latestNotifTimestamp") ||
+      Date.now()
+    );
+
+  if (!message) {
+    console.warn("[Notice] No notice message available.");
+    return;
+  }
+
+  if (openNoticeModal(message, timestamp)) {
+    markNoticeSeen(timestamp);
+  }
+});
 
     document.getElementById("noticeClose")
       ?.addEventListener("click", closeNoticeModal);
@@ -2987,25 +3000,36 @@ function initFloatingFab() {
     setOpen(!isOpen);
   });
 
-  noticeBtn?.addEventListener("click", event => {
-    event.stopPropagation();
+noticeBtn?.addEventListener("click", event => {
+  event.stopPropagation();
 
-    const notifButton =
-      document.getElementById("notifButton");
+  const notifButton =
+    document.getElementById("notifButton");
 
-    const message =
-      notifButton?.dataset.message;
+  const message =
+    notifButton?.dataset.message ||
+    localStorage.getItem("latestNotifMessage") ||
+    "";
 
-    const timestamp =
-      Number(notifButton?.dataset.timestamp);
+  const timestamp =
+    Number(
+      notifButton?.dataset.timestamp ||
+      localStorage.getItem("latestNotifTimestamp") ||
+      Date.now()
+    );
 
-    if (message && timestamp) {
-      openNoticeModal(message, timestamp);
-      markNoticeSeen(timestamp);
-    }
-
+  if (!message) {
+    console.warn("[Floating Notice] No notice message available.");
     setOpen(false);
-  });
+    return;
+  }
+
+  if (openNoticeModal(message, timestamp)) {
+    markNoticeSeen(timestamp);
+  }
+
+  setOpen(false);
+});
 
   liveBtn?.addEventListener("click", event => {
     event.stopPropagation();
