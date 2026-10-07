@@ -1586,10 +1586,8 @@ body.tab-dragging-active *{
 .tab-search-action svg{
   width:12px;
   height:12px;
-
   display:block;
-
-  fill:currentColor;
+  fill:var(--blur);
 }
 
 .tab-search-action:hover{
