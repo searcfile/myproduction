@@ -795,82 +795,13 @@ if (!window.isLivechatTabActive?.()) {
 });
 
   // indikator unread
-  initLivechatNotifListener(userId);
-
-  // UI header nama/email
-  const userNameText = document.getElementById("userNameText");
-  const dropdownContent = document.getElementById("dropdownContent");
-  const userEmailElem = document.getElementById("userEmail");
-  const dropdownWrapper = document.querySelector(".user-dropdown");
-  const userButton = document.getElementById("userName");
-
-  if (userNameText && dropdownContent && dropdownWrapper && userButton) {
-    const loginData = JSON.parse(localStorage.getItem("gmailLogin"));
-    const nameParts = (loginData.name || '').trim().split(" ");
-    const displayName = (nameParts.length >= 2 && nameParts[0].toLowerCase() === nameParts[1].toLowerCase())
-      ? nameParts[0] : (loginData.name || '');
-    userNameText.textContent = displayName;
-    if (userEmailElem) userEmailElem.textContent = loginData.email;
-
-    dropdownWrapper.addEventListener("mouseenter", () => {
-      dropdownContent.style.display = "block";
-    });
-    dropdownWrapper.addEventListener("mouseleave", () => {
-      if (dropdownWrapper.classList.contains("force-open")) return;
-      dropdownContent.style.display = "none";
-      userButton.classList.remove("active-user-button");
-    });
-    userButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = dropdownWrapper.classList.toggle("force-open");
-      dropdownContent.style.display = isOpen ? "block" : "none";
-      userButton.classList.toggle("active-user-button", isOpen);
-    });
-    document.addEventListener("click", (e) => {
-      if (!dropdownWrapper.contains(e.target)) {
-        dropdownContent.style.display = "none";
-        dropdownWrapper.classList.remove("force-open");
-        userButton.classList.remove("active-user-button");
-      }
-    });
-  }
+  initLivechatNotifListener(userId);  
 }); // ⬅️ tutup DOMContentLoaded
 
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
     loadingScreen.style.display = "none";
   }
-let isDown = false;
-let startX, scrollLeft;
-
-tabBar.addEventListener('mousedown', (e) => {
-  isDown = true;
-  startX = e.pageX - tabBar.offsetLeft;
-  scrollLeft = tabBar.scrollLeft;
-});
-
-tabBar.addEventListener('mouseleave', () => {
-  isDown = false;
-});
-
-tabBar.addEventListener('mouseup', () => {
-  isDown = false;
-});
-
-tabBar.addEventListener('mousemove', (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-  const x = e.pageX - tabBar.offsetLeft;
-  const walk = (x - startX) * 1.5;
-  tabBar.scrollLeft = scrollLeft - walk;
-});
-tabBar.addEventListener('wheel', (e) => {
-  if (e.deltaY !== 0) {
-    e.preventDefault();
-    tabBar.scrollLeft += e.deltaY;
-  }
-});
-
 // ====== ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ ======
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
