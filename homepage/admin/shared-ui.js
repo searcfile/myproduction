@@ -1907,16 +1907,6 @@ function createSharedTabSearch(target, options = {}) {
   wrapper.className =
     "tab-module-search";
 
-
-  /*
-   * SATU CONTROL SAHAJA.
-   *
-   * Closed:
-   * [ search icon ]
-   *
-   * Open:
-   * [ Select Module       X ]
-   */
   wrapper.innerHTML = `
     <div class="tab-search-control">
 
@@ -1980,20 +1970,20 @@ function createSharedTabSearch(target, options = {}) {
     );
 
 
-  function positionList() {
+function positionList() {
 
-    const rect =
-      wrapper.getBoundingClientRect();
+  const rect =
+    wrapper.getBoundingClientRect();
 
-    list.style.left =
-      `${rect.left}px`;
+  list.style.left =
+    `${rect.left}px`;
 
-    list.style.top =
-      `${rect.bottom + 3}px`;
+  list.style.top =
+    `${rect.bottom + 3}px`;
 
-    list.style.width =
-      `${wrapper.offsetWidth}px`;
-  }
+  list.style.width =
+    "188px";
+}
 
 
   function closeList() {
