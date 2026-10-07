@@ -2780,7 +2780,7 @@ if (logoutBtn) {
     if (window.google?.accounts?.id) {
       google.accounts.id.disableAutoSelect();
     }
-    window.location.href = "/login";
+    window.location.href = "./login";
   });
 }
 window.renderMobileUserBtn = function renderMobileUserBtn(){ 
