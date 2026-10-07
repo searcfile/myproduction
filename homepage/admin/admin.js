@@ -798,7 +798,7 @@ myOverrideRef.on('value', async (snap) => {
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
 
   setTimeout(() => {
-    window.location.replace("./login?blocked=1");
+    window.location.replace("./login.html?blocked=1");
   }, 300);
 });
 
@@ -808,7 +808,7 @@ myOverrideRef.on('value', async (snap) => {
       try { if (auth) await auth.signOut(); } catch(_) {}
       localStorage.removeItem("gmailLogin");
       try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(_){}
-      window.location.href = "./login?blocked=1";
+      window.location.href = "./login.html?blocked=1";
     }
   });
 
