@@ -1504,10 +1504,10 @@ body.tab-dragging-active *{
    ========================================================== */
 
 .tab-search-toggle{
-  width:30px;
-  height:30px;
+  width:32px;
+  height:32px;
 
-  flex:0 0 30px;
+  flex:0 0 32px;
 
   display:flex;
   align-items:center;
@@ -1554,7 +1554,7 @@ body.tab-dragging-active *{
 
   width:100%;
   min-width:0;
-  height:30px;
+  height:32px;
 
   flex:1 1 auto;
 
@@ -1569,7 +1569,7 @@ body.tab-dragging-active *{
   color:var(--text-soft);
 
   font-family:inherit;
-  font-size:12px;
+  font-size:14px;
   line-height:30px;
 
   box-shadow:none !important;
@@ -1613,8 +1613,8 @@ body.tab-dragging-active *{
 }
 
 .tab-search-action svg{
-  width:11px;
-  height:11px;
+  width:12px;
+  height:12px;
 
   display:block;
 
@@ -1629,14 +1629,6 @@ body.tab-dragging-active *{
   color:var(--gold-active);
 }
 
-
-/* ==========================================================
-   OPEN STATE
-
-   PENTING:
-   button search hilang sepenuhnya.
-   input + X sahaja yang tampil.
-   ========================================================== */
 
 .tab-module-search.open
 .tab-search-toggle{
