@@ -1440,15 +1440,12 @@ body.tab-dragging-active *{
 .tab-module-search{
   position:relative;
 
-  display:flex;
-  align-items:flex-end;
+  width:32px;
+  height:32px;
 
   flex:0 0 32px;
 
-  width:32px;
-  height:100%;
-
-  margin-right:4px;
+  margin:0 4px 4px 0;
 
   white-space:nowrap;
 
@@ -1460,36 +1457,73 @@ body.tab-dragging-active *{
 }
 
 
+/* OPEN */
+
+.tab-module-search.open{
+  width:188px;
+  flex-basis:188px;
+}
+
+
 /* ==========================================================
-   CLOSED STATE
+   ONE SEARCH CONTROL
    ========================================================== */
 
-.tab-search-toggle{
-  width:32px;
-  height:32px;
+.tab-search-control{
+  position:relative;
 
-  flex:0 0 32px;
+  width:100%;
+  height:32px;
 
   display:flex;
   align-items:center;
-  justify-content:center;
-
-  padding:0;
-  margin:0 0 4px 0;
 
   border:1px solid var(--border2);
   border-radius:6px;
 
   background:var(--tab2);
 
+  overflow:hidden;
+
+  transition:
+    border-color .2s ease;
+}
+
+.tab-search-control:hover{
+  border-color:var(--gold-hover);
+}
+
+.tab-module-search.open
+.tab-search-control:focus-within{
+  border-color:var(--gold);
+}
+
+
+/* ==========================================================
+   CLOSED SEARCH BUTTON
+   ========================================================== */
+
+.tab-search-toggle{
+  width:30px;
+  height:30px;
+
+  flex:0 0 30px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+  margin:0;
+
+  border:0 !important;
+  outline:0;
+
+  background:transparent !important;
+
   color:var(--text-soft);
 
   cursor:pointer;
-
-  transition:
-    color .2s ease,
-    border-color .2s ease,
-    background .2s ease;
 }
 
 .tab-search-toggle svg{
@@ -1503,82 +1537,20 @@ body.tab-dragging-active *{
 
 .tab-search-toggle:hover{
   color:var(--gold-hover);
-
-  border-color:
-    var(--gold-hover);
 }
 
 .tab-search-toggle:active{
   color:var(--gold-active);
-
-  border-color:
-    var(--gold-active);
-}
-
-
-/* ==========================================================
-   OPEN STATE
-   ========================================================== */
-
-.tab-module-search.open{
-  width:150px;
-
-  flex-basis:150px;
-}
-
-.tab-module-search.open
-.tab-search-toggle{
-  display:none;
-}
-
-
-/* ==========================================================
-   SEARCH BOX
-   ========================================================== */
-
-.tab-search-box{
-  position:relative;
-
-  width:150px;
-  height:32px;
-
-  display:none;
-  align-items:center;
-
-  flex:0 0 150px;
-
-  margin:0 0 4px 0;
-
-  border:1px solid var(--border2);
-  border-radius:6px;
-
-  background:var(--tab2);
-
-  overflow:hidden;
-}
-
-.tab-module-search.open
-.tab-search-box{
-  display:flex;
-}
-
-.tab-search-box:hover{
-  border-color:
-    var(--gold-hover);
-}
-
-.tab-search-box:focus-within{
-  border-color:
-    var(--gold);
 }
 
 
 /* ==========================================================
    INPUT
+   CLOSED = tidak wujud dalam layout
    ========================================================== */
 
 .tab-search-input{
-  display:block;
+  display:none;
 
   width:100%;
   min-width:0;
@@ -1586,31 +1558,21 @@ body.tab-dragging-active *{
 
   flex:1 1 auto;
 
-  padding:
-    0
-    30px
-    0
-    10px;
-
+  padding:0 30px 0 10px;
   margin:0;
 
   border:0 !important;
   outline:0 !important;
 
-  border-radius:0;
+  background:transparent !important;
 
-  background:
-    transparent !important;
-
-  color:
-    var(--text-soft);
+  color:var(--text-soft);
 
   font-family:inherit;
   font-size:12px;
   line-height:30px;
 
-  box-shadow:
-    none !important;
+  box-shadow:none !important;
 }
 
 .tab-search-input::placeholder{
@@ -1619,10 +1581,13 @@ body.tab-dragging-active *{
 
 
 /* ==========================================================
-   CLOSE BUTTON
+   CLOSE
+   CLOSED = tidak wujud
    ========================================================== */
 
 .tab-search-action{
+  display:none;
+
   position:absolute;
 
   top:0;
@@ -1631,7 +1596,6 @@ body.tab-dragging-active *{
   width:30px;
   height:30px;
 
-  display:flex;
   align-items:center;
   justify-content:center;
 
@@ -1639,10 +1603,9 @@ body.tab-dragging-active *{
   margin:0;
 
   border:0 !important;
-  border-radius:0;
+  outline:0;
 
-  background:
-    transparent !important;
+  background:transparent !important;
 
   color:var(--close);
 
@@ -1668,6 +1631,30 @@ body.tab-dragging-active *{
 
 
 /* ==========================================================
+   OPEN STATE
+
+   PENTING:
+   button search hilang sepenuhnya.
+   input + X sahaja yang tampil.
+   ========================================================== */
+
+.tab-module-search.open
+.tab-search-toggle{
+  display:none !important;
+}
+
+.tab-module-search.open
+.tab-search-input{
+  display:block !important;
+}
+
+.tab-module-search.open
+.tab-search-action{
+  display:flex !important;
+}
+
+
+/* ==========================================================
    RESULT LIST
    ========================================================== */
 
@@ -1676,7 +1663,7 @@ body.tab-dragging-active *{
 
   display:none;
 
-  width:150px;
+  width:188px;
   max-height:260px;
 
   overflow-y:auto;
@@ -1687,14 +1674,11 @@ body.tab-dragging-active *{
   border:1px solid var(--border2);
   border-radius:6px;
 
-  background:
-    var(--backgrounddrop);
+  background:var(--backgrounddrop);
 
   box-shadow:
     0 8px 20px
     rgba(0,0,0,.35);
-
-  white-space:normal;
 
   z-index:999999;
 }
@@ -1715,14 +1699,12 @@ body.tab-dragging-active *{
   display:block;
 
   padding:6px 8px;
-
   margin:0;
 
   border:0 !important;
   border-radius:4px;
 
-  background:
-    transparent !important;
+  background:transparent !important;
 
   color:var(--text-soft);
 
@@ -1744,13 +1726,11 @@ body.tab-dragging-active *{
   background:
     var(--close-hover2) !important;
 
-  color:
-    var(--text-main);
+  color:var(--text-main);
 }
 
 .tab-search-item:active{
-  color:
-    var(--gold-active);
+  color:var(--gold-active);
 }
 /* ==========================================================
    HEADER TAB SEARCH
