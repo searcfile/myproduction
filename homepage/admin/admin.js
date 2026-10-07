@@ -64,7 +64,7 @@ function unlockLivechatAudio() {
           audio.muted = oldMuted;
           audio.volume = oldVolume;
 
-          if (livechatUnreadCount > 0 && !isLivechatTabActive()) {
+          if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
             startLivechatLoopSound();
           }
         }).catch(() => {
@@ -77,13 +77,13 @@ function unlockLivechatAudio() {
         audio.muted = oldMuted;
         audio.volume = oldVolume;
 
-        if (livechatUnreadCount > 0 && !isLivechatTabActive()) {
+        if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
           startLivechatLoopSound();
         }
       }
     } catch (_) {}
   } else {
-    if (livechatUnreadCount > 0 && !isLivechatTabActive()) {
+    if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
       startLivechatLoopSound();
     }
   }
@@ -96,7 +96,7 @@ function unlockLivechatAudio() {
 
 function startLivechatLoopSound() {
   if (!userHasInteractedForAudio) return;
-  if (isLivechatTabActive()) return;
+  if (window.isLivechatTabActive?.()) return;
 
   const audio = initLivechatLoopAudio();
   if (!audio) return;
@@ -113,7 +113,7 @@ function startLivechatLoopSound() {
     livechatLoopPlaying = false;
 
     setTimeout(() => {
-      if (userHasInteractedForAudio && livechatUnreadCount > 0 && !isLivechatTabActive()) {
+      if (userHasInteractedForAudio && livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
         const a = initLivechatLoopAudio();
         if (!a) return;
         a.play().then(() => {
@@ -138,7 +138,7 @@ function syncLivechatAlertState(unreadCount = 0) {
   livechatUnreadCount = count;
   livechatUnreadActive = count > 0;
 
-  if (count > 0 && !isLivechatTabActive()) {
+  if (count > 0 && !window.isLivechatTabActive?.()) {
     startLivechatTitleAlert(count);
     startLivechatLoopSound();
   } else {
@@ -166,7 +166,7 @@ function startLivechatTitleAlert(unreadCount = 0) {
   }, 220);
 }
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && livechatUnreadCount > 0 && !isLivechatTabActive()) {
+  if (!document.hidden && livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
     stopLivechatTitleAlert(false);
     startLivechatTitleAlert(livechatUnreadCount);
     startLivechatLoopSound();
@@ -185,11 +185,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
   }
 
   document.title = DEFAULT_PAGE_TITLE;
-}
-
-function getCurrentAdminFile() {
-  const file = location.pathname.split("/").pop();
-  return file || "index.html";
 }
 
 (function(){
@@ -793,7 +788,7 @@ syncLivechatAlertState(unreadCount);
     }
   });
 
-if (!isLivechatTabActive()) {
+if (!window.isLivechatTabActive?.()) {
   startLivechatLoopSound();
 }
 }
@@ -816,10 +811,7 @@ if (!isLivechatTabActive()) {
       ? nameParts[0] : (loginData.name || '');
     userNameText.textContent = displayName;
     if (userEmailElem) userEmailElem.textContent = loginData.email;
-    window.renderMobileUserBtn && window.renderMobileUserBtn();
-    updateChangePwVisibility();
-    moveNotifButtonResponsive();
-    
+
     dropdownWrapper.addEventListener("mouseenter", () => {
       dropdownContent.style.display = "block";
     });
@@ -842,76 +834,7 @@ if (!isLivechatTabActive()) {
       }
     });
   }
-  // === BACA GLOBAL UI VISIBILITY DARI BLURPHP (SATU NODE SAJA) ===
-db.ref('settings/uiVisibility').on('value', (snap) => {
-  uiVisibility = snap.val() || {};
-  applyHeaderVisibility();
-  applySidebarVisibility();
-  applyDropdownVisibility();        // ✅ NEW
-  applyTabVisibility();             // ✅ filter openTabs (yang existing)
-  applyRenderedTabVisibility();     // ✅ NEW (hide tab DOM yang sedang nampak)
-
-  // ✅ refresh checkmarks terus (kalau dropdown tengah buka)
-  updateGameLogCheckmarks();
-  updateBankResitCheckmarks();
-  updateGameLinksCheckmarks();
-
-  // ✅ kalau custom tabs render ikut hide/show, re-render sekali
-  renderCustomTabs();
-});
-  db.ref('settings/uiCustomTabs').on('value', (snap) => {
-  uiCustomTabs = snap.val() || {};
-  renderCustomTabs();
-});
 }); // ⬅️ tutup DOMContentLoaded
-
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("gmailLogin");
-    sessionStorage.setItem("forceLogout", "1");
-    if (window.google?.accounts?.id) {
-      google.accounts.id.disableAutoSelect();
-    }
-    window.location.href = "./login.html";
-  });
-}
-window.renderMobileUserBtn = function renderMobileUserBtn(){ 
-  const btn = document.getElementById('menuUserBtn');
-  if (!btn) return;
-  let login, label = 'User';
-  try {
-    login = JSON.parse(localStorage.getItem('gmailLogin') || '{}');
-    const fullName = (login?.name || '').trim();
-    const parts = fullName.split(' ').filter(Boolean);
-    const dedupName = (parts.length >= 2 && parts[0].toLowerCase() === parts[1].toLowerCase())
-      ? parts[0]
-      : fullName;
-    label = dedupName || (login?.email ? login.email.split('@')[0] : 'User');
-  } catch(_){}
-  btn.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="margin-right:6px">
-      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
-    </svg>
-    <span>${label}</span>
-  `;
-};
-(function setAriaLabels(){
-  const pairs = [
-    ['bankResitBtn','Bank Resit'],
-    ['gameLinksBtn','List Type'],
-    ['liveChatBtn','LiveChat'],
-    ['linkDownloadBtn','Link Download'],
-    ['gameLogBtn','Game Log'],
-    ['userName','Account'],
-    ['notifButton','Notice'],
-    ['itemBtn','Item ColLection'],
-  ];
-  pairs.forEach(([id,label])=>{
-    const el = document.getElementById(id);
-    if (el){ el.setAttribute('aria-label', label); el.title = label; }
-  });
-})();
 
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
