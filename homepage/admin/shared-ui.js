@@ -2173,25 +2173,20 @@ function positionList() {
     }
   );
 
+document.addEventListener(
+  "click",
+  event => {
 
-  /*
-   * Klik luar hanya tutup dropdown.
-   * Search control tidak collapse.
-   */
-  document.addEventListener(
-    "click",
-    event => {
+    if (
+      !wrapper.contains(
+        event.target
+      )
+    ) {
 
-      if (
-        !wrapper.contains(
-          event.target
-        )
-      ) {
-
-        closeList();
-      }
+      closeSearch();
     }
-  );
+  }
+);
 
 
   window.addEventListener(
