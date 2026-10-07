@@ -1433,7 +1433,247 @@ body.tab-dragging-active *{
   cursor:grabbing !important;
 }
 
+/* ==========================================================
+   SHARED TAB MODULE SEARCH
+   ========================================================== */
 
+.tab-module-search{
+  position:relative;
+
+  flex:0 0 auto;
+  flex-shrink:0;
+
+  margin-bottom:4px;
+
+  z-index:5;
+}
+
+
+/* SEARCH BUTTON */
+
+.tab-search-toggle{
+  width:32px;
+  height:32px;
+
+  padding:0;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  border:1px solid var(--border2);
+  border-radius:6px;
+
+  background:var(--tab2);
+  color:var(--text-soft);
+
+  cursor:pointer;
+
+  transition:
+    color .3s ease,
+    border-color .3s ease;
+}
+
+.tab-search-toggle svg{
+  width:14px;
+  height:14px;
+
+  display:block;
+
+  fill:currentColor;
+}
+
+.tab-search-toggle:hover{
+  border-color:var(--gold-hover);
+  color:var(--gold-hover);
+}
+
+.tab-search-toggle:active{
+  border-color:var(--gold-active);
+  color:var(--gold-active);
+}
+
+
+/* SEARCH BOX */
+
+.tab-search-box{
+  width:150px;
+  height:32px;
+
+  display:none;
+  align-items:center;
+
+  overflow:hidden;
+
+  border:1px solid var(--border2);
+  border-radius:6px;
+
+  background:var(--tab2);
+
+  transition:
+    border-color .3s ease;
+}
+
+.tab-search-box:hover{
+  border-color:var(--gold-hover);
+}
+
+.tab-search-box:focus-within{
+  border-color:var(--gold);
+}
+
+.tab-module-search.open
+.tab-search-box{
+  display:flex;
+}
+
+.tab-module-search.open
+.tab-search-toggle{
+  display:none;
+}
+
+
+/* INPUT */
+
+.tab-search-input{
+  width:100%;
+  height:100%;
+
+  min-width:0;
+
+  padding:0 4px 0 10px;
+
+  border:0;
+  outline:0;
+
+  background:transparent;
+
+  color:var(--text-soft);
+
+  font-family:inherit;
+  font-size:14px;
+}
+
+.tab-search-input::placeholder{
+  color:var(--blur);
+}
+
+
+/* CLOSE BUTTON */
+
+.tab-search-action{
+  width:32px;
+  height:32px;
+
+  flex:0 0 32px;
+
+  padding:0;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  border:0;
+
+  background:transparent;
+
+  color:var(--close);
+
+  cursor:pointer;
+
+  transition:
+    color .2s ease;
+}
+
+.tab-search-action svg{
+  width:12px;
+  height:12px;
+
+  display:block;
+
+  fill:currentColor;
+}
+
+.tab-search-action:hover{
+  color:var(--text-main);
+}
+
+.tab-search-action:active{
+  color:var(--gold-active);
+}
+
+
+/* RESULT LIST */
+
+.tab-search-list{
+  position:fixed;
+
+  width:150px;
+  max-height:260px;
+
+  display:none;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding:4px;
+
+  white-space:normal;
+
+  background:var(--backgrounddrop);
+
+  border-radius:8px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(0,0,0,.35);
+
+  z-index:999999;
+}
+
+.tab-module-search.list-open
+.tab-search-list{
+  display:block;
+}
+
+
+/* RESULT ITEM */
+
+.tab-search-item{
+  width:100%;
+
+  display:flex;
+  align-items:center;
+
+  padding:5px 12px;
+
+  border:0;
+  border-radius:4px;
+
+  background:transparent;
+
+  color:var(--text-soft);
+
+  font-family:inherit;
+  font-size:14px;
+
+  text-align:left;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  cursor:pointer;
+}
+
+.tab-search-item:hover{
+  background:var(--close-hover2);
+}
+
+.tab-search-item:active{
+  color:var(--gold-active);
+}
 /* ==========================================================
    HEADER TAB SEARCH
    ========================================================== */
