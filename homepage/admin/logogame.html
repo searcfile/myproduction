@@ -21,12 +21,6 @@
   --blue: #1668dc;
   --blue-hover: #3c89e8;
   --blue-active: #1554ad;
-
-  --hdr-h:0px;
-  --flt-h:120px;
-  --line-h:64px;
-  --safe-b: env(safe-area-inset-bottom, 0px);
-  --offset: 0px;
 }
 
 body.light-theme{
@@ -64,7 +58,10 @@ body{
 /* sticky filter area */
 .filter-bar{
   position: sticky;
-  top: 0;
+  top: calc(
+    var(--admin-header-height) +
+    var(--admin-tabs-height)
+  );
   z-index: 998;
   background: var(--page-bg);
   padding: 16px 12px 10px;
