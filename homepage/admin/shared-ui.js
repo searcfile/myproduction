@@ -2824,24 +2824,33 @@ function getSharedDb() {
     if (modal) modal.style.display = "none";
   }
 
-  function openNoticeModal(message, timestamp) {
-    const modal = document.getElementById("noticeModal");
-    const text = document.getElementById("noticeMessageText");
-    const time = document.getElementById("noticeMessageTime");
+function openNoticeModal(message, timestamp) {
+  const modal = document.getElementById("noticeModal");
+  const text = document.getElementById("noticeMessageText");
+  const time = document.getElementById("noticeMessageTime");
 
-    if (!modal || !text || !time) return false;
+  if (!modal || !text || !time) return false;
+
+  text.textContent = message || "";
+
+  if (timestamp) {
 
     const dateObj = new Date(Number(timestamp));
-    const valid = !Number.isNaN(dateObj.getTime());
 
-    text.textContent = message || "";
-    time.textContent = valid
-      ? `${String(dateObj.getDate()).padStart(2,"0")}/${String(dateObj.getMonth()+1).padStart(2,"0")}/${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2,"0")}:${String(dateObj.getMinutes()).padStart(2,"0")}:${String(dateObj.getSeconds()).padStart(2,"0")}`
-      : "Waktu tidak valid";
+    time.textContent =
+      !Number.isNaN(dateObj.getTime())
+        ? `${String(dateObj.getDate()).padStart(2,"0")}/${String(dateObj.getMonth()+1).padStart(2,"0")}/${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2,"0")}:${String(dateObj.getMinutes()).padStart(2,"0")}:${String(dateObj.getSeconds()).padStart(2,"0")}`
+        : "";
 
-    modal.style.display = "flex";
-    return true;
+  } else {
+
+    time.textContent = "";
+
   }
+
+  modal.style.display = "flex";
+  return true;
+}
 
   function markNoticeSeen(timestamp) {
     const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
