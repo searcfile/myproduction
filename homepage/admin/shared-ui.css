@@ -1,22 +1,3 @@
-/* ==========================================================
-   HOMEPAGE ADMIN - SHARED UI
-   File: homepage/admin/shared-ui.css
-
-   Shared:
-   - Theme
-   - Header
-   - Sidebar
-   - Header dropdown
-   - User dropdown
-   - Tab workspace
-   - Search
-   - Responsive
-   ========================================================== */
-
-
-/* ==========================================================
-   THEME VARIABLES
-   ========================================================== */
 
 :root{
   --bg-main:#000;
