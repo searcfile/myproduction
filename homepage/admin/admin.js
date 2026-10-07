@@ -494,8 +494,6 @@ function updateEmptyState(){
 }
 
 window.addEventListener("load", () => {
-    syncCurrentPageTab();
-  renderTabs();
   applyTabVisibility();
 
   updateEmptyState();
@@ -508,7 +506,6 @@ window.addEventListener("load", () => {
     updateFloatingLivechatVisibility();
   }, 100);
 });
-
 function formatTimestamp(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -680,15 +677,12 @@ btnEl.onclick = function () {
 }
 // ⬇️ GANTI seluruh blok ini
 document.addEventListener("DOMContentLoaded", async () => {
-  initSidebarSearch();
-  initHeaderTabSearch();
   const forceLogout = sessionStorage.getItem("forceLogout");
   if (forceLogout === "1") {
     sessionStorage.removeItem("forceLogout");
     cleanUrl();
   }
 
-updateChangePwVisibility();
 if (!checkLogin()) return;
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
@@ -998,10 +992,6 @@ window.renderMobileUserBtn = function renderMobileUserBtn(){
     if (el){ el.setAttribute('aria-label', label); el.title = label; }
   });
 })();
-
-setInterval(updateDateTime, 1000);
-updateDateTime();
-
 
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
