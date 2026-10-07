@@ -21,7 +21,7 @@
 :root{
   --bg-main:#000;
   --sidebar:#001529;
-
+ 
   --text-main:#fff;
   --text-soft:rgba(255,255,255,.85);
   --text-dim:rgba(255,255,255,.65);
@@ -60,6 +60,7 @@
 
   --btnfocus:#15325b;
   --modulx:rgba(255,255,255,.12);
+  --dropdown-bg-active: #111a2c;
 
   --admin-header-height:64px;
   --admin-tabs-height:52px;
@@ -109,7 +110,8 @@ body.light-theme{
 
   --toggle-track:#cfd8e3;
   --toggle-knob:#fff;
-
+  --dropdown-bg-active: #111a2c;
+   
   --btnfocus:#91caff;
   --modulx:rgba(0,0,0,.12);
 }
@@ -1727,15 +1729,11 @@ body.tab-dragging-active *{
 /* ACTIVE MODULE */
 
 .tab-search-item.active{
-  background:var(--close-hover2) !important;
+  background:var(--dropdown-bg-active) !important;
   color:var(--text-main) !important;
   font-weight:600;
 }
 
-.tab-search-item.active:hover{
-  background:var(--close-hover2) !important;
-  color:var(--text-main) !important;
-}
 /* ==========================================================
    HEADER TAB SEARCH
    ========================================================== */
