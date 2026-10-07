@@ -154,7 +154,25 @@
                L13 11h7V4l-2.35 2.35z"/>
     </svg>
   `;
+const ADMIN_TAB_REFRESH_ICON = `
+  <svg viewBox="64 64 896 896"
+       width="1em"
+       height="1em"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="M909.1 209.3l-58.6 58.6C790.9 153.3 671.7 80 540 80c-202.4 0-368 165.6-368 368s165.6 368 368 368c154.8 0 287.3-96.2 341.2-232h-91.9C741.8 671.8 648.9 728 540 728c-154.6 0-280-125.4-280-280s125.4-280 280-280c107.7 0 201.3 60.8 248.2 150H688v80h240V158h-80v93.1z"/>
+  </svg>
+`;
 
+const ADMIN_TAB_MORE_ICON = `
+  <svg viewBox="64 64 896 896"
+       width="1em"
+       height="1em"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="M176 464a48 48 0 1 0 0 96 48 48 0 0 0 0-96zm336 0a48 48 0 1 0 0 96 48 48 0 0 0 0-96zm336 0a48 48 0 1 0 0 96 48 48 0 0 0 0-96z"/>
+  </svg>
+`;
   const ICON_CLOSE = `
     <svg viewBox="64 64 896 896"
          width="1em"
