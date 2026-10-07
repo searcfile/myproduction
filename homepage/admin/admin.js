@@ -469,13 +469,11 @@ function isUsernameLoginNow() {
 }
 
 function updateChangePwVisibility() {
-  const show = isUsernameLoginNow();
-
   const btn1 = document.getElementById('changePwBtn');
   const btn2 = document.getElementById('change2ndPwBtn');
 
-  if (btn1) btn1.style.display = show ? 'flex' : 'none';
-  if (btn2) btn2.style.display = show ? 'flex' : 'none';
+  if (btn1) btn1.style.display = 'flex';
+  if (btn2) btn2.style.display = 'flex';
 }
 window.addEventListener('load', () => {
   updateChangePwVisibility();
