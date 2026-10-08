@@ -2159,10 +2159,8 @@ body.tab-dragging-active *{
 
   flex:none;
 
-margin:0;
-padding:0;
-width:12px;
-height:12px;
+  margin:0;
+  padding:4px;
 
   border:0;
   border-radius:4px;
@@ -2172,7 +2170,7 @@ height:12px;
   background:transparent;
 
   font-size:12px;
-  line-height:0;
+  line-height:1;
 
   cursor:pointer;
 
@@ -2192,7 +2190,7 @@ height:12px;
   width:12px;
   height:12px;
 
-  margin:0;
+  margin:0 0 0 8px;
   padding:0;
 
   border:0;
@@ -2203,7 +2201,7 @@ height:12px;
   background:transparent;
 
   font-size:12px;
-  line-height:0;
+  line-height:1;
 
   cursor:pointer;
 
@@ -2211,31 +2209,21 @@ height:12px;
 }
 
 /* SVG REFRESH & CLOSE */
-
 .admin-workspace-tab-refresh svg,
 .admin-workspace-tab-close svg{
   display:block;
-  position:static;
 
   width:12px;
   height:12px;
-
-  min-width:12px;
-  min-height:12px;
 
   flex:none;
 
   margin:0;
   padding:0;
 
-  line-height:0;
-  vertical-align:middle;
-
-  transform:none;
   fill:currentColor;
   pointer-events:none;
 }
-
 
 /* REFRESH HOVER */
 .admin-workspace-tab-refresh:hover{
