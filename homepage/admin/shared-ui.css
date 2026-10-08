@@ -1839,6 +1839,71 @@ body.tab-dragging-active *{
   background:var(--close-hover2);
 }
 
+/* ==========================================================
+   SELECT TAB - MOBILE ICON
+   ========================================================== */
+
+/* Desktop: icon mobile tidak dipaparkan */
+.header-tab-search-mobile-btn{
+  display:none;
+}
+
+/* Mobile: tukar input kepada icon */
+@media (max-width:815px){
+
+  .header-tab-search{
+    display:flex !important;
+    align-items:center;
+
+    width:32px !important;
+    min-width:32px;
+    max-width:32px !important;
+    flex:0 0 32px !important;
+
+    margin-right:8px;
+  }
+
+  .header-tab-search-mobile-btn{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+
+    width:32px;
+    height:32px;
+    flex:0 0 32px;
+
+    padding:0;
+    margin:0;
+
+    border:1px solid var(--border2);
+    border-radius:6px;
+
+    background:var(--backgroundbtn);
+    color:var(--text-soft);
+
+    cursor:pointer;
+  }
+
+  .header-tab-search-mobile-btn svg{
+    display:block;
+    width:19.2px;
+    height:19.2px;
+    flex:none;
+    fill:currentColor;
+  }
+
+  /* Input desktop disembunyikan,
+     tetapi wrapper dan dropdown kekal */
+  .header-tab-search form{
+    display:none;
+  }
+
+  .header-tab-search-list{
+    width:200px;
+    max-width:calc(100vw - 24px);
+  }
+}
+
 
 /* ==========================================================
    NOTIFICATION SLOTS
@@ -1959,10 +2024,17 @@ body.tab-dragging-active *{
     padding:0 10px;
   }
 
-  .header-refresh-btn,
-  .menu-icon{
-    width:38px !important;
-  }
+
+/* Menu icon kekal */
+.menu-icon{
+  width:38px !important;
+}
+
+/* Refresh header hide pada mobile */
+.header-refresh-btn{
+  display:none !important;
+}
+
 
   .user-text{
     gap:0;
@@ -2048,10 +2120,6 @@ body.tab-dragging-active *{
 
 
 @media (max-width:600px){
-
-  .header-tab-search{
-    display:none !important;
-  }
 
   #desktopNotifSlot{
     display:none;
