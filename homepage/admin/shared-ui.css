@@ -2528,3 +2528,95 @@ body.tab-dragging-active *{
 .admin-workspace-tab:not(.workspace-drag-source){
   transition:transform 200ms ease !important;
 }
+
+/* ==========================================================
+   SELECT TAB MOBILE PANEL
+   ========================================================== */
+
+.header-tab-search-mobile-panel{
+  display:none;
+}
+
+.header-tab-search-mobile-panel[hidden]{
+  display:none !important;
+}
+
+@media (max-width:815px){
+
+  .header-tab-search-mobile-panel:not([hidden]){
+    position:fixed;
+    display:block;
+
+    width:min(345px, calc(100vw - 16px));
+    padding:12px;
+
+    background:var(--backgrounddrop);
+    border:1px solid var(--border2);
+    border-radius:8px;
+
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+
+    z-index:999998;
+  }
+
+  .header-tab-search-mobile-input-wrap{
+    position:relative;
+    width:100%;
+  }
+
+  .header-tab-search-mobile-input{
+    display:block;
+
+    width:100%;
+    height:36px;
+
+    padding:0 36px 0 12px;
+
+    border:1px solid var(--border2);
+    border-radius:6px;
+
+    background:var(--backgroundbtn);
+    color:var(--text-soft);
+
+    font-size:13px;
+    outline:none;
+  }
+
+  .header-tab-search-mobile-input:focus{
+    border-color:var(--gold);
+  }
+
+  .header-tab-search-mobile-input-wrap svg{
+    position:absolute;
+    top:50%;
+    right:12px;
+
+    transform:translateY(-50%);
+
+    color:var(--blur);
+    pointer-events:none;
+  }
+
+  .header-tab-search-list{
+    box-sizing:border-box;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:4px;
+    z-index:999999;
+  }
+
+  .header-tab-search-list a{
+    display:flex;
+    align-items:center;
+
+    width:100%;
+    min-height:34px;
+
+    padding:8px 12px;
+    margin:0;
+
+    font-size:13px;
+    line-height:18px;
+    white-space:nowrap;
+  }
+}
