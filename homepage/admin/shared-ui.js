@@ -2414,6 +2414,158 @@ function initTabBarSearch() {
      RENDER TABS - SHARED WORKSPACE
      ========================================================== */
 
+function initWorkspaceTabDrag(tabList) {
+  if (!tabList) return;
+
+  let drag = null;
+  let suppressClickUntil = 0;
+
+  tabList.addEventListener("click", event => {
+    if (performance.now() < suppressClickUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+
+  tabList.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+
+    const tab = event.target.closest(".admin-workspace-tab");
+    if (!tab || !tabList.contains(tab)) return;
+
+    // Jangan drag apabila tekan Refresh atau Close.
+    if (event.target.closest("button")) return;
+
+    const elements = [
+      ...tabList.querySelectorAll(".admin-workspace-tab")
+    ];
+
+    if (elements.length < 2) return;
+
+    drag = {
+      tab,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originIndex: elements.indexOf(tab),
+      targetIndex: elements.indexOf(tab),
+      elements,
+      rects: elements.map(el => el.getBoundingClientRect()),
+      started: false
+    };
+  });
+
+  function onMove(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+
+    if (!drag.started) {
+      if (Math.hypot(dx, dy) < 6) return;
+
+      drag.started = true;
+      drag.tab.classList.add("dragging");
+      tabList.classList.add("is-dragging");
+
+      try {
+        drag.tab.setPointerCapture(event.pointerId);
+      } catch (_) {}
+    }
+
+    event.preventDefault();
+
+    const {
+      tab, elements, rects, originIndex
+    } = drag;
+
+    const draggedRect = rects[originIndex];
+    const center = draggedRect.left + draggedRect.width / 2 + dx;
+
+    let targetIndex = 0;
+
+    elements.forEach((element, index) => {
+      if (index === originIndex) return;
+
+      const rect = rects[index];
+      const midpoint = rect.left + rect.width / 2;
+
+      if (center > midpoint) targetIndex++;
+    });
+
+    drag.targetIndex = targetIndex;
+
+    tab.style.transform =
+      `translate3d(${dx}px,-6px,0) scale(1.035)`;
+
+    elements.forEach((element, index) => {
+      if (element === tab) return;
+
+      let shift = 0;
+
+      if (targetIndex > originIndex &&
+          index > originIndex &&
+          index <= targetIndex) {
+        shift = -draggedRect.width;
+      }
+
+      if (targetIndex < originIndex &&
+          index >= targetIndex &&
+          index < originIndex) {
+        shift = draggedRect.width;
+      }
+
+      element.style.transform =
+        `translate3d(${shift}px,0,0)`;
+    });
+  }
+
+  function onEnd(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+
+    const state = drag;
+    drag = null;
+
+    if (!state.started) return;
+
+    suppressClickUntil = performance.now() + 350;
+
+    state.elements.forEach(element => {
+      element.style.transform = "";
+      element.style.zIndex = "";
+      element.classList.remove("dragging");
+    });
+
+    tabList.classList.remove("is-dragging");
+
+    const { originIndex, targetIndex } = state;
+
+    if (event.type === "pointercancel" ||
+        originIndex === targetIndex) return;
+
+    const tabs = getTabs();
+
+    if (tabs.length !== state.elements.length) return;
+
+    const [moved] = tabs.splice(originIndex, 1);
+    if (!moved) return;
+
+    tabs.splice(targetIndex, 0, moved);
+
+    saveTabs(tabs);
+    renderTabs();
+    renderSidebarTabs();
+  }
+
+  tabList.addEventListener("pointermove", onMove);
+  tabList.addEventListener("pointerup", onEnd);
+  tabList.addEventListener("pointercancel", onEnd);
+
+  tabList.addEventListener("dragstart", event => {
+    event.preventDefault();
+  });
+}
+
   function renderTabs() {
     const tabBar = document.getElementById("tabBar");
     if (!tabBar) return;
@@ -2692,8 +2844,11 @@ function initTabBarSearch() {
       window.__homepageMoreOutsideHandler
     );
 
-    requestAnimationFrame(updateMoreTabs);
-    updateOpenIndicators();
+requestAnimationFrame(updateMoreTabs);
+
+initWorkspaceTabDrag(tabList);
+
+updateOpenIndicators();
   }
 
 
