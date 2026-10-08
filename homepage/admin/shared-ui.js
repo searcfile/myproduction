@@ -2528,27 +2528,54 @@ function initTabBarSearch() {
       search.classList.add("admin-workspace-search-fixed");
     }
 
+
     function updateMoreTabs() {
-      const items = [...tabList.querySelectorAll(".admin-workspace-tab")];
-      const visibleLeft = tabList.scrollLeft;
-      const visibleRight = visibleLeft + tabList.clientWidth;
+      const items = [
+        ...tabList.querySelectorAll(".admin-workspace-tab")
+      ];
 
-      moreDropdown.innerHTML = "";
+      // Ukur overflow tanpa mengambil ruang butang More.
+      const totalWidth = items.reduce(
+        (width, element) => width + element.getBoundingClientRect().width,
+        0
+      );
 
-      let hiddenCount = 0;
+      // Lebar yang tersedia jika More tidak dipaparkan.
+      const availableWidth =
+        tabList.clientWidth +
+        (moreWrap.classList.contains("has-hidden-tabs")
+          ? moreWrap.getBoundingClientRect().width
+          : 0);
+
+      const hasOverflow = totalWidth > availableWidth + 2;
+
+      moreWrap.classList.toggle(
+        "has-hidden-tabs",
+        hasOverflow
+      );
+
+      if (!hasOverflow) {
+        moreDropdown.classList.remove("open");
+        moreDropdown.replaceChildren();
+        return;
+      }
+
+      // Selepas More mengambil ruang, ukur tab yang kelihatan.
+      const listRect = tabList.getBoundingClientRect();
+      const fragment = document.createDocumentFragment();
 
       items.forEach((element, index) => {
-        const left = element.offsetLeft - tabList.offsetLeft;
-        const right = left + element.offsetWidth;
+        const rect = element.getBoundingClientRect();
 
-        // Senaraikan tab yang tidak kelihatan sepenuhnya.
-        if (left >= visibleLeft - 1 && right <= visibleRight + 1) {
-          return;
-        }
+        const isFullyVisible =
+          rect.left >= listRect.left - 1 &&
+          rect.right <= listRect.right + 1;
 
-        hiddenCount++;
+        if (isFullyVisible) return;
 
         const tab = tabs[index];
+        if (!tab) return;
+
         const item = document.createElement("div");
         item.className = "admin-workspace-more-item";
 
@@ -2569,15 +2596,12 @@ function initTabBarSearch() {
         });
 
         item.append(name, createTabActions(tab));
-        moreDropdown.appendChild(item);
+        fragment.appendChild(item);
       });
 
-      moreWrap.classList.toggle("has-hidden-tabs", hiddenCount > 0);
-
-      if (!hiddenCount) {
-        moreDropdown.classList.remove("open");
-      }
+      moreDropdown.replaceChildren(fragment);
     }
+
 
     moreButton.addEventListener("click", event => {
       event.preventDefault();
