@@ -2364,7 +2364,7 @@ body.tab-dragging-active *{
 
 .admin-workspace-tab.dragging {
   z-index: 100 !important;
-  cursor: grabbing !important;
+  cursor: move !important;
   transition: none !important;
   filter: brightness(1.12);
 
