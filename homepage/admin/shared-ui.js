@@ -811,6 +811,34 @@ function createShell() {
         id="headerTabSearchList"
         class="header-tab-search-list">
       </div>
+     
+<!-- MOBILE SELECT TAB PANEL -->
+<div
+  id="headerTabSearchMobilePanel"
+  class="header-tab-search-mobile-panel"
+  hidden>
+
+  <div class="header-tab-search-mobile-input-wrap">
+    <input
+      id="headerTabSearchMobileInput"
+      class="header-tab-search-mobile-input"
+      type="text"
+      placeholder="Select Tab"
+      autocomplete="off"
+      aria-label="Search tabs"
+    >
+
+    <svg
+      viewBox="64 64 896 896"
+      width="14"
+      height="14"
+      fill="currentColor"
+      aria-hidden="true">
+      <path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/>
+    </svg>
+  </div>
+
+</div>
 
     </div>
 
@@ -3090,6 +3118,7 @@ updateOpenIndicators();
      ========================================================== */
 
  
+
 function setupHeaderSearch() {
 
   const wrap = document.getElementById("headerTabSearch");
@@ -3098,49 +3127,66 @@ function setupHeaderSearch() {
   const form = document.getElementById("headerTabSearchForm");
   const arrow = document.getElementById("headerTabSearchArrow");
   const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
+  const panel = document.getElementById("headerTabSearchMobilePanel");
+  const mobileInput = document.getElementById("headerTabSearchMobileInput");
 
-  if (!wrap || !input || !list) return;
+  if (!wrap || !input || !list || !panel || !mobileInput) return;
 
   const mobileQuery = window.matchMedia("(max-width:815px)");
 
-  form?.addEventListener("submit", event => {
-    event.preventDefault();
-  });
+  const isMobile = () => mobileQuery.matches;
+  const isListOpen = () => list.style.display === "block";
+
+  form?.addEventListener("submit", e => e.preventDefault());
 
   function hideList() {
     list.style.display = "none";
+    list.innerHTML = "";
     wrap.classList.remove("search-mode");
+  }
+
+  function closePanel() {
+    hideList();
+    panel.hidden = true;
     mobileBtn?.setAttribute("aria-expanded", "false");
   }
 
-  function positionList() {
-    const anchor = mobileQuery.matches && mobileBtn
-      ? mobileBtn
-      : input;
+  function positionPanel() {
+    const rect = mobileBtn.getBoundingClientRect();
+    const width = Math.min(345, window.innerWidth - 16);
 
-    const rect = anchor.getBoundingClientRect();
-    const width = mobileQuery.matches ? 200 : Math.max(180, rect.width);
-
-    const left = Math.max(
+    panel.style.width = `${width}px`;
+    panel.style.left = `${Math.max(
       8,
       Math.min(rect.left, window.innerWidth - width - 8)
-    );
+    )}px`;
+    panel.style.top = `${rect.bottom + 8}px`;
+  }
 
-    list.style.left = `${left}px`;
-    list.style.top = `${rect.bottom + 4}px`;
+  function positionList() {
+    const anchor = isMobile() ? mobileInput : input;
+    const rect = anchor.getBoundingClientRect();
 
-    if (mobileQuery.matches) {
-      list.style.width = `${Math.min(width, window.innerWidth - 16)}px`;
-    } else {
-      list.style.removeProperty("width");
-    }
+    const width = isMobile()
+      ? Math.min(panel.getBoundingClientRect().width - 24, window.innerWidth - 16)
+      : Math.max(150, rect.width);
+
+    list.style.width = `${width}px`;
+    list.style.left = `${Math.max(
+      8,
+      Math.min(rect.left, window.innerWidth - width - 8)
+    )}px`;
+
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const availableHeight = Math.max(100, spaceBelow);
+
+    list.style.maxHeight = `${Math.min(260, availableHeight)}px`;
+    list.style.top = `${rect.bottom + 5}px`;
   }
 
   function renderResults(showAll = false) {
-
-    const keyword = showAll
-      ? ""
-      : input.value.trim().toLowerCase();
+    const searchInput = isMobile() ? mobileInput : input;
+    const keyword = searchInput.value.trim().toLowerCase();
 
     list.innerHTML = "";
 
@@ -3150,7 +3196,7 @@ function setupHeaderSearch() {
     }
 
     const results = ADMIN_PAGES.filter(page =>
-      showAll || page.name.toLowerCase().includes(keyword)
+      page.name.toLowerCase().includes(keyword)
     );
 
     if (!results.length) {
@@ -3159,15 +3205,14 @@ function setupHeaderSearch() {
     }
 
     results.forEach(page => {
-
       const link = document.createElement("a");
 
       link.href = `./${page.file}`;
       link.textContent = page.name;
 
-      link.addEventListener("click", event => {
-        event.preventDefault();
-        hideList();
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        closePanel();
         addTab(page);
       });
 
@@ -3175,66 +3220,77 @@ function setupHeaderSearch() {
     });
 
     positionList();
-
     list.style.display = "block";
     wrap.classList.add("search-mode");
-    mobileBtn?.setAttribute("aria-expanded", "true");
   }
 
-  // Desktop: search menggunakan input asal
-  input.addEventListener("input", () => {
-    renderResults(false);
-  });
+  // DESKTOP
+  input.addEventListener("input", () => renderResults(false));
 
-  // Desktop: arrow reset search
   arrow?.addEventListener("click", () => {
     input.value = "";
     hideList();
     input.focus();
   });
 
-  // Mobile: klik ikon untuk buka/tutup dropdown
-  mobileBtn?.addEventListener("click", event => {
+  // MOBILE: klik icon, buka panel input sahaja
+  mobileBtn?.addEventListener("click", e => {
+    e.stopPropagation();
 
-    event.stopPropagation();
-
-    if (list.style.display === "block") {
-      hideList();
+    if (!panel.hidden) {
+      closePanel();
       return;
     }
 
-    input.value = "";
+    hideList();
+    mobileInput.value = "";
+    positionPanel();
+    panel.hidden = false;
+    mobileBtn.setAttribute("aria-expanded", "true");
+  });
+
+  // MOBILE: klik input, baru paparkan senarai
+  mobileInput.addEventListener("focus", () => {
     renderResults(true);
   });
 
-  // Klik luar: tutup dropdown
-  document.addEventListener("click", event => {
-    if (!wrap.contains(event.target)) {
-      hideList();
+  mobileInput.addEventListener("click", () => {
+    renderResults(true);
+  });
+
+  mobileInput.addEventListener("input", () => {
+    renderResults(true);
+  });
+
+  // Tutup apabila klik di luar
+  document.addEventListener("click", e => {
+    if (!wrap.contains(e.target)) {
+      closePanel();
     }
   });
 
-  // Escape: tutup dropdown
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      hideList();
+  // Tutup apabila tekan Escape
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      closePanel();
     }
   });
 
-  // Pastikan dropdown ikut kedudukan ketika resize
   window.addEventListener("resize", () => {
-    if (list.style.display === "flex") {
-      hideList();
-    }
+    closePanel();
   });
 
-  // Pastikan dropdown ikut kedudukan ketika scroll
   window.addEventListener("scroll", () => {
-    if (list.style.display === "flex") {
+    if (isMobile() && !panel.hidden) {
+      positionPanel();
+    }
+
+    if (isListOpen()) {
       positionList();
     }
   }, true);
 }
+
 
 
   /* ==========================================================
