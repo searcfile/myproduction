@@ -2157,22 +2157,30 @@ body.tab-dragging-active *{
   cursor:pointer;
   transition:color .2s ease;
 }
-.admin-workspace-tab-refresh {
-  width:16px !important;
-  height:16px !important;
+
+.admin-workspace-tab-refresh{
+  width:20px !important;
+  height:20px !important;
+  min-width:20px;
+  min-height:20px;
+  flex:0 0 20px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  padding:4px;
+  padding:4px !important;
   margin:0 !important;
   border:0 !important;
-  background:transparent !important;
-  color:grey;
-  font-size:12px;
-  cursor:pointer;
-  transition:color .2s ease;
   border-radius:4px;
+  background:transparent !important;
+  color:gray;
+  font-size:12px;
+  line-height:0;
+  cursor:pointer;
+  transition:
+    background-color .2s ease,
+    color .2s ease;
 }
+
 .admin-workspace-tab-refresh svg,
 .admin-workspace-tab-close svg{
   width:12px;
@@ -2180,8 +2188,15 @@ body.tab-dragging-active *{
   display:block;
   fill:currentColor;
 }
-
-.admin-workspace-tab-refresh:hover,
+.admin-workspace-tab-refresh svg{
+  width:12px !important;
+  height:12px !important;
+  min-width:12px;
+  min-height:12px;
+  flex-shrink:0;
+  display:block;
+  fill:currentColor;
+}
 .admin-workspace-tab-close:hover{
   color:var(--gold-hover) !important;
 }
