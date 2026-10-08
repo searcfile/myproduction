@@ -2417,142 +2417,231 @@ function initTabBarSearch() {
     }
   );
 }
+
   /* ==========================================================
-     RENDER TABS
+     RENDER TABS - SHARED WORKSPACE
      ========================================================== */
 
   function renderTabs() {
-
-    const tabBar =
-      document.getElementById(
-        "tabBar"
-      );
-
+    const tabBar = document.getElementById("tabBar");
     if (!tabBar) return;
 
     tabBar.innerHTML = "";
 
-    const tabs =
-      getTabs();
+    const tabs = getTabs();
+    const currentFile = getCurrentFile();
 
-    const currentFile =
-      getCurrentFile();
+    // Bahagian tengah yang boleh scroll.
+    const tabList = document.createElement("div");
+    tabList.className = "admin-workspace-tabs-list";
 
+    // Butang More sentiasa berada di kanan.
+    const moreWrap = document.createElement("div");
+    moreWrap.className = "admin-workspace-more";
+
+    const moreButton = document.createElement("button");
+    moreButton.type = "button";
+    moreButton.className = "admin-workspace-more-button";
+    moreButton.title = "More Tabs";
+    moreButton.setAttribute("aria-label", "More Tabs");
+    moreButton.innerHTML = ADMIN_TAB_MORE_ICON;
+
+    const moreDropdown = document.createElement("div");
+    moreDropdown.className = "admin-workspace-more-dropdown";
+
+    moreWrap.append(moreButton, moreDropdown);
+
+    function refreshTab(tab) {
+      if (getCurrentFile() === tab.file.toLowerCase()) {
+        window.location.reload();
+      } else {
+        navigateToTab(tab);
+      }
+    }
+
+    function createTabActions(tab) {
+      const actions = document.createElement("span");
+      actions.className = "admin-workspace-tab-actions";
+
+      const refresh = document.createElement("button");
+      refresh.type = "button";
+      refresh.className = "admin-workspace-tab-refresh";
+      refresh.title = "Refresh";
+      refresh.setAttribute("aria-label", "Refresh tab");
+      refresh.innerHTML = ADMIN_TAB_REFRESH_ICON;
+
+      refresh.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        refreshTab(tab);
+      });
+
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "close-tab admin-workspace-tab-close";
+      close.title = "Close";
+      close.setAttribute("aria-label", "Close tab");
+      close.innerHTML = ICON_CLOSE;
+
+      close.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeTab(tab.file);
+      });
+
+      actions.append(refresh, close);
+      return actions;
+    }
 
     tabs.forEach(tab => {
+      const element = document.createElement("div");
+      element.className = "tab admin-workspace-tab";
+      element.dataset.file = tab.file;
 
-      const element =
-        document.createElement(
-          "div"
-        );
-
-      element.className =
-        "tab";
-
-      element.dataset.file =
-        tab.file;
-
-
-      if (
-        tab.file.toLowerCase() ===
-        currentFile
-      ) {
-
-        element.classList.add(
-          "active-tab"
-        );
+      if (tab.file.toLowerCase() === currentFile) {
+        element.classList.add("active-tab");
       }
 
+      const title = document.createElement("span");
+      title.className = "admin-workspace-tab-name";
+      title.textContent = String(tab.name || tab.file)
+        .toLowerCase()
+        .replace(/\b\w/g, char => char.toUpperCase());
 
-      const title =
-        document.createElement(
-          "span"
-        );
+      element.append(title, createTabActions(tab));
 
-      title.textContent =
-        String(
-          tab.name ||
-          tab.file
-        )
-          .toLowerCase()
-          .replace(
-            /\b\w/g,
-            char =>
-              char.toUpperCase()
-          );
+      element.addEventListener("click", event => {
+        if (event.target.closest("button")) return;
+        navigateToTab(tab);
+      });
 
-
-      const close =
-        document.createElement(
-          "button"
-        );
-
-      close.type =
-        "button";
-
-      close.className =
-        "close-tab";
-
-      close.title =
-        "Close";
-
-      close.setAttribute(
-        "aria-label",
-        "Close tab"
-      );
-
-      close.innerHTML =
-        ICON_CLOSE;
-
-
-      close.addEventListener(
-        "click",
-        event => {
-
-          event.preventDefault();
-          event.stopPropagation();
-
-          closeTab(
-            tab.file
-          );
-        }
-      );
-
-
-      element.addEventListener(
-        "click",
-        event => {
-
-          if (
-            event.target.closest(
-              ".close-tab"
-            )
-          ) {
-            return;
-          }
-
-          navigateToTab(tab);
-        }
-      );
-
-
-      element.appendChild(
-        title
-      );
-
-      element.appendChild(
-        close
-      );
-
-      tabBar.appendChild(
-        element
-      );
-
+      tabList.appendChild(element);
     });
 
-    initTabBarSearch(); 
+    tabBar.append(tabList, moreWrap);
+
+    // Search lama tetap digunakan, tetapi kekal di kiri.
+    initTabBarSearch();
+
+    const search = tabBar.querySelector(".tab-module-search");
+    if (search) {
+      search.classList.add("admin-workspace-search-fixed");
+    }
+
+    function updateMoreTabs() {
+      const items = [...tabList.querySelectorAll(".admin-workspace-tab")];
+      const visibleLeft = tabList.scrollLeft;
+      const visibleRight = visibleLeft + tabList.clientWidth;
+
+      moreDropdown.innerHTML = "";
+
+      let hiddenCount = 0;
+
+      items.forEach((element, index) => {
+        const left = element.offsetLeft - tabList.offsetLeft;
+        const right = left + element.offsetWidth;
+
+        // Senaraikan tab yang tidak kelihatan sepenuhnya.
+        if (left >= visibleLeft - 1 && right <= visibleRight + 1) {
+          return;
+        }
+
+        hiddenCount++;
+
+        const tab = tabs[index];
+        const item = document.createElement("div");
+        item.className = "admin-workspace-more-item";
+
+        if (tab.file.toLowerCase() === currentFile) {
+          item.classList.add("active");
+        }
+
+        const name = document.createElement("button");
+        name.type = "button";
+        name.className = "admin-workspace-more-name";
+        name.textContent = String(tab.name || tab.file)
+          .toLowerCase()
+          .replace(/\b\w/g, char => char.toUpperCase());
+
+        name.addEventListener("click", event => {
+          event.stopPropagation();
+          navigateToTab(tab);
+        });
+
+        item.append(name, createTabActions(tab));
+        moreDropdown.appendChild(item);
+      });
+
+      moreWrap.classList.toggle("has-hidden-tabs", hiddenCount > 0);
+
+      if (!hiddenCount) {
+        moreDropdown.classList.remove("open");
+      }
+    }
+
+    moreButton.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      updateMoreTabs();
+
+      if (moreWrap.classList.contains("has-hidden-tabs")) {
+        moreDropdown.classList.toggle("open");
+      }
+    });
+
+    // Wheel mouse menggerakkan tab ke kiri/kanan.
+    tabList.addEventListener("wheel", event => {
+      if (tabList.scrollWidth <= tabList.clientWidth) return;
+
+      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
+        ? event.deltaY
+        : event.deltaX;
+
+      if (!delta) return;
+
+      event.preventDefault();
+      tabList.scrollLeft += delta * 1.8;
+    }, { passive: false });
+
+    tabList.addEventListener("scroll", () => {
+      requestAnimationFrame(updateMoreTabs);
+    }, { passive: true });
+
+    // Elak listener resize berganda setiap render.
+    window.__homepageTabResizeObserver?.disconnect();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => {
+        requestAnimationFrame(updateMoreTabs);
+      });
+      observer.observe(tabList);
+      window.__homepageTabResizeObserver = observer;
+    }
+
+    // Tutup dropdown apabila klik di luar.
+    if (window.__homepageMoreOutsideHandler) {
+      document.removeEventListener(
+        "click",
+        window.__homepageMoreOutsideHandler
+      );
+    }
+
+    window.__homepageMoreOutsideHandler = event => {
+      if (!moreWrap.contains(event.target)) {
+        moreDropdown.classList.remove("open");
+      }
+    };
+
+    document.addEventListener(
+      "click",
+      window.__homepageMoreOutsideHandler
+    );
+
+    requestAnimationFrame(updateMoreTabs);
     updateOpenIndicators();
   }
+
 
 
   /* ==========================================================
