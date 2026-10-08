@@ -1721,11 +1721,7 @@ select:focus-visible{
 .header-tab-search-list a:hover{
   background: var(--close-hover2);
 }
-@media (max-width: 600px){
-  .header-tab-search{
-    display:none !important;
-  }
-}
+
 /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 6px; /* nipis */
