@@ -2351,7 +2351,7 @@ body.tab-dragging-active *{
 
 .admin-workspace-tab {
   position: relative;
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
   touch-action: pan-y;
   backface-visibility: hidden;
