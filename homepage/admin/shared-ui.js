@@ -170,7 +170,7 @@ const ADMIN_TAB_MORE_ICON = `
        height="1em"
        fill="currentColor"
        aria-hidden="true">
-    <path d="M176 464a48 48 0 1 0 0 96 48 48 0 0 0 0-96zm336 0a48 48 0 1 0 0 96 48 48 0 0 0 0-96zm336 0a48 48 0 1 0 0 96 48 48 0 0 0 0-96z"/>
+    <path d="M176 511a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0z"/>
   </svg>
 `;
   const ICON_CLOSE = `
