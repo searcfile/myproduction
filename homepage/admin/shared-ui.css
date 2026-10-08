@@ -2201,7 +2201,7 @@ body.tab-dragging-active *{
   color:var(--gold-hover) !important;
 }
 .admin-workspace-tab-refresh:hover{
-  background:#f5f5f5;
+  background:#f5f5f5 !important;
 }
 /* ==========================================================
    MORE BUTTON
