@@ -1195,8 +1195,8 @@ body.light-theme .theme-toggle-knob{
 
   padding:0 12px;
 
-  overflow-x:auto;
-  overflow-y:hidden;
+  overflow:visible;
+  min-width:0;
 
   white-space:nowrap;
 
@@ -1235,7 +1235,6 @@ body.light-theme .theme-toggle-knob{
 
 .tab-bar.shrink{
   margin-left:0 !important;
-
   width:100% !important;
 }
 
@@ -2026,36 +2025,23 @@ body.tab-dragging-active *{
   .tab-bar,
   .tab-bar.shrink{
     width:100% !important;
-
     min-height:52px !important;
     max-height:52px !important;
-
     display:flex !important;
-
     margin-top:64px !important;
-
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-
+    overflow:visible !important;
     white-space:nowrap !important;
-
     visibility:visible !important;
-
     opacity:1 !important;
-
     transform:none !important;
-
     -webkit-overflow-scrolling:touch;
-
     z-index:1000 !important;
   }
 
   .tab,
   .tab.active-tab{
     display:inline-flex !important;
-
     flex:0 0 auto !important;
-
     visibility:visible !important;
   }
 }
@@ -2085,5 +2071,272 @@ body.tab-dragging-active *{
 
   .date-time{
     display:none !important;
+  }
+}
+
+/* ==========================================================
+   ADMIN WORKSPACE TABS - NEW LAYOUT
+   ========================================================== */
+
+/* Tab bar sebagai container utama */
+.tab-bar{
+  overflow:visible;
+  min-width:0;
+}
+
+/* Search kekal di kiri */
+.tab-bar > .tab-module-search{
+  order:0;
+  flex-shrink:0;
+  align-self:flex-end;
+}
+
+/* Senarai tabs boleh scroll secara horizontal */
+.admin-workspace-tabs-list{
+  position:relative;
+  order:1;
+
+  display:flex;
+  align-items:flex-end;
+
+  flex:1 1 auto;
+  min-width:0;
+  height:100%;
+
+  overflow-x:auto;
+  overflow-y:hidden;
+
+  white-space:nowrap;
+  scrollbar-width:none;
+  scroll-behavior:smooth;
+
+  z-index:1;
+}
+
+.admin-workspace-tabs-list::-webkit-scrollbar{
+  display:none;
+}
+
+/* Setiap tab */
+.admin-workspace-tab{
+  flex:0 0 auto;
+  gap:8px;
+
+  height:40px;
+  padding:0 12px;
+
+  margin-bottom:-1px;
+}
+
+/* Nama tab */
+.admin-workspace-tab-name{
+  display:inline-block;
+  max-width:180px;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* Refresh dan Close */
+.admin-workspace-tab-actions{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+
+  flex-shrink:0;
+}
+
+.admin-workspace-tab-refresh,
+.admin-workspace-tab-close{
+  width:16px !important;
+  height:16px !important;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0 !important;
+  margin:0 !important;
+
+  border:0 !important;
+  background:transparent !important;
+
+  color:var(--close);
+  cursor:pointer;
+
+  transition:color .2s ease;
+}
+
+.admin-workspace-tab-refresh svg,
+.admin-workspace-tab-close svg{
+  width:12px;
+  height:12px;
+
+  display:block;
+  fill:currentColor;
+}
+
+.admin-workspace-tab-refresh:hover,
+.admin-workspace-tab-close:hover{
+  color:var(--gold-hover) !important;
+}
+
+/* ==========================================================
+   MORE BUTTON
+   ========================================================== */
+
+.admin-workspace-more{
+  position:relative;
+  order:2;
+
+  flex:0 0 36px;
+
+  height:40px;
+  margin-bottom:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  z-index:10;
+}
+
+.admin-workspace-more-button{
+  width:30px;
+  height:30px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+
+  border:1px solid var(--border2);
+  border-radius:6px;
+
+  background:var(--tab2);
+  color:var(--text-soft);
+
+  cursor:pointer;
+}
+
+.admin-workspace-more-button svg{
+  width:16px;
+  height:16px;
+  fill:currentColor;
+}
+
+.admin-workspace-more-button:hover{
+  border-color:var(--gold-hover);
+  color:var(--gold-hover);
+}
+
+.admin-workspace-more:not(.has-hidden-tabs)
+.admin-workspace-more-button{
+  opacity:.45;
+  cursor:default;
+}
+
+/* ==========================================================
+   MORE DROPDOWN
+   ========================================================== */
+
+.admin-workspace-more-dropdown{
+  position:absolute;
+  top:100%;
+  right:0;
+
+  display:none;
+
+  width:220px;
+  max-height:280px;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding:5px;
+
+  border:1px solid var(--border2);
+  border-radius:6px;
+
+  background:var(--backgrounddrop);
+
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+
+  z-index:10000;
+}
+
+.admin-workspace-more-dropdown.open{
+  display:block;
+}
+
+.admin-workspace-more-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:8px;
+  padding:6px 8px;
+
+  border-radius:4px;
+}
+
+.admin-workspace-more-item:hover{
+  background:var(--close-hover2);
+}
+
+.admin-workspace-more-item.active{
+  background:var(--dropdown-bg-active);
+}
+
+.admin-workspace-more-name{
+  flex:1;
+  min-width:0;
+
+  padding:0;
+  border:0;
+  background:transparent;
+
+  color:var(--text-soft);
+  font-family:inherit;
+  font-size:12px;
+  text-align:left;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  cursor:pointer;
+}
+
+.admin-workspace-more-item.active
+.admin-workspace-more-name{
+  color:var(--text-main);
+  font-weight:600;
+}
+
+.admin-workspace-more-item
+.admin-workspace-tab-actions{
+  gap:8px;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width:815px){
+  .tab-bar,
+  .tab-bar.shrink{
+    overflow:visible !important;
+  }
+
+  .admin-workspace-tabs-list{
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+  }
+
+  .admin-workspace-tab{
+    flex:0 0 auto !important;
   }
 }
