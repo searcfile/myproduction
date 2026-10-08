@@ -2590,23 +2590,61 @@ function initTabBarSearch() {
       }
     });
 
-    // Wheel mouse menggerakkan tab ke kiri/kanan.
+    // Buka dropdown apabila mouse hover pada More.
+    moreWrap.addEventListener("mouseenter", () => {
+      if (moreWrap.classList.contains("has-hidden-tabs")) {
+        moreDropdown.classList.add("open");
+      }
+    });
+
+    // Tutup dropdown apabila mouse keluar.
+    moreWrap.addEventListener("mouseleave", () => {
+      moreDropdown.classList.remove("open");
+    });
+
+
+    // Scroll horizontal lebih laju dan responsif.
     tabList.addEventListener("wheel", event => {
       if (tabList.scrollWidth <= tabList.clientWidth) return;
 
-      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
-        ? event.deltaY
-        : event.deltaX;
+      const delta =
+        Math.abs(event.deltaY) > Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX;
 
       if (!delta) return;
 
       event.preventDefault();
-      tabList.scrollLeft += delta * 1.8;
+
+      // Normalize mouse wheel (pixel / line / page).
+      const normalizedDelta =
+        event.deltaMode === 1
+          ? delta * 16
+          : event.deltaMode === 2
+            ? delta * tabList.clientWidth
+            : delta;
+
+      tabList.scrollLeft += normalizedDelta * 3.5;
     }, { passive: false });
 
-    tabList.addEventListener("scroll", () => {
-      requestAnimationFrame(updateMoreTabs);
-    }, { passive: true });
+
+
+    // Elak banyak update serentak ketika wheel scroll.
+    let moreUpdateFrame = null;
+
+    function scheduleMoreUpdate() {
+      if (moreUpdateFrame !== null) return;
+
+      moreUpdateFrame = requestAnimationFrame(() => {
+        moreUpdateFrame = null;
+        updateMoreTabs();
+      });
+    }
+
+    tabList.addEventListener("scroll", scheduleMoreUpdate, {
+      passive: true
+    });
+
 
     // Elak listener resize berganda setiap render.
     window.__homepageTabResizeObserver?.disconnect();
