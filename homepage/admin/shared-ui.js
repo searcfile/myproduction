@@ -3142,8 +3142,6 @@ updateOpenIndicators();
      HEADER TAB SEARCH
      ========================================================== */
 
- 
-
 function setupHeaderSearch() {
 
   const wrap = document.getElementById("headerTabSearch");
@@ -3154,7 +3152,13 @@ function setupHeaderSearch() {
   const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
   const panel = document.getElementById("headerTabSearchMobilePanel");
   const mobileInput = document.getElementById("headerTabSearchMobileInput");
+const mobileInputWrap = mobileInput?.closest(
+  ".header-tab-search-mobile-input-wrap"
+);
 
+const mobileIcon = document.getElementById(
+  "headerTabSearchMobileIcon"
+);
   if (!wrap || !input || !list || !panel || !mobileInput) return;
 
   const mobileQuery = window.matchMedia("(max-width:815px)");
@@ -3163,6 +3167,23 @@ function setupHeaderSearch() {
   const isListOpen = () => list.style.display === "block";
 
   form?.addEventListener("submit", e => e.preventDefault());
+
+function updateMobileInputIcon() {
+  if (!mobileInputWrap) return;
+
+  mobileInputWrap.classList.toggle(
+    "has-value",
+    mobileInput.value.length > 0
+  );
+
+  mobileInputWrap.classList.toggle(
+    "is-focused",
+    document.activeElement === mobileInput
+  );
+}
+
+mobileInput.addEventListener("focus", updateMobileInputIcon);
+mobileInput.addEventListener("blur", updateMobileInputIcon);
 
   function hideList() {
     list.style.display = "none";
@@ -3267,10 +3288,11 @@ function setupHeaderSearch() {
       return;
     }
 
-    hideList();
-    mobileInput.value = "";
-    positionPanel();
-    panel.hidden = false;
+hideList();
+mobileInput.value = "";
+updateMobileInputIcon();
+positionPanel();
+panel.hidden = false;
     mobileBtn.setAttribute("aria-expanded", "true");
   });
 
@@ -3283,9 +3305,34 @@ function setupHeaderSearch() {
     renderResults(true);
   });
 
-  mobileInput.addEventListener("input", () => {
+mobileInput.addEventListener("input", () => {
+  updateMobileInputIcon();
+  renderResults(true);
+});
+
+   
+mobileIcon?.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const hasText = mobileInput.value.length > 0;
+  const canClear = hasText && (
+    mobileInputWrap.matches(":hover") ||
+    window.matchMedia("(hover:none)").matches
+  );
+
+  if (canClear) {
+    mobileInput.value = "";
+    mobileInput.focus();
+    updateMobileInputIcon();
     renderResults(true);
-  });
+    return;
+  }
+
+  mobileInput.focus();
+  updateMobileInputIcon();
+  renderResults(true);
+});
 
   // Tutup apabila klik di luar
   document.addEventListener("click", e => {
@@ -3314,6 +3361,7 @@ function setupHeaderSearch() {
       positionList();
     }
   }, true);
+   updateMobileInputIcon();
 }
 
 
