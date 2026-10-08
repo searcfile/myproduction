@@ -2148,13 +2148,18 @@ body.tab-dragging-active *{
    TAB ACTIONS - REFRESH & CLOSE
 ========================================== */
 
+
 .admin-workspace-tab-refresh,
 .admin-workspace-tab-close{
+  position:relative;
+
   width:20px !important;
   height:20px !important;
   min-width:20px;
   min-height:20px;
   flex:0 0 20px;
+
+  box-sizing:border-box;
 
   display:inline-flex;
   align-items:center;
@@ -2178,6 +2183,7 @@ body.tab-dragging-active *{
     color .2s ease;
 }
 
+
 /* Warna asal */
 .admin-workspace-tab-refresh{
   color:gray;
@@ -2187,16 +2193,28 @@ body.tab-dragging-active *{
   color:var(--close);
 }
 
-/* Kedua-dua SVG sama saiz */
+
 .admin-workspace-tab-refresh svg,
 .admin-workspace-tab-close svg{
+  position:absolute;
+
+  top:50%;
+  left:50%;
+
   width:12px !important;
   height:12px !important;
   min-width:12px;
   min-height:12px;
-  flex:0 0 12px;
+
   display:block;
+  flex:none;
+
+  margin:0 !important;
+  padding:0 !important;
+
+  transform:translate(-50%,-50%);
 }
+
 /* Hover Refresh */
 .admin-workspace-tab-refresh:hover{
   background:#f5f5f5 !important;
