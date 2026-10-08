@@ -749,10 +749,10 @@ function createShell() {
       class="header-tab-search"
       id="headerTabSearch">
 
-      <form
-        autocomplete="off"
-        onsubmit="return false;">
-
+<form
+  id="headerTabSearchForm"
+  autocomplete="off"
+  onsubmit="return false;">
         <div class="header-tab-search-input-wrap">
 
           <input
@@ -770,8 +770,11 @@ function createShell() {
             onfocus="this.removeAttribute('readonly');"
           >
 
-          <svg
-            class="header-tab-search-arrow"
+
+<svg
+  id="headerTabSearchArrow"
+  class="header-tab-search-arrow"
+
             viewBox="64 64 896 896"
             aria-hidden="true">
 
@@ -781,6 +784,28 @@ function createShell() {
 
         </div>
       </form>
+
+<button
+  type="button"
+  id="headerTabSearchMobileBtn"
+  class="header-tab-search-mobile-btn"
+  aria-label="Select Tab"
+  title="Select Tab"
+  aria-expanded="false"
+  aria-controls="headerTabSearchList">
+
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="19.2"
+    height="19.2"
+    fill="currentColor"
+    aria-hidden="true">
+
+    <path d="M14 22V8c0-2.828 0-4.243-.879-5.121C12.243 2 10.828 2 8 2s-4.243 0-5.121.879C2 3.757 2 5.172 2 8v8c0 2.828 0 4.243.879 5.121C3.757 22 5.172 22 8 22zM6.5 11h-1m5 0h-1m-3-4h-1m1 8h-1m5-8h-1m5 8h-1m1-4h-1m.5-3h-4v14h4c1.886 0 2.828 0 3.414-.586S22 19.886 22 18v-6c0-1.886 0-2.828-.586-3.414S19.886 8 18 8Z"/>
+  </svg>
+
+</button>
 
       <div
         id="headerTabSearchList"
@@ -3064,183 +3089,152 @@ updateOpenIndicators();
      HEADER TAB SEARCH
      ========================================================== */
 
-  function setupHeaderSearch() {
+ 
+function setupHeaderSearch() {
 
-    const wrap =
-      document.getElementById(
-        "headerTabSearch"
-      );
+  const wrap = document.getElementById("headerTabSearch");
+  const input = document.getElementById("headerTabSearchInput");
+  const list = document.getElementById("headerTabSearchList");
+  const form = document.getElementById("headerTabSearchForm");
+  const arrow = document.getElementById("headerTabSearchArrow");
+  const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
 
-    const input =
-      document.getElementById(
-        "headerTabSearchInput"
-      );
+  if (!wrap || !input || !list) return;
 
-    const list =
-      document.getElementById(
-        "headerTabSearchList"
-      );
+  const mobileQuery = window.matchMedia("(max-width:815px)");
 
-    const form =
-      document.getElementById(
-        "headerTabSearchForm"
-      );
+  form?.addEventListener("submit", event => {
+    event.preventDefault();
+  });
 
-    const arrow =
-      document.getElementById(
-        "headerTabSearchArrow"
-      );
+  function hideList() {
+    list.style.display = "none";
+    wrap.classList.remove("search-mode");
+    mobileBtn?.setAttribute("aria-expanded", "false");
+  }
 
+  function positionList() {
+    const anchor = mobileQuery.matches && mobileBtn
+      ? mobileBtn
+      : input;
 
-    if (
-      !wrap ||
-      !input ||
-      !list
-    ) {
+    const rect = anchor.getBoundingClientRect();
+    const width = mobileQuery.matches ? 200 : Math.max(180, rect.width);
+
+    const left = Math.max(
+      8,
+      Math.min(rect.left, window.innerWidth - width - 8)
+    );
+
+    list.style.left = `${left}px`;
+    list.style.top = `${rect.bottom + 4}px`;
+
+    if (mobileQuery.matches) {
+      list.style.width = `${Math.min(width, window.innerWidth - 16)}px`;
+    } else {
+      list.style.removeProperty("width");
+    }
+  }
+
+  function renderResults(showAll = false) {
+
+    const keyword = showAll
+      ? ""
+      : input.value.trim().toLowerCase();
+
+    list.innerHTML = "";
+
+    if (!showAll && !keyword) {
+      hideList();
       return;
     }
 
+    const results = ADMIN_PAGES.filter(page =>
+      showAll || page.name.toLowerCase().includes(keyword)
+    );
 
-    form?.addEventListener(
-      "submit",
-      event => {
+    if (!results.length) {
+      hideList();
+      return;
+    }
+
+    results.forEach(page => {
+
+      const link = document.createElement("a");
+
+      link.href = `./${page.file}`;
+      link.textContent = page.name;
+
+      link.addEventListener("click", event => {
         event.preventDefault();
-      }
-    );
-
-
-    function hideList() {
-
-      list.style.display =
-        "none";
-
-      wrap.classList.remove(
-        "search-mode"
-      );
-    }
-
-
-    function renderResults() {
-
-      const keyword =
-        input.value
-          .trim()
-          .toLowerCase();
-
-      list.innerHTML = "";
-
-
-      if (!keyword) {
-
         hideList();
-
-        return;
-      }
-
-
-      const results =
-        ADMIN_PAGES.filter(
-          page =>
-            page.name
-              .toLowerCase()
-              .includes(keyword)
-        );
-
-
-      if (!results.length) {
-
-        hideList();
-
-        return;
-      }
-
-
-      results.forEach(page => {
-
-        const link =
-          document.createElement(
-            "a"
-          );
-
-        link.href =
-          `./${page.file}`;
-
-        link.textContent =
-          page.name;
-
-
-        link.addEventListener(
-          "click",
-          event => {
-
-            event.preventDefault();
-
-            addTab(page);
-
-          }
-        );
-
-
-        list.appendChild(
-          link
-        );
-
+        addTab(page);
       });
 
+      list.appendChild(link);
+    });
 
-      const rect =
-        input.getBoundingClientRect();
+    positionList();
 
-      list.style.left =
-        `${rect.left}px`;
-
-      list.style.top =
-        `${rect.bottom + 4}px`;
-
-      list.style.display =
-        "flex";
-
-      wrap.classList.add(
-        "search-mode"
-      );
-    }
-
-
-    input.addEventListener(
-      "input",
-      renderResults
-    );
-
-
-    arrow?.addEventListener(
-      "click",
-      () => {
-
-        input.value = "";
-
-        hideList();
-
-        input.focus();
-
-      }
-    );
-
-
-    document.addEventListener(
-      "click",
-      event => {
-
-        if (
-          !event.target.closest(
-            "#headerTabSearch"
-          )
-        ) {
-
-          hideList();
-        }
-
-      });
+    list.style.display = "flex";
+    wrap.classList.add("search-mode");
+    mobileBtn?.setAttribute("aria-expanded", "true");
   }
+
+  // Desktop: search menggunakan input asal
+  input.addEventListener("input", () => {
+    renderResults(false);
+  });
+
+  // Desktop: arrow reset search
+  arrow?.addEventListener("click", () => {
+    input.value = "";
+    hideList();
+    input.focus();
+  });
+
+  // Mobile: klik ikon untuk buka/tutup dropdown
+  mobileBtn?.addEventListener("click", event => {
+
+    event.stopPropagation();
+
+    if (list.style.display === "flex") {
+      hideList();
+      return;
+    }
+
+    input.value = "";
+    renderResults(true);
+  });
+
+  // Klik luar: tutup dropdown
+  document.addEventListener("click", event => {
+    if (!wrap.contains(event.target)) {
+      hideList();
+    }
+  });
+
+  // Escape: tutup dropdown
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      hideList();
+    }
+  });
+
+  // Pastikan dropdown ikut kedudukan ketika resize
+  window.addEventListener("resize", () => {
+    if (list.style.display === "flex") {
+      hideList();
+    }
+  });
+
+  // Pastikan dropdown ikut kedudukan ketika scroll
+  window.addEventListener("scroll", () => {
+    if (list.style.display === "flex") {
+      positionList();
+    }
+  }, true);
+}
 
 
   /* ==========================================================
