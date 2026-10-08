@@ -3176,7 +3176,7 @@ function setupHeaderSearch() {
 
     positionList();
 
-    list.style.display = "flex";
+    list.style.display = "block";
     wrap.classList.add("search-mode");
     mobileBtn?.setAttribute("aria-expanded", "true");
   }
@@ -3198,7 +3198,7 @@ function setupHeaderSearch() {
 
     event.stopPropagation();
 
-    if (list.style.display === "flex") {
+    if (list.style.display === "block") {
       hideList();
       return;
     }
