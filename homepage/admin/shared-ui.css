@@ -2586,16 +2586,97 @@ body.tab-dragging-active *{
     border-color:var(--gold);
   }
 
-  .header-tab-search-mobile-input-wrap svg{
-    position:absolute;
-    top:50%;
-    right:12px;
 
-    transform:translateY(-50%);
+/* SELECT TAB MOBILE DYNAMIC ICON */
 
-    color:var(--blur);
-    pointer-events:none;
+.header-tab-search-mobile-icon{
+  position:absolute;
+  top:50%;
+  right:8px;
+
+  transform:translateY(-50%);
+
+  width:26px;
+  height:26px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+  margin:0;
+  border:0;
+  background:transparent;
+
+  color:var(--blur);
+  cursor:pointer;
+}
+
+.header-tab-search-mobile-icon svg{
+  display:none;
+  position:static;
+
+  width:14px;
+  height:14px;
+
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+
+  transform:none;
+  pointer-events:none;
+}
+
+/* Default: Arrow Down */
+.header-tab-search-mobile-icon .mobile-icon-arrow{
+  display:block;
+}
+
+/* Input aktif: Search */
+.header-tab-search-mobile-input-wrap.is-focused
+.mobile-icon-arrow{
+  display:none;
+}
+
+.header-tab-search-mobile-input-wrap.is-focused
+.mobile-icon-search{
+  display:block;
+}
+
+/* Ada teks + hover: Clear */
+.header-tab-search-mobile-input-wrap.has-value:hover
+.mobile-icon-arrow,
+.header-tab-search-mobile-input-wrap.has-value:hover
+.mobile-icon-search{
+  display:none;
+}
+
+.header-tab-search-mobile-input-wrap.has-value:hover
+.mobile-icon-clear{
+  display:block;
+}
+
+.header-tab-search-mobile-icon:hover{
+  color:var(--text-soft);
+}
+
+/* Mobile touch: ikon Clear juga muncul bila input aktif dan ada teks */
+@media (hover:none){
+  .header-tab-search-mobile-input-wrap.has-value.is-focused
+  .mobile-icon-arrow,
+  .header-tab-search-mobile-input-wrap.has-value.is-focused
+  .mobile-icon-search{
+    display:none;
   }
+
+  .header-tab-search-mobile-input-wrap.has-value.is-focused
+  .mobile-icon-clear{
+    display:block;
+  }
+}
+
 
   .header-tab-search-list{
     box-sizing:border-box;
