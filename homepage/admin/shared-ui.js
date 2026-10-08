@@ -2495,8 +2495,8 @@ function initWorkspaceTabDrag(tabList) {
 
     drag.targetIndex = targetIndex;
 
-    tab.style.transform =
-      `translate3d(${dx}px,-6px,0) scale(1.035)`;
+tab.style.transform =
+  `translate3d(${dx}px,0,0)`;
 
     elements.forEach((element, index) => {
       if (element === tab) return;
