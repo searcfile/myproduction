@@ -2185,12 +2185,17 @@ body.tab-dragging-active *{
   position:relative;
   order:2;
   flex:0 0 32px;
+  width:32px;
   height:40px;
-  margin-bottom:0;
-  display:flex;
+  margin-bottom:4px;
+  display:none;
   align-items:center;
   justify-content:center;
   z-index:10;
+}
+/* Muncul hanya apabila ada tab tersembunyi */
+.admin-workspace-more.has-hidden-tabs{
+  display:flex;
 }
 
 .admin-workspace-more-button{
