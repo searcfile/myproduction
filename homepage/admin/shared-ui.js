@@ -2414,6 +2414,7 @@ function initTabBarSearch() {
      RENDER TABS - SHARED WORKSPACE
      ========================================================== */
 
+
 function initWorkspaceTabDrag(tabList) {
   if (!tabList) return;
 
@@ -2428,12 +2429,12 @@ function initWorkspaceTabDrag(tabList) {
   }, true);
 
   tabList.addEventListener("pointerdown", event => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || drag) return;
 
     const tab = event.target.closest(".admin-workspace-tab");
     if (!tab || !tabList.contains(tab)) return;
 
-    // Jangan drag apabila tekan Refresh atau Close.
+    // Jangan drag melalui butang Refresh atau Close.
     if (event.target.closest("button")) return;
 
     const elements = [
@@ -2442,17 +2443,27 @@ function initWorkspaceTabDrag(tabList) {
 
     if (elements.length < 2) return;
 
+    const originIndex = elements.indexOf(tab);
+    const rects = elements.map(el => el.getBoundingClientRect());
+
     drag = {
       tab,
+      elements,
+      rects,
+      originIndex,
+      targetIndex: originIndex,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      originIndex: elements.indexOf(tab),
-      targetIndex: elements.indexOf(tab),
-      elements,
-      rects: elements.map(el => el.getBoundingClientRect()),
-      started: false
+      started: false,
+      preview: null
     };
+
+    window.addEventListener("pointermove", onMove, {
+      passive: false
+    });
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
   });
 
   function onMove(event) {
@@ -2465,58 +2476,103 @@ function initWorkspaceTabDrag(tabList) {
       if (Math.hypot(dx, dy) < 6) return;
 
       drag.started = true;
-      drag.tab.classList.add("dragging");
-      tabList.classList.add("is-dragging");
 
-      try {
-        drag.tab.setPointerCapture(event.pointerId);
-      } catch (_) {}
+      const rect = drag.rects[drag.originIndex];
+      const preview = drag.tab.cloneNode(true);
+
+      preview.classList.remove("dragging");
+      preview.classList.add("workspace-drag-preview");
+      preview.removeAttribute("id");
+
+      Object.assign(preview.style, {
+        position: "fixed",
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        margin: "0",
+        transform: "none",
+        transition: "none",
+        pointerEvents: "none",
+        zIndex: "2147483647"
+      });
+
+      document.body.appendChild(preview);
+
+      drag.preview = preview;
+      drag.tab.classList.add("workspace-drag-source");
+      tabList.classList.add("is-dragging");
     }
 
     event.preventDefault();
 
-    const {
-      tab, elements, rects, originIndex
-    } = drag;
+    const state = drag;
+    const originRect = state.rects[state.originIndex];
 
-    const draggedRect = rects[originIndex];
-    const center = draggedRect.left + draggedRect.width / 2 + dx;
+    // Floating tab boleh bergerak ke semua arah.
+    state.preview.style.transform =
+      `translate3d(${dx}px, ${dy}px, 0)`;
+
+    const listRect = tabList.getBoundingClientRect();
+
+    // Kira susunan hanya apabila pointer berada
+    // berhampiran tabbar.
+    const nearTabbar =
+      event.clientY >= listRect.top - 20 &&
+      event.clientY <= listRect.bottom + 20;
+
+    if (!nearTabbar) {
+      state.targetIndex = state.originIndex;
+
+      state.elements.forEach(element => {
+        if (element !== state.tab) {
+          element.style.transform = "";
+        }
+      });
+
+      return;
+    }
+
+    const draggedCenter =
+      originRect.left + originRect.width / 2 + dx;
 
     let targetIndex = 0;
 
-    elements.forEach((element, index) => {
-      if (index === originIndex) return;
+    state.rects.forEach((rect, index) => {
+      if (index === state.originIndex) return;
 
-      const rect = rects[index];
       const midpoint = rect.left + rect.width / 2;
 
-      if (center > midpoint) targetIndex++;
+      if (draggedCenter > midpoint) {
+        targetIndex++;
+      }
     });
 
-    drag.targetIndex = targetIndex;
+    state.targetIndex = targetIndex;
 
-tab.style.transform =
-  `translate3d(${dx}px,0,0)`;
-
-    elements.forEach((element, index) => {
-      if (element === tab) return;
+    state.elements.forEach((element, index) => {
+      if (element === state.tab) return;
 
       let shift = 0;
 
-      if (targetIndex > originIndex &&
-          index > originIndex &&
-          index <= targetIndex) {
-        shift = -draggedRect.width;
+      if (
+        targetIndex > state.originIndex &&
+        index > state.originIndex &&
+        index <= targetIndex
+      ) {
+        shift = -originRect.width;
       }
 
-      if (targetIndex < originIndex &&
-          index >= targetIndex &&
-          index < originIndex) {
-        shift = draggedRect.width;
+      if (
+        targetIndex < state.originIndex &&
+        index >= targetIndex &&
+        index < state.originIndex
+      ) {
+        shift = originRect.width;
       }
 
       element.style.transform =
-        `translate3d(${shift}px,0,0)`;
+        `translate3d(${shift}px, 0, 0)`;
     });
   }
 
@@ -2526,9 +2582,18 @@ tab.style.transform =
     const state = drag;
     drag = null;
 
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onEnd);
+    window.removeEventListener("pointercancel", onEnd);
+
     if (!state.started) return;
 
     suppressClickUntil = performance.now() + 350;
+
+    state.preview?.remove();
+
+    state.tab.classList.remove("workspace-drag-source");
+    tabList.classList.remove("is-dragging");
 
     state.elements.forEach(element => {
       element.style.transform = "";
@@ -2536,12 +2601,20 @@ tab.style.transform =
       element.classList.remove("dragging");
     });
 
-    tabList.classList.remove("is-dragging");
-
     const { originIndex, targetIndex } = state;
 
-    if (event.type === "pointercancel" ||
-        originIndex === targetIndex) return;
+    const listRect = tabList.getBoundingClientRect();
+
+    const droppedOnTabbar =
+      event.clientY >= listRect.top - 20 &&
+      event.clientY <= listRect.bottom + 20;
+
+    // Lepas di luar tabbar: kembali ke asal.
+    if (
+      event.type === "pointercancel" ||
+      !droppedOnTabbar ||
+      originIndex === targetIndex
+    ) return;
 
     const tabs = getTabs();
 
@@ -2556,10 +2629,6 @@ tab.style.transform =
     renderTabs();
     renderSidebarTabs();
   }
-
-  tabList.addEventListener("pointermove", onMove);
-  tabList.addEventListener("pointerup", onEnd);
-  tabList.addEventListener("pointercancel", onEnd);
 
   tabList.addEventListener("dragstart", event => {
     event.preventDefault();
