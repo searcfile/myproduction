@@ -2133,114 +2133,101 @@ body.tab-dragging-active *{
   white-space:nowrap;
 }
 
-
 /* Refresh dan Close */
 .admin-workspace-tab-actions{
   display:inline-flex;
   align-items:center;
-  gap:2px;
-  margin-left:8px;
+  gap:5px;
+
   flex-shrink:0;
 }
 
 
 
-
-
 /* ==========================================
-   TAB ACTIONS - ORIGINAL STYLE
+   TAB ACTIONS - REFRESH & CLOSE
 ========================================== */
 
-/* REFRESH BUTTON */
-.admin-workspace-tab-refresh{
+
+
+.admin-workspace-tab-refresh,
+.admin-workspace-tab-close{
+  position:relative;
+
+  width:20px !important;
+  height:20px !important;
+  min-width:20px;
+  min-height:20px;
+  flex:0 0 20px;
+
+  box-sizing:border-box;
+
   display:inline-flex;
   align-items:center;
   justify-content:center;
 
-  flex:none;
+  padding:4px !important;
+  margin:0 !important;
 
-  margin:0;
-  padding:4px;
-
-  border:0;
-  border-radius:4px;
+  border:0 !important;
   outline:0;
+  border-radius:4px;
 
-  color:var(--text-dim);
-  background:transparent;
+  background:transparent !important;
 
   font-size:12px;
-  line-height:1;
+  line-height:0;
+  vertical-align:middle;
 
   cursor:pointer;
 
   transition:
-    color .15s ease,
-    background .15s ease;
+    background-color .2s ease,
+    color .2s ease;
 }
 
-/* CLOSE BUTTON */
+
+
+/* Warna asal */
+.admin-workspace-tab-refresh{
+  color:gray;
+}
+
 .admin-workspace-tab-close{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-
-  flex:none;
-
-  width:12px;
-  height:12px;
-
-  margin:0 0 0 8px;
-  padding:0;
-
-  border:0;
-  border-radius:0;
-  outline:0;
-
   color:var(--close);
-  background:transparent;
-
-  font-size:12px;
-  line-height:1;
-
-  cursor:pointer;
-
-  transition:color .15s ease;
 }
 
-/* SVG REFRESH & CLOSE */
+
+
 .admin-workspace-tab-refresh svg,
 .admin-workspace-tab-close svg{
+  position:static !important;
+
+  width:12px !important;
+  height:12px !important;
+  min-width:12px;
+  min-height:12px;
+
+  flex:0 0 12px;
   display:block;
 
-  width:12px;
-  height:12px;
+  margin:0 !important;
+  padding:0 !important;
 
-  flex:none;
-
-  margin:0;
-  padding:0;
-
-  fill:currentColor;
-  pointer-events:none;
+  transform:none !important;
+  vertical-align:middle;
 }
 
-/* REFRESH HOVER */
+
+/* Hover Refresh */
 .admin-workspace-tab-refresh:hover{
-  background:var(--close-hover2);
-  color:var(--text-main);
+  background:#f5f5f5 !important;
 }
 
-/* CLOSE HOVER */
+/* Hover Close */
 .admin-workspace-tab-close:hover{
-  color:var(--text-main);
+  color:var(--gold-hover) !important;
 }
-
-/* CLOSE ACTIVE */
-.admin-workspace-tab-close:active{
-  color:var(--gold-active);
-}
-
 
 /* ==========================================================
    MORE BUTTON
