@@ -3185,7 +3185,9 @@ function updateMobileInputIcon() {
 
 mobileInput.addEventListener("focus", updateMobileInputIcon);
 mobileInput.addEventListener("blur", updateMobileInputIcon);
-
+mobileIcon?.addEventListener("mousedown", event => {
+  event.preventDefault();
+});
   function hideList() {
     list.style.display = "none";
     list.innerHTML = "";
