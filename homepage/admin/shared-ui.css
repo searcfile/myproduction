@@ -2382,3 +2382,45 @@ body.tab-dragging-active *{
 .admin-workspace-tab-close {
   cursor: pointer;
 }
+
+/* ==========================================
+   FLOATING TAB DRAG - ORIGINAL SIZE
+========================================== */
+
+/* Tab asal kekal dalam tabbar */
+.admin-workspace-tab.workspace-drag-source{
+  opacity:.2 !important;
+}
+
+/* Salinan tab yang boleh keluar daripada tabbar */
+.workspace-drag-preview{
+  position:fixed !important;
+  display:inline-flex !important;
+
+  opacity:1 !important;
+  visibility:visible !important;
+
+  pointer-events:none !important;
+  user-select:none !important;
+
+  scale:1 !important;
+  filter:none !important;
+  box-shadow:none !important;
+
+  transition:none !important;
+  transform-origin:center !important;
+
+  cursor:move !important;
+  z-index:2147483647 !important;
+}
+
+/* Ikon dalam floating tab */
+.workspace-drag-preview *{
+  pointer-events:none !important;
+}
+
+/* Tab lain bergerak smooth */
+.admin-workspace-tabs-list.is-dragging
+.admin-workspace-tab:not(.workspace-drag-source){
+  transition:transform 200ms ease !important;
+}
