@@ -2232,16 +2232,16 @@ body.tab-dragging-active *{
   top:100%;
   right:0;
   display:none;
-  width:220px;
+  width:200px;
   max-height:280px;
   overflow-y:auto;
   overflow-x:hidden;
-  padding:5px;
-  border:1px solid var(--border2);
-  border-radius:6px;
+  padding:4px;
+  border:0;
+  border-radius:8px;
   background:var(--backgrounddrop);
   box-shadow:0 8px 20px rgba(0,0,0,.35);
-  z-index:10000;
+  z-index:9999999;
 }
 
 .admin-workspace-more-dropdown.open{
@@ -2252,10 +2252,8 @@ body.tab-dragging-active *{
   display:flex;
   align-items:center;
   justify-content:space-between;
-
   gap:8px;
-  padding:6px 8px;
-
+  padding:5px 12px;
   border-radius:4px;
 }
 
@@ -2270,20 +2268,16 @@ body.tab-dragging-active *{
 .admin-workspace-more-name{
   flex:1;
   min-width:0;
-
   padding:0;
   border:0;
   background:transparent;
-
   color:var(--text-soft);
   font-family:inherit;
-  font-size:12px;
+  font-size:14px;
   text-align:left;
-
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-
   cursor:pointer;
 }
 
