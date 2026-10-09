@@ -282,12 +282,7 @@ html {
   left: 0;
   transition: background .25s ease, color .25s ease;
 }
-.header-links{
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding-inline: 16px;
-}
+
 .header-right-meta{
   display: flex;
   align-items: center;
