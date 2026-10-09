@@ -2598,10 +2598,14 @@ body.tab-dragging-active *{
 
 /* SVG sahaja, tiada button pembungkus */
 .header-tab-search-mobile-input-wrap
+
+/* SELECT TAB MOBILE DYNAMIC ICON */
+
+.header-tab-search-mobile-input-wrap
 .header-tab-search-mobile-icon{
   position:absolute;
-  right:10px;
   top:50%;
+  right:10px;
 
   width:14px;
   height:14px;
@@ -2609,69 +2613,64 @@ body.tab-dragging-active *{
   transform:translateY(-50%);
 
   display:none;
-  fill:var(--blur);
-  color:var(--blur);
-
   margin:0;
   padding:0;
 
+  fill:var(--blur);
+  color:var(--blur);
   pointer-events:none;
 }
 
-/* DEFAULT: ARROW */
+/* DEFAULT ARROW */
 .header-tab-search-mobile-input-wrap
-.header-tab-search-mobile-icon.mobile-icon-arrow{
+.mobile-icon-arrow{
   display:block;
-  fill:none;
-  stroke:var(--blur);
-  stroke-width:1.7;
-  stroke-linecap:round;
-  stroke-linejoin:round;
 }
 
-/* INPUT FOCUS: SEARCH */
+/* FOCUS SEARCH */
 .header-tab-search-mobile-input-wrap.is-focused
-.header-tab-search-mobile-icon.mobile-icon-arrow{
+.mobile-icon-arrow{
   display:none;
 }
 
 .header-tab-search-mobile-input-wrap.is-focused
-.header-tab-search-mobile-icon.mobile-icon-search{
+.mobile-icon-search{
   display:block;
 }
 
-/* INPUT ADA TEKS + HOVER: CLEAR */
+/* ADA TEKS + HOVER */
 .header-tab-search-mobile-input-wrap.has-value:hover
-.header-tab-search-mobile-icon.mobile-icon-arrow,
+.mobile-icon-arrow,
 .header-tab-search-mobile-input-wrap.has-value:hover
-.header-tab-search-mobile-icon.mobile-icon-search{
+.mobile-icon-search{
   display:none;
 }
 
 .header-tab-search-mobile-input-wrap.has-value:hover
-.header-tab-search-mobile-icon.mobile-icon-clear{
+.mobile-icon-clear{
   display:block;
   pointer-events:auto;
   cursor:pointer;
 }
 
-/* PHONE / TOUCH */
+/* TOUCH DEVICE */
 @media (hover:none){
 
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .header-tab-search-mobile-icon.mobile-icon-arrow,
+  .mobile-icon-arrow,
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .header-tab-search-mobile-icon.mobile-icon-search{
+  .mobile-icon-search{
     display:none;
   }
 
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .header-tab-search-mobile-icon.mobile-icon-clear{
+  .mobile-icon-clear{
     display:block;
     pointer-events:auto;
     cursor:pointer;
   }
 }
+
 
   .header-tab-search-list{
     box-sizing:border-box;
