@@ -2586,23 +2586,16 @@ body.tab-dragging-active *{
     border-color:var(--gold);
   }
 
-
-
 /* ==========================================================
    MOBILE SELECT TAB - DIRECT SVG ICON
    ========================================================== */
 
 .header-tab-search-mobile-input-wrap{
   position:relative;
+  width:100%;
 }
 
-/* SVG sahaja, tiada button pembungkus */
-.header-tab-search-mobile-input-wrap
-
-/* SELECT TAB MOBILE DYNAMIC ICON */
-
-.header-tab-search-mobile-input-wrap
-.header-tab-search-mobile-icon{
+.header-tab-search-mobile-input-wrap > svg.header-tab-search-mobile-icon{
   position:absolute;
   top:50%;
   right:10px;
@@ -2611,8 +2604,8 @@ body.tab-dragging-active *{
   height:14px;
 
   transform:translateY(-50%);
-
   display:none;
+
   margin:0;
   padding:0;
 
@@ -2621,33 +2614,27 @@ body.tab-dragging-active *{
   pointer-events:none;
 }
 
-/* DEFAULT ARROW */
-.header-tab-search-mobile-input-wrap
-.mobile-icon-arrow{
+/* DEFAULT: ARROW DOWN */
+.header-tab-search-mobile-input-wrap > svg.mobile-icon-arrow{
   display:block;
 }
 
-/* FOCUS SEARCH */
-.header-tab-search-mobile-input-wrap.is-focused
-.mobile-icon-arrow{
+/* FOCUS: SEARCH */
+.header-tab-search-mobile-input-wrap.is-focused > svg.mobile-icon-arrow{
   display:none;
 }
 
-.header-tab-search-mobile-input-wrap.is-focused
-.mobile-icon-search{
+.header-tab-search-mobile-input-wrap.is-focused > svg.mobile-icon-search{
   display:block;
 }
 
-/* ADA TEKS + HOVER */
-.header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-arrow,
-.header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-search{
+/* ADA TEXT + HOVER: CLEAR */
+.header-tab-search-mobile-input-wrap.has-value:hover > svg.mobile-icon-arrow,
+.header-tab-search-mobile-input-wrap.has-value:hover > svg.mobile-icon-search{
   display:none;
 }
 
-.header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-clear{
+.header-tab-search-mobile-input-wrap.has-value:hover > svg.mobile-icon-clear{
   display:block;
   pointer-events:auto;
   cursor:pointer;
@@ -2656,21 +2643,16 @@ body.tab-dragging-active *{
 /* TOUCH DEVICE */
 @media (hover:none){
 
-  .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-arrow,
-  .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-search{
+  .header-tab-search-mobile-input-wrap.has-value.is-focused > svg.mobile-icon-search{
     display:none;
   }
 
-  .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-clear{
+  .header-tab-search-mobile-input-wrap.has-value.is-focused > svg.mobile-icon-clear{
     display:block;
     pointer-events:auto;
     cursor:pointer;
   }
 }
-
 
   .header-tab-search-list{
     box-sizing:border-box;
