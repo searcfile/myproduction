@@ -1851,8 +1851,7 @@ body.tab-dragging-active *{
     min-width:32px;
     max-width:32px !important;
     flex:0 0 32px !important;
-
-    margin-right:8px;
+    margin-right:14px;
   }
 
   .header-tab-search-mobile-btn{
