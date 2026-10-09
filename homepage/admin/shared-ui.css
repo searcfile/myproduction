@@ -355,7 +355,7 @@ input::placeholder{
   align-items:center;
   justify-content:center;
   gap:8px;
-  padding:0 15px;
+  padding-inline:12px;
   border:none;
   background:transparent;
   color:rgba(255,255,255,.65);
