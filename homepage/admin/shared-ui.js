@@ -3186,11 +3186,12 @@ mobileClearIcon?.addEventListener("mousedown", event => {
     wrap.classList.remove("search-mode");
   }
 
-  function closePanel() {
-    hideList();
-    panel.hidden = true;
-    mobileBtn?.setAttribute("aria-expanded", "false");
-  }
+function closePanel() {
+  hideList();
+  panel.hidden = true;
+  mobileBtn?.setAttribute("aria-expanded", "false");
+  mobileBtn?.classList.remove("is-open");
+}
 
   function positionPanel() {
     const rect = mobileBtn.getBoundingClientRect();
@@ -3289,6 +3290,7 @@ updateMobileInputIcon();
 positionPanel();
 panel.hidden = false;
     mobileBtn.setAttribute("aria-expanded", "true");
+     mobileBtn.classList.add("is-open");
   });
 
   // MOBILE: klik input, baru paparkan senarai
@@ -3306,6 +3308,32 @@ mobileInput.addEventListener("input", () => {
 });
 
    
+
+/* TUTUP SELECT TAB BILA KLIK LUAR */
+
+document.addEventListener("pointerdown", event => {
+  const target = event.target;
+
+  if (panel.hidden && !isListOpen()) return;
+
+  if (
+    mobileBtn?.contains(target) ||
+    panel.contains(target) ||
+    list.contains(target)
+  ) {
+    return;
+  }
+
+  closePanel();
+});
+
+/* TUTUP BILA TEKAN ESCAPE */
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closePanel();
+  }
+});
 
 function clearMobileSearch(event) {
   event.preventDefault();
