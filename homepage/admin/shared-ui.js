@@ -1825,6 +1825,15 @@ function createShell() {
           "tab-open",
           files.has(file)
         );
+         
+/* Tandakan halaman yang sedang aktif */
+if (element.matches(".dropdown-links a")) {
+  element.classList.toggle(
+    "dropdown-page-active",
+    file === getCurrentFile()
+  );
+}
+
 
       });
   }
@@ -4854,9 +4863,11 @@ setupDropdown(
 
     syncCurrentPageTab();
 
-    renderTabs();
+renderTabs();
 
-    updateHeaderActiveState();
+updateOpenIndicators();
+
+updateHeaderActiveState();
 
     updateClock();
 
