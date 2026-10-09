@@ -2553,6 +2553,36 @@ body.tab-dragging-active *{
     z-index:999998;
   }
 
+/* ARROW KECIL ATAS SELECT TAB PANEL */
+
+.header-tab-search-mobile-panel:not([hidden])::before{
+  content:"";
+  position:absolute;
+
+  top:-6px;
+  left:16px;
+
+  width:10px;
+  height:10px;
+
+  background:var(--backgrounddrop);
+
+  border-top:1px solid var(--border2);
+  border-left:1px solid var(--border2);
+
+  transform:rotate(45deg);
+
+  pointer-events:none;
+  z-index:1;
+}
+
+/* BUTTON KETIKA PANEL DIBUKA */
+
+.header-tab-search-mobile-btn.is-open{
+  background:var(--close-hover2);
+  border-color:var(--gold);
+}
+
   .header-tab-search-mobile-input-wrap{
     position:relative;
     width:100%;
