@@ -1740,6 +1740,7 @@ body.tab-dragging-active *{
 
 .header-tab-search-input:focus{
   border-color:var(--gold);
+  background:#ffffff1a;
 }
 .header-tab-search-input::placeholder{
   color:#ffffffd1;
