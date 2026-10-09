@@ -343,14 +343,11 @@ input::placeholder{
   transition: all 0.3s;
 }
 
-.header-more-menu .dropdown-wrapper > .live-chat-button:hover{
-  color:#fff;
+/* MORE MENU - HOVER TEXT ONLY */
+.header-more-menu .live-chat-button:not(.active-livechat):not(.active-linkdownload):not(.active-gamelog):not(.active-itemBtn):hover{
   background:transparent;
-}
-.header-more-menu .dropdown-wrapper > .live-chat-button:active{
   color:#fff;
 }
-
 /* ACTIVE COLOR - HEADER MORE MENU ONLY */
 
 .header-more-menu .live-chat-button.active-livechat,
