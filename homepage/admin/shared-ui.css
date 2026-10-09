@@ -273,6 +273,66 @@ input::placeholder{
 }
 
 
+/* =========================================
+   MORE MENU - FLYOUT SUBMENU
+   ========================================= */
+
+.header-more-menu{
+  overflow:visible;
+}
+
+.header-more-menu > .dropdown-wrapper{
+  position:relative;
+}
+
+/* Arrow kanan hanya untuk button dropdown */
+.header-more-menu > .dropdown-wrapper > .live-chat-button{
+  position:relative;
+  padding-right:30px;
+}
+
+.header-more-menu > .dropdown-wrapper > .live-chat-button::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  top:50%;
+  width:6px;
+  height:6px;
+  border-top:1.5px solid currentColor;
+  border-right:1.5px solid currentColor;
+  transform:translateY(-50%) rotate(45deg);
+  opacity:.75;
+}
+
+/* SVG asal sahaja, tanpa wrapper tambahan */
+.header-more-menu .live-chat-button svg{
+  width:12px !important;
+  height:12px !important;
+  min-width:12px;
+  min-height:12px;
+  flex-shrink:0;
+}
+
+/* Dropdown dalam More buka ke sisi */
+.header-more-menu .dropdown-wrapper > .dropdown-links{
+  position:fixed;
+  top:auto !important;
+  z-index:11010;
+  min-width:180px;
+  max-width:calc(100vw - 16px);
+  max-height:min(300px, calc(100vh - 16px));
+  overflow-y:auto;
+  background:var(--backgrounddrop);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+}
+
+.header-more-menu .dropdown-wrapper > .live-chat-button:hover{
+  background:#ffffff1f;
+  color:#fff;
+}
+
 /* ==========================================================
    CENTER LOGO
    ========================================================== */
