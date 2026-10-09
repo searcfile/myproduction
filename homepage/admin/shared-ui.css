@@ -1715,27 +1715,19 @@ body.tab-dragging-active *{
 
 .header-tab-search-input-wrap{
   position:relative;
-
   width:100%;
 }
 
 .header-tab-search-input{
   width:100%;
   height:32px;
-
   padding:4px 34px 4px 11px;
-
-  border:1px solid var(--border2);
+  border:1px solid #ffffff29;
   border-radius:6px;
-
-  background:var(--backgroundbtn);
-
-  color:var(--text-soft);
-
+  background:#ffffff1a;
+  color:#fff;
   font-size:14px;
-
   outline:none;
-
   transition:.2s;
 }
 
