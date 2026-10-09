@@ -1705,7 +1705,10 @@ body.tab-dragging-active *{
   padding-inline:12px;
   z-index:99999;
 }
-
+.header-tab-search:hover{
+  background:#ffffff1f;
+  color:#fff;
+}
 .header-tab-search form{
   width:100%;
 }
@@ -1867,8 +1870,12 @@ body.tab-dragging-active *{
     background:#ffffff1f;
     color:#fff;
     cursor:pointer;
+    transition: background-color .18s ease, color .18s ease;
   }
-
+.header-tab-search-mobile-btn:hover{
+    background:#ffffff1f;
+    color:#fff;
+}
 
 .header-tab-search-mobile-btn svg{
   display:block;
