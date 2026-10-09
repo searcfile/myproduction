@@ -1876,7 +1876,7 @@ body.tab-dragging-active *{
     flex:0 0 32px;
 
     padding:0;
-    margin:0;
+    margin-left:16px;
 
     border:1px solid var(--border2);
     border-radius:6px;
