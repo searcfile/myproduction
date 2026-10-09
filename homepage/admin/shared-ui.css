@@ -261,7 +261,8 @@ input::placeholder{
   min-height:36px;
   height:auto;
   margin:0;
-  padding:8px 12px;
+  padding:5px 12px;
+  border-radius:4px;
   box-sizing:border-box;
   justify-content:flex-start;
   text-align:left;
