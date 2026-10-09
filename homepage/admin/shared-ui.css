@@ -341,6 +341,7 @@ input::placeholder{
   border-radius:8px;
   box-shadow:0 8px 24px rgba(0,0,0,.35);
   transition: all 0.3s;
+  padding:4px;
 }
 
 /* MORE MENU - HOVER TEXT ONLY */
@@ -348,8 +349,6 @@ input::placeholder{
   background:transparent;
   color:#fff;
 }
-/* ACTIVE COLOR - HEADER MORE MENU ONLY */
-
 
 /* =========================================
    HEADER MORE MENU - ACTIVE + HOVER
