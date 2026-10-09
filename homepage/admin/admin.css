@@ -1632,14 +1632,6 @@ select:focus-visible{
     width: 100% !important;
   }
 }
-.header-tab-search{
-  position: relative;
-  width: 100%;
-  max-width: 150px;
-  flex: 0 0 150px;
-  z-index: 99999;
-  margin-right: 16px;
-}
 
 .header-tab-search-input{
   width: 100%;
