@@ -1857,20 +1857,15 @@ body.tab-dragging-active *{
     display:inline-flex !important;
     align-items:center;
     justify-content:center;
-
-    width:32px;
-    height:32px;
-    flex:0 0 32px;
-
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
     padding:0;
-    margin-left:16px;
-
-    border:1px solid var(--border2);
-    border-radius:6px;
-
-    background:var(--backgroundbtn);
-    color:var(--text-soft);
-
+    margin-left:12px;
+    border:0;
+    border-radius:8px;
+    background:#ffffff1f;
+    color:#fff;
     cursor:pointer;
   }
 
