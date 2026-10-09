@@ -345,6 +345,7 @@ input::placeholder{
 
 .header-more-menu .dropdown-wrapper > .live-chat-button:hover{
   color:#fff;
+  background:transparent;
 }
 .header-more-menu .dropdown-wrapper > .live-chat-button:active{
   color:#fff;
