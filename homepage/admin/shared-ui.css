@@ -386,15 +386,13 @@ input::placeholder{
   color:#fff;
 }
 
-.live-chat-button.active-livechat,
-.live-chat-button.active-linkdownload,
-.live-chat-button.active-gamelog,
-.live-chat-button.active-itemBtn{
+.live-chat-button.active{
   background:#fff3;
   color:#fff;
   font-weight:600;
 }
 
+/* ACTIVE HEADER BUTTON - ENABLE HOVER */
 /* ==========================================================
    HEADER DROPDOWN WRAPPER
    ========================================================== */
