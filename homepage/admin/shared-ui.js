@@ -3144,57 +3144,6 @@ updateOpenIndicators();
       });
   }
 
-
-  /* ==========================================================
-     HEADER TAB SEARCH
-     ========================================================== */
-
-function setupHeaderSearch() {
-
-  const wrap = document.getElementById("headerTabSearch");
-  const input = document.getElementById("headerTabSearchInput");
-  const list = document.getElementById("headerTabSearchList");
-  const form = document.getElementById("headerTabSearchForm");
-  const arrow = document.getElementById("headerTabSearchArrow");
-  const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
-  const panel = document.getElementById("headerTabSearchMobilePanel");
-  const mobileInput = document.getElementById("headerTabSearchMobileInput");
-const mobileInputWrap = mobileInput?.closest(
-  ".header-tab-search-mobile-input-wrap"
-);
-
-const mobileClearIcon = mobileInputWrap?.querySelector(
-  ".mobile-icon-clear"
-);
-  if (!wrap || !input || !list || !panel || !mobileInput) return;
-
-  const mobileQuery = window.matchMedia("(max-width:815px)");
-
-  const isMobile = () => mobileQuery.matches;
-  const isListOpen = () => list.style.display === "block";
-
-  form?.addEventListener("submit", e => e.preventDefault());
-
-function updateMobileInputIcon() {
-  if (!mobileInputWrap) return;
-
-  mobileInputWrap.classList.toggle(
-    "has-value",
-    mobileInput.value.length > 0
-  );
-
-  mobileInputWrap.classList.toggle(
-    "is-focused",
-    document.activeElement === mobileInput
-  );
-}
-
-mobileInput.addEventListener("focus", updateMobileInputIcon);
-mobileInput.addEventListener("blur", updateMobileInputIcon);
-mobileClearIcon?.addEventListener("mousedown", event => {
-  event.preventDefault();
-});
-
 /* ==========================================================
    RESPONSIVE HEADER MORE
    ========================================================== */
@@ -3356,6 +3305,56 @@ function setupHeaderMore() {
 
   scheduleUpdate();
 }
+  /* ==========================================================
+     HEADER TAB SEARCH
+     ========================================================== */
+
+function setupHeaderSearch() {
+
+  const wrap = document.getElementById("headerTabSearch");
+  const input = document.getElementById("headerTabSearchInput");
+  const list = document.getElementById("headerTabSearchList");
+  const form = document.getElementById("headerTabSearchForm");
+  const arrow = document.getElementById("headerTabSearchArrow");
+  const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
+  const panel = document.getElementById("headerTabSearchMobilePanel");
+  const mobileInput = document.getElementById("headerTabSearchMobileInput");
+const mobileInputWrap = mobileInput?.closest(
+  ".header-tab-search-mobile-input-wrap"
+);
+
+const mobileClearIcon = mobileInputWrap?.querySelector(
+  ".mobile-icon-clear"
+);
+  if (!wrap || !input || !list || !panel || !mobileInput) return;
+
+  const mobileQuery = window.matchMedia("(max-width:815px)");
+
+  const isMobile = () => mobileQuery.matches;
+  const isListOpen = () => list.style.display === "block";
+
+  form?.addEventListener("submit", e => e.preventDefault());
+
+function updateMobileInputIcon() {
+  if (!mobileInputWrap) return;
+
+  mobileInputWrap.classList.toggle(
+    "has-value",
+    mobileInput.value.length > 0
+  );
+
+  mobileInputWrap.classList.toggle(
+    "is-focused",
+    document.activeElement === mobileInput
+  );
+}
+
+mobileInput.addEventListener("focus", updateMobileInputIcon);
+mobileInput.addEventListener("blur", updateMobileInputIcon);
+mobileClearIcon?.addEventListener("mousedown", event => {
+  event.preventDefault();
+});
+
 
   function hideList() {
     list.style.display = "none";
