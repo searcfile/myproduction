@@ -3194,6 +3194,169 @@ mobileInput.addEventListener("blur", updateMobileInputIcon);
 mobileClearIcon?.addEventListener("mousedown", event => {
   event.preventDefault();
 });
+
+/* ==========================================================
+   RESPONSIVE HEADER MORE
+   ========================================================== */
+
+function setupHeaderMore() {
+  const header = document.querySelector(".header");
+  const links = document.querySelector(".header-links");
+  const more = document.getElementById("headerMore");
+  const btn = document.getElementById("headerMoreBtn");
+  const menu = document.getElementById("headerMoreMenu");
+
+  if (!header || !links || !more || !btn || !menu) return;
+
+  const items = Array.from(links.children).filter(el =>
+    el.matches(".live-chat-button, .dropdown-wrapper")
+  );
+
+  // Simpan posisi asal setiap button
+  const positions = items.map(item => {
+    const marker = document.createComment("header-more-position");
+    item.before(marker);
+    return { item, marker };
+  });
+
+  function closeMore() {
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function positionMore() {
+    const rect = btn.getBoundingClientRect();
+    const width = menu.getBoundingClientRect().width || 180;
+
+    const left = Math.max(
+      8,
+      Math.min(rect.right - width, window.innerWidth - width - 8)
+    );
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${rect.bottom + 6}px`;
+  }
+
+  function openMore() {
+    if (more.hidden || !menu.children.length) return;
+
+    menu.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+    positionMore();
+  }
+
+  function updateOverflow() {
+    closeMore();
+
+    // Pulangkan button ke kedudukan asal
+    positions.forEach(({ item, marker }) => {
+      marker.after(item);
+    });
+
+    more.hidden = true;
+
+    const gap = parseFloat(getComputedStyle(links).columnGap) || 0;
+    const available = links.clientWidth;
+
+    const search = document.getElementById("headerTabSearch");
+    const searchWidth = search?.getBoundingClientRect().width || 0;
+
+    const visibleItems = positions.filter(
+      ({ item }) => getComputedStyle(item).display !== "none"
+    );
+
+    function itemWidth(item) {
+      const style = getComputedStyle(item);
+      return item.getBoundingClientRect().width +
+        (parseFloat(style.marginLeft) || 0) +
+        (parseFloat(style.marginRight) || 0);
+    }
+
+    const totalWidth =
+      searchWidth +
+      visibleItems.reduce((sum, entry) =>
+        sum + itemWidth(entry.item), 0
+      ) +
+      gap * visibleItems.length;
+
+    if (totalWidth <= available + 1) return;
+
+    more.hidden = false;
+
+    const moreWidth = more.getBoundingClientRect().width;
+    let usedWidth = totalWidth + moreWidth + gap;
+
+    // Pindah item paling kanan dahulu
+    for (let i = visibleItems.length - 1; i >= 0; i--) {
+      if (usedWidth <= available + 1) break;
+
+      const item = visibleItems[i].item;
+      const width = itemWidth(item);
+
+      menu.prepend(item);
+      usedWidth -= width + gap;
+    }
+
+    more.hidden = menu.children.length === 0;
+  }
+
+  btn.addEventListener("click", event => {
+    event.stopPropagation();
+
+    if (menu.hidden) {
+      openMore();
+    } else {
+      closeMore();
+    }
+  });
+
+  // Desktop: hover More untuk buka
+  more.addEventListener("mouseenter", openMore);
+
+  // Klik luar untuk tutup
+  document.addEventListener("pointerdown", event => {
+    if (!more.contains(event.target)) {
+      closeMore();
+    }
+  });
+
+  // Escape untuk tutup
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeMore();
+  });
+
+  // Klik button direct: tutup More
+  // Dropdown bertingkat kekal boleh dibuka
+  menu.addEventListener("click", event => {
+    const button = event.target.closest(".live-chat-button");
+    if (!button) return;
+
+    if (!button.closest(".dropdown-wrapper")) {
+      closeMore();
+    }
+  });
+
+  let scheduled = false;
+
+  function scheduleUpdate() {
+    if (scheduled) return;
+    scheduled = true;
+
+    requestAnimationFrame(() => {
+      scheduled = false;
+      updateOverflow();
+    });
+  }
+
+  const observer = new ResizeObserver(scheduleUpdate);
+  observer.observe(header);
+  observer.observe(links);
+
+  window.addEventListener("resize", scheduleUpdate);
+
+  scheduleUpdate();
+}
+
   function hideList() {
     list.style.display = "none";
     list.innerHTML = "";
