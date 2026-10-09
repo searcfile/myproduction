@@ -3193,17 +3193,33 @@ function closePanel() {
   mobileBtn?.classList.remove("is-open");
 }
 
-  function positionPanel() {
-    const rect = mobileBtn.getBoundingClientRect();
-    const width = Math.min(345, window.innerWidth - 16);
 
-    panel.style.width = `${width}px`;
-    panel.style.left = `${Math.max(
-      8,
-      Math.min(rect.left, window.innerWidth - width - 8)
-    )}px`;
-    panel.style.top = `${rect.bottom + 8}px`;
-  }
+function positionPanel() {
+  if (!mobileBtn) return;
+
+  const rect = mobileBtn.getBoundingClientRect();
+
+  const viewportWidth = window.innerWidth;
+  const width = Math.max(
+    0,
+    Math.min(345, viewportWidth - 16)
+  );
+
+  // Responsive panel width
+  panel.style.width = "100%";
+  panel.style.minWidth = "min(150px, calc(100vw - 16px))";
+  panel.style.maxWidth = `${width}px`;
+
+  // Pastikan panel tidak keluar viewport
+  const left = Math.max(
+    8,
+    Math.min(rect.left, viewportWidth - width - 8)
+  );
+
+  panel.style.left = `${left}px`;
+  panel.style.top = `${rect.bottom + 8}px`;
+}
+
 
   function positionList() {
     const anchor = isMobile() ? mobileInput : input;
