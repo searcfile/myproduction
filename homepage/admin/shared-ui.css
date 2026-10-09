@@ -740,15 +740,18 @@ a.tab-open .check-icon{
 
 /* Background untuk halaman yang sedang aktif */
 .dropdown-links a.dropdown-page-active{
-  background:var(--dropdown-bg-active) !important;
-  color:var(--text-main) !important;
+  background:#1668dc !important;
+  color:#ffffff !important;
   font-weight:600;
+}
+/* Hover tetap berfungsi pada active */
+.dropdown-links a.dropdown-page-active:hover{
+  color:#ffffff !important;
 }
 
 /* Hover tetap berfungsi pada active */
-.dropdown-links a.dropdown-page-active:hover{
-  background:var(--close-hover2) !important;
-  color:var(--text-main) !important;
+.dropdown-links a.dropdown-page-active:active{
+  color:#ffffff !important;
 }
 
 
