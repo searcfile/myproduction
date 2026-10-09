@@ -3325,7 +3325,7 @@ mobileClearIcon?.addEventListener("keydown", event => {
     clearMobileSearch(event);
   }
 });
-
+}
 
 
   /* ==========================================================
