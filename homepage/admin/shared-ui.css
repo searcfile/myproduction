@@ -2542,10 +2542,14 @@ body.tab-dragging-active *{
 @media (max-width:815px){
 
   .header-tab-search-mobile-panel:not([hidden]){
-    position:fixed;
-    display:block;
-    width:min(345px, calc(100vw - 16px));
-    padding:12px;
+position:fixed;
+display:block;
+box-sizing:border-box;
+min-width:min(150px, calc(100vw - 16px));
+width:100%;
+max-width:min(345px, calc(100vw - 16px));
+
+padding:12px;
     background:var(--backgrounddrop);
     border:1px solid var(--border2);
     border-radius:8px;
