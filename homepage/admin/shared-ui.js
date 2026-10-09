@@ -1038,7 +1038,21 @@ function createShell() {
       </span>
 
     </button>
-
+<!-- RESPONSIVE HEADER MORE -->
+<div id="headerMore" class="header-more" hidden>
+  <button
+    type="button"
+    id="headerMoreBtn"
+    class="header-more-btn"
+    aria-label="More links"
+    aria-haspopup="true"
+    aria-expanded="false">
+    <svg viewBox="64 64 896 896" aria-hidden="true">
+      <path d="M176 511a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0z"/>
+    </svg>
+  </button>
+  <div id="headerMoreMenu" class="header-more-menu" hidden></div>
+</div>
   </div>
 
 
