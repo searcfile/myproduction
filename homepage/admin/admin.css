@@ -528,18 +528,6 @@ html {
 a.tab-open .check-icon {
   color: rgba(255,255,255,.85);;
 }
-.dropdown-links a {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  color: white;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
-  gap: 10px;
-  height: 42px;
-}
 
 .dropdown-links a:hover {
   background: transparent;
