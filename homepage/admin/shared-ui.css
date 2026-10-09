@@ -239,6 +239,7 @@ input::placeholder{
   border-radius:8px;
   background:#001529;
   box-shadow:0 8px 24px rgba(0,0,0,.35);
+  transition: all 0.3s;
 }
 
 
@@ -267,6 +268,7 @@ input::placeholder{
   justify-content:flex-start;
   text-align:left;
   color:var(--text-soft);
+  transition: all 0.3s;
 }
 
 
@@ -336,11 +338,26 @@ input::placeholder{
   border:0;
   border-radius:8px;
   box-shadow:0 8px 24px rgba(0,0,0,.35);
+  transition: all 0.3s;
 }
 
 .header-more-menu .dropdown-wrapper > .live-chat-button:hover{
   background:#ffffff1f;
   color:#fff;
+}
+.header-more-menu .dropdown-wrapper > .live-chat-button:active{
+  color:#fff;
+}
+
+/* ACTIVE COLOR - HEADER MORE MENU ONLY */
+
+.header-more-menu .live-chat-button.active-livechat,
+.header-more-menu .live-chat-button.active-linkdownload,
+.header-more-menu .live-chat-button.active-gamelog,
+.header-more-menu .live-chat-button.active-itemBtn{
+  background:#1668dc;
+  color:#fff;
+  font-weight:600;
 }
 
 /* ==========================================================
