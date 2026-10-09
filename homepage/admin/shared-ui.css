@@ -365,6 +365,7 @@ input::placeholder{
   line-height:1;
   white-space:nowrap;
   cursor:pointer;
+  margin:0 2px;
   transition: background-color .18s ease, color .18s ease;
 }
 
