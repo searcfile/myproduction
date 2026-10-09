@@ -350,14 +350,40 @@ input::placeholder{
 }
 /* ACTIVE COLOR - HEADER MORE MENU ONLY */
 
-.header-more-menu .live-chat-button.active-livechat,
-.header-more-menu .live-chat-button.active-linkdownload,
-.header-more-menu .live-chat-button.active-gamelog,
-.header-more-menu .live-chat-button.active-itemBtn{
+
+/* =========================================
+   HEADER MORE MENU - ACTIVE + HOVER
+   ========================================= */
+
+/* Active kekal biru termasuk ketika hover */
+.header-more-menu .live-chat-button:is(
+  .active-livechat,
+  .active-linkdownload,
+  .active-gamelog,
+  .active-itemBtn
+),
+.header-more-menu .live-chat-button:is(
+  .active-livechat,
+  .active-linkdownload,
+  .active-gamelog,
+  .active-itemBtn
+):hover,
+.header-more-menu .live-chat-button:is(
+  .active-livechat,
+  .active-linkdownload,
+  .active-gamelog,
+  .active-itemBtn
+):active{
   background:#1668dc;
   color:#fff;
   font-weight:600;
 }
+
+/* SVG ikut warna text */
+.header-more-menu .live-chat-button svg{
+  color:inherit;
+}
+
 
 /* ==========================================================
    CENTER LOGO
