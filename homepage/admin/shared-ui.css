@@ -2587,96 +2587,91 @@ body.tab-dragging-active *{
   }
 
 
-/* SELECT TAB MOBILE DYNAMIC ICON */
 
-.header-tab-search-mobile-icon{
-  position:absolute;
-  top:50%;
-  right:8px;
+/* ==========================================================
+   MOBILE SELECT TAB - DIRECT SVG ICON
+   ========================================================== */
 
-  transform:translateY(-50%);
-
-  width:26px;
-  height:26px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  padding:0;
-  margin:0;
-  border:0;
-  background:transparent;
-
-  color:var(--blur);
-  cursor:pointer;
+.header-tab-search-mobile-input-wrap{
+  position:relative;
 }
 
-.header-tab-search-mobile-icon svg{
-  display:none;
-  position:static;
+/* SVG sahaja, tiada button pembungkus */
+.header-tab-search-mobile-input-wrap
+.header-tab-search-mobile-icon{
+  position:absolute;
+  right:10px;
+  top:50%;
 
   width:14px;
   height:14px;
 
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.7;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+  transform:translateY(-50%);
 
-  transform:none;
+  display:none;
+  fill:var(--blur);
+  color:var(--blur);
+
+  margin:0;
+  padding:0;
+
   pointer-events:none;
 }
 
-/* Default: Arrow Down */
-.header-tab-search-mobile-icon .mobile-icon-arrow{
+/* DEFAULT: ARROW */
+.header-tab-search-mobile-input-wrap
+.header-tab-search-mobile-icon.mobile-icon-arrow{
   display:block;
+  fill:none;
+  stroke:var(--blur);
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
 
-/* Input aktif: Search */
+/* INPUT FOCUS: SEARCH */
 .header-tab-search-mobile-input-wrap.is-focused
-.mobile-icon-arrow{
+.header-tab-search-mobile-icon.mobile-icon-arrow{
   display:none;
 }
 
 .header-tab-search-mobile-input-wrap.is-focused
-.mobile-icon-search{
+.header-tab-search-mobile-icon.mobile-icon-search{
   display:block;
 }
 
-/* Ada teks + hover: Clear */
+/* INPUT ADA TEKS + HOVER: CLEAR */
 .header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-arrow,
+.header-tab-search-mobile-icon.mobile-icon-arrow,
 .header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-search{
+.header-tab-search-mobile-icon.mobile-icon-search{
   display:none;
 }
 
 .header-tab-search-mobile-input-wrap.has-value:hover
-.mobile-icon-clear{
+.header-tab-search-mobile-icon.mobile-icon-clear{
   display:block;
+  pointer-events:auto;
+  cursor:pointer;
 }
 
-.header-tab-search-mobile-icon:hover{
-  color:var(--text-soft);
-}
-
-/* Mobile touch: ikon Clear juga muncul bila input aktif dan ada teks */
+/* PHONE / TOUCH */
 @media (hover:none){
+
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-arrow,
+  .header-tab-search-mobile-icon.mobile-icon-arrow,
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-search{
+  .header-tab-search-mobile-icon.mobile-icon-search{
     display:none;
   }
 
   .header-tab-search-mobile-input-wrap.has-value.is-focused
-  .mobile-icon-clear{
+  .header-tab-search-mobile-icon.mobile-icon-clear{
     display:block;
+    pointer-events:auto;
+    cursor:pointer;
   }
 }
-
 
   .header-tab-search-list{
     box-sizing:border-box;
