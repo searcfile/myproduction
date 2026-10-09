@@ -1887,13 +1887,18 @@ body.tab-dragging-active *{
     cursor:pointer;
   }
 
-  .header-tab-search-mobile-btn svg{
-    display:block;
-    width:19.2px;
-    height:19.2px;
-    flex:none;
-    fill:currentColor;
-  }
+
+.header-tab-search-mobile-btn svg{
+  display:block;
+  width:19.2px;
+  height:19.2px;
+  flex:none;
+
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linecap:round;
+}
 
   /* Input desktop disembunyikan,
      tetapi wrapper dan dropdown kekal */
