@@ -1815,19 +1815,20 @@ body.tab-dragging-active *{
 
 
 
+
 .header-tab-search-list a{
   box-sizing:border-box;
 
-display:flex;
-align-items:center;
-justify-content:center;
-text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:left;
 
   width:100%;
+  height:34px;
   min-height:34px;
-  height:auto;
 
-  padding:8px 10px;
+  padding:0 10px;
   margin:0;
 
   border-radius:4px;
@@ -1845,6 +1846,7 @@ text-align:center;
 
   flex-shrink:0;
 }
+
 
 
 .header-tab-search-list a:hover{
@@ -2548,16 +2550,12 @@ text-align:center;
   .header-tab-search-mobile-panel:not([hidden]){
     position:fixed;
     display:block;
-
     width:min(345px, calc(100vw - 16px));
     padding:12px;
-
     background:var(--backgrounddrop);
     border:1px solid var(--border2);
     border-radius:8px;
-
     box-shadow:0 8px 24px rgba(0,0,0,.35);
-
     z-index:999998;
   }
 
@@ -2568,22 +2566,17 @@ text-align:center;
 
   .header-tab-search-mobile-input{
     display:block;
-
     width:100%;
     height:36px;
-
     padding:0 36px 0 12px;
-
     border:1px solid var(--border2);
     border-radius:6px;
-
     background:var(--backgroundbtn);
     color:var(--text-soft);
-
-    font-size:13px;
+    font-size:14px;
     outline:none;
   }
-
+  
   .header-tab-search-mobile-input:focus{
     border-color:var(--gold);
   }
@@ -2601,18 +2594,14 @@ text-align:center;
   position:absolute;
   top:50%;
   right:10px;
-
   width:14px;
   height:14px;
-
   transform:translateY(-50%);
   display:none;
-
   margin:0;
   padding:0;
-
-  fill:var(--blur);
-  color:var(--blur);
+  fill:var(--close);
+  color:var(--close);
   pointer-events:none;
 }
 
@@ -2664,18 +2653,20 @@ text-align:center;
     z-index:999999;
   }
 
-  .header-tab-search-list a{
-    display:flex;
-    align-items:center;
 
-    width:100%;
-    min-height:34px;
+.header-tab-search-list a{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:left;
+  width:100%;
+  height:34px;
+  min-height:34px;
+  padding:0 12px;
+  margin:0;
+  font-size:14px;
+  line-height:18px;
+  white-space:nowrap;
+}
 
-    padding:8px 12px;
-    margin:0;
-
-    font-size:13px;
-    line-height:18px;
-    white-space:nowrap;
-  }
 }
