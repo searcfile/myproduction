@@ -1741,7 +1741,7 @@ body.tab-dragging-active *{
 .header-tab-search-input:focus{
   border-color:var(--gold);
 }
-.header-tab-search-input:placeholder{
+.header-tab-search-input::placeholder{
   color:#ffffffd1;
 }
 .header-tab-search-arrow{
