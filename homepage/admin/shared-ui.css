@@ -680,6 +680,56 @@ a.tab-open .check-icon{
   color:rgba(255,255,255,.85);
 }
 
+/* =========================================
+   DROPDOWN CHECK ALIGNMENT + ACTIVE PAGE
+   ========================================= */
+
+.dropdown-links a{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  box-sizing:border-box;
+}
+
+/* Text sentiasa di kiri */
+.dropdown-links a > span:first-child{
+  flex:1;
+  min-width:0;
+  text-align:left;
+}
+
+/* Check icon berada di tengah ruang kanan */
+.dropdown-links a .check-icon{
+  flex:0 0 16px;
+  width:16px;
+  height:16px;
+  margin-left:0;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  font-size:14px;
+  text-align:center;
+}
+
+/* Check hanya kelihatan untuk tab yang terbuka */
+.dropdown-links a.tab-open .check-icon{
+  display:inline-flex;
+}
+
+/* Background untuk halaman yang sedang aktif */
+.dropdown-links a.dropdown-page-active{
+  background:var(--dropdown-bg-active) !important;
+  color:var(--text-main) !important;
+  font-weight:600;
+}
+
+/* Hover tetap berfungsi pada active */
+.dropdown-links a.dropdown-page-active:hover{
+  background:var(--close-hover2) !important;
+  color:var(--text-main) !important;
+}
+
 
 /* ==========================================================
    HEADER USER INFO
