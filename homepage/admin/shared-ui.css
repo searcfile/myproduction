@@ -213,6 +213,7 @@ input::placeholder{
   background:#ffffff1f;
   color:rgba(255,255,255,.85);
   cursor:pointer;
+  transition: all 0.3s;
 }
 
 .header-more-btn svg{
