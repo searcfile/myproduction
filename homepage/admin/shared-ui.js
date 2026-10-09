@@ -4719,7 +4719,8 @@ function updateChangePwVisibility() {
 function init() {
   createShell();
   initFloatingFab();
-
+  setupHeaderMore();
+   
   renderDropdown(
       "gameLogDropdown",
       "gamelog"
