@@ -386,13 +386,23 @@ input::placeholder{
   color:#fff;
 }
 
-.live-chat-button.active{
+.live-chat-button.active-livechat,
+.live-chat-button.active-linkdownload,
+.live-chat-button.active-gamelog,
+.live-chat-button.active-itemBtn{
   background:#fff3;
   color:#fff;
   font-weight:600;
 }
-
 /* ACTIVE HEADER BUTTON - ENABLE HOVER */
+
+.live-chat-button.active-livechat:hover,
+.live-chat-button.active-linkdownload:hover,
+.live-chat-button.active-gamelog:hover,
+.live-chat-button.active-itemBtn:hover{
+  background:#ffffff1f;
+  color:#fff;
+}
 /* ==========================================================
    HEADER DROPDOWN WRAPPER
    ========================================================== */
