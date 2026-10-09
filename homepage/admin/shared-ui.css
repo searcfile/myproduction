@@ -391,6 +391,7 @@ input::placeholder{
 .live-chat-button.active-itemBtn{
   background:#fff3;
   color:#fff;
+  font-weight:600;
 }
 
 /* ==========================================================
