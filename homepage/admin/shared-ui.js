@@ -3034,57 +3034,98 @@ updateOpenIndicators();
   }
 
 
-  function setupDropdown(
-    buttonId,
-    dropdownId
-  ) {
 
-    const button =
-      document.getElementById(
-        buttonId
+function setupDropdown(buttonId, dropdownId) {
+  const button = document.getElementById(buttonId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!button || !dropdown) return;
+
+  const wrapper = button.closest(".dropdown-wrapper");
+  let closeTimer;
+
+  const insideMore = () =>
+    !!wrapper?.closest("#headerMoreMenu");
+
+  function positionDropdown() {
+    const rect = button.getBoundingClientRect();
+
+    if (insideMore()) {
+      const menu = document.getElementById("headerMoreMenu");
+      const menuRect = menu.getBoundingClientRect();
+
+      const width = dropdown.offsetWidth || 180;
+      const height = dropdown.offsetHeight || 160;
+      const gap = 2;
+
+      const rightSpace = innerWidth - menuRect.right;
+      const leftSpace = menuRect.left;
+
+      let left = rightSpace >= width + gap ||
+                 rightSpace >= leftSpace
+        ? menuRect.right + gap
+        : menuRect.left - width - gap;
+
+      left = Math.max(
+        8,
+        Math.min(left, innerWidth - width - 8)
       );
 
-    const dropdown =
-      document.getElementById(
-        dropdownId
+      const top = Math.max(
+        8,
+        Math.min(rect.top, innerHeight - height - 8)
       );
 
-    if (
-      !button ||
-      !dropdown
-    ) {
-      return;
+      dropdown.style.left = `${left}px`;
+      dropdown.style.top = `${top}px`;
+    } else {
+      dropdown.style.left = `${rect.left}px`;
+      dropdown.style.top = "";
     }
-
-
-    button.addEventListener(
-      "click",
-      event => {
-
-        event.stopPropagation();
-
-        const willOpen =
-          !dropdown.classList.contains(
-            "open"
-          );
-
-        closeHeaderDropdowns();
-
-        if (willOpen) {
-
-          const rect =
-            button.getBoundingClientRect();
-
-          dropdown.style.left =
-            `${rect.left}px`;
-
-          dropdown.classList.add(
-            "open"
-          );
-        }
-
-      });
   }
+
+  function openDropdown() {
+    clearTimeout(closeTimer);
+    closeHeaderDropdowns(dropdown);
+    dropdown.classList.add("open");
+    positionDropdown();
+  }
+
+  button.addEventListener("mouseenter", () => {
+    if (insideMore()) openDropdown();
+  });
+
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+
+    const wasOpen = dropdown.classList.contains("open");
+    closeHeaderDropdowns();
+
+    if (!wasOpen) openDropdown();
+  });
+
+  function scheduleClose() {
+    clearTimeout(closeTimer);
+
+    closeTimer = setTimeout(() => {
+      if (!wrapper?.matches(":hover") &&
+          !dropdown.matches(":hover")) {
+        dropdown.classList.remove("open");
+      }
+    }, 250);
+  }
+
+  wrapper?.addEventListener("mouseleave", () => {
+    if (insideMore()) scheduleClose();
+  });
+
+  dropdown.addEventListener("mouseenter", () => {
+    clearTimeout(closeTimer);
+  });
+
+  dropdown.addEventListener("mouseleave", () => {
+    if (insideMore()) scheduleClose();
+  });
+}
 
 
   /* ==========================================================
@@ -3168,10 +3209,11 @@ function setupHeaderMore() {
     return { item, marker };
   });
 
-  function closeMore() {
-    menu.hidden = true;
-    btn.setAttribute("aria-expanded", "false");
-  }
+function closeMore() {
+  menu.hidden = true;
+  btn.setAttribute("aria-expanded", "false");
+  closeHeaderDropdowns();
+}
 
   function positionMore() {
     const rect = btn.getBoundingClientRect();
@@ -3261,13 +3303,53 @@ function setupHeaderMore() {
 
   // Desktop: hover More untuk buka
   more.addEventListener("mouseenter", openMore);
+   
+let moreCloseTimer;
 
-  // Klik luar untuk tutup
-  document.addEventListener("pointerdown", event => {
-    if (!more.contains(event.target)) {
+function pointerOnSubmenu() {
+  return Array.from(
+    menu.querySelectorAll(".dropdown-links.open")
+  ).some(dropdown => dropdown.matches(":hover"));
+}
+
+more.addEventListener("mouseenter", () => {
+  clearTimeout(moreCloseTimer);
+});
+
+more.addEventListener("mouseleave", () => {
+  clearTimeout(moreCloseTimer);
+
+  moreCloseTimer = setTimeout(() => {
+    if (!more.matches(":hover") && !pointerOnSubmenu()) {
       closeMore();
     }
+  }, 300);
+});
+
+menu.querySelectorAll(".dropdown-links").forEach(dropdown => {
+  dropdown.addEventListener("mouseenter", () => {
+    clearTimeout(moreCloseTimer);
   });
+
+  dropdown.addEventListener("mouseleave", () => {
+    moreCloseTimer = setTimeout(() => {
+      if (!more.matches(":hover") && !pointerOnSubmenu()) {
+        closeMore();
+      }
+    }, 300);
+  });
+});
+
+
+document.addEventListener("pointerdown", event => {
+  const clickedSubmenu = event.target.closest(
+    "#headerMoreMenu .dropdown-links"
+  );
+
+  if (!more.contains(event.target) && !clickedSubmenu) {
+    closeMore();
+  }
+});
 
   // Escape untuk tutup
   document.addEventListener("keydown", event => {
