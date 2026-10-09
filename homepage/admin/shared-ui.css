@@ -160,10 +160,8 @@ input::placeholder{
 .header-links{
   display:flex;
   align-items:center;
-
   height:100%;
-
-  padding-inline:16px;
+  padding:0 8px;
 }
 
 .header-right-meta{
