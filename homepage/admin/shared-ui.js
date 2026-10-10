@@ -3337,10 +3337,18 @@ more.addEventListener("mouseleave", () => {
   clearTimeout(moreCloseTimer);
 
   moreCloseTimer = setTimeout(() => {
-    if (!more.matches(":hover") && !pointerOnSubmenu()) {
+    const hoveringMore = more.matches(":hover");
+    const hoveringMenu = menu.matches(":hover");
+    const hoveringSubmenu = pointerOnSubmenu();
+
+    if (
+      !hoveringMore &&
+      !hoveringMenu &&
+      !hoveringSubmenu
+    ) {
       closeMore();
     }
-  }, 300);
+  }, 600);
 });
 
 menu.querySelectorAll(".dropdown-links").forEach(dropdown => {
@@ -3372,7 +3380,33 @@ document.addEventListener("pointerdown", event => {
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") closeMore();
   });
+/* =====================================================
+   FIX: HEADER MORE SUBMENU CLICK
+   ===================================================== */
 
+menu.addEventListener("click", event => {
+  const link = event.target.closest(
+    ".dropdown-links a[data-file]"
+  );
+
+  if (!link || !menu.contains(link)) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const file = link.dataset.file;
+  const page = findPageByFile(file);
+
+  if (!page) {
+    console.warn("[Header More] Page not found:", file);
+    return;
+  }
+
+  clearTimeout(moreCloseTimer);
+
+  addTab(page);
+
+}, true);
   // Klik button direct: tutup More
   // Dropdown bertingkat kekal boleh dibuka
   menu.addEventListener("click", event => {
