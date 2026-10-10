@@ -4980,22 +4980,46 @@ window.initTabBarSearch =
      START
      ========================================================== */
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
 
+/* =========================================
+   EARLY SHARED HEADER INITIALIZATION
+   ========================================= */
+
+let sharedUiInitialized = false;
+
+function startSharedUI() {
+  if (sharedUiInitialized) return;
+
+  if (!document.body) {
     document.addEventListener(
       "DOMContentLoaded",
-      init,
-      {
-        once: true
-      }
+      startSharedUI,
+      { once: true }
     );
-
-  } else {
-
-    init();
+    return;
   }
+
+  sharedUiInitialized = true;
+
+  try {
+    init();
+  } catch (error) {
+    console.error(
+      "[shared-ui] Initialization failed:",
+      error
+    );
+  }
+}
+
+if (document.body) {
+  startSharedUI();
+} else {
+  document.addEventListener(
+    "DOMContentLoaded",
+    startSharedUI,
+    { once: true }
+  );
+}
+
 
 })();
