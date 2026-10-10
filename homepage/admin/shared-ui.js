@@ -4869,18 +4869,18 @@ function updateChangePwVisibility() {
    5G88 SMART CONTENT LOADING
    ========================================== */
 
+/* ==========================================
+   5G88 SMART CONTENT LOADING V2
+   ========================================== */
+
 function initSmartContentLoading() {
-  const content = document.getElementById("mainContainer");
-
-  if (!content) return;
-
-  if (content.querySelector(".smart-content-loader")) return;
-
   const file = getCurrentFile();
   const cacheKey = `smartLoaded:${file}`;
   const cacheDuration = 60 * 1000;
 
-  const navigation = performance.getEntriesByType("navigation")[0];
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
   const isReload = navigation?.type === "reload";
 
   const forceLoading =
@@ -4901,42 +4901,78 @@ function initSmartContentLoading() {
 
   if (!shouldLoad) return;
 
-  const loader = document.createElement("div");
-  loader.className = "smart-content-loader";
-  loader.setAttribute("role", "status");
-  loader.setAttribute("aria-label", "Loading content");
+  // Letak loader terus pada body supaya
+  // semua halaman boleh menggunakannya.
+  let loader = document.getElementById(
+    "smartContentLoader"
+  );
 
-  loader.innerHTML = `
-    <div class="smart-loading-box">
-      <div class="smart-loading-dots">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+  if (!loader) {
+    loader = document.createElement("div");
+    loader.id = "smartContentLoader";
+    loader.className = "smart-content-loader";
+
+    loader.setAttribute("role", "status");
+    loader.setAttribute("aria-live", "polite");
+
+    loader.innerHTML = `
+      <div class="smart-loading-box">
+        <div class="smart-loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="smart-loading-text">
+          Please wait while fetching...
+        </div>
       </div>
-      <div class="smart-loading-text">
-        Please wait while fetching...
-      </div>
-    </div>
-  `;
+    `;
 
-  content.appendChild(loader);
-  content.classList.add("smart-loading-active");
+    document.body.appendChild(loader);
+  }
 
-  const started = performance.now();
+  // Kira kedudukan bawah tab bar sebenar.
+  function updatePosition() {
+    const tabBar = document.getElementById("tabBar");
+    const header = document.querySelector(
+      "#homepageSharedShell .header"
+    );
+
+    const anchor = tabBar || header;
+
+    const top = anchor
+      ? anchor.getBoundingClientRect().bottom
+      : 110;
+
+    loader.style.top = `${Math.max(0, top)}px`;
+  }
+
+  updatePosition();
+
+  window.addEventListener("resize", updatePosition);
+
   let finished = false;
+  const started = performance.now();
 
   function finishLoading() {
     if (finished) return;
     finished = true;
 
-    // Elak loading terlalu cepat berkelip.
-    const elapsed = performance.now() - started;
-    const remaining = Math.max(0, 350 - elapsed);
+    // Minimum masa untuk nampak animasi.
+    const remaining = Math.max(
+      0,
+      650 - (performance.now() - started)
+    );
 
     setTimeout(() => {
-      content.classList.remove("smart-loading-active");
       loader.remove();
+
+      window.removeEventListener(
+        "resize",
+        updatePosition
+      );
 
       sessionStorage.setItem(
         cacheKey,
@@ -4948,12 +4984,14 @@ function initSmartContentLoading() {
   if (document.readyState === "complete") {
     finishLoading();
   } else {
-    window.addEventListener("load", finishLoading, {
-      once: true
-    });
+    window.addEventListener(
+      "load",
+      finishLoading,
+      { once: true }
+    );
   }
 
-  // Safety fallback jika ada resource yang lambat.
+  // Elakkan loader tersekat selamanya.
   setTimeout(finishLoading, 5000);
 }
   /* ==========================================================
