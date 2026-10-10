@@ -560,9 +560,11 @@ function syncTabsToFirebase(tabs) {
       };
     }
 
-    saveTabs(tabs);
+setActiveFile(tab.file);
 
-    navigateToTab(tab);
+saveTabs(tabs);
+
+navigateToTab(tab);
   }
 
 
@@ -621,45 +623,49 @@ function syncTabsToFirebase(tabs) {
       return;
     }
 
-    const nextTab =
-      tabs[
-        Math.min(
-          index,
-          tabs.length - 1
-        )
-      ];
+const nextTab =
+  tabs[
+    Math.min(
+      index,
+      tabs.length - 1
+    )
+  ];
 
-    navigateToTab(nextTab);
+setActiveFile(nextTab.file);
+
+syncTabsToFirebase(tabs);
+
+navigateToTab(nextTab);
   }
 
-  function initDefaultWorkspace() {
-    // Hanya untuk halaman utama admin.
-    if (getCurrentFile() !== "index.html") {
-      return false;
-    }
+function initDefaultWorkspace() {
 
-    // Selepas close tab terakhir, benarkan workspace
-    // kosong dipaparkan sekali sahaja.
-    const skipOnce = sessionStorage.getItem(
+  // Hanya jalankan restore dari index.html
+  if (getCurrentFile() !== "index.html") {
+    return false;
+  }
+
+  // Selepas close tab terakhir, paparkan
+  // workspace kosong sekali dahulu.
+  if (
+    sessionStorage.getItem(
+      EMPTY_WORKSPACE_ONCE_KEY
+    ) === "1"
+  ) {
+    sessionStorage.removeItem(
       EMPTY_WORKSPACE_ONCE_KEY
     );
 
-    if (skipOnce === "1") {
-      sessionStorage.removeItem(
-        EMPTY_WORKSPACE_ONCE_KEY
-      );
+    return false;
+  }
 
-      return false;
-    }
+  const tabs = getTabs();
 
-    // Kalau masih ada tab terbuka, jangan ganggu.
-    if (getTabs().length > 0) {
-      return false;
-    }
+  // Kalau semua tab kosong, buka Live Chat.
+  if (!tabs.length) {
 
-    // Kalau semua tab kosong dan halaman dimuat semula,
-    // pulihkan Live Chat sebagai default.
     saveTabs([{ ...DEFAULT_ADMIN_TAB }]);
+
     setActiveFile(DEFAULT_ADMIN_TAB.file);
 
     window.location.replace(
@@ -668,6 +674,33 @@ function syncTabsToFirebase(tabs) {
 
     return true;
   }
+
+  // Kalau ada tab tersimpan, cari tab aktif terakhir.
+  const lastFile = getActiveFile();
+
+  const lastTab = tabs.find(
+    tab =>
+      tab.file.toLowerCase() ===
+      lastFile.toLowerCase()
+  );
+
+  // Kalau tab aktif terakhir sudah ditutup,
+  // gunakan tab terbuka yang terakhir.
+  const targetTab =
+    lastTab || tabs[tabs.length - 1];
+
+  if (!targetTab?.file) {
+    return false;
+  }
+
+  setActiveFile(targetTab.file);
+
+  window.location.replace(
+    `./${targetTab.file}`
+  );
+
+  return true;
+}
   /* ==========================================================
      SYNC CURRENT PAGE
      ========================================================== */
