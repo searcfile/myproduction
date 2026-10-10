@@ -497,17 +497,23 @@ html {
 .dropdown-links::-webkit-scrollbar-thumb:hover{
   background: linear-gradient(180deg, #ffe07a, #d6a61a);
 }
-.check-icon {
-  flex-shrink: 0;
-  margin-left: 10px;
-  width: 12px;
-  height: 12px;
-  color: transparent;
-  transition: color 0.3s;
-  display: none;
+
+/* DROPDOWN CHECK SVG */
+.dropdown-links svg.check-icon{
+  display:none;
+  width:14px;
+  height:14px;
+  flex:0 0 14px;
+  margin-left:auto;
+  padding:0;
+  fill:currentColor;
+  color:rgba(255,255,255,.85);
+  vertical-align:middle;
 }
-a.tab-open .check-icon {
-  color: rgba(255,255,255,.85);;
+
+/* Tunjukkan check untuk tab yang terbuka */
+.dropdown-links a.tab-open svg.check-icon{
+  display:block;
 }
 
 #gameLogBtn.active-gamelog {
