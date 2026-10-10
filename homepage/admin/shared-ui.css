@@ -668,6 +668,7 @@ input::placeholder{
   text-decoration:none;
   font-size:14px;
   border-radius:4px;
+  text-transform:capitalize;
   transition:
     color .3s ease,
     background .3s ease;
@@ -2420,18 +2421,16 @@ body.tab-dragging-active *{
 .admin-workspace-tab{
   flex:0 0 auto;
   gap:8px;
-
   height:40px;
   padding:0 12px;
-
   margin-bottom:-1px;
+  transition: transform 180ms cubic-bezier(.2, .8, .2, 1), box-shadow 180ms ease, filter 180ms ease,background-color .2s ease,
+  color .2s ease;
 }
-
 /* Nama tab */
 .admin-workspace-tab-name{
   display:inline-block;
   max-width:180px;
-
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -2442,7 +2441,6 @@ body.tab-dragging-active *{
   display:inline-flex;
   align-items:center;
   gap:5px;
-
   flex-shrink:0;
 }
 
