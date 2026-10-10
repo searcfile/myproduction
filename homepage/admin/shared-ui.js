@@ -3094,10 +3094,20 @@ function setupDropdown(buttonId, dropdownId) {
 
       dropdown.style.left = `${left}px`;
       dropdown.style.top = `${top}px`;
-    } else {
-      dropdown.style.left = `${rect.left}px`;
-      dropdown.style.top = "";
-    }
+} else {
+  const dropdownWidth = dropdown.offsetWidth || 180;
+
+  const left = Math.max(
+    8,
+    Math.min(
+      rect.left,
+      window.innerWidth - dropdownWidth - 8
+    )
+  );
+
+  dropdown.style.left = `${left}px`;
+  dropdown.style.top = `${rect.bottom}px`;
+}
   }
 
   function openDropdown() {
