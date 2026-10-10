@@ -529,15 +529,6 @@ a.tab-open .check-icon {
   color: rgba(255,255,255,.85);;
 }
 
-.dropdown-links a:hover {
-  background: transparent;
-  color:  var(--gold-hover);
-  transition: color 0.3s;
-}
-.dropdown-links a:active {
-  background: transparent;
-  color: var(--gold-active)!important;
-}
 #gameLogBtn.active-gamelog {
   color:white;
   background: var(--gold);
