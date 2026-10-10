@@ -676,26 +676,13 @@ function syncTabsToFirebase(tabs) {
 
 function createShell() {
 
-  let shell = document.getElementById(
-    "homepageSharedShell"
-  );
-   
-  if (
-    shell &&
-    shell.querySelector(".header") &&
-    shell.querySelector("#tabBar") &&
-    shell.querySelector("#sidebar")
-  ) {
-    shell.dataset.initialized = "true";
+  // Elak duplicate kalau shell sudah dibuat
+  if (document.getElementById("homepageSharedShell")) {
     return;
   }
 
-  // Fallback untuk HTML lama
-  if (!shell) {
-    shell = document.createElement("div");
-    shell.id = "homepageSharedShell";
-    document.body.prepend(shell);
-  }
+  const shell = document.createElement("div");
+  shell.id = "homepageSharedShell";
 
   shell.innerHTML = `
 <div class="sidebar-overlay" id="overlay"></div>
@@ -1651,7 +1638,7 @@ function createShell() {
 </div>
   `;
 
-  shell.dataset.initialized = "true";
+  document.body.prepend(shell);
 }
   /* ==========================================================
      DROPDOWN MENU CONTENT
@@ -4993,46 +4980,22 @@ window.initTabBarSearch =
      START
      ========================================================== */
 
+  if (
+    document.readyState ===
+    "loading"
+  ) {
 
-/* =========================================
-   EARLY SHARED HEADER INITIALIZATION
-   ========================================= */
-
-let sharedUiInitialized = false;
-
-function startSharedUI() {
-  if (sharedUiInitialized) return;
-
-  if (!document.body) {
     document.addEventListener(
       "DOMContentLoaded",
-      startSharedUI,
-      { once: true }
+      init,
+      {
+        once: true
+      }
     );
-    return;
-  }
 
-  sharedUiInitialized = true;
+  } else {
 
-  try {
     init();
-  } catch (error) {
-    console.error(
-      "[shared-ui] Initialization failed:",
-      error
-    );
   }
-}
-
-if (document.body) {
-  startSharedUI();
-} else {
-  document.addEventListener(
-    "DOMContentLoaded",
-    startSharedUI,
-    { once: true }
-  );
-}
-
 
 })();
