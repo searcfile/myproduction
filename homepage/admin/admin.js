@@ -799,28 +799,47 @@ if (!window.isLivechatTabActive?.()) {
 }); // ⬅️ tutup DOMContentLoaded
 
 
-/* =========================================
-   HIDE LOADING AFTER SHARED HEADER READY
-   ========================================= */
+/* ==========================================================
+   ADMIN LOADING - WAIT FOR SHARED UI
+   ========================================================== */
 
 (function () {
+  let loadingHidden = false;
+
+  function isSharedUIReady() {
+    const shell = document.getElementById(
+      "homepageSharedShell"
+    );
+
+    if (!shell) return false;
+
+    return Boolean(
+      shell.querySelector(".header") &&
+      shell.querySelector("#sidebar") &&
+      shell.querySelector("#tabBar")
+    );
+  }
+
   function hideLoadingWhenReady() {
+    if (loadingHidden) return;
+    if (!isSharedUIReady()) return;
+
     const loadingScreen =
       document.getElementById("loadingScreen");
 
-    const sharedShell =
-      document.getElementById("homepageSharedShell");
+    if (!loadingScreen) return;
 
-    if (!loadingScreen || !sharedShell) return;
-
+    loadingHidden = true;
     loadingScreen.style.display = "none";
   }
 
+  // Shared UI sudah siap
   document.addEventListener(
     "homepage-shared-ui-ready",
     hideLoadingWhenReady
   );
 
+  // Semak apabila HTML selesai dibaca
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
