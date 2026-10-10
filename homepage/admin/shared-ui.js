@@ -676,13 +676,21 @@ function syncTabsToFirebase(tabs) {
 
 function createShell() {
 
-  // Elak duplicate kalau shell sudah dibuat
-  if (document.getElementById("homepageSharedShell")) {
+  let shell = document.getElementById(
+    "homepageSharedShell"
+  );
+
+  // Elakkan initialization berganda
+  if (shell?.dataset.initialized === "true") {
     return;
   }
 
-  const shell = document.createElement("div");
-  shell.id = "homepageSharedShell";
+  // Fallback untuk HTML lama
+  if (!shell) {
+    shell = document.createElement("div");
+    shell.id = "homepageSharedShell";
+    document.body.prepend(shell);
+  }
 
   shell.innerHTML = `
 <div class="sidebar-overlay" id="overlay"></div>
@@ -1638,7 +1646,7 @@ function createShell() {
 </div>
   `;
 
-  document.body.prepend(shell);
+  shell.dataset.initialized = "true";
 }
   /* ==========================================================
      DROPDOWN MENU CONTENT
