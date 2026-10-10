@@ -3239,7 +3239,10 @@ function setupHeaderMore() {
 function closeMore() {
   menu.hidden = true;
   btn.setAttribute("aria-expanded", "false");
-  closeHeaderDropdowns();
+  menu.querySelectorAll(".dropdown-links.open")
+    .forEach(dropdown => {
+      dropdown.classList.remove("open");
+    });
 }
 
   function positionMore() {
@@ -3358,7 +3361,7 @@ more.addEventListener("mouseleave", () => {
     ) {
       closeMore();
     }
-  }, 600);
+  }, 300);
 });
 
 menu.querySelectorAll(".dropdown-links").forEach(dropdown => {
@@ -3377,13 +3380,19 @@ menu.querySelectorAll(".dropdown-links").forEach(dropdown => {
 
 
 document.addEventListener("pointerdown", event => {
+  if (menu.hidden) return;
+
   const clickedSubmenu = event.target.closest(
     "#headerMoreMenu .dropdown-links"
   );
 
-  if (!more.contains(event.target) && !clickedSubmenu) {
+  if (
+    !more.contains(event.target) &&
+    !clickedSubmenu
+  ) {
     closeMore();
   }
+
 });
 
   // Escape untuk tutup
