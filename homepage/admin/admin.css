@@ -516,11 +516,6 @@ html {
   display:block;
 }
 
-#gameLogBtn.active-gamelog {
-  color:white;
-  background: var(--gold);
-  transition: all 0.2s ease;
-}
 .dot-icon{
   position: absolute;
   top: 10px;
