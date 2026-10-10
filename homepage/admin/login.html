@@ -98,7 +98,7 @@ child-src 'self'
     --blur:#00000063;
     --icon:rgba(0, 0, 0, 0.45);
     --icon-focus: #000000;
-     --border-input5:#f0f0f0;   
+     --border-input5:f0f0f0;   
     --blue: #1668dc;
     --blue-hover: #3c89e8;
     --blue-active: #1554ad;
@@ -141,7 +141,7 @@ body{
   padding:32px 40px;
 }
 .sep{display:none !important;}
-/* ===== Username Login ===== */
+/* ===== Tabs (Username / Google) ===== */
 .label-row{
   display:flex;
   align-items:center;
@@ -291,7 +291,8 @@ transition: all 0.3s;
   margin-top: 15px;
 }
 
-#btnUserpass:disabled{
+#btnUserpass:disabled,
+#googleLoginBtn:disabled{
   cursor:not-allowed;
   border-color:var(--border-input);
   color: var(--disable);
@@ -333,14 +334,14 @@ transition: all 0.3s;
 .popup-box img {max-width: 280px; margin-bottom: 18px;}
 .popup-title { font-size: 24px; font-weight: 600; margin: 0 0 10px; color: var(--page-text);text-shadow: 0 0 #000000;     text-align: center;    padding-bottom: 30px;}
 .popup-btn{
-  border:1px solid var(--border-input); background:transparent; color: var(--page-text); padding: 10px 20px; border-radius: 8px; cursor:pointer; transition:.2s;
+  border:1px solid var(--border-input); background:transparent; color: va(--page-text); padding: 10px 20px; border-radius: 8px; cursor:pointer; transition:.2s;
 }
 
 .btn-contact{background:var(--blue); color: white; padding: 10px 20px; border-radius: 6px;text-decoration:none; cursor:pointer; transition:.2s;}
 .btn-contact:hover{background:var(--blue-hover);}.btn-contact:active{background:var(--blue-active);}
 .btn-cancel{border:1px solid var(--border-input); background:var(--page-input); color: var(--page-text); padding: 10px 20px; border-radius: 6px; cursor:pointer; transition:.2s;}
 .btn-cancel:hover{border:1px solid var(--blue-hover);color: var(--blue-hover);}
-.btn-cancel:active{border:1px solid var(--blue-active);color:var(--blue-active);}
+.btn-cancel:active{border:1px solid va(--blue-active);color:var(--blue-active);}
 /* === Posisi tombol X di pojok kanan atas === */
 .popup-box .popup-close,
 .blocked-box .popup-close{
@@ -1065,6 +1066,12 @@ transition: all 0.3s;
           <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm7.753 18.305c-.261-.586-.789-.991-1.871-1.241-2.293-.529-4.428-.993-3.393-2.945 3.145-5.942.833-9.119-2.489-9.119-3.388 0-5.644 3.299-2.489 9.119 1.066 1.964-1.148 2.427-3.393 2.945-1.084.25-1.608.658-1.867 1.246-1.405-1.723-2.251-3.919-2.251-6.31 0-5.514 4.486-10 10-10s10 4.486 10 10c0 2.389-.845 4.583-2.247 6.305z"/>
         </svg>
       </button>
+
+      <button type="button" class="tab" id="tab-google" aria-label="Google Login">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2.917 16.083c-2.258 0-4.083-1.825-4.083-4.083s1.825-4.083 4.083-4.083c1.103 0 2.024.402 2.735 1.067l-1.107 1.068c-.304-.292-.834-.63-1.628-.63-1.394 0-2.531 1.155-2.531 2.579 0 1.424 1.138 2.579 2.531 2.579 1.616 0 2.224-1.162 2.316-1.762h-2.316v-1.4h3.855c.036.204.064.408.064.677.001 2.332-1.563 3.988-3.919 3.988zm9.917-3.5h-1.75v1.75h-1.167v-1.75h-1.75v-1.166h1.75v-1.75h1.167v1.75h1.75v1.166z"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -1145,7 +1152,19 @@ transition: all 0.3s;
       <!-- <button type="button" class="btn ghost" onclick="createAccount()">Create Account</button> -->
     </form>
 
-
+    <!-- Google Login Form -->
+    <div id="form-google" class="form">
+        <div class="turnstile-wrap">
+    <div class="cf-turnstile"
+         data-sitekey="0x4AAAAAAC1xHeoFIKqZZywR"
+         data-theme="auto"
+         data-callback="onTurnstileGoogleSuccess"
+         data-expired-callback="onTurnstileGoogleExpired"
+         data-error-callback="onTurnstileGoogleError">
+    </div>
+  </div>
+      <button class="btn" id="googleLoginBtn">Login with Google</button>
+    </div>
 <div class="forgot-row">
   <button type="button" id="createBtn" class="link-btn">Create username</button>
   <button type="button" id="forgotBtn" class="link-btn">Forgot password?</button>
@@ -1322,6 +1341,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 let turnstileVerifiedUser = false;
+let turnstileVerifiedGoogle = false;
 let pending2FA = null;
 const LOGIN_THEME_KEY = 'siteTheme';
 
@@ -1403,6 +1423,39 @@ window.onTurnstileError = function(){
 };
 
 
+window.onTurnstileGoogleSuccess = function(token){
+  turnstileVerifiedGoogle = !!token;
+
+  const btn = document.getElementById('googleLoginBtn');
+
+  if (btn) {
+    btn.disabled = !turnstileVerifiedGoogle;
+  }
+
+  console.log("Turnstile GOOGLE success:", turnstileVerifiedGoogle);
+};
+
+window.onTurnstileGoogleExpired = function(){
+  turnstileVerifiedGoogle = false;
+
+  const btn = document.getElementById('googleLoginBtn');
+
+  if (btn) {
+    btn.disabled = true;
+  }
+};
+
+window.onTurnstileGoogleError = function(){
+  turnstileVerifiedGoogle = false;
+
+  const btn = document.getElementById('googleLoginBtn');
+
+  if (btn) {
+    btn.disabled = true;
+  }
+
+  console.error("Turnstile GOOGLE error");
+};
 function getTurnstileTheme(){
   return document.body.classList.contains('light-theme') ? 'dark' : 'light';
 }
@@ -1438,12 +1491,33 @@ function applyTurnstileTheme(){
     }
   });
 
-turnstileVerifiedUser = false;
+  turnstileVerifiedUser = false;
+  turnstileVerifiedGoogle = false;
 
-const btnUser = document.getElementById("btnUserpass");
-if (btnUser) btnUser.disabled = true;
+  const btnUser = document.getElementById('btnUserpass');
+  const btnGoogle = document.getElementById('googleLoginBtn');
+
+  if (btnUser) btnUser.disabled = true;
+  if (btnGoogle) btnGoogle.disabled = true;
+}
+// ====== HANYA EMAIL DOMAIN INI YANG DIIJINKAN ======
+const ALLOWED_GOOGLE_DOMAIN = 'b88gaming.page';
+
+function isAllowedGoogleEmail(email){
+  if (!email) return false;
+  const parts = String(email).toLowerCase().split('@');
+  const domain = parts[1] || '';
+  return domain === ALLOWED_GOOGLE_DOMAIN;
 }
 
+function showUnsupportedDomainPopup(email){
+  const msg = `
+    <b>${email}</b> not supported!<br>
+    Please contact admin 5G88 at Livechat/Telegram.<br>
+  `;
+  showBlockedPopup({ email, displayName: email.split('@')[0] }, msg);
+}
+  
 let ANON_STATE = localStorage.getItem('anon.state') || 'unknown';
 const sanitizeKey = (s) => String(s || '').replace(/[.$#[\]/]/g, "_");
 
@@ -1460,36 +1534,47 @@ function getOrCreateLocalGuest() {
 }
 
 // --- Anonymous Auth + fallback lokal bila dinonaktifkan ---
-async function ensureGuestAuth() {
+async function ensureGuestAuth(){
+  // sumber utama guest mesti localStorage, bukan UID anonymous Firebase
   const localGuest = getOrCreateLocalGuest();
 
-  let user = auth.currentUser;
+  // kalau anon auth memang disabled, terus pakai guest lokal
+  if (ANON_STATE === 'disabled') return localGuest;
 
-  if (!user) {
-    const credential = await auth.signInAnonymously();
-    user = credential.user;
+  try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+
+    const u = auth.currentUser;
+    if (u && u.isAnonymous){
+      ANON_STATE = 'enabled';
+      localStorage.setItem('anon.state', 'enabled');
+
+      // ✅ JANGAN overwrite guest.uid / guest.name dengan u.uid
+      // guest lokal kekal sama walaupun anonymous UID berubah
+      localStorage.setItem('guest.uid', localGuest.uid);
+      localStorage.setItem('guest.name', localGuest.name);
+
+      return localGuest;
+    }
+  }catch(e){
+    if (e?.code === 'auth/admin-restricted-operation' || e?.code === 'auth/operation-not-allowed'){
+      ANON_STATE = 'disabled';
+      localStorage.setItem('anon.state', 'disabled');
+      return localGuest;
+    }
+
+    return localGuest;
   }
 
-  if (!user) {
-    throw new Error("Firebase authentication unavailable.");
-  }
-
-  if (user.isAnonymous) {
-    ANON_STATE = "enabled";
-    localStorage.setItem("anon.state", "enabled");
-  }
-
-  return {
-    uid: user.uid,
-    name: user.isAnonymous
-      ? localGuest.name
-      : (user.displayName || user.email || "User"),
-    email: user.email || "",
-    isGuest: user.isAnonymous
-  };
+  return localGuest;
 }
 const MAIN_PATH = "./index.html";
 const LOGIN_PATH = "./login.html";
+const toPseudoEmail = (uname) =>`${String(uname || '').trim().toLowerCase()}@5g88.local`;
 function formatTimestamp(date){
   const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
   const hh=String(date.getHours()).padStart(2,'0'), mm=String(date.getMinutes()).padStart(2,'0'), ss=String(date.getSeconds()).padStart(2,'0');
@@ -1565,7 +1650,7 @@ async function usernameExists(uname){
 
   // 2) Fallback ke Auth; kalau tidak yakin → return null (jangan merah)
   try{
-    const methods = await auth.fetchSignInMethodsForEmail(usernameToEmail(u));
+    const methods = await auth.fetchSignInMethodsForEmail(toPseudoEmail(u));
     return (Array.isArray(methods) && methods.includes('password')) ? true : null;
   }catch(e){
     console.warn('fetchSignInMethodsForEmail failed:', e?.code || e);
@@ -1610,7 +1695,7 @@ fpRequest?.addEventListener('click', async () => {
     fpRequest.disabled = true;
     await db.ref(PATH_RESET).push({
       username: u,
-      email: usernameToEmail(u),
+      email: toPseudoEmail(u),
       note,
       createdAt: Date.now(),
       status: 'pending',
@@ -1806,16 +1891,64 @@ try {
   });
 }
 
-function setLoading(state) {
-  const btn = document.getElementById("btnUserpass");
+function setLoading(state, which='both'){
+  const btnG = document.getElementById('googleLoginBtn');
+  const btnU = document.getElementById('btnUserpass');
 
-  if (btn) btn.disabled = !!state;
-
-  if (state) {
-    showLoginLoading();
-  } else {
-    hideLoginLoading();
+  if (which === 'google' || which === 'both'){
+    if (btnG) btnG.disabled = !!state;
   }
+
+  if (which === 'userpass' || which === 'both'){
+    if (btnU) btnU.disabled = !!state;
+  }
+
+  if (state) showLoginLoading();
+  else hideLoginLoading();
+}
+
+function signInWithGoogle(){
+  if (!turnstileVerifiedGoogle){
+    alert("Sila complete verification dulu.");
+    return;
+  }
+
+  setLoading(true,'google');
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  auth.signInWithPopup(provider)
+    .then(res => {
+      const user = res.user;
+      if (!user || !user.email) throw new Error("User not found");
+
+      // ✅ CEK DOMAIN
+      if (!isAllowedGoogleEmail(user.email)) {
+        // tampilkan popup blocked + pesan khusus
+        showUnsupportedDomainPopup(user.email);
+
+        // pastikan tidak lanjut menulis ke RTDB / redirect
+        auth.signOut().catch(()=>{});
+        setLoading(false,'google');
+        return; // ⛔ stop flow di sini
+      }
+
+      // ✅ email domain diizinkan → lanjut flow normal
+      finishLogin(user);
+    })
+    .catch(err => {
+  console.error("❌ Login Google gagal:", err);
+  alert("Login Google gagal. Coba lagi.");
+  setLoading(false,'google');
+
+  turnstileVerifiedGoogle = false;
+  const btn = document.getElementById('googleLoginBtn');
+  if (btn) btn.disabled = true;
+
+  if (window.turnstile) {
+    const widgetEl = document.querySelector('#form-google .cf-turnstile');
+    if (widgetEl) turnstile.reset(widgetEl);
+  }
+});
 }
 
 // --- helper hash (taruh sekali saja, di luar fungsi kalau belum ada) ---
@@ -1892,8 +2025,7 @@ function openTwofaPage(uname, acc){
   }, 80);
 }
 
-async function closeTwofaPage(){
-  await auth.signOut();
+function closeTwofaPage(){
   pending2FA = null;
 
   document.getElementById('twofaBox').style.display = 'none';
@@ -1914,35 +2046,50 @@ function getOtpValue(){
     .join('');
 }
 
-async function verifyTwofa() {
+async function verifyTwofa(){
   if (!pending2FA) return;
 
   const code = getOtpValue();
   clearTwofaError();
 
-  if (!/^\d{6}$/.test(code)) {
-    showTwofaError("Please enter 6 digit 2nd password.");
-    return;
-  }
-
-  const user = auth.currentUser;
-
-  if (!user || user.uid !== pending2FA.acc.uid) {
-    showTwofaError("Session expired. Please login again.");
+  if (!/^\d{6}$/.test(code)){
+    showTwofaError('Please enter 6 digit 2nd password.');
     return;
   }
 
   showLoginLoading();
 
-  try {
-    // Backend PIN verification perlu disambungkan di sini.
-    // Jangan benarkan redirect tanpa pengesahan PIN.
-    throw new Error("2nd Password backend belum dikonfigurasi.");
+  try{
+    const inputHash = await sha256Hex(code);
 
-  } catch (err) {
-    hideLoginLoading();
-    showTwofaError(err.message || "Verification failed.");
-  }
+if (inputHash !== pending2FA.acc.secondPasswordHash){
+  hideLoginLoading();
+  showTwofaError('2nd password incorrect.');
+
+  const inputs = document.querySelectorAll('.otp-input');
+  inputs[inputs.length - 1]?.focus();
+
+  return;
+}
+
+    const uname = pending2FA.uname;
+
+    await ensureGuestAuth();
+
+    await finishLogin({
+      email: `${uname}@5g88.local`,
+      displayName: uname,
+      photoURL: ""
+    });
+
+}catch(err){
+  console.error("❌ 2FA LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  hideLoginLoading();
+  showTwofaError(err?.message || 'Failed to verify 2nd password.');
+}
 }
 
 function setupTwofaInputs(){
@@ -1994,74 +2141,98 @@ function setupTwofaInputs(){
 }
 document.getElementById('username')?.addEventListener('input', clearLoginErrors);
 document.getElementById('password')?.addEventListener('input', clearLoginErrors);
-// ===== FIREBASE EMAIL/PASSWORD LOGIN =====
+// --- LOGIN VIA REALTIME DB ---
+async function loginWithUsername(){
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
 
-function usernameToEmail(username) {
-  const value = String(username || "").trim().toLowerCase();
-
-  if (!/^[a-z0-9._-]+$/.test(value)) {
-    throw new Error("Invalid username.");
-  }
-
-  return `${value}@gmail.com`;
-}
-
-async function loginWithUsername() {
-  const usernameInput = document.getElementById("username");
-  const passwordInput = document.getElementById("password");
-
-  const uname = usernameInput.value.trim().toLowerCase();
-  const password = passwordInput.value;
+  const uname = String(usernameInput.value || '').trim().toLowerCase();
+  const pass  = String(passwordInput.value || '');
 
   clearLoginErrors();
 
-  if (!uname || !password) {
-    showLoginError("password", "Please enter username and password.");
+  if (!uname){
+    showLoginError('username', 'Please fill the username.');
+    usernameInput.focus();
     return;
   }
 
-  if (!turnstileVerifiedUser) {
-    showLoginError("password", "Please complete verification.");
+  if (!pass){
+    showLoginError('password', 'Please fill the password.');
+    passwordInput.focus();
     return;
   }
 
-  setLoading(true, "userpass");
+  if (!turnstileVerifiedUser){
+    showLoginError('password', 'Please complete the verification.');
+    return;
+  }
 
-  try {
-    const email = usernameToEmail(uname);
+  setLoading(true,'userpass');
 
-    await auth.setPersistence(
-      firebase.auth.Auth.Persistence.SESSION
-    );
+  try{
+    const snap = await db.ref(`logins/user_accounts/${uname}`).get();
 
-    const credential = await auth.signInWithEmailAndPassword(
-      email,
-      password
-    );
-
-    if (!credential.user || credential.user.isAnonymous) {
-      throw new Error("Invalid Firebase session.");
+    if (!snap.exists()){
+      showLoginError('username', 'Username does not exist');
+      usernameInput.focus();
+      return;
     }
 
-    // Password utama berjaya.
-    // Sekarang pergi ke skrin 2nd Password.
-    openTwofaPage(uname, {
-      uid: credential.user.uid,
-      email: credential.user.email
-    });
+    const acc = snap.val();
 
-  } catch (error) {
-    console.error("Login error:", error);
+    if (acc.active === false){
+      showLoginError('username', 'This ID Already got banned.');
+      usernameInput.focus();
+      return;
+    }
 
-    showLoginError(
-      "password",
-      "Username or password incorrect."
-    );
-  } finally {
-    setLoading(false, "userpass");
+    const inputHash = await sha256Hex(pass);
+
+    if (inputHash !== acc.passwordHash){
+      showLoginError('password', 'Password does not exist.');
+      passwordInput.focus();
+      return;
+    }
+
+if (!acc.secondPasswordHash){
+  showLoginError('password', '2nd password belum diset. Please contact admin.');
+  passwordInput.focus();
+  return;
+}
+
+openTwofaPage(uname, acc);
+
+}catch(err){
+  console.error("❌ USERNAME LOGIN ERROR:", err);
+  console.error("❌ CODE:", err?.code);
+  console.error("❌ MESSAGE:", err?.message);
+
+  showLoginError(
+    'password',
+    err?.message || 'Login failed. Try again.'
+  );
+}finally{
+  setLoading(false,'userpass');
+}
+}
+// Optional createAccount (tetap sama)
+async function createAccount(){
+  const uname = String(document.getElementById('username').value || '').trim();
+  const pass  = String(document.getElementById('password').value || '');
+  if (!uname || !pass){ alert("Masukkan username & password."); return; }
+  const email = toPseudoEmail(uname);
+  try{
+    setLoading(true,'userpass');
+    await auth.createUserWithEmailAndPassword(email, pass);
+    finishLogin({ email, displayName: uname, photoURL:"" });
+  }catch(e){
+    console.error("Create user gagal:", e);
+    alert(e?.message || "Gagal membuat akaun.");
+    setLoading(false,'userpass');
   }
 }
- 
+
 /* ===== Password eye ===== */
 function togglePassword(){
   const input = document.getElementById('password');
@@ -2114,8 +2285,32 @@ function togglePassword(){
     try { await loginWithUsername(); } finally { busy = false; }
   });
 })();
+const tabUser = document.getElementById('tab-userpass');
+const tabGoo  = document.getElementById('tab-google');
+const formUser= document.getElementById('form-userpass');
+const formGoo = document.getElementById('form-google');
+const userLabel = document.querySelector('.label-row .label');
+
+tabUser?.addEventListener('click', () => {
+  tabUser.classList.add('active');
+  tabGoo.classList.remove('active');
+  formUser.classList.add('active');
+  formGoo.classList.remove('active');
+
+  if (userLabel) userLabel.style.visibility = 'visible';
+});
+
+tabGoo?.addEventListener('click', () => {
+  tabGoo.classList.add('active');
+  tabUser.classList.remove('active');
+  formGoo.classList.add('active');
+  formUser.classList.remove('active');
+
+  if (userLabel) userLabel.style.visibility = 'hidden';
+});
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("googleLoginBtn")?.addEventListener("click", signInWithGoogle);
   document.getElementById("eyeBtn")?.addEventListener("click", togglePassword);
  setupTwofaInputs();
   setTimeout(() => {
@@ -2184,17 +2379,11 @@ function renderLivechatBadge(count){
 async function openLiveChat() {
   if (!lcPanel || !lcToggle) return;
 
-try {
-  await ensureGuestAuth();
-} catch (error) {
-  console.error("Live Chat authentication failed:", error);
-  alert("Unable to connect to Live Chat. Please try again.");
-  return;
-}
+  lcPanel.classList.add("active");
+  lcPanel.setAttribute("aria-hidden", "false");
+  updateLiveChatButton(true);
 
-lcPanel.classList.add("active");
-lcPanel.setAttribute("aria-hidden", "false");
-updateLiveChatButton(true);
+  await ensureGuestAuth();
 
   if (!lcLoaded) {
     lcFrame.src = LC_URL;
@@ -2304,13 +2493,30 @@ auth.onAuthStateChanged(async (user) => {
 function getPrechatUser(){
   const cu = auth.currentUser;
 
+  // ✅ kalau ada gmailLogin, pastikan useremail memang masih ada
+  // kalau useremail sudah dibuang masa logout, jangan guna gmailLogin lama
+  try {
+    const gl = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
+    const savedEmail = (localStorage.getItem("useremail") || "").trim();
+
+    if (gl?.email && savedEmail && gl.email === savedEmail) {
+      return {
+        name: gl.name || gl.email || "User",
+        email: gl.email,
+        photo: gl.photo || "",
+        uid: null,
+        isGuest: false
+      };
+    }
+  } catch {}
+
   // ✅ currentUser normal
   if (cu && !cu.isAnonymous) {
     return {
       name: cu.displayName || cu.email || "User",
       email: cu.email || "",
       photo: cu.photoURL || "",
-      uid: cu.uid,
+      uid: null,
       isGuest: false
     };
   }
@@ -2322,7 +2528,7 @@ function getPrechatUser(){
       name: localStorage.getItem("guest.name") || localGuest.name,
       email: "",
       photo: "",
-      uid: cu.uid,
+      uid: localGuest.uid, // pakai local guest uid supaya konsisten
       isGuest: true
     };
   }
@@ -2482,6 +2688,28 @@ window.addEventListener("message", (e) => {
     return;
   }
 });
+// ===== LOGIN PAGE GUARD =====
+(function loginPageGuard(){
+
+  const path = location.pathname;
+
+  // Guard hanya untuk halaman login admin
+  if (!path.endsWith("/homepage/admin/login.html")) {
+    return;
+  }
+
+  let gl = null;
+
+  try {
+    gl = JSON.parse(
+      localStorage.getItem("gmailLogin") || "null"
+    );
+  } catch {}
+
+// Kalau sudah login, terus masuk Admin Homepage
+if (gl?.email) {
+  location.replace(MAIN_PATH);
+}
 
 })();
 (function () {
