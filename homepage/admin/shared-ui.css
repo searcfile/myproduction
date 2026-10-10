@@ -165,7 +165,7 @@ input::placeholder{
   height:40px;
   line-height:40px;
   padding:0 8px;
-  overflow:hidden;
+  overflow:visible;
 }
 
 .header-right-meta{
@@ -2913,3 +2913,30 @@ padding:12px;
 
 }
 
+/* ==========================================
+   FIX HEADER DIRECT DROPDOWN
+   ========================================== */
+
+#homepageSharedShell .header {
+  overflow: visible;
+}
+
+#homepageSharedShell .header-links {
+  overflow: visible;
+}
+
+#homepageSharedShell .dropdown-wrapper {
+  overflow: visible;
+}
+
+#homepageSharedShell .header-links
+.dropdown-links.open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+#homepageSharedShell .header-links
+.dropdown-links a {
+  pointer-events: auto;
+  cursor: pointer;
+}
