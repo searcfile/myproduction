@@ -2940,3 +2940,109 @@ padding:12px;
   pointer-events: auto;
   cursor: pointer;
 }
+/* =========================================
+   5G88 SMART CONTENT LOADING
+   ========================================= */
+
+#mainContainer {
+  position: relative;
+  min-height: calc(100vh - 110px);
+}
+
+#mainContainer.smart-loading-active > :not(.smart-content-loader) {
+  visibility: hidden !important;
+}
+
+.smart-content-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.smart-content-loader[hidden] {
+  display: none !important;
+}
+
+.smart-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.smart-loading-dots {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  animation: smartRotate 1s linear infinite;
+}
+
+.smart-loading-dots span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .85);
+  opacity: .25;
+  animation: smartPulse 1s linear infinite;
+}
+
+.smart-loading-dots span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.smart-loading-dots span:nth-child(2) {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation-delay: .25s;
+}
+
+.smart-loading-dots span:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: .5s;
+}
+
+.smart-loading-dots span:nth-child(4) {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation-delay: .75s;
+}
+
+.smart-loading-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+}
+
+@keyframes smartPulse {
+  0% { opacity: .2; }
+  25% { opacity: 1; }
+  50% { opacity: .4; }
+  100% { opacity: .2; }
+}
+
+@keyframes smartRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-loading-dots,
+  .smart-loading-dots span {
+    animation: none;
+  }
+}
