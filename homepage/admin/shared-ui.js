@@ -134,7 +134,14 @@
     }
   ];
 
+  const DEFAULT_ADMIN_TAB = {
+    file: "livechat.html",
+    name: "Live Chat",
+    group: "main"
+  };
 
+  const EMPTY_WORKSPACE_ONCE_KEY =
+    "adminEmptyWorkspaceOnce";
   /* ==========================================================
      ICONS
      ========================================================== */
@@ -314,13 +321,6 @@ window.isLivechatTabActive = isLivechatTabActive;
         return [];
       }
 
-      /*
-       * Support format lama:
-       * { label, url, group }
-       *
-       * dan format baru:
-       * { name, file, group }
-       */
       return value
         .map(tab => {
 
@@ -631,7 +631,42 @@ function syncTabsToFirebase(tabs) {
     navigateToTab(nextTab);
   }
 
+  function initDefaultWorkspace() {
+    // Hanya untuk halaman utama admin.
+    if (getCurrentFile() !== "index.html") {
+      return false;
+    }
 
+    // Selepas close tab terakhir, benarkan workspace
+    // kosong dipaparkan sekali sahaja.
+    const skipOnce = sessionStorage.getItem(
+      EMPTY_WORKSPACE_ONCE_KEY
+    );
+
+    if (skipOnce === "1") {
+      sessionStorage.removeItem(
+        EMPTY_WORKSPACE_ONCE_KEY
+      );
+
+      return false;
+    }
+
+    // Kalau masih ada tab terbuka, jangan ganggu.
+    if (getTabs().length > 0) {
+      return false;
+    }
+
+    // Kalau semua tab kosong dan halaman dimuat semula,
+    // pulihkan Live Chat sebagai default.
+    saveTabs([{ ...DEFAULT_ADMIN_TAB }]);
+    setActiveFile(DEFAULT_ADMIN_TAB.file);
+
+    window.location.replace(
+      "./livechat.html"
+    );
+
+    return true;
+  }
   /* ==========================================================
      SYNC CURRENT PAGE
      ========================================================== */
@@ -3839,12 +3874,6 @@ function renderUserInfo() {
      ========================================================== */
 
   function handleLogout() {
-
-    /*
-     * Kalau admin.js mempunyai Firebase logout,
-     * biar admin.js handle melalui custom event.
-     */
-
     const event =
       new CustomEvent(
         "homepage-admin-logout",
