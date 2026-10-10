@@ -679,9 +679,14 @@ function createShell() {
   let shell = document.getElementById(
     "homepageSharedShell"
   );
-
-  // Elakkan initialization berganda
-  if (shell?.dataset.initialized === "true") {
+   
+  if (
+    shell &&
+    shell.querySelector(".header") &&
+    shell.querySelector("#tabBar") &&
+    shell.querySelector("#sidebar")
+  ) {
+    shell.dataset.initialized = "true";
     return;
   }
 
