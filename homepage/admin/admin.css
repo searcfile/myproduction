@@ -480,26 +480,7 @@ html {
   align-items: center;
   height: 100%;
 }
-.dropdown-links {
-  display: none;
-  position: fixed;
-  top: 64px !important;
-  z-index: 10000;
-  background: var(--sidebar);
-  border-radius: 6px;
-  min-width: 180px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  padding: 6px 0;
-  transition: color 0.3s;
-    /* ✅ auto scroll bila item banyak */
-  max-height: calc(5 * 42px + 12px); /* 5 baris (38px satu baris) */
-  overflow-y: auto;
-  overflow-x: hidden;
 
-  /* Firefox scrollbar */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
-}
 /* ✅ Scrollbar GOLD (Chrome/Edge/Safari) */
 .dropdown-links::-webkit-scrollbar{
   width: 10px;
