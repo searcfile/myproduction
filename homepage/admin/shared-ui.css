@@ -662,7 +662,7 @@ input::placeholder{
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  height:40px;
+  height:36px;
   padding:5px 12px;
   color:rgba(255,255,255,0.65);
   text-decoration:none;
@@ -675,12 +675,7 @@ input::placeholder{
 
 .dropdown-links a:hover{
   background:transparent;
-  color:var(--gold-hover);
-}
-
-.dropdown-links a:active{
-  background:transparent;
-  color:var(--gold-active) !important;
+  color:#ffffff;
 }
 
 .dropdown-links::-webkit-scrollbar{
