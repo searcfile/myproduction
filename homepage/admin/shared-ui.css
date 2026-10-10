@@ -2424,8 +2424,6 @@ body.tab-dragging-active *{
   height:40px;
   padding:0 12px;
   margin-bottom:-1px;
-  transition: transform 180ms cubic-bezier(.2, .8, .2, 1), box-shadow 180ms ease, filter 180ms ease,background-color .2s ease,
-  color .2s ease;
 }
 /* Nama tab */
 .admin-workspace-tab-name{
@@ -2684,10 +2682,8 @@ body.tab-dragging-active *{
   touch-action: pan-y;
   backface-visibility: hidden;
   transform-origin: center bottom;
-  transition:
-    transform 180ms cubic-bezier(.2,.8,.2,1),
-    box-shadow 180ms ease,
-    filter 180ms ease;
+  transition: transform 180ms cubic-bezier(.2, .8, .2, 1), box-shadow 180ms ease, filter 180ms ease,background-color .2s ease,
+  color .2s ease;
 }
 
 .admin-workspace-tab.dragging {
