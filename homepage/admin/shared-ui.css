@@ -627,28 +627,17 @@ input::placeholder{
 
 .dropdown-links{
   display:none;
-
   position:fixed;
-
   top:var(--admin-header-height) !important;
-
-  min-width:180px;
-
+  min-width:160px;
   max-height:222px;
-
   overflow-y:auto;
   overflow-x:hidden;
-
   padding:6px 0;
-
   background:var(--sidebar);
-
-  border-radius:6px;
-
-  box-shadow:0 4px 8px rgba(0,0,0,.4);
-
+  border-radius:8px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
   z-index:10000;
-
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.25) transparent;
 }
@@ -669,6 +658,7 @@ input::placeholder{
   font-size:14px;
   border-radius:4px;
   text-transform:capitalize;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
   transition:
     color .3s ease,
     background .3s ease;
