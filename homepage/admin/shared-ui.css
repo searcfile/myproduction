@@ -2949,19 +2949,31 @@ padding:12px;
   min-height: calc(100vh - 110px);
 }
 
-#mainContainer.smart-loading-active > :not(.smart-content-loader) {
-  visibility: hidden !important;
-}
+
 
 .smart-content-loader {
-  position: absolute;
-  inset: 0;
-  z-index: 500;
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: auto;
+  min-height: 0;
+
+  z-index: 900;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 220px;
-  background: rgba(0, 0, 0, 0.25);
+
+  background: #080b10;
+  box-sizing: border-box;
+}
+
+.smart-content-loader[hidden] {
+  display: none !important;
 }
 
 .smart-content-loader[hidden] {
