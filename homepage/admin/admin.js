@@ -798,10 +798,40 @@ if (!window.isLivechatTabActive?.()) {
   initLivechatNotifListener(userId);  
 }); // ⬅️ tutup DOMContentLoaded
 
-  const loadingScreen = document.getElementById("loadingScreen");
-  if (loadingScreen) {
+
+/* =========================================
+   HIDE LOADING AFTER SHARED HEADER READY
+   ========================================= */
+
+(function () {
+  function hideLoadingWhenReady() {
+    const loadingScreen =
+      document.getElementById("loadingScreen");
+
+    const sharedShell =
+      document.getElementById("homepageSharedShell");
+
+    if (!loadingScreen || !sharedShell) return;
+
     loadingScreen.style.display = "none";
   }
+
+  document.addEventListener(
+    "homepage-shared-ui-ready",
+    hideLoadingWhenReady
+  );
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      hideLoadingWhenReady,
+      { once: true }
+    );
+  } else {
+    hideLoadingWhenReady();
+  }
+})();
+
 // ====== ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ ======
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
