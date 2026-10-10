@@ -2968,7 +2968,7 @@ padding:12px;
   align-items: center;
   justify-content: center;
 
-  background: #080b10;
+  background: var(--bg-main);
   box-sizing: border-box;
 }
 
