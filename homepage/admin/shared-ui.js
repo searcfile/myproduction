@@ -3987,7 +3987,10 @@ document
             "adminShowContentLoading",
             "1"
           );
-
+sessionStorage.setItem(
+  "smartForceLoading",
+  "1"
+);
           setTimeout(
             () => {
               window.location.reload();
@@ -4862,13 +4865,104 @@ function updateChangePwVisibility() {
       if (event.target === modal2) closePw2();
     });
   }
+/* ==========================================
+   5G88 SMART CONTENT LOADING
+   ========================================== */
 
+function initSmartContentLoading() {
+  const content = document.getElementById("mainContainer");
+
+  if (!content) return;
+
+  if (content.querySelector(".smart-content-loader")) return;
+
+  const file = getCurrentFile();
+  const cacheKey = `smartLoaded:${file}`;
+  const cacheDuration = 60 * 1000;
+
+  const navigation = performance.getEntriesByType("navigation")[0];
+  const isReload = navigation?.type === "reload";
+
+  const forceLoading =
+    sessionStorage.getItem("smartForceLoading") === "1";
+
+  sessionStorage.removeItem("smartForceLoading");
+
+  const lastLoaded = Number(
+    sessionStorage.getItem(cacheKey) || 0
+  );
+
+  const recentlyLoaded =
+    lastLoaded > 0 &&
+    Date.now() - lastLoaded < cacheDuration;
+
+  const shouldLoad =
+    isReload || forceLoading || !recentlyLoaded;
+
+  if (!shouldLoad) return;
+
+  const loader = document.createElement("div");
+  loader.className = "smart-content-loader";
+  loader.setAttribute("role", "status");
+  loader.setAttribute("aria-label", "Loading content");
+
+  loader.innerHTML = `
+    <div class="smart-loading-box">
+      <div class="smart-loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="smart-loading-text">
+        Please wait while fetching...
+      </div>
+    </div>
+  `;
+
+  content.appendChild(loader);
+  content.classList.add("smart-loading-active");
+
+  const started = performance.now();
+  let finished = false;
+
+  function finishLoading() {
+    if (finished) return;
+    finished = true;
+
+    // Elak loading terlalu cepat berkelip.
+    const elapsed = performance.now() - started;
+    const remaining = Math.max(0, 350 - elapsed);
+
+    setTimeout(() => {
+      content.classList.remove("smart-loading-active");
+      loader.remove();
+
+      sessionStorage.setItem(
+        cacheKey,
+        String(Date.now())
+      );
+    }, remaining);
+  }
+
+  if (document.readyState === "complete") {
+    finishLoading();
+  } else {
+    window.addEventListener("load", finishLoading, {
+      once: true
+    });
+  }
+
+  // Safety fallback jika ada resource yang lambat.
+  setTimeout(finishLoading, 5000);
+}
   /* ==========================================================
      INITIALIZE
      ========================================================== */
 
 function init() {
   createShell();
+  initSmartContentLoading();
   initFloatingFab();
   setupHeaderMore();
    
