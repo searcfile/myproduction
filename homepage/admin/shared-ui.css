@@ -2912,3 +2912,22 @@ padding:12px;
 }
 
 }
+/* ==========================================
+   SHARED SHELL - STABLE INITIAL LAYOUT
+   ========================================== */
+
+#homepageSharedShell {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Ruang sementara sebelum JS siap */
+#homepageSharedShell:empty {
+  min-height: 112px;
+}
+
+/* Jangan simpan ruang kosong selepas header siap */
+#homepageSharedShell:not(:empty) {
+  min-height: 0;
+}
