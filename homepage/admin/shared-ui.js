@@ -30,106 +30,106 @@
   const ADMIN_PAGES = [
     {
       file: "livechat.html",
-      name: "LIVE CHAT",
+      name: "Live Chat",
       group: "main"
     },
     {
       file: "linkdownload.html",
-      name: "LINK DOWNLOAD",
+      name: "Link Download",
       group: "main"
     },
     {
       file: "item.html",
-      name: "ITEM",
+      name: "Item",
       group: "main"
     },
 
     {
       file: "mega888.html",
-      name: "MEGA888",
+      name: "Mega888",
       group: "gamelog"
     },
     {
       file: "pussy888.html",
-      name: "PUSSY888",
+      name: "Pussy888",
       group: "gamelog"
     },
     {
       file: "918kiss.html",
-      name: "918KISS",
+      name: "918kiss",
       group: "gamelog"
     },
     {
       file: "scr888h5.html",
-      name: "SCR888H5",
+      name: "Scr888h5",
       group: "gamelog"
     },
     {
       file: "evo888.html",
-      name: "EVO888",
+      name: "Evo888",
       group: "gamelog"
     },
     {
       file: "jilislot.html",
-      name: "JILISLOT",
+      name: "Jilislot",
       group: "gamelog"
     },
 
     {
       file: "maybank.html",
-      name: "MAYBANK",
+      name: "Maybank",
       group: "bank"
     },
     {
       file: "cimbclick.html",
-      name: "CIMB BANK",
+      name: "Cimb Bank",
       group: "bank"
     },
     {
       file: "bankislam.html",
-      name: "BANK ISLAM",
+      name: "Bank Islam",
       group: "bank"
     },
     {
       file: "rhbbank.html",
-      name: "RHB BANK",
+      name: "Rhb Bank",
       group: "bank"
     },
     {
       file: "maybank2u.html",
-      name: "MAYBANK2U",
+      name: "Maybank2u",
       group: "bank"
     },
 
     {
       file: "findgame.html",
-      name: "FIND GAME",
+      name: "Find Game",
       group: "list"
     },
     {
       file: "tipsgame.html",
-      name: "TIPS GAME",
+      name: "Tips Game",
       group: "list"
     },
     {
       file: "logogame.html",
-      name: "LOGO GAME",
+      name: "Logo Game",
       group: "list"
     },
 
     {
       file: "stickynotes.html",
-      name: "STICKY NOTES",
+      name: "Sticky Notes",
       group: "tools"
     },
     {
       file: "typingtest.html",
-      name: "TYPING TEST",
+      name: "Typing Test",
       group: "tools"
     },
     {
       file: "history.html",
-      name: "HISTORY",
+      name: "My History",
       group: "tools"
     }
   ];
