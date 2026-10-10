@@ -57,7 +57,8 @@ body{
   color:var(--page-text);
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
-  overflow:hidden;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 
 /* ===== FILTERS ===== */
@@ -182,19 +183,20 @@ body{
 /* ===== WRAP ===== */
 .wrap{
   width:100%;
-  margin:0 auto;
-  margin-top:calc(var(--flt-h) + 10px);
-  height:calc(100vh - var(--flt-h) - 20px);
-  padding:0 12px;
+  margin:10px auto 0;
+  height:auto;
+  min-height:0;
+  padding:0 12px 24px;
 }
 
 /* ===== GRID ===== */
 .grid{
   display:grid;
-  grid-template-columns:minmax(0, 1.65fr) minmax(340px, .95fr);
+  grid-template-columns:minmax(0,1.65fr) minmax(340px,.95fr);
   gap:14px;
-  height:100%;
+  height:auto;
   min-height:0;
+  align-items:start;
 }
 
 /* ===== PANELS ===== */
@@ -808,6 +810,35 @@ select:focus-visible{
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
   background-color: transparent;
   transition: all .2s ease;
+}
+/* ==========================================
+   FIND GAME NORMAL PAGE SCROLL
+   ========================================== */
+
+@media (min-width:980px){
+  .list,
+  .detail{
+    height:auto;
+    min-height:0;
+  }
+
+  .scroll{
+    flex:none;
+    height:auto;
+    overflow:visible;
+  }
+}
+
+@media (max-width:979px){
+  .wrap{
+    margin-top:10px;
+  }
+}
+
+@media (max-width:640px){
+  .wrap{
+    margin-top:6px;
+  }
 }
   </style>
 <body>
