@@ -604,14 +604,15 @@ function syncTabsToFirebase(tabs) {
       return;
     }
 
-    /*
-     * Kalau sudah tiada tab,
-     * kembali homepage admin.
-     */
     if (!tabs.length) {
 
       localStorage.removeItem(
         getActiveTabStorageKey()
+      );
+
+      sessionStorage.setItem(
+        EMPTY_WORKSPACE_ONCE_KEY,
+        "1"
       );
 
       window.location.href =
@@ -5028,6 +5029,11 @@ function initSmartContentLoading() {
      ========================================================== */
 
 function init() {
+
+  if (initDefaultWorkspace()) {
+    return;
+  }
+
   createShell();
   initSmartContentLoading();
   initFloatingFab();
