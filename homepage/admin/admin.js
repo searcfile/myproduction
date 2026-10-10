@@ -798,59 +798,10 @@ if (!window.isLivechatTabActive?.()) {
   initLivechatNotifListener(userId);  
 }); // ⬅️ tutup DOMContentLoaded
 
-
-/* ==========================================================
-   ADMIN LOADING - WAIT FOR SHARED UI
-   ========================================================== */
-
-(function () {
-  let loadingHidden = false;
-
-  function isSharedUIReady() {
-    const shell = document.getElementById(
-      "homepageSharedShell"
-    );
-
-    if (!shell) return false;
-
-    return Boolean(
-      shell.querySelector(".header") &&
-      shell.querySelector("#sidebar") &&
-      shell.querySelector("#tabBar")
-    );
-  }
-
-  function hideLoadingWhenReady() {
-    if (loadingHidden) return;
-    if (!isSharedUIReady()) return;
-
-    const loadingScreen =
-      document.getElementById("loadingScreen");
-
-    if (!loadingScreen) return;
-
-    loadingHidden = true;
+  const loadingScreen = document.getElementById("loadingScreen");
+  if (loadingScreen) {
     loadingScreen.style.display = "none";
   }
-
-  // Shared UI sudah siap
-  document.addEventListener(
-    "homepage-shared-ui-ready",
-    hideLoadingWhenReady
-  );
-
-  // Semak apabila HTML selesai dibaca
-  if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      hideLoadingWhenReady,
-      { once: true }
-    );
-  } else {
-    hideLoadingWhenReady();
-  }
-})();
-
 // ====== ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ ======
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
