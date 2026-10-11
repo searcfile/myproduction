@@ -85,10 +85,29 @@ app.post('/api/login/finish',rateLimit({windowMs:15*60_000,limit:15}),async(req,
  const challengeRef=db.ref(`loginChallenges/${key}`);
  try{
    // Atomically reserve one attempt on this challenge.
-   const result=await challengeRef.transaction(v=>{
-    if(!v||v.expiresAt<now()||v.attempts>=5||v.used===true)return;
-    return {...v,attempts:v.attempts+1};
-   },undefined,false);
+   const challengeSnapshot = await challengeRef.once('value');
+
+if (!challengeSnapshot.exists()) {
+  return fail(res, 401, 'Challenge expired or locked');
+}
+const result = await challengeRef.transaction(v => {
+  // Jika cache belum mempunyai data, jangan cipta
+  // challenge baharu. Rekod mesti sudah wujud.
+  if (v === null) return;
+
+  if (
+    v.expiresAt < now() ||
+    (v.attempts || 0) >= 5 ||
+    v.used === true
+  ) {
+    return;
+  }
+
+  return {
+    ...v,
+    attempts: (v.attempts || 0) + 1
+  };
+}, undefined, false);
 if (!result.committed) {
   const current = (await challengeRef.once('value')).val();
 
@@ -121,6 +140,7 @@ if (!result.committed) {
    const expected=Buffer.from(factor.hash,'hex'),actual=Buffer.from(pinHash(uid,pin,factor.salt),'hex');
    const correct=expected.length===actual.length && crypto.timingSafeEqual(expected,actual);
    // Lockout counter must be updated atomically across Render instances.
+   await factorRef.once('value');
    const countResult=await factorRef.transaction(v=>{
     if(!v||v.salt!==factor.salt||v.hash!==factor.hash)return;
     if(v.lockedUntil>now())return;
@@ -131,6 +151,7 @@ if (!result.committed) {
    if(!countResult.committed)return fail(res,429,'PIN changed or temporarily locked');
    if(!correct)return fail(res,401,'Invalid verification');
    // Consume the challenge once, even if two correct requests race.
+   await challengeRef.once('value');
    const used=await challengeRef.transaction(v=>{
     if(!v||v.used===true||v.expiresAt<now()||v.pinVersion!==ch.pinVersion)return;
     return {...v,used:true};
