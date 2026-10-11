@@ -47,7 +47,18 @@ async function requireAdmin(req,res,next){
  }catch(e){return fail(res,401,'Invalid or expired session');}
 }
 function superOnly(req,res,next){if(req.admin.profile.role!=='superadmin')return fail(res,403,'Superadmin only');next();}
-function publicUser(u,p){return {uid:u.uid,username:p.username,email:u.email||'',role:p.role,enabled:p.active===true && !u.disabled,createdAt:p.createdAt||null,updatedAt:p.updatedAt||null};}
+function publicUser(u, p) {
+  return {
+    uid: u.uid,
+    username: p.username,
+    email: u.email || "",
+    role: p.role,
+    siteIds: Array.isArray(p.siteIds) ? p.siteIds : [],
+    enabled: p.active === true && !u.disabled,
+    createdAt: p.createdAt || null,
+    updatedAt: p.updatedAt || null
+  };
+}
 
 // Login: username+password checked server-side with Firebase Identity Toolkit.
 // Browser receives only a short-lived opaque challenge, never the Firebase first-factor token.
@@ -121,6 +132,32 @@ app.get('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
 app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(),password=req.body?.password,pin=String(req.body?.secondPassword||''),enabled=req.body?.enabled!==false;
  const email=String(req.body?.email||'').trim().toLowerCase();
+const siteIds = req.body?.siteIds;
+
+if (
+  !Array.isArray(siteIds) ||
+  siteIds.length === 0 ||
+  siteIds.length > 20 ||
+  !siteIds.every(id =>
+    typeof id === "string" &&
+    /^[a-z0-9_-]{1,48}$/.test(id)
+  ) ||
+  new Set(siteIds).size !== siteIds.length
+) {
+  return fail(res, 400, "Select at least one valid site");
+}
+
+try {
+  const siteSnap = await db.ref("sites").once("value");
+  const existingSites = siteSnap.val() || {};
+
+  if (!siteIds.every(id => existingSites[id]?.active === true)) {
+    return fail(res, 400, "One or more sites are invalid or inactive");
+  }
+} catch (error) {
+  console.error("Validate assigned sites:", error.message);
+  return fail(res, 503, "Cannot validate assigned sites");
+}
  if(!usernameOK(username)||!passwordOK(password)||!pinOK(pin)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return fail(res,400,'Provide username, valid email, password >=12 characters, and 6-digit PIN');
  let created=null;
  try{
@@ -130,7 +167,18 @@ app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
   try{
    created=await auth.createUser({email,password,disabled:!enabled,displayName:username});
    const t=now();
-   await db.ref(`adminUsers/${created.uid}`).set({username,email,displayName:username,role:'siteadmin',active:enabled,secondPasswordEnabled:false,createdAt:t,updatedAt:t,createdBy:req.admin.uid});
+ await db.ref(`adminUsers/${created.uid}`).set({
+  username,
+  email,
+  displayName: username,
+  role: "siteadmin",
+  siteIds,
+  active: enabled,
+  secondPasswordEnabled: false,
+  createdAt: t,
+  updatedAt: t,
+  createdBy: req.admin.uid
+});
    await setPin(created.uid,pin);
    await indexRef.set({uid:created.uid});
    return res.status(201).json({ok:true,user:{uid:created.uid,username,email,enabled}});
