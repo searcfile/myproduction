@@ -2062,8 +2062,15 @@ async function verifyTwofa() {
     return;
   }
 
-  verifyingTwofa = true;
-  showLoginLoading();
+verifyingTwofa = true;
+
+const verifyButton = document.getElementById("twofaVerify");
+
+if (verifyButton) {
+  verifyButton.disabled = true;
+}
+
+showLoginLoading();
 
   try {
     const response = await fetch(`${ADMIN_API}/api/login/finish`, {
@@ -2127,10 +2134,17 @@ async function verifyTwofa() {
       document.querySelector(".otp-input")?.focus();
     }
 
-  } finally {
-    verifyingTwofa = false;
-    hideLoginLoading();
+} finally {
+  verifyingTwofa = false;
+
+  const verifyButton = document.getElementById("twofaVerify");
+
+  if (verifyButton) {
+    verifyButton.disabled = false;
   }
+
+  hideLoginLoading();
+}
 }
 
 function setupTwofaInputs(){
