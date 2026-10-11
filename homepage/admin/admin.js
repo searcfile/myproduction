@@ -574,15 +574,12 @@ btnEl.onclick = function () {
   }
 }
 async function verifyAdminSession() {
-  const user = await new Promise(resolve => {
-    const unsubscribe = auth.onAuthStateChanged(currentUser => {
-      unsubscribe();
-      resolve(currentUser);
-    }, () => {
-      unsubscribe();
-      resolve(null);
-    });
-  });
+const user = await new Promise(resolve => {
+  auth.onAuthStateChanged(
+    currentUser => resolve(currentUser),
+    () => resolve(null)
+  );
+});
 
   if (!user || user.isAnonymous) return null;
 
