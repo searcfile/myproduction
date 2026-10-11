@@ -214,8 +214,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
     const key = keyify(ownerId);
     const sessRef = db.ref(`${SESS_ROOT}/${key}`);
 
-    try { await sessRef.onDisconnect().remove(); } catch(_){}
-
     await sessRef.set({
       token,
       owner: key,
@@ -240,7 +238,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
     async function hardLogout(reason){
       try { sessRef.off('value', onValue); } catch(_){}
       try { clearInterval(hb); } catch(_){}
-      try { await sessRef.remove(); } catch(_){}
       try { await auth.signOut(); } catch(_){}
 
       if (typeof onForcedLogout === 'function') {
@@ -250,17 +247,37 @@ function stopLivechatTitleAlert(resetUnread = false) {
       }
     }
 
-    _session = { sessRef, onValue, hb };
+   _session = { sessRef, onValue, hb, token };
   }
 
-  async function stopSingleSession(){
-    if (!_session) return;
-    const { sessRef, onValue, hb } = _session;
-    try { clearInterval(hb); } catch(_){}
-    try { sessRef.off('value', onValue); } catch(_){}
-    try { await sessRef.remove(); } catch(_){}
-    _session = null;
+async function stopSingleSession() {
+  if (!_session) return;
+
+  const { sessRef, onValue, hb, token } = _session;
+
+  _session = null;
+
+  try { clearInterval(hb); } catch (_) {}
+  try { sessRef.off("value", onValue); } catch (_) {}
+
+  try {
+    await sessRef.onDisconnect().cancel();
+  } catch (err) {
+    console.warn("Cancel disconnect failed:", err);
   }
+
+  try {
+    await sessRef.transaction(current => {
+      if (current?.token === token) {
+        return null;
+      }
+
+      return;
+    });
+  } catch (err) {
+    console.warn("Single session cleanup failed:", err);
+  }
+}
 
   function getSessionOwnerFrom(loginData){
     const email = (loginData?.email || '').toLowerCase();
@@ -358,14 +375,18 @@ async function doLogout(reason="timeout"){
       };
     } catch { bc = null; }
   }
-  function start(){
-    setupChannel();
+function start(){
+  setupChannel();
+  loadExpire();
+  if (!expireAt) {
     setExpireFromNow();
-    setAbsoluteExpireFromNow();
-    bindActivityReset();
-    checkTimer = setInterval(heartbeat, TICK);
-    heartbeat();
   }
+  setAbsoluteExpireFromNow();
+  heartbeat();
+  if (shouldLogout()) return;
+  bindActivityReset();
+  checkTimer = setInterval(heartbeat, TICK);
+}
   window.AutoLogout = {
     start,
     reset: setExpireFromNow,
@@ -441,8 +462,16 @@ function checkLogin() {
 }
 
 function initLivechatNotifListener(userIdParam) {
-  const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-  if (!login?.email || !userIdParam) return;
+const currentUser = auth.currentUser;
+
+if (
+  !currentUser ||
+  currentUser.isAnonymous ||
+  !window.currentAdmin ||
+  !userIdParam
+) {
+  return;
+}
 
   db.ref("chats/" + userIdParam).on("value", (snapshot) => {
     let unreadCount = 0;
@@ -476,8 +505,16 @@ syncLivechatAlertState(unreadCount);
 }
 
 function markLivechatAsRead() {
-  const cur = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-  if (!cur?.email || !userId) return;
+const currentUser = auth.currentUser;
+
+if (
+  !currentUser ||
+  currentUser.isAnonymous ||
+  !window.currentAdmin ||
+  !userId
+) {
+  return;
+}
 
   const chatRef = db.ref("chats/" + userId);
 
