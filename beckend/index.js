@@ -89,7 +89,29 @@ app.post('/api/login/finish',rateLimit({windowMs:15*60_000,limit:15}),async(req,
     if(!v||v.expiresAt<now()||v.attempts>=5||v.used===true)return;
     return {...v,attempts:v.attempts+1};
    },undefined,false);
-   if(!result.committed)return fail(res,401,'Challenge expired or locked');
+if (!result.committed) {
+  const current = (await challengeRef.once('value')).val();
+
+  let reason = 'transaction_not_committed';
+
+  if (!current) {
+    reason = 'challenge_not_found';
+  } else if (current.used === true) {
+    reason = 'challenge_already_used';
+  } else if (current.expiresAt < now()) {
+    reason = 'challenge_expired';
+  } else if (current.attempts >= 5) {
+    reason = 'maximum_attempts';
+  }
+
+  console.warn('Login challenge rejected:', {
+    reason,
+    exists: Boolean(current),
+    attempts: current?.attempts ?? null
+  });
+
+  return fail(res, 401, 'Challenge expired or locked');
+}
    const ch=result.snapshot.val(),uid=ch.uid;
    const profile=await adminProfile(uid);
    if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||ch.pinVersion!==profile.pinVersion)return fail(res,403,'Access denied');
