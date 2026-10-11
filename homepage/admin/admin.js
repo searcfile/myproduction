@@ -434,35 +434,10 @@ function isValidEmail(email) {
 }
 
 function checkLogin() {
-  try {
-    const gl = JSON.parse(
-      localStorage.getItem("gmailLogin") || "null"
-    );
-
-    if (gl && gl.email) {
-      return true;
-    }
-  } catch (_) {}
-
-  if (sessionStorage.getItem("justLoggedIn") === "1") {
-    return true;
-  }
-
-  const currentFile =
-    location.pathname
-      .split("/")
-      .pop()
-      ?.toLowerCase() || "";
-
-  if (currentFile !== "login.html") {
-    const returnTo = encodeURIComponent(location.href);
-
-    location.replace(
-      `./login.html?redirect=${returnTo}`
-    );
-  }
-
-  return false;
+  return Boolean(
+    auth.currentUser &&
+    !auth.currentUser.isAnonymous
+  );
 }
 
 function initLivechatNotifListener(userIdParam) {
@@ -598,6 +573,51 @@ btnEl.onclick = function () {
     console.error("Version check failed:", err);
   }
 }
+async function verifyAdminSession() {
+  const user = await new Promise(resolve => {
+    const unsubscribe = auth.onAuthStateChanged(currentUser => {
+      unsubscribe();
+      resolve(currentUser);
+    }, () => {
+      unsubscribe();
+      resolve(null);
+    });
+  });
+
+  if (!user || user.isAnonymous) return null;
+
+  const token = await user.getIdTokenResult(true);
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    return null;
+  }
+
+  const snapshot = await db.ref(`adminUsers/${user.uid}`).once("value");
+  const profile = snapshot.val();
+
+  if (
+    !profile ||
+    profile.active !== true ||
+    profile.secondPasswordEnabled !== true ||
+    !["superadmin", "siteadmin"].includes(profile.role) ||
+    token.claims.pinVersion !== profile.pinVersion
+  ) {
+    return null;
+  }
+
+  window.currentAdmin = {
+    uid: user.uid,
+    username: profile.username,
+    email: profile.email,
+    name: profile.displayName || profile.username,
+    role: profile.role
+  };
+
+  return window.currentAdmin;
+}
 // ⬇️ GANTI seluruh blok ini
 document.addEventListener("DOMContentLoaded", async () => {
   const forceLogout = sessionStorage.getItem("forceLogout");
@@ -606,52 +626,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     cleanUrl();
   }
 
-if (!checkLogin()) return;
+let adminSession = null;
+
+try {
+  adminSession = await verifyAdminSession();
+} catch (error) {
+  console.error("Admin verification failed:", error);
+}
+
+if (!adminSession) {
+  await auth.signOut().catch(() => {});
+  window.location.replace("./login.html");
+  return;
+}
+
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
 
-  const loginDataRaw = localStorage.getItem("gmailLogin");
-  let sessionData = null;
-
-  try {
-    sessionData = JSON.parse(loginDataRaw);
-  } catch (e) {
-    console.error("❌ Failed to parse login data:", e);
-    localStorage.removeItem("gmailLogin");
-    window.location.href =
-  "./login.html";
-    return;
-  }
-
-  if (!sessionData || !sessionData.email) {
-    window.location.href =
-  "./login.html";
-    return;
-  }
+ const sessionData = {
+  uid: adminSession.uid,
+  username: adminSession.username,
+  email: adminSession.email,
+  name: adminSession.name,
+  role: adminSession.role,
+  photo: ""
+};
 try {
   await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 } catch (_) {}
 
-  // ✅ 1) RTDB rules `auth != null` → login anon di project loginApp
-async function ensureAnonAuth(maxRetries = 2) {
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      if (auth.currentUser) return true;
-      await auth.signInAnonymously();
-      return true;
-    } catch (err) {
-      console.warn(`[AnonAuth] Percobaan ${i + 1} gagal:`, err?.message || err);
-      await new Promise(r => setTimeout(r, 400));
-    }
-  }
-  return false;
-}
-
-  const authed = await ensureAnonAuth();
-  if (!authed) {
-    console.warn("⚠️ Anonymous auth gagal. Single-session tidak bisa menulis ke RTDB.");
-    // lanjutkan UI tanpa enforcement
-  }
 
   // ✅ 2) Auto-logout inactivity
   window.AutoLogout && window.AutoLogout.start();
