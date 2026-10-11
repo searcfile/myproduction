@@ -34,6 +34,21 @@
       group: "main"
     },
     {
+      file: "livechat-support.html",
+      name: "Agent Support",
+      group: "main"
+    },
+    {
+      file: "notice.html",
+      name: "Notice Blasting",
+      group: "main"
+    },
+    {
+      file: "users-history.html",
+      name: "Users-History",
+      group: "main"
+    },
+    {
       file: "linkdownload.html",
       name: "Link Download",
       group: "main"
