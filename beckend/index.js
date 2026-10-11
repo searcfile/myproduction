@@ -63,7 +63,7 @@ app.post('/api/login/start',rateLimit({windowMs:15*60_000,limit:12}),async(req,r
   const data=await r.json();
   if(!r.ok||data.localId!==idx.uid)return fail(res,401,'Invalid credentials');
   const challenge=crypto.randomBytes(32).toString('hex'), key=crypto.createHash('sha256').update(challenge).digest('hex');
-  await db.ref(`loginChallenges/${key}`).set({uid:idx.uid,expiresAt:now()+3*60_000,attempts:0});
+  await db.ref(`loginChallenges/${key}`).set({uid:idx.uid,pinVersion:profile.pinVersion,expiresAt:now()+3*60_000,attempts:0});
   return res.json({ok:true,challenge,expiresInSeconds:180});
  }catch(e){console.error('Login start error',e.message);return fail(res,503,'Login temporarily unavailable');}
 });
@@ -73,25 +73,39 @@ app.post('/api/login/finish',rateLimit({windowMs:15*60_000,limit:15}),async(req,
  const key=crypto.createHash('sha256').update(challenge).digest('hex');
  const challengeRef=db.ref(`loginChallenges/${key}`);
  try{
-  const result=await challengeRef.transaction(v=>{
-   if(!v||v.expiresAt<now()||v.attempts>=5)return;
-   return {...v,attempts:v.attempts+1};
-  },undefined,false);
-  if(!result.committed)return fail(res,401,'Challenge expired or locked');
-  const ch=result.snapshot.val(),uid=ch.uid;
-  const profile=await adminProfile(uid);
-  if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true)return fail(res,403,'Access denied');
-  const factorRef=db.ref(`privateSecondFactors/${uid}`), f=(await factorRef.once('value')).val();
-  if(!f||f.lockedUntil>now())return fail(res,429,'PIN temporarily locked');
-  const expected=Buffer.from(f.hash,'hex'),actual=Buffer.from(pinHash(uid,pin,f.salt),'hex');
-  if(expected.length!==actual.length||!crypto.timingSafeEqual(expected,actual)){
-   const attempts=(f.failedAttempts||0)+1;
-   await factorRef.update({failedAttempts:attempts,lockedUntil:attempts>=5?now()+15*60_000:0});
-   return fail(res,401,'Invalid verification');
-  }
-  await challengeRef.remove();
-  await factorRef.update({failedAttempts:0,lockedUntil:0});
-  const customToken=await auth.createCustomToken(uid,{secondVerified:true,pinVersion:profile.pinVersion});
+   // Atomically reserve one attempt on this challenge.
+   const result=await challengeRef.transaction(v=>{
+    if(!v||v.expiresAt<now()||v.attempts>=5||v.used===true)return;
+    return {...v,attempts:v.attempts+1};
+   },undefined,false);
+   if(!result.committed)return fail(res,401,'Challenge expired or locked');
+   const ch=result.snapshot.val(),uid=ch.uid;
+   const profile=await adminProfile(uid);
+   if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||ch.pinVersion!==profile.pinVersion)return fail(res,403,'Access denied');
+   const factorRef=db.ref(`privateSecondFactors/${uid}`);
+   const factor=(await factorRef.once('value')).val();
+   if(!factor||factor.lockedUntil>now())return fail(res,429,'PIN temporarily locked');
+   const expected=Buffer.from(factor.hash,'hex'),actual=Buffer.from(pinHash(uid,pin,factor.salt),'hex');
+   const correct=expected.length===actual.length && crypto.timingSafeEqual(expected,actual);
+   // Lockout counter must be updated atomically across Render instances.
+   const countResult=await factorRef.transaction(v=>{
+    if(!v||v.salt!==factor.salt||v.hash!==factor.hash)return;
+    if(v.lockedUntil>now())return;
+    if(correct)return {...v,failedAttempts:0,lockedUntil:0};
+    const attempts=(v.failedAttempts||0)+1;
+    return {...v,failedAttempts:attempts,lockedUntil:attempts>=5?now()+15*60_000:0};
+   },undefined,false);
+   if(!countResult.committed)return fail(res,429,'PIN changed or temporarily locked');
+   if(!correct)return fail(res,401,'Invalid verification');
+   // Consume the challenge once, even if two correct requests race.
+   const used=await challengeRef.transaction(v=>{
+    if(!v||v.used===true||v.expiresAt<now()||v.pinVersion!==ch.pinVersion)return;
+    return {...v,used:true};
+   },undefined,false);
+   if(!used.committed)return fail(res,401,'Challenge already used');
+   const current=await adminProfile(uid);
+   if(!current||current.active!==true||current.pinVersion!==ch.pinVersion)return fail(res,403,'Access denied');
+   const customToken=await auth.createCustomToken(uid,{secondVerified:true,pinVersion:current.pinVersion});
   return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
 });
