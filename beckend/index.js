@@ -91,22 +91,26 @@ if (!challengeSnapshot.exists()) {
   return fail(res, 401, 'Challenge expired or locked');
 }
 const result = await challengeRef.transaction(v => {
-  // Jika cache belum mempunyai data, jangan cipta
-  // challenge baharu. Rekod mesti sudah wujud.
-  if (v === null) return;
+
+  const current = v === null
+    ? challengeSnapshot.val()
+    : v;
+
+  if (!current) return;
 
   if (
-    v.expiresAt < now() ||
-    (v.attempts || 0) >= 5 ||
-    v.used === true
+    current.expiresAt <= now() ||
+    (current.attempts || 0) >= 5 ||
+    current.used === true
   ) {
     return;
   }
 
   return {
-    ...v,
-    attempts: (v.attempts || 0) + 1
+    ...current,
+    attempts: (current.attempts || 0) + 1
   };
+
 }, undefined, false);
 if (!result.committed) {
   const current = (await challengeRef.once('value')).val();
@@ -141,21 +145,65 @@ if (!result.committed) {
    const correct=expected.length===actual.length && crypto.timingSafeEqual(expected,actual);
    // Lockout counter must be updated atomically across Render instances.
    await factorRef.once('value');
-   const countResult=await factorRef.transaction(v=>{
-    if(!v||v.salt!==factor.salt||v.hash!==factor.hash)return;
-    if(v.lockedUntil>now())return;
-    if(correct)return {...v,failedAttempts:0,lockedUntil:0};
-    const attempts=(v.failedAttempts||0)+1;
-    return {...v,failedAttempts:attempts,lockedUntil:attempts>=5?now()+15*60_000:0};
-   },undefined,false);
+const countResult = await factorRef.transaction(v => {
+
+  const current = v === null ? factor : v;
+
+  if (
+    !current ||
+    current.salt !== factor.salt ||
+    current.hash !== factor.hash
+  ) {
+    return;
+  }
+
+  if (current.lockedUntil > now()) return;
+
+  if (correct) {
+    return {
+      ...current,
+      failedAttempts: 0,
+      lockedUntil: 0
+    };
+  }
+
+  const attempts = (current.failedAttempts || 0) + 1;
+
+  return {
+    ...current,
+    failedAttempts: attempts,
+    lockedUntil: attempts >= 5
+      ? now() + 15 * 60_000
+      : 0
+  };
+
+}, undefined, false);
    if(!countResult.committed)return fail(res,429,'PIN changed or temporarily locked');
    if(!correct)return fail(res,401,'Invalid verification');
    // Consume the challenge once, even if two correct requests race.
-   await challengeRef.once('value');
-   const used=await challengeRef.transaction(v=>{
-    if(!v||v.used===true||v.expiresAt<now()||v.pinVersion!==ch.pinVersion)return;
-    return {...v,used:true};
-   },undefined,false);
+const latestChallengeSnapshot = await challengeRef.once('value');
+
+const used = await challengeRef.transaction(v => {
+
+  const current = v === null
+    ? latestChallengeSnapshot.val()
+    : v;
+
+  if (
+    !current ||
+    current.used === true ||
+    current.expiresAt <= now() ||
+    current.pinVersion !== ch.pinVersion
+  ) {
+    return;
+  }
+
+  return {
+    ...current,
+    used: true
+  };
+
+}, undefined, false);
    if(!used.committed)return fail(res,401,'Challenge already used');
    const current=await adminProfile(uid);
    if(!current||current.active!==true||current.pinVersion!==ch.pinVersion)return fail(res,403,'Access denied');
