@@ -210,16 +210,32 @@ function stopLivechatTitleAlert(resetUnread = false) {
     await stopSingleSession();
     if (!ownerId) return;
 
-    const token = makeToken();
+    const storageKey = "5g88.singleSession." + keyify(ownerId);
+
+let token = sessionStorage.getItem(storageKey);
+
+if (!token) {
+  token = makeToken();
+  sessionStorage.setItem(storageKey, token);
+}
     const key = keyify(ownerId);
     const sessRef = db.ref(`${SESS_ROOT}/${key}`);
 
-    await sessRef.set({
-      token,
-      owner: key,
-      createdAt: firebase.database.ServerValue.TIMESTAMP,
+const result = await sessRef.transaction(current => {
+  if (current?.token === token) {
+    return {
+      ...current,
       lastSeen: firebase.database.ServerValue.TIMESTAMP
-    });
+    };
+  }
+
+  return {
+    token,
+    owner: key,
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+    lastSeen: firebase.database.ServerValue.TIMESTAMP
+  };
+});
 
     const onValue = sessRef.on('value', snap => {
       const v = snap.val();
@@ -229,11 +245,26 @@ function stopLivechatTitleAlert(resetUnread = false) {
       }
     });
 
-    const hb = setInterval(() => {
-      sessRef.child('lastSeen')
-        .set(firebase.database.ServerValue.TIMESTAMP)
-        .catch(()=>{});
-    }, HB_MS);
+const hb = setInterval(async () => {
+  try {
+    const result = await sessRef.transaction(current => {
+      if (!current || current.token !== token) {
+        return;
+      }
+
+      return {
+        ...current,
+        lastSeen: firebase.database.ServerValue.TIMESTAMP
+      };
+    }, undefined, false);
+
+    if (!result.committed) {
+      clearInterval(hb);
+    }
+  } catch (error) {
+    console.warn("Single session heartbeat failed:", error);
+  }
+}, HB_MS);
 
     async function hardLogout(reason){
       try { sessRef.off('value', onValue); } catch(_){}
@@ -266,17 +297,6 @@ async function stopSingleSession() {
     console.warn("Cancel disconnect failed:", err);
   }
 
-  try {
-    await sessRef.transaction(current => {
-      if (current?.token === token) {
-        return null;
-      }
-
-      return;
-    });
-  } catch (err) {
-    console.warn("Single session cleanup failed:", err);
-  }
 }
 
   function getSessionOwnerFrom(loginData){
@@ -355,7 +375,16 @@ async function doLogout(reason="timeout"){
     if (shouldLogout()) doLogout("timeout");
   }
   function bindActivityReset(){
-    const reset = ()=> setExpireFromNow();
+    const reset = () => {
+  loadExpire();
+
+  if (shouldLogout()) {
+    doLogout("timeout");
+    return;
+  }
+
+  setExpireFromNow();
+};
     ["mousemove","mousedown","keydown","scroll","touchstart","pointerdown","wheel","focus"]
       .forEach(ev => window.addEventListener(ev, reset, {passive:true}));
     document.addEventListener("visibilitychange", ()=> { if (!document.hidden) reset(); });
@@ -704,7 +733,14 @@ await window.startSingleSession(ownerId, () => {
   window.location.replace("./login.html?dup=1");
 });
   } catch (e) {
-    console.warn('[single-session] gagal start:', e);
+    console.error("[single-session] gagal start:", e);
+
+    try {
+      await auth.signOut();
+    } catch (_) {}
+
+    window.location.replace("./login.html?session_error=1");
+    return;
   }
 
   // ======= SEMUA YANG DI BAWAH INI BUTUH sessionData =======
@@ -832,13 +868,14 @@ if (!window.isLivechatTabActive?.()) {
 });
 
   // indikator unread
-  initLivechatNotifListener(userId);  
+  initLivechatNotifListener(userId); 
+  const loadingScreen = document.getElementById("loadingScreen");
+
+if (loadingScreen) {
+  loadingScreen.style.display = "none";
+}
 }); // ⬅️ tutup DOMContentLoaded
 
-  const loadingScreen = document.getElementById("loadingScreen");
-  if (loadingScreen) {
-    loadingScreen.style.display = "none";
-  }
 // ====== ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ ======
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
