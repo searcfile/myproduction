@@ -28,6 +28,16 @@
      ========================================================== */
 
   const ADMIN_PAGES = [
+     {
+  file: "users.html",
+  name: "Auth Users",
+  group: "main"
+},
+{
+  file: "site-management.html",
+  name: "Site Management",
+  group: "main"
+},
     {
       file: "livechat.html",
       name: "Live Chat",
