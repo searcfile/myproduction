@@ -87,7 +87,7 @@ app.post('/api/login/finish',rateLimit({windowMs:15*60_000,limit:15}),async(req,
    // Atomically reserve one attempt on this challenge.
    const challengeSnapshot = await challengeRef.once('value');
 
-if (!challengeSnapshot.exists()) {
+if (!challengeSnapshot.exists()) { 
   return fail(res, 401, 'Challenge expired or locked');
 }
 const result = await challengeRef.transaction(v => {
