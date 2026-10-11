@@ -2098,19 +2098,34 @@ async function verifyTwofa() {
 
   } catch (error) {
     console.error("2nd password error:", error);
-    showTwofaError(error.message || "Verification failed.");
 
-    // Challenge boleh luput atau sudah digunakan.
-    // Mulakan login semula untuk dapat challenge baharu.
-    document.querySelectorAll(".otp-input").forEach(
-      input => input.value = ""
-    );
+    const message = error.message || "Verification failed.";
 
-    pending2FA = null;
+    showTwofaError(message);
 
-    setTimeout(() => {
-      closeTwofaPage();
-    }, 1500);
+    document.querySelectorAll(".otp-input").forEach(input => {
+      input.value = "";
+    });
+
+    const challengeInvalid =
+      /challenge expired|challenge already used|challenge.*locked/i.test(message);
+
+    if (challengeInvalid) {
+      // Challenge tidak boleh digunakan lagi.
+      pending2FA = null;
+
+      setTimeout(() => {
+        closeTwofaPage();
+        showLoginError(
+          "password",
+          "Login session expired. Please login again."
+        );
+      }, 1500);
+    } else {
+      // Kekalkan halaman PIN untuk percubaan seterusnya
+      // selagi challenge masih sah.
+      document.querySelector(".otp-input")?.focus();
+    }
 
   } finally {
     verifyingTwofa = false;
