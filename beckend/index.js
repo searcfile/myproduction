@@ -172,5 +172,148 @@ app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
   return res.json({ok:true});
  }catch(e){console.error('Delete user',e.message);return fail(res,500,'Cannot delete user');}
 });
+/* =====================================================
+   SITE MANAGEMENT API — SUPERADMIN ONLY
+   ===================================================== */
+
+const siteIdOK = id => /^[a-z0-9_-]{1,48}$/.test(id);
+
+function validateSite(body) {
+  const name = String(body?.name || "").trim();
+  const walletGroupId = body?.walletGroupId == null ||
+    body.walletGroupId === ""
+    ? null
+    : String(body.walletGroupId).trim();
+
+  if (!name || name.length > 100) {
+    throw Error("Site name must be 1–100 characters");
+  }
+
+  if (
+    walletGroupId !== null &&
+    !/^[a-zA-Z0-9_-]{1,60}$/.test(walletGroupId)
+  ) {
+    throw Error("Invalid wallet group ID");
+  }
+
+  if (typeof body?.active !== "boolean") {
+    throw Error("Site status must be true or false");
+  }
+
+  return { name, walletGroupId, active: body.active };
+}
+
+// GET — List all sites
+app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
+  try {
+    const snap = await db.ref("sites").once("value");
+    const data = snap.val() || {};
+
+    const sites = Object.entries(data).map(([id, site]) => ({
+      id,
+      ...site
+    }));
+
+    return res.json({ ok: true, sites });
+  } catch (error) {
+    console.error("List sites:", error.message);
+    return fail(res, 500, "Cannot load sites");
+  }
+});
+
+// POST — Create site
+app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
+  try {
+    const id = String(req.body?.id || "").trim().toLowerCase();
+
+    if (!siteIdOK(id)) {
+      return fail(res, 400, "Invalid Site ID");
+    }
+
+    const data = validateSite(req.body);
+    const siteRef = db.ref(`sites/${id}`);
+
+    const result = await siteRef.transaction(
+      current => current === null
+        ? {
+            ...data,
+            createdAt: now(),
+            createdBy: req.admin.uid,
+            updatedAt: now()
+          }
+        : undefined,
+      undefined,
+      false
+    );
+
+    if (!result.committed) {
+      return fail(res, 409, "Site ID already exists");
+    }
+
+    return res.status(201).json({
+      ok: true,
+      id,
+      message: "Site created"
+    });
+  } catch (error) {
+    if (
+      error.message.startsWith("Site name") ||
+      error.message.startsWith("Invalid wallet") ||
+      error.message.startsWith("Site status")
+    ) {
+      return fail(res, 400, error.message);
+    }
+
+    console.error("Create site:", error.message);
+    return fail(res, 500, "Cannot create site");
+  }
+});
+
+// PATCH — Edit site
+app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim().toLowerCase();
+
+    if (!siteIdOK(id)) {
+      return fail(res, 400, "Invalid Site ID");
+    }
+
+    const data = validateSite(req.body);
+    const siteRef = db.ref(`sites/${id}`);
+
+    const result = await siteRef.transaction(
+      current => current === null
+        ? undefined
+        : {
+            ...current,
+            ...data,
+            updatedAt: now(),
+            updatedBy: req.admin.uid
+          },
+      undefined,
+      false
+    );
+
+    if (!result.committed) {
+      return fail(res, 404, "Site not found");
+    }
+
+    return res.json({
+      ok: true,
+      message: "Site updated"
+    });
+  } catch (error) {
+    if (
+      error.message.startsWith("Site name") ||
+      error.message.startsWith("Invalid wallet") ||
+      error.message.startsWith("Site status")
+    ) {
+      return fail(res, 400, error.message);
+    }
+
+    console.error("Update site:", error.message);
+    return fail(res, 500, "Cannot update site");
+  }
+});
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
