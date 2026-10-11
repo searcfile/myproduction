@@ -17,6 +17,15 @@ const {getAuth}=require('firebase-admin/auth');
  const ref=db.ref(`adminUsers/${SUPERADMIN_UID}`);
  const profile=(await ref.once('value')).val();
  if(!profile||profile.role!=='superadmin'||profile.active!==true||profile.email!==user.email||profile.username!=='admin33')throw Error('Superadmin profile mismatch; abort');
+ if (profile.secondPasswordEnabled !== false) {
+  throw Error(
+    'Superadmin PIN already initialized. Bootstrap cancelled.'
+  );
+}
+
+if (Buffer.byteLength(PIN_PEPPER, 'utf8') < 32) {
+  throw Error('PIN_PEPPER must be at least 32 bytes');
+}
  const salt=crypto.randomBytes(16).toString('hex');
  const hash=crypto.scryptSync(`${SUPERADMIN_UID}:${INITIAL_PIN}:${PIN_PEPPER}`,Buffer.from(salt,'hex'),64).toString('hex');
  await db.ref(`privateSecondFactors/${SUPERADMIN_UID}`).set({salt,hash,updatedAt:Date.now(),failedAttempts:0,lockedUntil:0});
