@@ -34,6 +34,7 @@ content="
     https://challenges.cloudflare.com;
   style-src 'self' 'unsafe-inline';
   connect-src 'self'
+    https://fiveg88-admin-backend-v2.onrender.com
     https://www.gstatic.com
     https://*.googleapis.com
     https://*.firebaseio.com
@@ -1343,6 +1344,7 @@ window.addEventListener("DOMContentLoaded", () => {
 let turnstileVerifiedUser = false;
 let turnstileVerifiedGoogle = false;
 let pending2FA = null;
+const ADMIN_API = "https://fiveg88-admin-backend-v2.onrender.com";
 const LOGIN_THEME_KEY = 'siteTheme';
 
 function applyLoginTheme(theme){
@@ -2046,50 +2048,74 @@ function getOtpValue(){
     .join('');
 }
 
-async function verifyTwofa(){
-  if (!pending2FA) return;
 
-  const code = getOtpValue();
+let verifyingTwofa = false;
+
+async function verifyTwofa() {
+  if (!pending2FA || verifyingTwofa) return;
+
+  const pin = getOtpValue();
   clearTwofaError();
 
-  if (!/^\d{6}$/.test(code)){
-    showTwofaError('Please enter 6 digit 2nd password.');
+  if (!/^\d{6}$/.test(pin)) {
+    showTwofaError("Please enter 6 digit 2nd password.");
     return;
   }
 
+  verifyingTwofa = true;
   showLoginLoading();
 
-  try{
-    const inputHash = await sha256Hex(code);
-
-if (inputHash !== pending2FA.acc.secondPasswordHash){
-  hideLoginLoading();
-  showTwofaError('2nd password incorrect.');
-
-  const inputs = document.querySelectorAll('.otp-input');
-  inputs[inputs.length - 1]?.focus();
-
-  return;
-}
-
-    const uname = pending2FA.uname;
-
-    await ensureGuestAuth();
-
-    await finishLogin({
-      email: `${uname}@5g88.local`,
-      displayName: uname,
-      photoURL: ""
+  try {
+    const response = await fetch(`${ADMIN_API}/api/login/finish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        challenge: pending2FA.acc.challenge,
+        pin
+      })
     });
 
-}catch(err){
-  console.error("❌ 2FA LOGIN ERROR:", err);
-  console.error("❌ CODE:", err?.code);
-  console.error("❌ MESSAGE:", err?.message);
+    const data = await response.json();
 
-  hideLoginLoading();
-  showTwofaError(err?.message || 'Failed to verify 2nd password.');
-}
+    if (!response.ok || !data.ok || !data.customToken) {
+      throw new Error(data.message || "Invalid verification.");
+    }
+
+    // Firebase Auth sebenar selepas kedua-dua langkah berjaya.
+    const result = await firebase.auth().signInWithCustomToken(
+      data.customToken
+    );
+
+    const user = result.user;
+    if (!user) throw new Error("Firebase session unavailable.");
+
+    localStorage.removeItem("gmailLogin");
+    localStorage.removeItem("useremail");
+
+    // Tidak gunakan finishLogin() lama.
+    // Admin page masih perlu auth guard sebelum akses dibenarkan.
+    window.location.replace("./index.html");
+
+  } catch (error) {
+    console.error("2nd password error:", error);
+    showTwofaError(error.message || "Verification failed.");
+
+    // Challenge boleh luput atau sudah digunakan.
+    // Mulakan login semula untuk dapat challenge baharu.
+    document.querySelectorAll(".otp-input").forEach(
+      input => input.value = ""
+    );
+
+    pending2FA = null;
+
+    setTimeout(() => {
+      closeTwofaPage();
+    }, 1500);
+
+  } finally {
+    verifyingTwofa = false;
+    hideLoginLoading();
+  }
 }
 
 function setupTwofaInputs(){
@@ -2142,80 +2168,66 @@ function setupTwofaInputs(){
 document.getElementById('username')?.addEventListener('input', clearLoginErrors);
 document.getElementById('password')?.addEventListener('input', clearLoginErrors);
 // --- LOGIN VIA REALTIME DB ---
-async function loginWithUsername(){
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
 
-  const uname = String(usernameInput.value || '').trim().toLowerCase();
-  const pass  = String(passwordInput.value || '');
+async function loginWithUsername() {
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+
+  const username = usernameInput.value.trim().toLowerCase();
+  const password = passwordInput.value;
 
   clearLoginErrors();
 
-  if (!uname){
-    showLoginError('username', 'Please fill the username.');
+  if (!username) {
+    showLoginError("username", "Please fill the username.");
     usernameInput.focus();
     return;
   }
 
-  if (!pass){
-    showLoginError('password', 'Please fill the password.');
+  if (!password) {
+    showLoginError("password", "Please fill the password.");
     passwordInput.focus();
     return;
   }
 
-  if (!turnstileVerifiedUser){
-    showLoginError('password', 'Please complete the verification.');
+  if (!turnstileVerifiedUser) {
+    showLoginError("password", "Please complete the verification.");
     return;
   }
 
-  setLoading(true,'userpass');
+  setLoading(true, "userpass");
 
-  try{
-    const snap = await db.ref(`logins/user_accounts/${uname}`).get();
+  try {
+    const response = await fetch(`${ADMIN_API}/api/login/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-    if (!snap.exists()){
-      showLoginError('username', 'Username does not exist');
-      usernameInput.focus();
-      return;
+    const data = await response.json();
+
+    if (!response.ok || !data.ok || !data.challenge) {
+      throw new Error(data.message || "Invalid credentials.");
     }
 
-    const acc = snap.val();
+    // Simpan challenge sementara, bukan password atau PIN.
+    openTwofaPage(username, {
+      challenge: data.challenge
+    });
 
-    if (acc.active === false){
-      showLoginError('username', 'This ID Already got banned.');
-      usernameInput.focus();
-      return;
-    }
+    passwordInput.value = "";
 
-    const inputHash = await sha256Hex(pass);
-
-    if (inputHash !== acc.passwordHash){
-      showLoginError('password', 'Password does not exist.');
-      passwordInput.focus();
-      return;
-    }
-
-if (!acc.secondPasswordHash){
-  showLoginError('password', '2nd password belum diset. Please contact admin.');
-  passwordInput.focus();
-  return;
+  } catch (error) {
+    console.error("Login error:", error);
+    showLoginError(
+      "password",
+      error.message || "Login failed. Please try again."
+    );
+  } finally {
+    setLoading(false, "userpass");
+  }
 }
 
-openTwofaPage(uname, acc);
-
-}catch(err){
-  console.error("❌ USERNAME LOGIN ERROR:", err);
-  console.error("❌ CODE:", err?.code);
-  console.error("❌ MESSAGE:", err?.message);
-
-  showLoginError(
-    'password',
-    err?.message || 'Login failed. Try again.'
-  );
-}finally{
-  setLoading(false,'userpass');
-}
-}
 // Optional createAccount (tetap sama)
 async function createAccount(){
   const uname = String(document.getElementById('username').value || '').trim();
