@@ -3970,11 +3970,12 @@ function renderUserInfo() {
 
   const email = String(login.email || "").trim();
 
-  let displayName = String(
-    login.name ||
-    login.username ||
-    ""
-  ).trim();
+let displayName = String(
+  login.displayName ||
+  login.name ||
+  login.username ||
+  ""
+).trim();
 
   // Username login:
   // contoh admin@5g88.local -> admin
@@ -3990,10 +3991,9 @@ function renderUserInfo() {
     displayName = email.split("@")[0];
   }
 
-  if (!displayName) {
-    displayName = "Admin";
-  }
-
+if (!displayName) {
+  displayName = "";
+}
   if (userNameText) {
     userNameText.textContent = displayName;
   }
