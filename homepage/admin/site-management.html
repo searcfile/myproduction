@@ -12,7 +12,6 @@
 "use strict";
 const BACKEND = "https://fiveg88-admin-backend-v2.onrender.com";
 const $ = id => document.getElementById(id);
-let currentAdmin = null;
 function status(message, error=false){const e=$("status");e.textContent=message;e.classList.toggle("error",error);}
 function openModal(){ $("modal").classList.add("open"); }
 function closeModal(){ $("modal").classList.remove("open"); }
@@ -45,14 +44,10 @@ async function verifySuperadmin() {
   }
 
   try {
-    await api("/api/sites");
 
-    currentAdmin = {
-      uid: user.uid,
-      role: "superadmin"
-    };
+await api("/api/sites");
 
-    return true;
+return true;
   } catch (error) {
     status("Authorization failed: " + error.message, true);
     return false;
