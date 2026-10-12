@@ -2994,23 +2994,14 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
+    const tabBar = document.getElementById("tabBar");
+    if (!tabBar) return;
 
-const tabBar = document.getElementById("tabBar");
-if (!tabBar) return;
+    tabBar.innerHTML = "";
 
-// Jangan render sebelum profil Firebase siap.
-if (!currentAdminProfile) return;
-
-
-const tabs = getTabs().filter(tab =>
-  canShowAdminPage(tab.file) &&
-  canViewAdminPage(tab.file)
+    const tabs = getTabs().filter(tab =>
+  canShowAdminPage(tab.file)
 );
-
-
-// Kosongkan hanya selepas permission tersedia.
-tabBar.innerHTML = "";
-
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -3940,13 +3931,16 @@ if (!selected.length) {
     loading = true;
 
     try {
-const firebaseAuth = getSharedAuth();
+      if (typeof auth === "undefined") {
+        throw Error("Firebase Auth is not ready.");
+      }
 
-if (!firebaseAuth) {
-  throw Error("Firebase Auth belum tersedia.");
-}
-
-const user = await waitForSharedUser(firebaseAuth);
+      const user = await new Promise(resolve => {
+        const unsubscribe = auth.onAuthStateChanged(u => {
+          unsubscribe();
+          resolve(u);
+        });
+      });
 
       if (!user) {
         throw Error("Please login again.");
@@ -3995,14 +3989,14 @@ const user = await waitForSharedUser(firebaseAuth);
     }
   }
 
-// Desktop: load sites hanya apabila pengguna klik.
-input.addEventListener("click", async () => {
-  if (!ready) {
-    await loadSites();
-  }
-
-  renderOptions();
-});
+  // Desktop: klik input asal untuk buka dropdown.
+  input.addEventListener("click", () => {
+    if (!ready) {
+      loadSites().then(() => renderOptions());
+    } else {
+      renderOptions();
+    }
+  });
 
   input.addEventListener("input", () => {
     renderOptions(input.value);
@@ -4059,6 +4053,8 @@ input.addEventListener("click", async () => {
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") closePanel();
   });
+
+  loadSites();
 }
 
 
@@ -4172,27 +4168,18 @@ if (!displayName) {
 
 async function updateHeaderUserFromFirebase() {
   try {
-  const firebaseAuth = getSharedAuth();
-  const sharedDb = getSharedDb();
+    if (typeof auth === "undefined" || typeof db === "undefined") return;
 
-  if (!firebaseAuth || !sharedDb) {
-    console.error("[Admin Profile] Firebase belum tersedia", {
-      authReady: !!firebaseAuth,
-      dbReady: !!sharedDb
+    const user = await new Promise(resolve => {
+      const unsubscribe = auth.onAuthStateChanged(u => {
+        unsubscribe();
+        resolve(u);
+      });
     });
-    return;
-  }
 
-  const user = await waitForSharedUser(firebaseAuth);
+    if (!user) return;
 
-  if (!user) {
-    console.warn("[Admin Profile] User belum login");
-    return;
-  }
-
-  const snap = await sharedDb
-    .ref("adminUsers/" + user.uid)
-    .once("value");
+    const snap = await db.ref("adminUsers/" + user.uid).once("value");
     const profile = snap.val();
 
     // Simpan profile hanya jika account masih aktif.
@@ -4236,20 +4223,14 @@ if (
     if (infoEl) infoEl.textContent = profile.username || "";
     if (button) button.title = name;
      // Refresh menu selepas profile Firebase berjaya dimuatkan.
+renderSidebarTabs();
 
-    // Bina menu selepas profil dan permission siap.
-    renderSidebarTabs();
+renderDropdown("gameLogDropdown", "gamelog");
+renderDropdown("bankResitDropdown", "bank");
+renderDropdown("gameLinksDropdown", "list");
 
-    renderDropdown("gameLogDropdown", "gamelog");
-    renderDropdown("bankResitDropdown", "bank");
-    renderDropdown("gameLinksDropdown", "list");
-
-    // Gunakan semula tetapan hide selepas menu dibina.
-    applySharedVisibility();
-
-    syncCurrentPageTab();
-    renderTabs();
-
+syncCurrentPageTab();
+renderTabs();
 
 if (initDefaultWorkspace()) {
   return;
@@ -4524,45 +4505,7 @@ sessionStorage.setItem(
      ========================================================== */
 
   let uiVisibility = {};
-function getSharedAuth() {
-  try {
-    if (
-      typeof auth !== "undefined" &&
-      auth &&
-      typeof auth.onAuthStateChanged === "function"
-    ) {
-      return auth;
-    }
-  } catch (_) {}
 
-  if (
-    window.auth &&
-    typeof window.auth.onAuthStateChanged === "function"
-  ) {
-    return window.auth;
-  }
-
-  try {
-    if (
-      window.firebase &&
-      typeof window.firebase.auth === "function" &&
-      window.firebase.apps?.length > 0
-    ) {
-      return window.firebase.auth();
-    }
-  } catch (_) {}
-
-  return null;
-}
-
-function waitForSharedUser(firebaseAuth) {
-  return new Promise((resolve, reject) => {
-    firebaseAuth.onAuthStateChanged(
-      user => resolve(user),
-      error => reject(error)
-    );
-  });
-}
 function getSharedDb() {
   try {
     if (
@@ -4599,28 +4542,37 @@ function getSharedDb() {
     "ITEM COLLECTION": "itemBtn"
   };
 
-
   function applySharedVisibility() {
     Object.entries(HEADER_FEATURE_MAP).forEach(([label, id]) => {
       const el = document.getElementById(id);
       if (el) el.style.display = isFeatureHidden(label) ? "none" : "";
     });
 
-    document.querySelectorAll(
-      "#sidebar a, #gameLogDropdown a, #bankResitDropdown a, #gameLinksDropdown a"
-    ).forEach(link => {
-      const label = String(
-        link.getAttribute("data-feature") ||
-        link.getAttribute("data-label") ||
-        link.textContent ||
-        ""
-      ).trim().toUpperCase();
+    document.querySelectorAll("#sidebar a, #gameLogDropdown a, #bankResitDropdown a, #gameLinksDropdown a")
+      .forEach(link => {
+        const label = String(
+          link.getAttribute("data-feature") ||
+          link.getAttribute("data-label") ||
+          link.textContent ||
+          ""
+        ).trim().toUpperCase();
 
-      link.style.display = isFeatureHidden(label) ? "none" : "";
+        link.style.display = isFeatureHidden(label) ? "none" : "";
+      });
+
+    const tabs = getTabs();
+    const filtered = tabs.filter(tab => {
+      const label = String(tab.name || tab.label || "").trim().toUpperCase();
+      return !isFeatureHidden(label);
     });
-    updateHeaderActiveState();
-  }
 
+    if (filtered.length !== tabs.length) {
+      saveTabs(filtered);
+      renderTabs();
+      renderSidebarTabs();
+      updateHeaderActiveState();
+    }
+  }
 
   function initUiVisibility() {
     const sharedDb = getSharedDb();
@@ -5522,7 +5474,11 @@ setupDropdown(
     initNotifications();
 
 initPasswordModals();
+
+renderTabs();
+
 updateOpenIndicators();
+
 updateHeaderActiveState();
 
     updateClock();
@@ -5532,6 +5488,11 @@ updateHeaderActiveState();
       30000
     );
 
+
+    /*
+     * Beritahu page JS bahawa
+     * shared shell sudah siap.
+     */
     document.dispatchEvent(
       new CustomEvent(
         "homepage-shared-ui-ready"
