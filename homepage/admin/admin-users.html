@@ -6,11 +6,33 @@
 <div class="notice">Create a login account in <a href="./users.html">Auth Users</a> first. Then select <b>Edit Permissions</b> here. Only Superadmin can change access.</div>
 <section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search username or UID"></div></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Role</th><th>Allowed Sites</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Checking session…</td></tr></tbody></table></div><div id="status" class="status" role="status"></div></section></main>
 <div class="modal" id="modal"><div class="dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Manage Admin Profile</h2><button class="btn small" type="button" id="closeX">✕</button></div><form id="profileForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="username">Username</label><input id="username" readonly></div><div class="field"><label for="uid">Firebase UID</label><div style="display:flex;gap:7px"><input id="uid" readonly><button type="button" class="btn small" id="copyUid">Copy</button></div></div><div class="field"><label for="displayName">Display Name</label><input id="displayName" required maxlength="80" placeholder="e.g. 5G88 Admin"></div><div class="field"><label>Role</label><input value="Site Admin" readonly></div></div><div class="section-label">Allowed Sites</div><div id="siteChoices" class="site-options"></div><p class="note">Without assigned sites, the account must not access site data.</p><div class="section-label">Module Permissions</div><div id="permissionChoices" class="perm-grid"></div><p class="note">Permissions are saved in the admin profile. Each protected page and API must enforce them server-side / in database rules.</p></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Permissions</button></div></form></div></div>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script defer src="./shared-ui.js"></script><script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../firebase.js"></script>
+  <script src="./shared-ui.js"></script>
+  <script>
 'use strict';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
-const MODULES=[['dashboard','Dashboard'],['vault','Vault'],['transaction','Transaction'],['history','History'],['notice','Notice'],['contact-manage','Contact Manage'],['notices-message','Notices Message'],['floating-image','Floating Image'],['skin-config','Skin Config'],['loading-config','Loading Config'],['welcome-popup','Welcome Popup'],['visitors','Visitors']];
+/* ==========================================================
+   AUTO MODULE PERMISSIONS FROM SHARED-UI.JS
+   ========================================================== */
+
+const SUPERADMIN_ONLY_PAGES = new Set([
+  "users.html",
+  "site-management.html",
+  "admin-users.html"
+]);
+
+const MODULES = window.getAdminPages()
+  .filter(page =>
+    !SUPERADMIN_ONLY_PAGES.has(page.file)
+  )
+  .map(page => [
+    page.file,
+    page.name
+  ]);
 const ACTIONS=['view','create','edit','delete','block'];let users=[],sites=[],editing=null;
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 async function api(path,opts={}){const user=auth.currentUser;if(!user)throw Error('Login required');const token=await user.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
