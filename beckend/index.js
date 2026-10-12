@@ -407,7 +407,22 @@ app.patch(
           return fail(res, 400, "Invalid module permissions");
         }
 
-        cleanPermissions[moduleName] = [...new Set(actions)];
+        const uniqueActions = [...new Set(actions)];
+
+if (
+  uniqueActions.some(action => action !== "view") &&
+  !uniqueActions.includes("view")
+) {
+  return fail(
+    res,
+    400,
+    "View permission is required for other actions"
+  );
+}
+
+if (uniqueActions.length > 0) {
+  cleanPermissions[moduleName] = uniqueActions;
+}
       }
 
       await db.ref(`adminUsers/${uid}`).update({
