@@ -215,7 +215,7 @@
     }
 
     const actions =
-      currentAdminProfile.permissions?.[pageFile];
+     currentAdminProfile.permissions?.[pageFile.replace(/\.html$/, "_html")];
 
     return (
       Array.isArray(actions) &&
@@ -258,7 +258,7 @@ function canViewAdminPage(file) {
   }
 
   const actions =
-    currentAdminProfile.permissions?.[pageFile];
+    currentAdminProfile.permissions?.[pageFile.replace(/\.html$/, "_html")];
 
   return (
     Array.isArray(actions) &&
