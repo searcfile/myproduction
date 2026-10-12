@@ -14,7 +14,42 @@ const MODULES=[['dashboard','Dashboard'],['vault','Vault'],['transaction','Trans
 const ACTIONS=['view','create','edit','delete','block'];let users=[],sites=[],editing=null;
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 async function api(path,opts={}){const user=auth.currentUser;if(!user)throw Error('Login required');const token=await user.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
-async function check(){const user=await new Promise(resolve=>{const unsub=auth.onAuthStateChanged(u=>{unsub();resolve(u)},()=>resolve(null))});if(!user){location.replace('./login.html');return false}const token=await user.getIdTokenResult(true);const p=(await db.ref('adminUsers/'+user.uid).once('value')).val();if(!p||p.role!=='superadmin'||p.active!==true||p.secondPasswordEnabled!==true||token.claims.secondVerified!==true||p.pinVersion!==token.claims.pinVersion){status('Superadmin access required.',true);return false}return true;}
+async function check() {
+  const user = await new Promise(resolve => {
+    const unsubscribe = auth.onAuthStateChanged(
+      u => {
+        unsubscribe();
+        resolve(u);
+      },
+      () => resolve(null)
+    );
+  });
+
+  if (!user || user.isAnonymous) {
+    location.replace("./login.html");
+    return false;
+  }
+
+  const token = await user.getIdTokenResult(true);
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    status("Please complete 2nd password verification.", true);
+    return false;
+  }
+
+  try {
+    // Backend mesti mengesahkan role Superadmin.
+    // Frontend tidak lagi membaca adminUsers secara terus.
+    await api("/api/admin-users");
+    return true;
+  } catch (error) {
+    status("Superadmin verification failed: " + error.message, true);
+    return false;
+  }
+}
 function cell(tr,value){const e=document.createElement('td');e.textContent=String(value??'—');tr.append(e);return e}
 function render(){const q=$('search').value.trim().toLowerCase();const body=$('rows');body.replaceChildren();$('total').textContent=users.length;$('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;$('siteTotal').textContent=sites.filter(s=>s.active).length;const matches=users.filter(u=>(u.username+' '+u.uid).toLowerCase().includes(q));if(!matches.length){const tr=document.createElement('tr');const td=cell(tr,'No matching admin profiles');td.colSpan=5;td.className='empty';body.append(tr);return}for(const u of matches){const tr=document.createElement('tr');const name=cell(tr,u.username);name.className='primarytext';const role=cell(tr,u.role==='superadmin'?'Superadmin':'Site Admin');role.className='role-tag';const assigned=cell(tr,u.role==='superadmin'?'All Sites':(u.siteIds||[]).map(id=>sites.find(s=>s.id===id)?.name||id).join(', ')||'Not assigned');assigned.style.maxWidth='330px';cell(tr,u.enabled?'Active':'Inactive');const td=document.createElement('td');if(u.role==='siteadmin'){const b=document.createElement('button');b.className='btn small primary';b.textContent='Edit Permissions';b.onclick=()=>openEditor(u);td.append(b)}else{td.textContent='Protected'}tr.append(td);body.append(tr)}}
 async function load(){status('Loading profiles…');try{const [a,b]=await Promise.all([api('/api/admin-users'),api('/api/sites')]);users=a.users||[];sites=b.sites||[];render();status('Loaded '+users.length+' profiles.')}catch(e){status('Cannot load: '+e.message,true)}}
