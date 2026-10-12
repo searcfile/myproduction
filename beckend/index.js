@@ -222,12 +222,11 @@ app.get('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
 });
 app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(),password=req.body?.password,pin=String(req.body?.secondPassword||''),enabled=req.body?.enabled!==false;
- const email=String(req.body?.email||'').trim().toLowerCase();
+ const email=`${username}@accounts.myproduction-v2.example`;
 const siteIds = req.body?.siteIds;
 
 if (
   !Array.isArray(siteIds) ||
-  siteIds.length === 0 ||
   siteIds.length > 20 ||
   !siteIds.every(id =>
     typeof id === "string" &&
@@ -235,7 +234,7 @@ if (
   ) ||
   new Set(siteIds).size !== siteIds.length
 ) {
-  return fail(res, 400, "Select at least one valid site");
+  return fail(res, 400, "Invalid site assignments");
 }
 
 try {
@@ -249,7 +248,7 @@ try {
   console.error("Validate assigned sites:", error.message);
   return fail(res, 503, "Cannot validate assigned sites");
 }
- if(!usernameOK(username)||!passwordOK(password)||!pinOK(pin)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return fail(res,400,'Provide username, valid email, password >=12 characters, and 6-digit PIN');
+ if(!usernameOK(username)||!passwordOK(password)||!pinOK(pin))return fail(res,400,'Provide username, password >=12 characters, and 6-digit PIN');
  let created=null;
  try{
   const indexRef=db.ref(`adminUsernameIndex/${username}`);
