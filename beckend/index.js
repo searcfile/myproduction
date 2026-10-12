@@ -50,6 +50,42 @@ async function requireAdmin(req,res,next){
  }catch(e){return fail(res,401,'Invalid or expired session');}
 }
 function superOnly(req,res,next){if(req.admin.profile.role!=='superadmin')return fail(res,403,'Superadmin only');next();}
+
+/* =====================================================
+   SITE ADMIN PERMISSION MIDDLEWARE
+   ===================================================== */
+
+function requirePermission(moduleName, action = "view") {
+  return (req, res, next) => {
+    const admin = req.admin;
+
+    if (!admin || !admin.profile) {
+      return fail(res, 401, "Authentication required");
+    }
+
+    if (admin.profile.role === "superadmin") {
+      return next();
+    }
+
+    if (admin.profile.role !== "siteadmin") {
+      return fail(res, 403, "Admin access denied");
+    }
+
+    const actions = admin.profile.permissions?.[moduleName];
+
+    if (
+      !Array.isArray(actions) ||
+      !actions.includes("show") ||
+      !actions.includes("view") ||
+      !actions.includes(action)
+    ) {
+      return fail(res, 403, "Permission denied");
+    }
+
+    next();
+  };
+}
+
 function publicUser(u, p) {
   return {
     uid: u.uid,
