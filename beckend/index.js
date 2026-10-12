@@ -326,23 +326,31 @@ app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
    ADMIN PROFILE PERMISSIONS — SUPERADMIN ONLY
    ===================================================== */
 
-const ALLOWED_MODULES = new Set([
-  "dashboard",
-  "vault",
-  "transaction",
-  "history",
-  "notice",
-  "contact-manage",
-  "notices-message",
-  "floating-image",
-  "skin-config",
-  "loading-config",
-  "welcome-popup",
-  "visitors"
+/* =====================================================
+   ADMIN MODULE VALIDATION
+   ===================================================== */
+
+const SUPERADMIN_ONLY_PAGES = new Set([
+  "users.html",
+  "site-management.html",
+  "admin-users.html"
 ]);
 
+function isAllowedModule(moduleName) {
+  return (
+    typeof moduleName === "string" &&
+    /^[a-z0-9_-]{1,80}\.html$/.test(moduleName) &&
+    !SUPERADMIN_ONLY_PAGES.has(moduleName)
+  );
+}
+
 const ALLOWED_ACTIONS = new Set([
-  "view", "create", "edit", "delete", "block"
+  "show",
+  "view",
+  "create",
+  "edit",
+  "delete",
+  "block"
 ]);
 
 app.patch(
@@ -400,7 +408,7 @@ app.patch(
 
       for (const [moduleName, actions] of Object.entries(permissions)) {
         if (
-          !ALLOWED_MODULES.has(moduleName) ||
+          !isAllowedModule(moduleName) ||
           !Array.isArray(actions) ||
           !actions.every(action => ALLOWED_ACTIONS.has(action))
         ) {
@@ -409,14 +417,15 @@ app.patch(
 
         const uniqueActions = [...new Set(actions)];
 
-if (
-  uniqueActions.some(action => action !== "view") &&
-  !uniqueActions.includes("view")
-) {
+const requiresView = uniqueActions.some(action =>
+  ["create", "edit", "delete", "block"].includes(action)
+);
+
+if (requiresView && !uniqueActions.includes("view")) {
   return fail(
     res,
     400,
-    "View permission is required for other actions"
+    "View permission is required for Create, Edit, Delete or Block"
   );
 }
 
