@@ -466,7 +466,8 @@ if (requiresView && !uniqueActions.includes("view")) {
 }
 
 if (uniqueActions.length > 0) {
-  cleanPermissions[moduleName] = uniqueActions;
+  const firebaseKey = moduleName.replace(/\.html$/, "_html");
+cleanPermissions[firebaseKey] = uniqueActions;
 }
       }
 
