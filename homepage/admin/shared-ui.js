@@ -228,6 +228,44 @@
       canShowAdminPage(page.file)
     );
   }
+
+function canViewAdminPage(file) {
+  const pageFile = String(file || "")
+    .split(/[?#]/)[0]
+    .split("/")
+    .pop()
+    .trim()
+    .toLowerCase();
+
+  if (!pageFile) return false;
+
+  if (!ADMIN_PAGES.some(page => page.file === pageFile)) {
+    return false;
+  }
+
+  if (!currentAdminProfile) return false;
+
+  if (currentAdminProfile.role === "superadmin") {
+    return true;
+  }
+
+  if (currentAdminProfile.role !== "siteadmin") {
+    return false;
+  }
+
+  if (SUPERADMIN_ONLY_PAGES.has(pageFile)) {
+    return false;
+  }
+
+  const actions =
+    currentAdminProfile.permissions?.[pageFile];
+
+  return (
+    Array.isArray(actions) &&
+    actions.includes("view")
+  );
+}
+
   const DEFAULT_ADMIN_TAB = {
     file: "livechat.html",
     name: "Live Chat",
