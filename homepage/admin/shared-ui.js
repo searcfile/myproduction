@@ -2994,14 +2994,16 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
-    const tabBar = document.getElementById("tabBar");
-    if (!tabBar) return;
+const tabBar = document.getElementById("tabBar");
+if (!tabBar) return;
 
-    tabBar.innerHTML = "";
+if (!currentAdminProfile) return;
 
-    const tabs = getTabs().filter(tab =>
+const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
 );
+
+tabBar.innerHTML = "";
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -5474,11 +5476,7 @@ setupDropdown(
     initNotifications();
 
 initPasswordModals();
-
-renderTabs();
-
 updateOpenIndicators();
-
 updateHeaderActiveState();
 
     updateClock();
@@ -5488,11 +5486,6 @@ updateHeaderActiveState();
       30000
     );
 
-
-    /*
-     * Beritahu page JS bahawa
-     * shared shell sudah siap.
-     */
     document.dispatchEvent(
       new CustomEvent(
         "homepage-shared-ui-ready"
