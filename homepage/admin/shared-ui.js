@@ -3001,9 +3001,12 @@ if (!tabBar) return;
 // Jangan render sebelum profil Firebase siap.
 if (!currentAdminProfile) return;
 
+
 const tabs = getTabs().filter(tab =>
-  canShowAdminPage(tab.file)
+  canShowAdminPage(tab.file) &&
+  canViewAdminPage(tab.file)
 );
+
 
 // Kosongkan hanya selepas permission tersedia.
 tabBar.innerHTML = "";
@@ -4229,14 +4232,20 @@ if (
     if (infoEl) infoEl.textContent = profile.username || "";
     if (button) button.title = name;
      // Refresh menu selepas profile Firebase berjaya dimuatkan.
-renderSidebarTabs();
 
-renderDropdown("gameLogDropdown", "gamelog");
-renderDropdown("bankResitDropdown", "bank");
-renderDropdown("gameLinksDropdown", "list");
+    // Bina menu selepas profil dan permission siap.
+    renderSidebarTabs();
 
-syncCurrentPageTab();
-renderTabs();
+    renderDropdown("gameLogDropdown", "gamelog");
+    renderDropdown("bankResitDropdown", "bank");
+    renderDropdown("gameLinksDropdown", "list");
+
+    // Gunakan semula tetapan hide selepas menu dibina.
+    applySharedVisibility();
+
+    syncCurrentPageTab();
+    renderTabs();
+
 
 if (initDefaultWorkspace()) {
   return;
@@ -4567,13 +4576,7 @@ function getSharedDb() {
 
       link.style.display = isFeatureHidden(label) ? "none" : "";
     });
-
-    // Jangan buang tab daripada storage.
-    if (currentAdminProfile) {
-      renderTabs();
-      renderSidebarTabs();
-      updateHeaderActiveState();
-    }
+    updateHeaderActiveState();
   }
 
 
