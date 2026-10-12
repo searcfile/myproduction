@@ -210,7 +210,7 @@ function stopLivechatTitleAlert(resetUnread = false) {
     await stopSingleSession();
     if (!ownerId) return;
 
-    const storageKey = "5g88.singleSession." + keyify(ownerId);
+const storageKey = "5g88.singleSession." + String(ownerId).trim();
 
 let token = sessionStorage.getItem(storageKey);
 
@@ -218,8 +218,13 @@ if (!token) {
   token = makeToken();
   sessionStorage.setItem(storageKey, token);
 }
-    const key = keyify(ownerId);
-    const sessRef = db.ref(`${SESS_ROOT}/${key}`);
+const key = String(ownerId || "").trim();
+
+if (!auth.currentUser || auth.currentUser.uid !== key) {
+  throw new Error("Single-session UID mismatch");
+}
+
+const sessRef = db.ref(`${SESS_ROOT}/${key}`);
 
 const result = await sessRef.transaction(current => {
   if (current?.token === token) {
@@ -724,7 +729,7 @@ try {
 
   // ✅ 3) Single-Session
   try {
-    const ownerId = window.getSessionOwnerFrom(sessionData);
+const ownerId = adminSession.uid;
 await window.startSingleSession(ownerId, () => {
   try { localStorage.removeItem('gmailLogin'); } catch (_){}
   try { localStorage.removeItem('useremail'); } catch (_){}
