@@ -71,7 +71,8 @@ function requirePermission(moduleName, action = "view") {
       return fail(res, 403, "Admin access denied");
     }
 
-    const actions = admin.profile.permissions?.[moduleName];
+const firebaseKey = moduleName.replace(/\.html$/, "_html");
+const actions = admin.profile.permissions?.[firebaseKey];
 
     if (
       !Array.isArray(actions) ||
@@ -93,7 +94,12 @@ function publicUser(u, p) {
     displayName: p.displayName || p.username,
     role: p.role,
     siteIds: Array.isArray(p.siteIds) ? p.siteIds : [],
-    permissions: p.permissions || {},
+    permissions: Object.fromEntries(
+  Object.entries(p.permissions || {}).map(([key, actions]) => [
+    key.replace(/_html$/, ".html"),
+    actions
+  ])
+),
     enabled: p.active === true && !u.disabled,
     createdAt: p.createdAt || null,
     updatedAt: p.updatedAt || null
