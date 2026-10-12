@@ -318,14 +318,14 @@ async function stopSingleSession() {
 
 (function(){
   // === SETTING MUDAH ===
-  const DEFAULT_MINUTES = 10080; // ganti default di sini (contoh: 20)
+const DEFAULT_MINUTES = 1440; // 24 jam
   const LOGIN_URL = "./login.html";
   const STORAGE_EXPIRE = "autoLogout.expireAt";
   const STORAGE_MIN = "autoLogout.minutes"; // kalau di-set, override DEFAULT_MINUTES
   const CHANNEL = "autoLogout-5g88";
   const TICK = 5000; // cek tiap 5 detik
   // (opsional) logout absolut walau aktif bergerak (null = mati)
-  const ABSOLUTE_MAX_MS = null; // contoh: 8*60*60*1000 (8 jam)
+const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
 
   let bc = null, checkTimer = null, expireAt = null, absoluteExpireAt = null;
 
