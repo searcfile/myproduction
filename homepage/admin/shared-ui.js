@@ -626,8 +626,14 @@ function syncTabsToFirebase(tabs) {
   .pop()
   .toLowerCase();
 
-if (!canShowAdminPage(targetFile)) {
-  console.warn("[Permission] Navigation blocked:", targetFile);
+if (
+  !canShowAdminPage(targetFile) ||
+  !canViewAdminPage(targetFile)
+) {
+  console.warn(
+    "[Permission] Navigation blocked:",
+    targetFile
+  );
   return;
 }
 
@@ -682,8 +688,14 @@ if (!canShowAdminPage(targetFile)) {
   .pop()
   .toLowerCase();
 
-if (!canShowAdminPage(targetFile)) {
-  console.warn("[Permission] Add tab blocked:", targetFile);
+if (
+  !canShowAdminPage(targetFile) ||
+  !canViewAdminPage(targetFile)
+) {
+  console.warn(
+    "[Permission] Add tab blocked:",
+    targetFile
+  );
   return;
 }
 
@@ -775,12 +787,26 @@ navigateToTab(tab);
       return;
     }
 
+const allowedTabs = tabs.filter(tab =>
+  canShowAdminPage(tab.file) &&
+  canViewAdminPage(tab.file)
+);
+
+if (!allowedTabs.length) {
+  localStorage.removeItem(getActiveTabStorageKey());
+
+  sessionStorage.setItem(
+    EMPTY_WORKSPACE_ONCE_KEY,
+    "1"
+  );
+
+  window.location.replace("./index.html");
+  return;
+}
+
 const nextTab =
-  tabs[
-    Math.min(
-      index,
-      tabs.length - 1
-    )
+  allowedTabs[
+    Math.min(index, allowedTabs.length - 1)
   ];
 
 setActiveFile(nextTab.file);
@@ -804,10 +830,10 @@ function initDefaultWorkspace() {
     return false;
   }
 
-  // Hanya restore tab yang dibenarkan.
-  const allowedTabs = getTabs().filter(tab =>
-    canShowAdminPage(tab.file)
-  );
+const allowedTabs = getTabs().filter(tab =>
+  canShowAdminPage(tab.file) &&
+  canViewAdminPage(tab.file)
+);
 
   const lastFile = getActiveFile();
 
@@ -819,8 +845,11 @@ function initDefaultWorkspace() {
     targetTab = allowedTabs[allowedTabs.length - 1];
   }
 
-  // Live Chat kekal default jika dibenarkan.
-  if (!targetTab && canShowAdminPage(DEFAULT_ADMIN_TAB.file)) {
+if (
+  !targetTab &&
+  canShowAdminPage(DEFAULT_ADMIN_TAB.file) &&
+  canViewAdminPage(DEFAULT_ADMIN_TAB.file)
+) {
     targetTab = { ...DEFAULT_ADMIN_TAB };
 
     const tabs = getTabs();
@@ -853,8 +882,11 @@ function initDefaultWorkspace() {
      
     // Jangan simpan halaman yang tidak dibenarkan.
     if (
-      currentFile !== "index.html" &&
-      !canShowAdminPage(currentFile)
+currentFile !== "index.html" &&
+(
+  !canShowAdminPage(currentFile) ||
+  !canViewAdminPage(currentFile)
+)
     ) {
       console.warn(
         "[Permission] Current page not allowed:",
@@ -4161,7 +4193,24 @@ currentAdminProfile = {
   role: String(profile.role || "").trim().toLowerCase(),
   permissions: profile.permissions || {}
 };
+// Semak akses URL selepas profile Firebase dimuatkan.
+const currentPage = getCurrentFile();
 
+if (
+  currentPage !== "index.html" &&
+  (
+    !canShowAdminPage(currentPage) ||
+    !canViewAdminPage(currentPage)
+  )
+) {
+  console.warn(
+    "[Permission] Direct page access denied:",
+    currentPage
+  );
+
+  window.location.replace("./index.html");
+  return;
+}
     const name = String(
       profile.displayName || profile.username || "Admin"
     ).trim();
