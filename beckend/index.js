@@ -311,6 +311,113 @@ app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
  }catch(e){console.error('Delete user',e.message);return fail(res,500,'Cannot delete user');}
 });
 /* =====================================================
+   ADMIN PROFILE PERMISSIONS — SUPERADMIN ONLY
+   ===================================================== */
+
+const ALLOWED_MODULES = new Set([
+  "dashboard",
+  "vault",
+  "transaction",
+  "history",
+  "notice",
+  "contact-manage",
+  "notices-message",
+  "floating-image",
+  "skin-config",
+  "loading-config",
+  "welcome-popup",
+  "visitors"
+]);
+
+const ALLOWED_ACTIONS = new Set([
+  "view", "create", "edit", "delete", "block"
+]);
+
+app.patch(
+  "/api/admin-profiles/:uid",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const uid = req.params.uid;
+      const profile = await adminProfile(uid);
+
+      if (!profile || profile.role !== "siteadmin") {
+        return fail(res, 403, "Only Site Admin can be edited");
+      }
+
+      const { displayName, siteIds, permissions } = req.body || {};
+
+      if (
+        typeof displayName !== "string" ||
+        !displayName.trim() ||
+        displayName.trim().length > 80
+      ) {
+        return fail(res, 400, "Invalid display name");
+      }
+
+      if (
+        !Array.isArray(siteIds) ||
+        siteIds.length > 20 ||
+        new Set(siteIds).size !== siteIds.length ||
+        !siteIds.every(id =>
+          typeof id === "string" &&
+          /^[a-z0-9_-]{1,48}$/.test(id)
+        )
+      ) {
+        return fail(res, 400, "Invalid site assignments");
+      }
+
+      const siteData = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      if (!siteIds.every(id => siteData[id]?.active === true)) {
+        return fail(res, 400, "Site missing or inactive");
+      }
+
+      if (
+        !permissions ||
+        typeof permissions !== "object" ||
+        Array.isArray(permissions)
+      ) {
+        return fail(res, 400, "Invalid permissions");
+      }
+
+      const cleanPermissions = {};
+
+      for (const [moduleName, actions] of Object.entries(permissions)) {
+        if (
+          !ALLOWED_MODULES.has(moduleName) ||
+          !Array.isArray(actions) ||
+          !actions.every(action => ALLOWED_ACTIONS.has(action))
+        ) {
+          return fail(res, 400, "Invalid module permissions");
+        }
+
+        cleanPermissions[moduleName] = [...new Set(actions)];
+      }
+
+      await db.ref(`adminUsers/${uid}`).update({
+        displayName: displayName.trim(),
+        siteIds,
+        permissions: cleanPermissions,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({
+        ok: true,
+        message: "Admin permissions updated"
+      });
+
+    } catch (error) {
+      console.error("Update admin permissions:", error.message);
+      return fail(res, 500, "Cannot update permissions");
+    }
+  }
+);
+/* =====================================================
    SITE MANAGEMENT API — SUPERADMIN ONLY
    ===================================================== */
 
