@@ -26,7 +26,10 @@ app.use('/api',rateLimit({windowMs:60_000,limit:45,standardHeaders:'draft-8',leg
 app.get('/health',(req,res)=>res.json({ok:true,service:'5g88-admin-backend'}));
 const usernameOK = s => /^[a-z0-9._-]{3,40}$/.test(s);
 const pinOK = s => /^\d{6}$/.test(s);
-const passwordOK = s => typeof s==='string' && s.length>=12 && s.length<=128;
+const passwordOK = s =>
+  typeof s === "string" &&
+  s.length >= 6 &&
+  s.length <= 128;
 const now = () => Date.now();
 const fail=(res,code,message)=>res.status(code).json({ok:false,message});
 function pinHash(uid,pin,salt){return crypto.scryptSync(`${uid}:${pin}:${process.env.PIN_PEPPER}`,Buffer.from(salt,'hex'),64).toString('hex');}
@@ -249,7 +252,13 @@ try {
   console.error("Validate assigned sites:", error.message);
   return fail(res, 503, "Cannot validate assigned sites");
 }
- if(!usernameOK(username)||!passwordOK(password)||!pinOK(pin))return fail(res,400,'Provide username, password >=12 characters, and 6-digit PIN');
+if (!usernameOK(username) || !passwordOK(password) || !pinOK(pin)) {
+  return fail(
+    res,
+    400,
+    "Provide username, password >=6 characters, and 6-digit PIN"
+  );
+}
  let created=null;
  try{
   const indexRef=db.ref(`adminUsernameIndex/${username}`);
@@ -287,7 +296,9 @@ app.patch('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
    updates.active=req.body.enabled;authUpdates.disabled=!req.body.enabled;
   }
   if(Object.hasOwn(req.body,'password')){
-   if(!passwordOK(req.body.password))return fail(res,400,'Password must have at least 12 characters');
+if (!passwordOK(req.body.password)) {
+  return fail(res, 400, "Password must have at least 6 characters");
+}
    authUpdates.password=req.body.password;
   }
   if(Object.hasOwn(req.body,'secondPassword')){
