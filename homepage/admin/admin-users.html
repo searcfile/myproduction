@@ -1,7 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Admin Users · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Admin Users · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./new-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"><style>
 .admin-dialog{width:min(820px,100%)}.section-label{font-size:12px;color:#93a8c5;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px}.note{color:#9cb0c8;font-size:12px}.role-tag{color:#8db9ff;font-weight:650}
 
-/* Tabbed permission editor — inspired by previous admin design */
+/* Module tabs remain as before; fields use NewUI components */
 .admin-dialog{width:min(1080px,calc(100vw - 24px))}
 .permission-module-tabs{display:flex;overflow-x:auto;overflow-y:hidden;margin-top:8px;scrollbar-width:none;gap:0}
 .permission-module-tabs::-webkit-scrollbar{display:none}
@@ -15,30 +15,25 @@
 .permission-chip-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .permission-chip-field{min-width:0}
 .permission-chip-field>label{display:block;margin-bottom:6px;color:#9cb0c8;font-size:12px}
-.permission-chip-host{min-height:34px;border:1px solid #344158;border-radius:6px;background:#151d2a;padding:4px 6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
-.permission-chip{display:inline-flex;align-items:center;gap:4px;border-radius:4px;padding:4px 7px;background:#293341;color:#e8f0fa;font-size:12px;line-height:1.15}
-.permission-chip-remove{border:0;background:none;color:#a9b8ca;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
-.permission-chip-remove:hover{color:white}
-.permission-chip-picker{position:relative;min-width:75px;flex:1 0 75px}
-.permission-chip-picker>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:24px;color:#aabbd0;font-size:12px;gap:8px}
-.permission-chip-picker>summary::-webkit-details-marker{display:none}
-.permission-chip-picker>summary::after{content:'⌄';color:#aabbd0}
-.permission-chip-menu{position:absolute;z-index:20;top:calc(100% + 6px);left:0;width:min(280px,75vw);max-height:240px;overflow-y:auto;border:1px solid #44556c;border-radius:7px;padding:5px;background:#1d2939;box-shadow:0 10px 25px #0008}
-.permission-chip-option{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:4px;color:#e5edf7;font-size:12px;cursor:pointer}
-.permission-chip-option:hover{background:#304259}
-.permission-chip-option input{accent-color:#347dff}
+.ui-chip-field{min-width:0;width:100%}
+.ui-chip-field .shared-chip-dropdown{width:100%}
+.ui-chip-field .shared-chip-dropdown-trigger{min-height:40px}
+.ui-readonly-chips .shared-chip-dropdown-trigger{pointer-events:none;cursor:default}
+.ui-readonly-chips .shared-chip-dropdown-icon-btn{display:none}
+.ui-readonly-chips .shared-chip-dropdown-trigger{padding-right:6px}
+#siteChoices{max-width:100%}
 @media(max-width:650px){.permission-chip-grid{grid-template-columns:1fr}.admin-dialog{width:calc(100vw - 16px)}}
 </style></head><body>
 <main class="workspace"><div class="page-top"><div><div class="eyebrow">Superadmin / Access control</div><h1>Admin Users</h1><p class="subtitle">Assign existing usernames to sites and configure module permissions.</p></div><button id="refresh" class="btn">↻ Refresh</button></div>
 <div class="stats"><div class="card stat"><small>Total admin profiles</small><strong id="total">—</strong></div><div class="card stat"><small>Site Admins</small><strong id="siteCount">—</strong></div><div class="card stat"><small>Active sites</small><strong id="siteTotal">—</strong></div></div>
 <div class="notice">Create a login account in <a href="./users.html">Auth Users</a> first. Then select <b>Edit Permissions</b> here. Only Superadmin can change access.</div>
-<section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search username or UID"></div></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Role</th><th>Allowed Sites</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Checking session…</td></tr></tbody></table></div><div id="status" class="status" role="status"></div></section></main>
-<div class="modal" id="modal"><div class="dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Manage Admin Profile</h2><button class="btn small" type="button" id="closeX">✕</button></div><form id="profileForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="username">Username</label><input id="username" readonly></div><div class="field"><label for="uid">Firebase UID</label><div style="display:flex;gap:7px"><input id="uid" readonly><button type="button" class="btn small" id="copyUid">Copy</button></div></div><div class="field"><label for="displayName">Display Name</label><input id="displayName" required maxlength="80" placeholder="e.g. 5G88 Admin"></div><div class="field"><label>Role</label><input value="Site Admin" readonly></div></div><div class="section-label">Allowed Sites</div><div id="siteChoices" class="site-options"></div><p class="note">Without assigned sites, the account must not access site data.</p><div class="section-label">Module Permissions</div><div class="permission-module-tabs" id="permissionTabs" role="tablist" aria-label="Module permissions"></div><div class="permission-panel" id="permissionPanel"><div class="permission-module-head"><strong id="permissionModuleTitle"></strong><span>Control module access and actions.</span></div><div class="permission-chip-grid"><div class="permission-chip-field"><label>Available Functions</label><div class="permission-chip-host" id="permissionAvailable"></div></div><div class="permission-chip-field"><label>Given Permissions</label><div class="permission-chip-host" id="permissionGiven"></div></div></div></div><p class="note">Permissions are saved in the admin profile. Each protected page and API must enforce them server-side / in database rules.</p></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Permissions</button></div></form></div></div>
+<section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" data-new-ui-input data-ui="search" placeholder="Search username or UID"></div></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Role</th><th>Allowed Sites</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Checking session…</td></tr></tbody></table></div><div id="status" class="status" role="status"></div></section></main>
+<div class="modal" id="modal"><div class="dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Manage Admin Profile</h2><button class="btn small" type="button" id="closeX">✕</button></div><form id="profileForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="username">Username</label><input id="username" data-new-ui-input readonly></div><div class="field"><label for="uid">Firebase UID</label><div style="display:flex;gap:7px"><input id="uid" data-new-ui-input readonly><button type="button" class="btn small" id="copyUid">Copy</button></div></div><div class="field"><label for="displayName">Display Name</label><input id="displayName" data-new-ui-input required maxlength="80" placeholder="e.g. 5G88 Admin"></div><div class="field"><label>Role</label><input value="Site Admin" data-new-ui-input readonly></div></div><div class="section-label">Allowed Sites</div><div id="siteChoices" class="ui-chip-field"></div><p class="note">Without assigned sites, the account must not access site data.</p><div class="section-label">Module Permissions</div><div class="permission-module-tabs" id="permissionTabs" role="tablist" aria-label="Module permissions"></div><div class="permission-panel" id="permissionPanel"><div class="permission-module-head"><strong id="permissionModuleTitle"></strong><span>Control module access and actions.</span></div><div class="permission-chip-grid"><div class="permission-chip-field"><label>Available Functions</label><div class="ui-chip-field ui-readonly-chips" id="permissionAvailable"></div></div><div class="permission-chip-field"><label>Given Permissions</label><div class="ui-chip-field" id="permissionGiven"></div></div></div></div><p class="note">Permissions are saved in the admin profile. Each protected page and API must enforce them server-side / in database rules.</p></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Permissions</button></div></form></div></div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="../firebase.js"></script>
-  <script src="./shared-ui.js"></script>
+  <script src="./shared-ui.js"></script><script src="./new-ui.js"></script>
   <script>
 'use strict';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
@@ -112,10 +107,15 @@ function renderPermissionTabs() {
     tabs.append(button);
   }
 }
+let siteChipApi = null;
+let availableChipApi = null;
+let givenChipApi = null;
 function renderPermissionPanel() {
   const key = activePermissionModule;
   const availableHost = $('permissionAvailable');
   const givenHost = $('permissionGiven');
+  if (availableChipApi) { availableChipApi.destroy(); availableChipApi = null; }
+  if (givenChipApi) { givenChipApi.destroy(); givenChipApi = null; }
   availableHost.replaceChildren();
   givenHost.replaceChildren();
   if (!key) { $('permissionModuleTitle').textContent = 'No modules'; return; }
@@ -123,51 +123,14 @@ function renderPermissionPanel() {
   $('permissionModuleTitle').textContent = info?.[1] || key;
   const allowed = moduleActions(key);
   const selected = permissionDraft[key] || new Set();
-  for (const action of allowed) {
-    const chip = document.createElement('span');
-    chip.className = 'permission-chip';
-    chip.textContent = permissionLabel(action);
-    availableHost.append(chip);
-  }
-  for (const action of allowed) {
-    if (!selected.has(action)) continue;
-    const chip = document.createElement('span');
-    chip.className = 'permission-chip';
-    const name = document.createElement('span');
-    name.textContent = permissionLabel(action);
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'permission-chip-remove';
-    remove.textContent = '×';
-    remove.setAttribute('aria-label', 'Remove ' + permissionLabel(action));
-    remove.onclick = () => { selected.delete(action); renderPermissionPanel(); };
-    chip.append(name, remove);
-    givenHost.append(chip);
-  }
-  const picker = document.createElement('details');
-  picker.className = 'permission-chip-picker';
-  const summary = document.createElement('summary');
-  summary.textContent = selected.size ? 'Add / change' : 'Select Permissions';
-  const menu = document.createElement('div');
-  menu.className = 'permission-chip-menu';
-  for (const action of allowed) {
-    const option = document.createElement('label');
-    option.className = 'permission-chip-option';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = selected.has(action);
-    checkbox.onchange = () => {
-      if (checkbox.checked) selected.add(action);
-      else selected.delete(action);
-      renderPermissionPanel();
-    };
-    const name = document.createElement('span');
-    name.textContent = permissionLabel(action);
-    option.append(checkbox, name);
-    menu.append(option);
-  }
-  picker.append(summary, menu);
-  givenHost.append(picker);
+  const choices = allowed.map(action => ({value:action,label:permissionLabel(action)}));
+  availableChipApi = NewUI.chips(availableHost, {
+    placeholder:'Available Functions', options:choices, value:allowed
+  });
+  givenChipApi = NewUI.chips(givenHost, {
+    placeholder:'Select Permissions', options:choices, value:[...selected],
+    onChange(values) { permissionDraft[key] = new Set(values); }
+  });
 }
 function initializePermissionEditor(permissions = {}) {
   permissionDraft = {};
@@ -229,24 +192,21 @@ function openEditor(u) {
   $('uid').value = u.uid;
   $('displayName').value = u.displayName || u.username;
   const siteBox = $('siteChoices');
+  if (siteChipApi) { siteChipApi.destroy(); siteChipApi = null; }
   siteBox.replaceChildren();
-  for (const site of sites.filter(s => s.active || (u.siteIds || []).includes(s.id))) {
-    const label = document.createElement('label');
-    label.className = 'site-option';
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.value = site.id;
-    box.name = 'allowedSite';
-    box.checked = (u.siteIds || []).includes(site.id);
-    box.disabled = !site.active;
-    label.append(box, document.createTextNode(site.name + ' (' + site.id + ')' + (site.active ? '' : ' · inactive')));
-    siteBox.append(label);
-  }
-  if (!siteBox.children.length) siteBox.textContent = 'No sites available. Add sites in Site Management first.';
+  const visibleSites = sites.filter(s => s.active || (u.siteIds || []).includes(s.id));
+  siteChipApi = NewUI.chips(siteBox, {
+    placeholder: visibleSites.length ? 'Select Allowed Sites' : 'No sites available',
+    options: visibleSites.map(s => ({
+      value:s.id,
+      label:s.name + ' (' + s.id + ')' + (s.active ? '' : ' · inactive')
+    })),
+    value:(u.siteIds || []).filter(id => visibleSites.some(s => s.id === id))
+  });
   initializePermissionEditor(u.permissions || {});
   $('modal').classList.add('open');
 }
-$('profileForm').onsubmit=async e=>{e.preventDefault();if(!editing)return;const save=$('save');save.disabled=true;try{const siteIds=[...document.querySelectorAll('input[name="allowedSite"]:checked')].map(x=>x.value);
+$('profileForm').onsubmit=async e=>{e.preventDefault();if(!editing)return;const save=$('save');save.disabled=true;try{const siteIds=(siteChipApi?.getValue() || []).filter(id => sites.some(s => s.id === id && s.active));
 if (siteIds.length === 0) {
   throw Error("Please assign at least one active site.");
 }
