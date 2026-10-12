@@ -3623,12 +3623,21 @@ function setupHeaderSearch() {
       site => selectedIds.includes(site.id)
     );
 
-    if (!selected.length) {
-      input.value = "";
-      input.placeholder = "Select Site";
-      input.title = "";
-      return;
-    }
+if (!selected.length) {
+  input.value = "";
+  input.placeholder = "Select Site";
+  input.title = "";
+  mobileInput.placeholder = "Select Site";
+
+  const more = document.getElementById("headerSelectedSiteMore");
+  if (more) {
+    more.hidden = true;
+    more.textContent = "";
+    more.title = "";
+  }
+
+  return;
+}
 
     // Kekalkan input asal: paparkan site pertama.
     input.value = selected[0].name;
@@ -3998,7 +4007,39 @@ function renderUserInfo() {
   }
 }
 
+async function updateHeaderUserFromFirebase() {
+  try {
+    if (typeof auth === "undefined" || typeof db === "undefined") return;
 
+    const user = await new Promise(resolve => {
+      const unsubscribe = auth.onAuthStateChanged(u => {
+        unsubscribe();
+        resolve(u);
+      });
+    });
+
+    if (!user) return;
+
+    const snap = await db.ref("adminUsers/" + user.uid).once("value");
+    const profile = snap.val();
+
+    if (!profile || profile.active !== true) return;
+
+    const name = String(
+      profile.displayName || profile.username || "Admin"
+    ).trim();
+
+    const nameEl = document.getElementById("userNameText");
+    const infoEl = document.getElementById("userEmail");
+    const button = document.getElementById("userName");
+
+    if (nameEl) nameEl.textContent = name;
+    if (infoEl) infoEl.textContent = profile.username || "";
+    if (button) button.title = name;
+  } catch (error) {
+    console.warn("[Header User]", error);
+  }
+}
   /* ==========================================================
      CLOCK
      ========================================================== */
@@ -5233,7 +5274,7 @@ setupDropdown(
     applyTheme();
 
     renderUserInfo();
-
+    updateHeaderUserFromFirebase(); 
     initUiVisibility();
 
     initNotifications();
