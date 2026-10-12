@@ -111,7 +111,12 @@ for (const action of allowedActions) {
   box.dataset.module = key;
   box.dataset.action = action;
 
-  box.checked = (u.permissions?.[key] || []).includes(action);
+const savedActions =
+  u.permissions?.[key] ||
+  u.permissions?.[key.replace(/\.html$/, "_html")] ||
+  [];
+
+box.checked = savedActions.includes(action);
 
   label.append(
     box,
