@@ -3940,16 +3940,23 @@ if (!selected.length) {
     loading = true;
 
     try {
-      if (typeof auth === "undefined") {
-        throw Error("Firebase Auth is not ready.");
-      }
+const firebaseAuth =
+  typeof auth !== "undefined"
+    ? auth
+    : window.auth;
 
-      const user = await new Promise(resolve => {
-        const unsubscribe = auth.onAuthStateChanged(u => {
-          unsubscribe();
-          resolve(u);
-        });
-      });
+if (
+  !firebaseAuth ||
+  typeof firebaseAuth.onAuthStateChanged !== "function"
+) {
+  throw Error("Firebase Auth is not ready.");
+}
+
+const user = await new Promise(resolve => {
+  const unsubscribe = firebaseAuth.onAuthStateChanged(u => {
+    resolve(u);
+  });
+});
 
       if (!user) {
         throw Error("Please login again.");
@@ -3998,14 +4005,14 @@ if (!selected.length) {
     }
   }
 
-  // Desktop: klik input asal untuk buka dropdown.
-  input.addEventListener("click", () => {
-    if (!ready) {
-      loadSites().then(() => renderOptions());
-    } else {
-      renderOptions();
-    }
-  });
+// Desktop: load sites hanya apabila pengguna klik.
+input.addEventListener("click", async () => {
+  if (!ready) {
+    await loadSites();
+  }
+
+  renderOptions();
+});
 
   input.addEventListener("input", () => {
     renderOptions(input.value);
@@ -4062,8 +4069,6 @@ if (!selected.length) {
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") closePanel();
   });
-
-  loadSites();
 }
 
 
