@@ -2994,16 +2994,20 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
+
 const tabBar = document.getElementById("tabBar");
 if (!tabBar) return;
 
+// Jangan render sebelum profil Firebase siap.
 if (!currentAdminProfile) return;
 
 const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
 );
 
+// Kosongkan hanya selepas permission tersedia.
 tabBar.innerHTML = "";
+
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -4544,37 +4548,34 @@ function getSharedDb() {
     "ITEM COLLECTION": "itemBtn"
   };
 
+
   function applySharedVisibility() {
     Object.entries(HEADER_FEATURE_MAP).forEach(([label, id]) => {
       const el = document.getElementById(id);
       if (el) el.style.display = isFeatureHidden(label) ? "none" : "";
     });
 
-    document.querySelectorAll("#sidebar a, #gameLogDropdown a, #bankResitDropdown a, #gameLinksDropdown a")
-      .forEach(link => {
-        const label = String(
-          link.getAttribute("data-feature") ||
-          link.getAttribute("data-label") ||
-          link.textContent ||
-          ""
-        ).trim().toUpperCase();
+    document.querySelectorAll(
+      "#sidebar a, #gameLogDropdown a, #bankResitDropdown a, #gameLinksDropdown a"
+    ).forEach(link => {
+      const label = String(
+        link.getAttribute("data-feature") ||
+        link.getAttribute("data-label") ||
+        link.textContent ||
+        ""
+      ).trim().toUpperCase();
 
-        link.style.display = isFeatureHidden(label) ? "none" : "";
-      });
-
-    const tabs = getTabs();
-    const filtered = tabs.filter(tab => {
-      const label = String(tab.name || tab.label || "").trim().toUpperCase();
-      return !isFeatureHidden(label);
+      link.style.display = isFeatureHidden(label) ? "none" : "";
     });
 
-    if (filtered.length !== tabs.length) {
-      saveTabs(filtered);
+    // Jangan buang tab daripada storage.
+    if (currentAdminProfile) {
       renderTabs();
       renderSidebarTabs();
       updateHeaderActiveState();
     }
   }
+
 
   function initUiVisibility() {
     const sharedDb = getSharedDb();
