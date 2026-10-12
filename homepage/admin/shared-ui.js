@@ -3940,23 +3940,13 @@ if (!selected.length) {
     loading = true;
 
     try {
-const firebaseAuth =
-  typeof auth !== "undefined"
-    ? auth
-    : window.auth;
+const firebaseAuth = getSharedAuth();
 
-if (
-  !firebaseAuth ||
-  typeof firebaseAuth.onAuthStateChanged !== "function"
-) {
-  throw Error("Firebase Auth is not ready.");
+if (!firebaseAuth) {
+  throw Error("Firebase Auth belum tersedia.");
 }
 
-const user = await new Promise(resolve => {
-  const unsubscribe = firebaseAuth.onAuthStateChanged(u => {
-    resolve(u);
-  });
-});
+const user = await waitForSharedUser(firebaseAuth);
 
       if (!user) {
         throw Error("Please login again.");
@@ -4182,18 +4172,28 @@ if (!displayName) {
 
 async function updateHeaderUserFromFirebase() {
   try {
-    if (typeof auth === "undefined" || typeof db === "undefined") return;
+try {
+  const firebaseAuth = getSharedAuth();
+  const sharedDb = getSharedDb();
 
-    const user = await new Promise(resolve => {
-      const unsubscribe = auth.onAuthStateChanged(u => {
-        unsubscribe();
-        resolve(u);
-      });
+  if (!firebaseAuth || !sharedDb) {
+    console.error("[Admin Profile] Firebase belum tersedia", {
+      authReady: !!firebaseAuth,
+      dbReady: !!sharedDb
     });
+    return;
+  }
 
-    if (!user) return;
+  const user = await waitForSharedUser(firebaseAuth);
 
-    const snap = await db.ref("adminUsers/" + user.uid).once("value");
+  if (!user) {
+    console.warn("[Admin Profile] User belum login");
+    return;
+  }
+
+  const snap = await sharedDb
+    .ref("adminUsers/" + user.uid)
+    .once("value");
     const profile = snap.val();
 
     // Simpan profile hanya jika account masih aktif.
@@ -4525,7 +4525,45 @@ sessionStorage.setItem(
      ========================================================== */
 
   let uiVisibility = {};
+function getSharedAuth() {
+  try {
+    if (
+      typeof auth !== "undefined" &&
+      auth &&
+      typeof auth.onAuthStateChanged === "function"
+    ) {
+      return auth;
+    }
+  } catch (_) {}
 
+  if (
+    window.auth &&
+    typeof window.auth.onAuthStateChanged === "function"
+  ) {
+    return window.auth;
+  }
+
+  try {
+    if (
+      window.firebase &&
+      typeof window.firebase.auth === "function" &&
+      window.firebase.apps?.length > 0
+    ) {
+      return window.firebase.auth();
+    }
+  } catch (_) {}
+
+  return null;
+}
+
+function waitForSharedUser(firebaseAuth) {
+  return new Promise((resolve, reject) => {
+    firebaseAuth.onAuthStateChanged(
+      user => resolve(user),
+      error => reject(error)
+    );
+  });
+}
 function getSharedDb() {
   try {
     if (
