@@ -4172,7 +4172,6 @@ if (!displayName) {
 
 async function updateHeaderUserFromFirebase() {
   try {
-try {
   const firebaseAuth = getSharedAuth();
   const sharedDb = getSharedDb();
 
