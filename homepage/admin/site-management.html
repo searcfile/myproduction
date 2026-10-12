@@ -18,15 +18,45 @@ function openModal(){ $("modal").classList.add("open"); }
 function closeModal(){ $("modal").classList.remove("open"); }
 $("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal();});
 
-async function verifySuperadmin(){
- const user=await new Promise(resolve=>{const unsub=auth.onAuthStateChanged(u=>{unsub();resolve(u);},()=>resolve(null));});
- if(!user||user.isAnonymous){location.replace("./login.html");return false;}
- const token=await user.getIdTokenResult(true);
- if(token.claims.secondVerified!==true||!Number.isSafeInteger(token.claims.pinVersion)){await auth.signOut();location.replace("./login.html");return false;}
- const snap=await db.ref("adminUsers/"+user.uid).once("value");
- const profile=snap.val();
- if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||profile.role!=="superadmin"||profile.pinVersion!==token.claims.pinVersion){status("Access denied: Superadmin only.",true);return false;}
- currentAdmin={uid:user.uid,role:profile.role,username:profile.username};return true;
+async function verifySuperadmin() {
+  const user = await new Promise(resolve => {
+    const unsubscribe = auth.onAuthStateChanged(
+      u => {
+        unsubscribe();
+        resolve(u);
+      },
+      () => resolve(null)
+    );
+  });
+
+  if (!user || user.isAnonymous) {
+    location.replace("./login.html");
+    return false;
+  }
+
+  const token = await user.getIdTokenResult(true);
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    status("Please complete 2nd password verification.", true);
+    return false;
+  }
+
+  try {
+    await api("/api/sites");
+
+    currentAdmin = {
+      uid: user.uid,
+      role: "superadmin"
+    };
+
+    return true;
+  } catch (error) {
+    status("Authorization failed: " + error.message, true);
+    return false;
+  }
 }
 async function api(path,options={}){
  const user=auth.currentUser;if(!user)throw Error("Session expired. Please log in again.");
