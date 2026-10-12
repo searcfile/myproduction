@@ -241,7 +241,9 @@ const result = await sessRef.transaction(current => {
     lastSeen: firebase.database.ServerValue.TIMESTAMP
   };
 });
-
+if (!result.committed) {
+  throw new Error("Single-session transaction not committed");
+}
     const onValue = sessRef.on('value', snap => {
       const v = snap.val();
       if (!v) return;
