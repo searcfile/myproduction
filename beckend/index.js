@@ -51,9 +51,10 @@ function publicUser(u, p) {
   return {
     uid: u.uid,
     username: p.username,
-    email: u.email || "",
+    displayName: p.displayName || p.username,
     role: p.role,
     siteIds: Array.isArray(p.siteIds) ? p.siteIds : [],
+    permissions: p.permissions || {},
     enabled: p.active === true && !u.disabled,
     createdAt: p.createdAt || null,
     updatedAt: p.updatedAt || null
