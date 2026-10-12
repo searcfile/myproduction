@@ -582,6 +582,16 @@ function syncTabsToFirebase(tabs) {
 
   function navigateToTab(tab) {
     if (!tab?.file) return;
+     const targetFile = String(tab.file)
+  .split(/[?#]/)[0]
+  .split("/")
+  .pop()
+  .toLowerCase();
+
+if (!canShowAdminPage(targetFile)) {
+  console.warn("[Permission] Navigation blocked:", targetFile);
+  return;
+}
 
     setActiveFile(tab.file);
 
@@ -628,6 +638,16 @@ function syncTabsToFirebase(tabs) {
 
     const page =
       findPageByFile(tab.file);
+     const targetFile = String(tab.file)
+  .split(/[?#]/)[0]
+  .split("/")
+  .pop()
+  .toLowerCase();
+
+if (!canShowAdminPage(targetFile)) {
+  console.warn("[Permission] Add tab blocked:", targetFile);
+  return;
+}
 
     if (page) {
       tab = {
@@ -732,69 +752,59 @@ syncTabsToFirebase(tabs);
 navigateToTab(nextTab);
   }
 
-function initDefaultWorkspace() {
 
-  // Hanya jalankan restore dari index.html
+function initDefaultWorkspace() {
   if (getCurrentFile() !== "index.html") {
     return false;
   }
 
-  // Selepas close tab terakhir, paparkan
-  // workspace kosong sekali dahulu.
+  // Selepas tutup tab terakhir, kekalkan workspace kosong sekali.
   if (
-    sessionStorage.getItem(
-      EMPTY_WORKSPACE_ONCE_KEY
-    ) === "1"
+    sessionStorage.getItem(EMPTY_WORKSPACE_ONCE_KEY) === "1"
   ) {
-    sessionStorage.removeItem(
-      EMPTY_WORKSPACE_ONCE_KEY
-    );
-
+    sessionStorage.removeItem(EMPTY_WORKSPACE_ONCE_KEY);
     return false;
   }
 
-  const tabs = getTabs();
-
-  // Kalau semua tab kosong, buka Live Chat.
-  if (!tabs.length) {
-
-    saveTabs([{ ...DEFAULT_ADMIN_TAB }]);
-
-    setActiveFile(DEFAULT_ADMIN_TAB.file);
-
-    window.location.replace(
-      "./livechat.html"
-    );
-
-    return true;
-  }
-
-  // Kalau ada tab tersimpan, cari tab aktif terakhir.
-  const lastFile = getActiveFile();
-
-  const lastTab = tabs.find(
-    tab =>
-      tab.file.toLowerCase() ===
-      lastFile.toLowerCase()
+  // Hanya restore tab yang dibenarkan.
+  const allowedTabs = getTabs().filter(tab =>
+    canShowAdminPage(tab.file)
   );
 
-  // Kalau tab aktif terakhir sudah ditutup,
-  // gunakan tab terbuka yang terakhir.
-  const targetTab =
-    lastTab || tabs[tabs.length - 1];
+  const lastFile = getActiveFile();
 
-  if (!targetTab?.file) {
+  let targetTab = allowedTabs.find(tab =>
+    tab.file.toLowerCase() === lastFile.toLowerCase()
+  );
+
+  if (!targetTab && allowedTabs.length) {
+    targetTab = allowedTabs[allowedTabs.length - 1];
+  }
+
+  // Live Chat kekal default jika dibenarkan.
+  if (!targetTab && canShowAdminPage(DEFAULT_ADMIN_TAB.file)) {
+    targetTab = { ...DEFAULT_ADMIN_TAB };
+
+    const tabs = getTabs();
+
+    if (!tabs.some(tab => tab.file === targetTab.file)) {
+      tabs.push(targetTab);
+      saveTabs(tabs);
+    }
+  }
+
+  // Jika Live Chat di-hide dan tiada tab lain,
+  // kekalkan workspace kosong.
+  if (!targetTab) {
     return false;
   }
 
   setActiveFile(targetTab.file);
 
-  window.location.replace(
-    `./${targetTab.file}`
-  );
-
+  window.location.replace("./" + targetTab.file);
   return true;
 }
+
   /* ==========================================================
      SYNC CURRENT PAGE
      ========================================================== */
@@ -802,6 +812,19 @@ function initDefaultWorkspace() {
   function syncCurrentPageTab() {
     const currentFile =
       getCurrentFile();
+     
+    // Jangan simpan halaman yang tidak dibenarkan.
+    if (
+      currentFile !== "index.html" &&
+      !canShowAdminPage(currentFile)
+    ) {
+      console.warn(
+        "[Permission] Current page not allowed:",
+        currentFile
+      );
+      return;
+    }
+
 
     if (
       !currentFile ||
@@ -2340,8 +2363,8 @@ function closeSearch() {
     list.innerHTML = "";
 
 
-    const results =
-      ADMIN_PAGES.filter(page => {
+const results =
+  getVisibleAdminPages().filter(page => {
 
         if (!keyword) {
           return true;
@@ -2906,7 +2929,9 @@ function initWorkspaceTabDrag(tabList) {
 
     tabBar.innerHTML = "";
 
-    const tabs = getTabs();
+    const tabs = getTabs().filter(tab =>
+  canShowAdminPage(tab.file)
+);
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -4116,6 +4141,13 @@ renderSidebarTabs();
 renderDropdown("gameLogDropdown", "gamelog");
 renderDropdown("bankResitDropdown", "bank");
 renderDropdown("gameLinksDropdown", "list");
+
+syncCurrentPageTab();
+renderTabs();
+
+if (initDefaultWorkspace()) {
+  return;
+}
   } catch (error) {
     console.warn("[Header User]", error);
   }
@@ -5301,11 +5333,6 @@ function initSmartContentLoading() {
      ========================================================== */
 
 function init() {
-
-  if (initDefaultWorkspace()) {
-    return;
-  }
-
   createShell();
   initSmartContentLoading();
   initFloatingFab();
@@ -5359,9 +5386,7 @@ setupDropdown(
 
     initNotifications();
 
-    initPasswordModals();
-
-    syncCurrentPageTab();
+initPasswordModals();
 
 renderTabs();
 
