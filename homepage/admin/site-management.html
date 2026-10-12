@@ -11,8 +11,6 @@
    <script>
 "use strict";
 const BACKEND = "https://fiveg88-admin-backend-v2.onrender.com";
-const auth = firebase.auth();
-const db = firebase.database();
 const $ = id => document.getElementById(id);
 let currentAdmin = null;
 function status(message, error=false){const e=$("status");e.textContent=message;e.classList.toggle("error",error);}
