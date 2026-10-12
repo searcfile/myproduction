@@ -33,7 +33,29 @@ const MODULES = window.getAdminPages()
     page.file,
     page.name
   ]);
-const ACTIONS=['view','create','edit','delete','block'];let users=[],sites=[],editing=null;
+/* ==========================================================
+   PERMISSION DEFINITIONS
+   ========================================================== */
+
+const PERMISSION_DEFINITIONS = {
+  default: ["show", "view", "create", "edit", "delete"],
+
+  "livechat.html": ["show", "view", "block", "delete"],
+  "livechat-support.html": ["show", "view"],
+  "notice.html": ["show", "view", "create", "edit", "delete"],
+  "history.html": ["show", "view"]
+};
+
+const ACTION_LABELS = {
+  show: "Show Module",
+  view: "View",
+  create: "Create",
+  edit: "Edit",
+  delete: "Delete",
+  block: "Block"
+};
+
+let users = [], sites = [], editing = null;
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 async function api(path,opts={}){const user=auth.currentUser;if(!user)throw Error('Login required');const token=await user.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
 async function check() {
@@ -76,7 +98,29 @@ function cell(tr,value){const e=document.createElement('td');e.textContent=Strin
 function render(){const q=$('search').value.trim().toLowerCase();const body=$('rows');body.replaceChildren();$('total').textContent=users.length;$('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;$('siteTotal').textContent=sites.filter(s=>s.active).length;const matches=users.filter(u=>(u.username+' '+u.uid).toLowerCase().includes(q));if(!matches.length){const tr=document.createElement('tr');const td=cell(tr,'No matching admin profiles');td.colSpan=5;td.className='empty';body.append(tr);return}for(const u of matches){const tr=document.createElement('tr');const name=cell(tr,u.username);name.className='primarytext';const role=cell(tr,u.role==='superadmin'?'Superadmin':'Site Admin');role.className='role-tag';const assigned=cell(tr,u.role==='superadmin'?'All Sites':(u.siteIds||[]).map(id=>sites.find(s=>s.id===id)?.name||id).join(', ')||'Not assigned');assigned.style.maxWidth='330px';cell(tr,u.enabled?'Active':'Inactive');const td=document.createElement('td');if(u.role==='siteadmin'){const b=document.createElement('button');b.className='btn small primary';b.textContent='Edit Permissions';b.onclick=()=>openEditor(u);td.append(b)}else{td.textContent='Protected'}tr.append(td);body.append(tr)}}
 async function load(){status('Loading profiles…');try{const [a,b]=await Promise.all([api('/api/admin-users'),api('/api/sites')]);users=a.users||[];sites=b.sites||[];render();status('Loaded '+users.length+' profiles.')}catch(e){status('Cannot load: '+e.message,true)}}
 function closeModal(){$('modal').classList.remove('open');editing=null}
-function openEditor(u){editing=u;$('username').value=u.username;$('uid').value=u.uid;$('displayName').value=u.displayName||u.username;const siteBox=$('siteChoices');siteBox.replaceChildren();for(const s of sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id))){const label=document.createElement('label');label.className='site-option';const box=document.createElement('input');box.type='checkbox';box.value=s.id;box.name='allowedSite';box.checked=(u.siteIds||[]).includes(s.id);box.disabled=!s.active;label.append(box,document.createTextNode(s.name+' ('+s.id+')'+(s.active?'':' · inactive')));siteBox.append(label)}if(!siteBox.children.length)siteBox.textContent='No sites available. Add sites in Site Management first.';const wrap=$('permissionChoices');wrap.replaceChildren();for(const [key,title] of MODULES){const section=document.createElement('div');section.className='perm-item';const strong=document.createElement('strong');strong.textContent=title;section.append(strong);const actions=document.createElement('div');actions.className='perm-actions';for(const action of ACTIONS){const label=document.createElement('label');const box=document.createElement('input');box.type='checkbox';box.dataset.module=key;box.dataset.action=action;box.checked=(u.permissions?.[key]||[]).includes(action);label.append(box,document.createTextNode(action));actions.append(label)}section.append(actions);wrap.append(section)}$('modal').classList.add('open')}
+function openEditor(u){editing=u;$('username').value=u.username;$('uid').value=u.uid;$('displayName').value=u.displayName||u.username;const siteBox=$('siteChoices');siteBox.replaceChildren();for(const s of sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id))){const label=document.createElement('label');label.className='site-option';const box=document.createElement('input');box.type='checkbox';box.value=s.id;box.name='allowedSite';box.checked=(u.siteIds||[]).includes(s.id);box.disabled=!s.active;label.append(box,document.createTextNode(s.name+' ('+s.id+')'+(s.active?'':' · inactive')));siteBox.append(label)}if(!siteBox.children.length)siteBox.textContent='No sites available. Add sites in Site Management first.';const wrap=$('permissionChoices');wrap.replaceChildren();for(const [key,title] of MODULES){const section=document.createElement('div');section.className='perm-item';const strong=document.createElement('strong');strong.textContent=title;section.append(strong);const actions=document.createElement('div');actions.className='perm-actions';
+const allowedActions =
+  PERMISSION_DEFINITIONS[key] ||
+  PERMISSION_DEFINITIONS.default;
+
+for (const action of allowedActions) {
+  const label = document.createElement("label");
+  const box = document.createElement("input");
+
+  box.type = "checkbox";
+  box.dataset.module = key;
+  box.dataset.action = action;
+
+  box.checked = (u.permissions?.[key] || []).includes(action);
+
+  label.append(
+    box,
+    document.createTextNode(ACTION_LABELS[action] || action)
+  );
+
+  actions.append(label);
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                section.append(actions);wrap.append(section)}$('modal').classList.add('open')}
 $('profileForm').onsubmit=async e=>{e.preventDefault();if(!editing)return;const save=$('save');save.disabled=true;try{const siteIds=[...document.querySelectorAll('input[name="allowedSite"]:checked')].map(x=>x.value);
 if (siteIds.length === 0) {
   throw Error("Please assign at least one active site.");
@@ -92,9 +136,15 @@ for (const [key] of MODULES) {
 
   // Jika ada permission selain View,
   // View mesti diaktifkan juga.
-  if (acts.some(action => action !== "view") && !acts.includes("view")) {
-    acts.unshift("view");
-  }
+// Show Module hanya kawal paparan tab.
+// Create, Edit, Delete dan Block memerlukan View.
+const requiresView = acts.some(action =>
+  ["create", "edit", "delete", "block"].includes(action)
+);
+
+if (requiresView && !acts.includes("view")) {
+  acts.unshift("view");
+}
 
   if (acts.length) {
     permissions[key] = acts;
