@@ -163,7 +163,18 @@
       group: "tools"
     }
   ];
+  /* ==========================================================
+     SHARED TAB REGISTRY
+     Digunakan oleh Admin Users untuk membaca senarai tab
+     ========================================================== */
 
+  window.getAdminPages = function () {
+    return ADMIN_PAGES.map(page => ({
+      file: page.file,
+      name: page.name,
+      group: page.group
+    }));
+  };
   const DEFAULT_ADMIN_TAB = {
     file: "livechat.html",
     name: "Live Chat",
