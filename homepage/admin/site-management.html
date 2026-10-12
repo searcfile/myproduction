@@ -1,80 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Site Management · 5G88</title>
-   <link rel="stylesheet" href="./shared-ui.css">
-  <link rel="stylesheet" href="./admin.css">
-<style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color-scheme:dark;--bg:#0e1118;--panel:#171c27;--border:#303747;--text:#eef2fa;--muted:#a1abc0;--blue:#317be8;--bad:#e86d73}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}a{color:#91baff;text-decoration:none}header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:17px 26px;border-bottom:1px solid var(--border);background:#141925}main{max-width:1180px;margin:30px auto;padding:0 20px}.brand{font-weight:800;font-size:18px}.toplinks{display:flex;gap:18px;align-items:center;flex-wrap:wrap}h1{font-size:25px;margin:0 0 8px}p{color:var(--muted)}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:24px 0 14px}.toolbar .group{display:flex;gap:10px;flex-wrap:wrap}.panel{border:1px solid var(--border);background:var(--panel);border-radius:12px;overflow:hidden}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:760px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}th{color:var(--muted);font-weight:600}tr:last-child td{border-bottom:0}.muted{color:var(--muted)}button,input,select,textarea{font:inherit}button{border:1px solid var(--border);background:#262e3f;color:var(--text);border-radius:8px;padding:10px 14px;cursor:pointer}button.primary{background:var(--blue);border-color:var(--blue);color:white}button:disabled{opacity:.5;cursor:not-allowed}input,select,textarea{background:#101520;color:var(--text);border:1px solid #3b4458;border-radius:8px;padding:10px 12px;width:100%}input[type=checkbox]{width:auto}input.search{width:260px;max-width:100%}.notice{border:1px solid #5b5036;background:#292417;padding:12px 16px;border-radius:9px;color:#e7d3a5;margin-top:18px}.status{min-height:24px;margin:14px 0;color:#c9d7ef}.status.error{color:#ff999f}.pill{display:inline-block;border-radius:999px;padding:3px 9px;background:#263e32;color:#a7e9c2}.pill.off{background:#4a292f;color:#ffadb4}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.open{display:flex}.dialog{background:#1b2130;border:1px solid var(--border);border-radius:14px;width:min(560px,100%);padding:24px;max-height:90vh;overflow:auto}.dialog h2{margin-top:0}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:13px;color:#cbd3e2}.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}.empty{padding:36px;text-align:center;color:var(--muted)}.hide{display:none!important}@media(max-width:640px){header{padding:14px}main{padding:0 12px}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}}
-</style>
-</head>
-<body>
-<main>
-<div class="notice">Only Superadmin can access this page. Data changes require server-side authorization; hiding a button does not grant security.</div>
-<div id="status" class="status">Checking admin session…</div>
-<div class="toolbar">
-<div class="group">
-<input id="search" class="search" placeholder="Search site ID or name">
-<button id="refresh">Refresh</button>
-</div>
-<button id="create" class="primary" disabled>Add Site</button>
-</div>
-<div class="panel tablewrap">
-<table>
-<thead>
-<tr>
-<th>Site ID</th>
-<th>Site name</th>
-<th>Wallet group</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="rows">
-<tr>
-<td colspan="5" class="empty">Loading…</td>
-</tr>
-</tbody>
-</table>
-</div>
-</main>
-<div class="modal" id="modal">
-<div class="dialog">
-<h2 id="modalTitle">Create</h2>
-<form id="siteForm">
-<div class="formgrid">
-<div class="field">
-<label for="siteId">Site ID (immutable)</label>
-<input id="siteId" required pattern="[a-z0-9_-]+" maxlength="48" placeholder="5g88">
-</div>
-<div class="field">
-<label for="siteName">Display name</label>
-<input id="siteName" required maxlength="100">
-</div>
-<div class="field">
-<label for="walletGroupId">Wallet group ID (optional)</label>
-<input id="walletGroupId" maxlength="60" placeholder="group-a">
-</div>
-<div class="field">
-<label for="active">Status</label>
-<select id="active">
-<option value="true">Active</option>
-<option value="false">Inactive</option>
-</select>
-</div>
-</div>
-<div class="actions">
-<button type="button" id="cancel">Cancel</button>
-<button class="primary" id="save" type="submit">Save Site</button>
-</div>
-</form>
-</div>
-</div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Site Management · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"></head><body>
+<main class="workspace"><div class="page-top"><div><div class="eyebrow">Workspace management</div><h1>Site Management</h1><p class="subtitle">Manage sites, status and wallet group references.</p></div><button id="create" class="btn primary" disabled>+ Add Site</button></div>
+<div class="stats"><div class="card stat"><small>Total sites</small><strong id="total">—</strong></div><div class="card stat"><small>Active sites</small><strong id="activeCount">—</strong></div><div class="card stat"><small>Inactive sites</small><strong id="inactiveCount">—</strong></div></div>
+<section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search site name or ID"><button id="refresh" class="btn">↻ Refresh</button></div></div><div class="tablewrap"><table><thead><tr><th>Site name</th><th>Site ID</th><th>Wallet group</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Loading sites…</td></tr></tbody></table></div><div id="status" class="status" role="status">Checking admin session…</div></section></main>
+<div class="modal" id="modal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Add Site</h2><button id="close" class="btn small" type="button">✕</button></div><form id="siteForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="siteName">Site Name</label><input id="siteName" required maxlength="100" placeholder="e.g. 5G88"></div><div class="field"><label for="siteId">Site ID</label><input id="siteId" required pattern="[a-z0-9_-]+" maxlength="48" placeholder="e.g. 5g88"><div class="hint">Site ID cannot be changed later.</div></div><div class="field"><label for="walletGroupId">Wallet Group ID (optional)</label><input id="walletGroupId" maxlength="60" placeholder="e.g. group-a"></div><div class="field"><label for="active">Status</label><select id="active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Site</button></div></form></div></div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -91,7 +19,7 @@ function status(message, error=false){const e=$("status");e.textContent=message;
 function openModal(){ $("modal").classList.add("open"); }
 function closeModal(){ $("modal").classList.remove("open"); }
 $("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal();});
-$("logoutBtn").onclick=async()=>{await auth.signOut();location.replace("./login.html");};
+
 async function verifySuperadmin(){
  const user=await new Promise(resolve=>{const unsub=auth.onAuthStateChanged(u=>{unsub();resolve(u);},()=>resolve(null));});
  if(!user||user.isAnonymous){location.replace("./login.html");return false;}
@@ -114,7 +42,7 @@ function td(tr,value){const cell=document.createElement("td");cell.textContent=S
 function badge(tr,enabled){const cell=document.createElement("td");const span=document.createElement("span");span.className="pill"+(enabled?"":" off");span.textContent=enabled?"Active":"Inactive";cell.appendChild(span);tr.appendChild(cell);}
 
 let sites=[];let editingId=null;
-function render(){const q=$("search").value.trim().toLowerCase();const body=$("rows");body.replaceChildren();const filtered=sites.filter(s=>String(s.id||"").toLowerCase().includes(q)||String(s.name||"").toLowerCase().includes(q));if(!filtered.length){const tr=document.createElement("tr");const cell=td(tr,"No matching sites");cell.colSpan=5;cell.className="empty";body.appendChild(tr);return;}for(const s of filtered){const tr=document.createElement("tr");td(tr,s.id);td(tr,s.name);td(tr,s.walletGroupId||"—");badge(tr,s.active===true);const cell=document.createElement("td");const btn=document.createElement("button");btn.textContent="Edit";btn.onclick=()=>edit(s);cell.appendChild(btn);tr.appendChild(cell);body.appendChild(tr);}}
+function render(){const q=$("search").value.trim().toLowerCase();const body=$("rows");body.replaceChildren();const filtered=sites.filter(s=>String(s.id||"").toLowerCase().includes(q)||String(s.name||"").toLowerCase().includes(q));if(!filtered.length){const tr=document.createElement("tr");const cell=td(tr,"No matching sites");cell.colSpan=5;cell.className="empty";body.appendChild(tr);return;}for(const s of filtered){const tr=document.createElement("tr");td(tr,s.name);td(tr,s.id);td(tr,s.walletGroupId||"—");badge(tr,s.active===true);const cell=document.createElement("td");const btn=document.createElement("button");btn.textContent="Edit";btn.className="btn small";btn.onclick=()=>edit(s);cell.appendChild(btn);tr.appendChild(cell);body.appendChild(tr);}}
 async function load() {
   status("Loading sites…");
   $("create").disabled = true;
@@ -132,6 +60,9 @@ async function load() {
       : Object.entries(raw).map(([id, site]) => ({ id, ...site }));
 
     render();
+    $("total").textContent=sites.length;
+    $("activeCount").textContent=sites.filter(s=>s.active===true).length;
+    $("inactiveCount").textContent=sites.filter(s=>s.active!==true).length;
     $("create").disabled = false;
     status("Loaded " + sites.length + " sites.");
   } catch (error) {
@@ -142,7 +73,7 @@ async function load() {
   }
 }
 function edit(s){editingId=s.id;$("modalTitle").textContent="Edit Site";$("siteForm").reset();$("siteId").value=s.id;$("siteId").disabled=true;$("siteName").value=s.name||"";$("walletGroupId").value=s.walletGroupId||"";$("active").value=String(s.active===true);openModal();}
-$("search").oninput=render;$("refresh").onclick=load;$("create").onclick=()=>{editingId=null;$("modalTitle").textContent="Add Site";$("siteForm").reset();$("siteId").disabled=false;openModal();};$("cancel").onclick=closeModal;
+$("close").onclick=closeModal;$("search").oninput=render;$("refresh").onclick=load;$("create").onclick=()=>{editingId=null;$("modalTitle").textContent="Add Site";$("siteForm").reset();$("siteId").disabled=false;openModal();};$("cancel").onclick=closeModal;
 $("siteForm").onsubmit = async e => {
   e.preventDefault();
   const btn = $("save");
