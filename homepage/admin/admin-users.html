@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script defer src="./shared-ui.js"></script><script>
 'use strict';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
-const auth=firebase.auth(),db=firebase.database(),$=id=>document.getElementById(id);
+const $=id=>document.getElementById(id);
 const MODULES=[['dashboard','Dashboard'],['vault','Vault'],['transaction','Transaction'],['history','History'],['notice','Notice'],['contact-manage','Contact Manage'],['notices-message','Notices Message'],['floating-image','Floating Image'],['skin-config','Skin Config'],['loading-config','Loading Config'],['welcome-popup','Welcome Popup'],['visitors','Visitors']];
 const ACTIONS=['view','create','edit','delete','block'];let users=[],sites=[],editing=null;
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
