@@ -1,11 +1,39 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Admin Users · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"><style>
-.admin-dialog{width:min(820px,100%)}.perm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.perm-item{padding:13px;background:#101928;border:1px solid #344158;border-radius:10px}.perm-item strong{display:block;margin-bottom:9px}.perm-actions{display:flex;gap:12px;flex-wrap:wrap}.perm-actions label{font-size:12px;color:#b6c7dc;display:flex;gap:5px;align-items:center}.perm-actions input{width:auto;accent-color:#347dff}.section-label{font-size:12px;color:#93a8c5;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px}.note{color:#9cb0c8;font-size:12px}.role-tag{color:#8db9ff;font-weight:650}@media(max-width:640px){.perm-grid{grid-template-columns:1fr}}
+.admin-dialog{width:min(820px,100%)}.section-label{font-size:12px;color:#93a8c5;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px}.note{color:#9cb0c8;font-size:12px}.role-tag{color:#8db9ff;font-weight:650}
+
+/* Tabbed permission editor — inspired by previous admin design */
+.admin-dialog{width:min(1080px,calc(100vw - 24px))}
+.permission-module-tabs{display:flex;overflow-x:auto;overflow-y:hidden;margin-top:8px;scrollbar-width:none;gap:0}
+.permission-module-tabs::-webkit-scrollbar{display:none}
+.permission-module-tab{flex:0 0 auto;border:1px solid #344158;border-radius:8px 8px 0 0;background:#172131;color:#c5d4e8;padding:9px 14px;font-size:13px;white-space:nowrap;cursor:pointer}
+.permission-module-tab:hover{color:#74adff}
+.permission-module-tab.active{background:#101928;color:#65a1ff;border-bottom-color:#101928}
+.permission-panel{border:1px solid #344158;border-radius:0 8px 8px 8px;background:#101928;padding:14px;min-height:135px}
+.permission-module-head{margin-bottom:12px}
+.permission-module-head strong{display:block;font-size:14px;color:#e8f0fa}
+.permission-module-head span{display:block;margin-top:4px;font-size:12px;color:#91a4bf}
+.permission-chip-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.permission-chip-field{min-width:0}
+.permission-chip-field>label{display:block;margin-bottom:6px;color:#9cb0c8;font-size:12px}
+.permission-chip-host{min-height:34px;border:1px solid #344158;border-radius:6px;background:#151d2a;padding:4px 6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+.permission-chip{display:inline-flex;align-items:center;gap:4px;border-radius:4px;padding:4px 7px;background:#293341;color:#e8f0fa;font-size:12px;line-height:1.15}
+.permission-chip-remove{border:0;background:none;color:#a9b8ca;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+.permission-chip-remove:hover{color:white}
+.permission-chip-picker{position:relative;min-width:75px;flex:1 0 75px}
+.permission-chip-picker>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:24px;color:#aabbd0;font-size:12px;gap:8px}
+.permission-chip-picker>summary::-webkit-details-marker{display:none}
+.permission-chip-picker>summary::after{content:'⌄';color:#aabbd0}
+.permission-chip-menu{position:absolute;z-index:20;top:calc(100% + 6px);left:0;width:min(280px,75vw);max-height:240px;overflow-y:auto;border:1px solid #44556c;border-radius:7px;padding:5px;background:#1d2939;box-shadow:0 10px 25px #0008}
+.permission-chip-option{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:4px;color:#e5edf7;font-size:12px;cursor:pointer}
+.permission-chip-option:hover{background:#304259}
+.permission-chip-option input{accent-color:#347dff}
+@media(max-width:650px){.permission-chip-grid{grid-template-columns:1fr}.admin-dialog{width:calc(100vw - 16px)}}
 </style></head><body>
 <main class="workspace"><div class="page-top"><div><div class="eyebrow">Superadmin / Access control</div><h1>Admin Users</h1><p class="subtitle">Assign existing usernames to sites and configure module permissions.</p></div><button id="refresh" class="btn">↻ Refresh</button></div>
 <div class="stats"><div class="card stat"><small>Total admin profiles</small><strong id="total">—</strong></div><div class="card stat"><small>Site Admins</small><strong id="siteCount">—</strong></div><div class="card stat"><small>Active sites</small><strong id="siteTotal">—</strong></div></div>
 <div class="notice">Create a login account in <a href="./users.html">Auth Users</a> first. Then select <b>Edit Permissions</b> here. Only Superadmin can change access.</div>
 <section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search username or UID"></div></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Role</th><th>Allowed Sites</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Checking session…</td></tr></tbody></table></div><div id="status" class="status" role="status"></div></section></main>
-<div class="modal" id="modal"><div class="dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Manage Admin Profile</h2><button class="btn small" type="button" id="closeX">✕</button></div><form id="profileForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="username">Username</label><input id="username" readonly></div><div class="field"><label for="uid">Firebase UID</label><div style="display:flex;gap:7px"><input id="uid" readonly><button type="button" class="btn small" id="copyUid">Copy</button></div></div><div class="field"><label for="displayName">Display Name</label><input id="displayName" required maxlength="80" placeholder="e.g. 5G88 Admin"></div><div class="field"><label>Role</label><input value="Site Admin" readonly></div></div><div class="section-label">Allowed Sites</div><div id="siteChoices" class="site-options"></div><p class="note">Without assigned sites, the account must not access site data.</p><div class="section-label">Module Permissions</div><div id="permissionChoices" class="perm-grid"></div><p class="note">Permissions are saved in the admin profile. Each protected page and API must enforce them server-side / in database rules.</p></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Permissions</button></div></form></div></div>
+<div class="modal" id="modal"><div class="dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Manage Admin Profile</h2><button class="btn small" type="button" id="closeX">✕</button></div><form id="profileForm"><div class="modalbody"><div class="formgrid"><div class="field"><label for="username">Username</label><input id="username" readonly></div><div class="field"><label for="uid">Firebase UID</label><div style="display:flex;gap:7px"><input id="uid" readonly><button type="button" class="btn small" id="copyUid">Copy</button></div></div><div class="field"><label for="displayName">Display Name</label><input id="displayName" required maxlength="80" placeholder="e.g. 5G88 Admin"></div><div class="field"><label>Role</label><input value="Site Admin" readonly></div></div><div class="section-label">Allowed Sites</div><div id="siteChoices" class="site-options"></div><p class="note">Without assigned sites, the account must not access site data.</p><div class="section-label">Module Permissions</div><div class="permission-module-tabs" id="permissionTabs" role="tablist" aria-label="Module permissions"></div><div class="permission-panel" id="permissionPanel"><div class="permission-module-head"><strong id="permissionModuleTitle"></strong><span>Control module access and actions.</span></div><div class="permission-chip-grid"><div class="permission-chip-field"><label>Available Functions</label><div class="permission-chip-host" id="permissionAvailable"></div></div><div class="permission-chip-field"><label>Given Permissions</label><div class="permission-chip-host" id="permissionGiven"></div></div></div></div><p class="note">Permissions are saved in the admin profile. Each protected page and API must enforce them server-side / in database rules.</p></div><div class="modalfooter"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn primary" id="save">Save Permissions</button></div></form></div></div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -56,6 +84,103 @@ const ACTION_LABELS = {
 };
 
 let users = [], sites = [], editing = null;
+
+/* Tab-based permission editor; retains original backend payload */
+let permissionDraft = {};
+let activePermissionModule = '';
+function moduleActions(key) {
+  return PERMISSION_DEFINITIONS[key] || PERMISSION_DEFINITIONS.default;
+}
+function permissionLabel(action) { return ACTION_LABELS[action] || action; }
+function renderPermissionTabs() {
+  const tabs = $('permissionTabs');
+  tabs.replaceChildren();
+  for (const [key, title] of MODULES) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'permission-module-tab';
+    button.setAttribute('role', 'tab');
+    button.textContent = title;
+    const selected = key === activePermissionModule;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-selected', String(selected));
+    button.onclick = () => {
+      activePermissionModule = key;
+      renderPermissionTabs();
+      renderPermissionPanel();
+    };
+    tabs.append(button);
+  }
+}
+function renderPermissionPanel() {
+  const key = activePermissionModule;
+  const availableHost = $('permissionAvailable');
+  const givenHost = $('permissionGiven');
+  availableHost.replaceChildren();
+  givenHost.replaceChildren();
+  if (!key) { $('permissionModuleTitle').textContent = 'No modules'; return; }
+  const info = MODULES.find(item => item[0] === key);
+  $('permissionModuleTitle').textContent = info?.[1] || key;
+  const allowed = moduleActions(key);
+  const selected = permissionDraft[key] || new Set();
+  for (const action of allowed) {
+    const chip = document.createElement('span');
+    chip.className = 'permission-chip';
+    chip.textContent = permissionLabel(action);
+    availableHost.append(chip);
+  }
+  for (const action of allowed) {
+    if (!selected.has(action)) continue;
+    const chip = document.createElement('span');
+    chip.className = 'permission-chip';
+    const name = document.createElement('span');
+    name.textContent = permissionLabel(action);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'permission-chip-remove';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', 'Remove ' + permissionLabel(action));
+    remove.onclick = () => { selected.delete(action); renderPermissionPanel(); };
+    chip.append(name, remove);
+    givenHost.append(chip);
+  }
+  const picker = document.createElement('details');
+  picker.className = 'permission-chip-picker';
+  const summary = document.createElement('summary');
+  summary.textContent = selected.size ? 'Add / change' : 'Select Permissions';
+  const menu = document.createElement('div');
+  menu.className = 'permission-chip-menu';
+  for (const action of allowed) {
+    const option = document.createElement('label');
+    option.className = 'permission-chip-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = selected.has(action);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selected.add(action);
+      else selected.delete(action);
+      renderPermissionPanel();
+    };
+    const name = document.createElement('span');
+    name.textContent = permissionLabel(action);
+    option.append(checkbox, name);
+    menu.append(option);
+  }
+  picker.append(summary, menu);
+  givenHost.append(picker);
+}
+function initializePermissionEditor(permissions = {}) {
+  permissionDraft = {};
+  for (const [key] of MODULES) {
+    const saved = permissions[key] || permissions[key.replace(/\.html$/, '_html')] || [];
+    const allowed = moduleActions(key);
+    permissionDraft[key] = new Set(Array.isArray(saved) ? saved.filter(action => allowed.includes(action)) : []);
+  }
+  activePermissionModule = MODULES[0]?.[0] || '';
+  renderPermissionTabs();
+  renderPermissionPanel();
+}
+
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 async function api(path,opts={}){const user=auth.currentUser;if(!user)throw Error('Login required');const token=await user.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
 async function check() {
@@ -98,34 +223,29 @@ function cell(tr,value){const e=document.createElement('td');e.textContent=Strin
 function render(){const q=$('search').value.trim().toLowerCase();const body=$('rows');body.replaceChildren();$('total').textContent=users.length;$('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;$('siteTotal').textContent=sites.filter(s=>s.active).length;const matches=users.filter(u=>(u.username+' '+u.uid).toLowerCase().includes(q));if(!matches.length){const tr=document.createElement('tr');const td=cell(tr,'No matching admin profiles');td.colSpan=5;td.className='empty';body.append(tr);return}for(const u of matches){const tr=document.createElement('tr');const name=cell(tr,u.username);name.className='primarytext';const role=cell(tr,u.role==='superadmin'?'Superadmin':'Site Admin');role.className='role-tag';const assigned=cell(tr,u.role==='superadmin'?'All Sites':(u.siteIds||[]).map(id=>sites.find(s=>s.id===id)?.name||id).join(', ')||'Not assigned');assigned.style.maxWidth='330px';cell(tr,u.enabled?'Active':'Inactive');const td=document.createElement('td');if(u.role==='siteadmin'){const b=document.createElement('button');b.className='btn small primary';b.textContent='Edit Permissions';b.onclick=()=>openEditor(u);td.append(b)}else{td.textContent='Protected'}tr.append(td);body.append(tr)}}
 async function load(){status('Loading profiles…');try{const [a,b]=await Promise.all([api('/api/admin-users'),api('/api/sites')]);users=a.users||[];sites=b.sites||[];render();status('Loaded '+users.length+' profiles.')}catch(e){status('Cannot load: '+e.message,true)}}
 function closeModal(){$('modal').classList.remove('open');editing=null}
-function openEditor(u){editing=u;$('username').value=u.username;$('uid').value=u.uid;$('displayName').value=u.displayName||u.username;const siteBox=$('siteChoices');siteBox.replaceChildren();for(const s of sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id))){const label=document.createElement('label');label.className='site-option';const box=document.createElement('input');box.type='checkbox';box.value=s.id;box.name='allowedSite';box.checked=(u.siteIds||[]).includes(s.id);box.disabled=!s.active;label.append(box,document.createTextNode(s.name+' ('+s.id+')'+(s.active?'':' · inactive')));siteBox.append(label)}if(!siteBox.children.length)siteBox.textContent='No sites available. Add sites in Site Management first.';const wrap=$('permissionChoices');wrap.replaceChildren();for(const [key,title] of MODULES){const section=document.createElement('div');section.className='perm-item';const strong=document.createElement('strong');strong.textContent=title;section.append(strong);const actions=document.createElement('div');actions.className='perm-actions';
-const allowedActions =
-  PERMISSION_DEFINITIONS[key] ||
-  PERMISSION_DEFINITIONS.default;
-
-for (const action of allowedActions) {
-  const label = document.createElement("label");
-  const box = document.createElement("input");
-
-  box.type = "checkbox";
-  box.dataset.module = key;
-  box.dataset.action = action;
-
-const savedActions =
-  u.permissions?.[key] ||
-  u.permissions?.[key.replace(/\.html$/, "_html")] ||
-  [];
-
-box.checked = savedActions.includes(action);
-
-  label.append(
-    box,
-    document.createTextNode(ACTION_LABELS[action] || action)
-  );
-
-  actions.append(label);
+function openEditor(u) {
+  editing = u;
+  $('username').value = u.username;
+  $('uid').value = u.uid;
+  $('displayName').value = u.displayName || u.username;
+  const siteBox = $('siteChoices');
+  siteBox.replaceChildren();
+  for (const site of sites.filter(s => s.active || (u.siteIds || []).includes(s.id))) {
+    const label = document.createElement('label');
+    label.className = 'site-option';
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.value = site.id;
+    box.name = 'allowedSite';
+    box.checked = (u.siteIds || []).includes(site.id);
+    box.disabled = !site.active;
+    label.append(box, document.createTextNode(site.name + ' (' + site.id + ')' + (site.active ? '' : ' · inactive')));
+    siteBox.append(label);
+  }
+  if (!siteBox.children.length) siteBox.textContent = 'No sites available. Add sites in Site Management first.';
+  initializePermissionEditor(u.permissions || {});
+  $('modal').classList.add('open');
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                section.append(actions);wrap.append(section)}$('modal').classList.add('open')}
 $('profileForm').onsubmit=async e=>{e.preventDefault();if(!editing)return;const save=$('save');save.disabled=true;try{const siteIds=[...document.querySelectorAll('input[name="allowedSite"]:checked')].map(x=>x.value);
 if (siteIds.length === 0) {
   throw Error("Please assign at least one active site.");
@@ -133,27 +253,11 @@ if (siteIds.length === 0) {
                                                                                                                       
 const permissions = {};
 for (const [key] of MODULES) {
-  const acts = [
-    ...document.querySelectorAll(
-      'input[data-module="' + key + '"]:checked'
-    )
-  ].map(x => x.dataset.action);
-
-  // Jika ada permission selain View,
-  // View mesti diaktifkan juga.
-// Show Module hanya kawal paparan tab.
-// Create, Edit, Delete dan Block memerlukan View.
-const requiresView = acts.some(action =>
-  ["create", "edit", "delete", "block"].includes(action)
-);
-
-if (requiresView && !acts.includes("view")) {
-  acts.unshift("view");
+  const acts = [...(permissionDraft[key] || new Set())];
+  const requiresView = acts.some(action => ['create', 'edit', 'delete', 'block'].includes(action));
+  if (requiresView && !acts.includes('view')) acts.unshift('view');
+  if (acts.length) permissions[key] = acts;
 }
-
-  if (acts.length) {
-    permissions[key] = acts;
-  }
-}await api('/api/admin-profiles/'+encodeURIComponent(editing.uid),{method:'PATCH',body:JSON.stringify({displayName:$('displayName').value.trim(),siteIds,permissions})});closeModal();await load();status('Permissions saved.')}catch(err){status('Save failed: '+err.message,true)}finally{save.disabled=false}};
+await api('/api/admin-profiles/'+encodeURIComponent(editing.uid),{method:'PATCH',body:JSON.stringify({displayName:$('displayName').value.trim(),siteIds,permissions})});closeModal();await load();status('Permissions saved.')}catch(err){status('Save failed: '+err.message,true)}finally{save.disabled=false}};
 $('search').oninput=render;$('refresh').onclick=load;$('cancel').onclick=closeModal;$('closeX').onclick=closeModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};$('copyUid').onclick=async()=>{try{await navigator.clipboard.writeText($('uid').value);status('UID copied.')}catch{status('Copy failed',true)}};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});(async()=>{try{if(await check())await load()}catch(e){status('Authorization error: '+e.message,true)}})();
 </script></body></html>
