@@ -3560,8 +3560,8 @@ menu.addEventListener("click", event => {
      HEADER TAB SEARCH
      ========================================================== */
 
-function setupHeaderSearch() {
 
+function setupHeaderSearch() {
   const wrap = document.getElementById("headerTabSearch");
   const input = document.getElementById("headerTabSearchInput");
   const list = document.getElementById("headerTabSearchList");
@@ -3570,155 +3570,280 @@ function setupHeaderSearch() {
   const mobileBtn = document.getElementById("headerTabSearchMobileBtn");
   const panel = document.getElementById("headerTabSearchMobilePanel");
   const mobileInput = document.getElementById("headerTabSearchMobileInput");
-const mobileInputWrap = mobileInput?.closest(
-  ".header-tab-search-mobile-input-wrap"
-);
 
-const mobileClearIcon = mobileInputWrap?.querySelector(
-  ".mobile-icon-clear"
-);
   if (!wrap || !input || !list || !panel || !mobileInput) return;
 
-  const mobileQuery = window.matchMedia("(max-width:815px)");
+  const BACKEND = "https://fiveg88-admin-backend-v2.onrender.com";
+  const STORAGE_KEY = "adminSelectedSites";
+  const isMobile = () => window.matchMedia("(max-width:815px)").matches;
 
-  const isMobile = () => mobileQuery.matches;
-  const isListOpen = () => list.style.display === "block";
+  let availableSites = [];
+  let selectedIds = [];
+  let loading = false;
+  let ready = false;
 
   form?.addEventListener("submit", e => e.preventDefault());
 
-function updateMobileInputIcon() {
-  if (!mobileInputWrap) return;
+  // Tukar label sahaja, bukan struktur input.
+  input.placeholder = "Select Site";
+  mobileInput.placeholder = "Select Site";
+  mobileBtn?.setAttribute("aria-label", "Select Site");
+  mobileBtn?.setAttribute("title", "Select Site");
 
-  mobileInputWrap.classList.toggle(
-    "has-value",
-    mobileInput.value.length > 0
-  );
+  function normalizeSites(data) {
+    const raw = Array.isArray(data)
+      ? data
+      : data.sites || data.items || [];
 
-  mobileInputWrap.classList.toggle(
-    "is-focused",
-    document.activeElement === mobileInput
-  );
-}
+    const arr = Array.isArray(raw)
+      ? raw
+      : Object.entries(raw).map(([id, site]) => ({ id, ...site }));
 
-mobileInput.addEventListener("focus", updateMobileInputIcon);
-mobileInput.addEventListener("blur", updateMobileInputIcon);
-mobileClearIcon?.addEventListener("mousedown", event => {
-  event.preventDefault();
-});
+    return arr
+      .filter(s => s && s.id && s.active !== false)
+      .map(s => ({
+        id: String(s.id),
+        name: String(s.name || s.id)
+      }));
+  }
 
+  function saveSelection() {
+    sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(selectedIds)
+    );
 
-  function hideList() {
+    window.dispatchEvent(new CustomEvent("admin-sites-changed", {
+      detail: { siteIds: [...selectedIds] }
+    }));
+  }
+
+  function updateInput() {
+    const selected = availableSites.filter(
+      site => selectedIds.includes(site.id)
+    );
+
+    if (!selected.length) {
+      input.value = "";
+      input.placeholder = "Select Site";
+      input.title = "";
+      return;
+    }
+
+    // Kekalkan input asal: paparkan site pertama.
+    input.value = selected[0].name;
+    input.title = selected.map(s => s.name).join(", ");
+
+    // +N jika lebih daripada satu site.
+    let more = document.getElementById("headerSelectedSiteMore");
+
+    if (!more) {
+      more = document.createElement("span");
+      more.id = "headerSelectedSiteMore";
+      more.style.cssText = [
+        "position:absolute",
+        "right:27px",
+        "top:50%",
+        "transform:translateY(-50%)",
+        "font-size:11px",
+        "font-weight:600",
+        "padding:2px 4px",
+        "border-radius:4px",
+        "background:rgba(255,255,255,.12)",
+        "color:inherit",
+        "cursor:help",
+        "z-index:2"
+      ].join(";");
+
+      input.parentElement.style.position = "relative";
+      input.parentElement.appendChild(more);
+    }
+
+    const extra = selected.slice(1);
+    more.hidden = extra.length === 0;
+    more.textContent = extra.length ? `+${extra.length}` : "";
+    more.title = extra.map(s => s.name).join("\n");
+
+    mobileInput.placeholder = selected.length
+      ? selected.map(s => s.name).join(", ")
+      : "Select Site";
+  }
+
+  function closeDropdown() {
     list.style.display = "none";
-    list.innerHTML = "";
     wrap.classList.remove("search-mode");
   }
 
-function closePanel() {
-  hideList();
-  panel.hidden = true;
-  mobileBtn?.setAttribute("aria-expanded", "false");
-  mobileBtn?.classList.remove("is-open");
-}
+  function closePanel() {
+    closeDropdown();
+    panel.hidden = true;
+    mobileBtn?.setAttribute("aria-expanded", "false");
+    mobileBtn?.classList.remove("is-open");
+  }
 
-
-function positionPanel() {
-  if (!mobileBtn) return;
-
-  const rect = mobileBtn.getBoundingClientRect();
-
-  const viewportWidth = window.innerWidth;
-  const width = Math.max(
-    0,
-    Math.min(345, viewportWidth - 16)
-  );
-
-  // Responsive panel width
-  panel.style.width = "100%";
-  panel.style.minWidth = "min(150px, calc(100vw - 16px))";
-  panel.style.maxWidth = `${width}px`;
-
-  // Pastikan panel tidak keluar viewport
-  const left = Math.max(
-    8,
-    Math.min(rect.left, viewportWidth - width - 8)
-  );
-
-  panel.style.left = `${left}px`;
-  panel.style.top = `${rect.bottom + 8}px`;
-}
-
-
-  function positionList() {
+  function positionDropdown() {
     const anchor = isMobile() ? mobileInput : input;
     const rect = anchor.getBoundingClientRect();
-
     const width = isMobile()
-      ? Math.min(panel.getBoundingClientRect().width - 24, window.innerWidth - 16)
-      : Math.max(150, rect.width);
+      ? Math.min(320, window.innerWidth - 16)
+      : Math.max(180, rect.width);
 
+    list.style.position = "fixed";
     list.style.width = `${width}px`;
     list.style.left = `${Math.max(
       8,
       Math.min(rect.left, window.innerWidth - width - 8)
     )}px`;
-
-    const spaceBelow = window.innerHeight - rect.bottom - 12;
-    const availableHeight = Math.max(100, spaceBelow);
-
-    list.style.maxHeight = `${Math.min(260, availableHeight)}px`;
     list.style.top = `${rect.bottom + 5}px`;
+    list.style.maxHeight = "260px";
+    list.style.overflowY = "auto";
+    list.style.zIndex = "999999";
   }
 
-  function renderResults(showAll = false) {
-    const searchInput = isMobile() ? mobileInput : input;
-    const keyword = searchInput.value.trim().toLowerCase();
+  function renderOptions(keyword = "") {
+    list.replaceChildren();
 
-    list.innerHTML = "";
-
-    if (!showAll && !keyword) {
-      hideList();
-      return;
-    }
-
-    const results = ADMIN_PAGES.filter(page =>
-      page.name.toLowerCase().includes(keyword)
+    const filtered = availableSites.filter(site =>
+      site.name.toLowerCase().includes(keyword.toLowerCase()) ||
+      site.id.toLowerCase().includes(keyword.toLowerCase())
     );
 
-    if (!results.length) {
-      hideList();
-      return;
+    if (!filtered.length) {
+      const empty = document.createElement("div");
+      empty.textContent = loading
+        ? "Loading sites..."
+        : "No available sites";
+      empty.style.padding = "12px";
+      list.appendChild(empty);
     }
 
-    results.forEach(page => {
-      const link = document.createElement("a");
+    filtered.forEach(site => {
+      const option = document.createElement("label");
+      option.style.cssText = [
+        "display:flex",
+        "align-items:center",
+        "gap:8px",
+        "padding:9px 12px",
+        "cursor:pointer"
+      ].join(";");
 
-      link.href = `./${page.file}`;
-      link.textContent = page.name;
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedIds.includes(site.id);
+      checkbox.style.width = "14px";
+      checkbox.style.height = "14px";
 
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        closePanel();
-        addTab(page);
+      const name = document.createElement("span");
+      name.textContent = site.name;
+
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          if (!selectedIds.includes(site.id)) {
+            selectedIds.push(site.id);
+          }
+        } else {
+          selectedIds = selectedIds.filter(id => id !== site.id);
+        }
+
+        saveSelection();
+        updateInput();
       });
 
-      list.appendChild(link);
+      option.append(checkbox, name);
+      list.appendChild(option);
     });
 
-    positionList();
+    positionDropdown();
     list.style.display = "block";
     wrap.classList.add("search-mode");
   }
 
-  // DESKTOP
-  input.addEventListener("input", () => renderResults(false));
+  async function loadSites() {
+    if (loading) return;
+    loading = true;
 
-  arrow?.addEventListener("click", () => {
-    input.value = "";
-    hideList();
-    input.focus();
+    try {
+      if (typeof auth === "undefined") {
+        throw Error("Firebase Auth is not ready.");
+      }
+
+      const user = await new Promise(resolve => {
+        const unsubscribe = auth.onAuthStateChanged(u => {
+          unsubscribe();
+          resolve(u);
+        });
+      });
+
+      if (!user) {
+        throw Error("Please login again.");
+      }
+
+      const token = await user.getIdToken();
+
+      // Endpoint ini mesti mengembalikan hanya site
+      // yang dibenarkan untuk akaun semasa.
+      const response = await fetch(BACKEND + "/api/sites", {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.ok === false) {
+        throw Error(data.message || data.error || "Cannot load sites.");
+      }
+
+      availableSites = normalizeSites(data);
+
+      let stored = [];
+      try {
+        stored = JSON.parse(
+          sessionStorage.getItem(STORAGE_KEY) || "[]"
+        );
+      } catch (_) {}
+
+      selectedIds = Array.isArray(stored)
+        ? stored.filter(id => availableSites.some(s => s.id === id))
+        : [];
+
+      ready = true;
+      saveSelection();
+      updateInput();
+    } catch (error) {
+      console.error("[Select Site]", error);
+      availableSites = [];
+      selectedIds = [];
+      ready = false;
+      updateInput();
+    } finally {
+      loading = false;
+    }
+  }
+
+  // Desktop: klik input asal untuk buka dropdown.
+  input.addEventListener("click", () => {
+    if (!ready) {
+      loadSites().then(() => renderOptions());
+    } else {
+      renderOptions();
+    }
   });
 
-  // MOBILE: klik icon, buka panel input sahaja
+  input.addEventListener("input", () => {
+    renderOptions(input.value);
+  });
+
+  arrow?.addEventListener("click", e => {
+    e.stopPropagation();
+    if (list.style.display === "block") {
+      closeDropdown();
+    } else {
+      renderOptions();
+    }
+  });
+
+  // Mobile: kekalkan butang dan panel asal.
   mobileBtn?.addEventListener("click", e => {
     e.stopPropagation();
 
@@ -3727,78 +3852,41 @@ function positionPanel() {
       return;
     }
 
-hideList();
-mobileInput.value = "";
-updateMobileInputIcon();
-positionPanel();
-panel.hidden = false;
+    panel.hidden = false;
     mobileBtn.setAttribute("aria-expanded", "true");
-     mobileBtn.classList.add("is-open");
+
+    const rect = mobileBtn.getBoundingClientRect();
+    panel.style.width = "min(345px, calc(100vw - 16px))";
+    panel.style.left = `${Math.max(
+      8,
+      Math.min(rect.left, window.innerWidth - 353)
+    )}px`;
+    panel.style.top = `${rect.bottom + 8}px`;
+
+    mobileInput.value = "";
+    renderOptions();
   });
 
-  // MOBILE: klik input, baru paparkan senarai
-  mobileInput.addEventListener("focus", () => {
-    renderResults(true);
+  mobileInput.addEventListener("focus", () => renderOptions());
+  mobileInput.addEventListener("input", () => {
+    renderOptions(mobileInput.value);
   });
 
-  mobileInput.addEventListener("click", () => {
-    renderResults(true);
-  });
+  document.addEventListener("pointerdown", e => {
+    if (
+      wrap.contains(e.target) ||
+      list.contains(e.target) ||
+      panel.contains(e.target)
+    ) return;
 
-mobileInput.addEventListener("input", () => {
-  updateMobileInputIcon();
-  renderResults(true);
-});
-
-   
-
-/* TUTUP SELECT TAB BILA KLIK LUAR */
-
-document.addEventListener("pointerdown", event => {
-  const target = event.target;
-
-  if (panel.hidden && !isListOpen()) return;
-
-  if (
-    mobileBtn?.contains(target) ||
-    panel.contains(target) ||
-    list.contains(target)
-  ) {
-    return;
-  }
-
-  closePanel();
-});
-
-/* TUTUP BILA TEKAN ESCAPE */
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") {
     closePanel();
-  }
-});
+  });
 
-function clearMobileSearch(event) {
-  event.preventDefault();
-  event.stopPropagation();
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closePanel();
+  });
 
-  mobileInput.value = "";
-  mobileInput.focus();
-
-  updateMobileInputIcon();
-  renderResults(true);
-}
-
-mobileClearIcon?.addEventListener(
-  "click",
-  clearMobileSearch
-);
-
-mobileClearIcon?.addEventListener("keydown", event => {
-  if (event.key === "Enter" || event.key === " ") {
-    clearMobileSearch(event);
-  }
-});
+  loadSites();
 }
 
 
