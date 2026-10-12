@@ -175,6 +175,59 @@
       group: page.group
     }));
   };
+  /* ==========================================================
+     ADMIN TAB PERMISSIONS
+     ========================================================== */
+
+  const SUPERADMIN_ONLY_PAGES = new Set([
+    "users.html",
+    "site-management.html",
+    "admin-users.html"
+  ]);
+
+  let currentAdminProfile = null;
+
+  function canShowAdminPage(file) {
+    const pageFile = String(file || "").trim().toLowerCase();
+
+    if (!pageFile) return false;
+
+    // Jangan benarkan halaman yang tidak didaftarkan.
+    if (!ADMIN_PAGES.some(page => page.file === pageFile)) {
+      return false;
+    }
+
+    // Tunggu profile sebenar dimuatkan.
+    if (!currentAdminProfile) return false;
+
+    // Superadmin boleh melihat semua halaman.
+    if (currentAdminProfile.role === "superadmin") {
+      return true;
+    }
+
+    if (currentAdminProfile.role !== "siteadmin") {
+      return false;
+    }
+
+    // Halaman khas Superadmin.
+    if (SUPERADMIN_ONLY_PAGES.has(pageFile)) {
+      return false;
+    }
+
+    const actions =
+      currentAdminProfile.permissions?.[pageFile];
+
+    return (
+      Array.isArray(actions) &&
+      actions.includes("show")
+    );
+  }
+
+  function getVisibleAdminPages() {
+    return ADMIN_PAGES.filter(page =>
+      canShowAdminPage(page.file)
+    );
+  }
   const DEFAULT_ADMIN_TAB = {
     file: "livechat.html",
     name: "Live Chat",
@@ -1796,11 +1849,11 @@ link.innerHTML = `
 
     container.innerHTML = "";
 
-    ADMIN_PAGES
-      .filter(
-        page =>
-          page.group === group
-      )
+getVisibleAdminPages()
+  .filter(
+    page =>
+      page.group === group
+  )
       .forEach(page => {
 
         container.appendChild(
@@ -1826,7 +1879,7 @@ link.innerHTML = `
 
     container.innerHTML = "";
 
-    ADMIN_PAGES.forEach(page => {
+getVisibleAdminPages().forEach(page => {
 
       const link =
         document.createElement("a");
@@ -4034,7 +4087,17 @@ async function updateHeaderUserFromFirebase() {
     const snap = await db.ref("adminUsers/" + user.uid).once("value");
     const profile = snap.val();
 
-    if (!profile || profile.active !== true) return;
+    // Simpan profile hanya jika account masih aktif.
+if (!profile || profile.active !== true) {
+  currentAdminProfile = null;
+  return;
+}
+
+// Profile Firebase digunakan untuk semakan permission.
+currentAdminProfile = {
+  role: String(profile.role || "").trim().toLowerCase(),
+  permissions: profile.permissions || {}
+};
 
     const name = String(
       profile.displayName || profile.username || "Admin"
@@ -4047,6 +4110,12 @@ async function updateHeaderUserFromFirebase() {
     if (nameEl) nameEl.textContent = name;
     if (infoEl) infoEl.textContent = profile.username || "";
     if (button) button.title = name;
+     // Refresh menu selepas profile Firebase berjaya dimuatkan.
+renderSidebarTabs();
+
+renderDropdown("gameLogDropdown", "gamelog");
+renderDropdown("bankResitDropdown", "bank");
+renderDropdown("gameLinksDropdown", "list");
   } catch (error) {
     console.warn("[Header User]", error);
   }
