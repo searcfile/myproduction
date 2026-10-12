@@ -8,7 +8,42 @@
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 function showModal(){ $('modal').classList.add('open'); }function closeModal(){$('modal').classList.remove('open');editing=null;}
 async function api(path,opts={}){if(!auth.currentUser)throw Error('Session expired');const token=await auth.currentUser.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
-async function check(){const user=await new Promise(resolve=>{auth.onAuthStateChanged(u=>resolve(u),()=>resolve(null))});if(!user){location.replace('./login.html');return false}const t=await user.getIdTokenResult(true);const p=(await db.ref('adminUsers/'+user.uid).once('value')).val();if(t.claims.secondVerified!==true||!Number.isSafeInteger(t.claims.pinVersion)||!p||p.role!=='superadmin'||p.active!==true||p.pinVersion!==t.claims.pinVersion){status('Superadmin access required.',true);return false}return true;}
+async function check() {
+  const user = await new Promise(resolve => {
+    const unsubscribe = auth.onAuthStateChanged(
+      u => {
+        unsubscribe();
+        resolve(u);
+      },
+      () => resolve(null)
+    );
+  });
+
+  if (!user || user.isAnonymous) {
+    location.replace("./login.html");
+    return false;
+  }
+
+  const token = await user.getIdTokenResult(true);
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    status("Please complete 2nd password verification.", true);
+    return false;
+  }
+
+  try {
+    // Backend mesti mengesahkan role Superadmin.
+    // Frontend tidak lagi membaca adminUsers secara terus.
+    await api("/api/admin-users");
+    return true;
+  } catch (error) {
+    status("Superadmin verification failed: " + error.message, true);
+    return false;
+  }
+}
 function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}function btn(label,cls,fn){const b=document.createElement('button');b.className='btn small '+cls;b.textContent=label;b.onclick=fn;return b;}function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
 function render(){const q=$('search').value.toLowerCase().trim();const rows=$('rows');rows.replaceChildren();$('total').textContent=users.length;$('activeCount').textContent=users.filter(u=>u.enabled).length;$('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;const filtered=users.filter(u=>(u.username+' '+u.uid+' '+u.role).toLowerCase().includes(q));if(!filtered.length){const tr=document.createElement('tr');const td=cell(tr,'No matching users','empty');td.colSpan=6;rows.append(tr);return}for(const u of filtered){const tr=document.createElement('tr');cell(tr,u.username,'primarytext');const uidTd=document.createElement('td');const code=document.createElement('span');code.className='mono';code.textContent=u.uid;uidTd.append(code,document.createTextNode(' '),btn('⧉','',()=>copy(u.uid)));tr.append(uidTd);cell(tr,u.role);const s=cell(tr,u.enabled?'Active':'Inactive','pill'+(u.enabled?'':' off'));s.style.display='table-cell';cell(tr,date(u.createdAt));const td=document.createElement('td');const wrap=document.createElement('div');wrap.className='actions-cell';if(u.role==='siteadmin'){wrap.append(btn('Manage','',()=>manage(u)),btn('Delete','danger',()=>removeUser(u)))}else{wrap.textContent='Protected'}td.append(wrap);tr.append(td);rows.append(tr)}}
 async function copy(v){try{await navigator.clipboard.writeText(v);status('UID copied.')}catch{status('Copy failed; select the UID manually.',true)}}
