@@ -1544,7 +1544,9 @@ async function ensureGuestAuth(){
   if (ANON_STATE === 'disabled') return localGuest;
 
   try{
-    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.setPersistence(
+  firebase.auth.Auth.Persistence.SESSION
+);
 
     if (!auth.currentUser) {
       await auth.signInAnonymously();
@@ -2088,10 +2090,15 @@ showLoginLoading();
       throw new Error(data.message || "Invalid verification.");
     }
 
-    // Firebase Auth sebenar selepas kedua-dua langkah berjaya.
-    const result = await firebase.auth().signInWithCustomToken(
-      data.customToken
-    );
+// Gunakan sesi Firebase sepanjang sesi browser.
+await firebase.auth().setPersistence(
+  firebase.auth.Auth.Persistence.SESSION
+);
+
+// Firebase Auth selepas kedua-dua langkah berjaya.
+const result = await firebase.auth().signInWithCustomToken(
+  data.customToken
+);
 
     const user = result.user;
     if (!user) throw new Error("Firebase session unavailable.");
