@@ -546,16 +546,25 @@ select:focus-visible{
 <body>
   <div class="filter-bar">
     
+
 <div class="logo-management-header">
   <h2>Game Logo Management</h2>
 
-  <button
-    type="button"
-    id="createGameBtn"
-    class="create-game-btn">
-    + Create
-  </button>
+  <div id="logoAdminActions" hidden>
+    <button type="button"
+      id="importLogosBtn"
+      class="create-game-btn">
+      Import Old Logos
+    </button>
+
+    <button type="button"
+      id="createGameBtn"
+      class="create-game-btn">
+      + Create
+    </button>
+  </div>
 </div>
+
 
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search Favorite Game" onkeyup="filterGames()" />
