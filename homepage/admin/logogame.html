@@ -672,29 +672,6 @@ function initLogoFilters() {
   });
 }
 
-
-const logoSearch = NewUI.syncSearch('#searchInput', {
-  onSearch: async () => {
-
-    // Beri browser peluang paparkan spinner
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve);
-      });
-    });
-
-    // Jalankan filter game
-    renderGames();
-
-    // Minimum loading 500ms untuk nampak animasi
-    await new Promise(resolve => {
-      setTimeout(resolve, 500);
-    });
-
-  }
-});
-
-  }
   document.getElementById('searchInput').addEventListener('input',renderGames);
   initLogoFilters();
     function renderGames() {
