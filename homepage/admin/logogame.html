@@ -536,11 +536,28 @@ select:focus-visible{
     if (!window.NewUI?.chips) { console.error('new-ui.js chip dropdown unavailable'); return; }
     methodChip = NewUI.chips('#methodFilter',{placeholder:'All Methods',options:LOGO_METHODS,value:[],onChange(values){currentTypes=values;renderGames();}});
     platformChip = NewUI.chips('#platformFilter',{placeholder:'All Platforms',options:LOGO_PLATFORMS,value:[],onChange(values){currentPlatforms=values;renderGames();}});
-    const logoSearch = NewUI.syncSearch('#searchInput', {
-  onSearch: () => {
+
+const logoSearch = NewUI.syncSearch('#searchInput', {
+  onSearch: async () => {
+
+    // Beri browser peluang paparkan spinner
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
+
+    // Jalankan filter game
     renderGames();
+
+    // Minimum loading 500ms untuk nampak animasi
+    await new Promise(resolve => {
+      setTimeout(resolve, 500);
+    });
+
   }
 });
+
   }
   document.getElementById('searchInput').addEventListener('input',renderGames);
   initLogoFilters();
