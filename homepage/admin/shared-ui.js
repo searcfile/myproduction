@@ -3000,10 +3000,15 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
-    const tabBar = document.getElementById("tabBar");
-    if (!tabBar) return;
 
-    tabBar.innerHTML = "";
+const tabBar = document.getElementById("tabBar");
+if (!tabBar) return;
+
+// Tunggu profil admin dan permission siap.
+if (!currentAdminProfile) return;
+
+tabBar.innerHTML = "";
+
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -4060,7 +4065,6 @@ if (!selected.length) {
     if (e.key === "Escape") closePanel();
   });
 
-  loadSites();
 }
 
 
@@ -4176,14 +4180,21 @@ async function updateHeaderUserFromFirebase() {
   try {
     if (typeof auth === "undefined" || typeof db === "undefined") return;
 
-    const user = await new Promise(resolve => {
-      const unsubscribe = auth.onAuthStateChanged(u => {
-        unsubscribe();
-        resolve(u);
-      });
-    });
 
-    if (!user) return;
+const user = await new Promise((resolve, reject) => {
+  const unsubscribe = auth.onAuthStateChanged(
+    user => resolve(user),
+    error => reject(error)
+  );
+});
+
+if (!user || user.isAnonymous) {
+  console.warn("[Admin Auth] No active admin session.");
+
+  window.location.replace("./login.html");
+  return;
+}
+
 
     const snap = await db.ref("adminUsers/" + user.uid).once("value");
     const profile = snap.val();
