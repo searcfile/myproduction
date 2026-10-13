@@ -3004,8 +3004,6 @@ function renderTabs() {
   // Tunggu profil dan permission sebenar siap.
   if (!currentAdminProfile) return;
 
-  tabBar.innerHTML = "";
-
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
 );
@@ -3098,7 +3096,7 @@ function renderTabs() {
       tabList.appendChild(element);
     });
 
-    tabBar.append(tabList, moreWrap);
+    tabBar.replaceChildren(tabList, moreWrap);
 
     // Search lama tetap digunakan, tetapi kekal di kiri.
     initTabBarSearch();
