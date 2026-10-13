@@ -19,3 +19,13 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const db = firebase.database();
+
+// Shared Firebase untuk semua halaman admin
+window.sharedFirebase = {
+  app: firebase.app(),
+  auth,
+  db
+};
+
+window.adminAuth = auth;
+window.adminDb = db;
