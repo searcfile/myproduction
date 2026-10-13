@@ -695,8 +695,9 @@ function initLogoFilters() {
           [game.name || '', game.alias || '', ...platforms].some(x => String(x).toLowerCase().includes(searchText));
       });
 
+
 if (!filtered.length) {
-  showEmptyState(
+  window.showEmptyState(
     grid,
     'No Data',
     'large',
@@ -704,6 +705,7 @@ if (!filtered.length) {
   );
   return;
 }
+
 
       filtered.forEach(game => {
         const div = document.createElement('div'); div.className = 'game-logo';
