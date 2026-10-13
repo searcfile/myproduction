@@ -477,7 +477,14 @@ select:focus-visible{
 </style>
 <body>
 <div class="logo-toolbar-row">
-  <div class="search-container"><input type="search" id="searchInput" data-ui="search" placeholder="Search game name, alias or platform" autocomplete="off"></div>
+  <div class="search-container">
+  <input
+    type="search"
+    id="searchInput"
+    placeholder="Search"
+    autocomplete="off"
+  >
+</div>
   <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
   <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
   <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
@@ -505,7 +512,11 @@ select:focus-visible{
     if (!window.NewUI?.chips) { console.error('new-ui.js chip dropdown unavailable'); return; }
     methodChip = NewUI.chips('#methodFilter',{placeholder:'All Methods',options:LOGO_METHODS,value:[],onChange(values){currentTypes=values;renderGames();}});
     platformChip = NewUI.chips('#platformFilter',{placeholder:'All Platforms',options:LOGO_PLATFORMS,value:[],onChange(values){currentPlatforms=values;renderGames();}});
-    NewUI.input('#searchInput',{search:true});
+    const logoSearch = NewUI.syncSearch('#searchInput', {
+  onSearch: () => {
+    renderGames();
+  }
+});
   }
   document.getElementById('searchInput').addEventListener('input',renderGames);
   initLogoFilters();
