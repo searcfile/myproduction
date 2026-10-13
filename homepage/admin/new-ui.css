@@ -1508,3 +1508,38 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 .shared-sync-search.is-syncing .shared-sync-spinner{display:block;animation:sharedSyncRotate .75s linear infinite}
 @keyframes sharedSyncRotate{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.shared-sync-search.is-syncing .shared-sync-spinner{animation-duration:2s}}
+
+/* ==========================================
+   SHARED EMPTY STATE - OPTIONAL CARD
+   ========================================== */
+
+.shared-empty-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 220px;
+  padding: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--panel2, #171e28);
+  border: 1px solid var(--input-line, #424242);
+  border-radius: 12px;
+
+  box-sizing: border-box;
+}
+
+.shared-empty-card > .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  box-sizing: border-box;
+}
+
+/* Light theme */
+
+html[data-admin-theme="light"]
+.shared-empty-card {
+  background: var(--panel2, #fafafa);
+  border-color: var(--input-line, #d9d9d9);
+}
