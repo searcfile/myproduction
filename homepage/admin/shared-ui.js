@@ -2994,10 +2994,15 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
-    const tabBar = document.getElementById("tabBar");
-    if (!tabBar) return;
 
-    tabBar.innerHTML = "";
+const tabBar = document.getElementById("tabBar");
+if (!tabBar) return;
+
+// Jangan padam tabbar sebelum profil dan permission siap.
+if (!currentAdminProfile) return;
+
+tabBar.innerHTML = "";
+
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -3935,12 +3940,19 @@ if (!selected.length) {
         throw Error("Firebase Auth is not ready.");
       }
 
-      const user = await new Promise(resolve => {
-        const unsubscribe = auth.onAuthStateChanged(u => {
-          unsubscribe();
-          resolve(u);
-        });
-      });
+
+const user = await new Promise((resolve, reject) => {
+  let unsubscribe = null;
+
+  unsubscribe = auth.onAuthStateChanged(
+    user => {
+      resolve(user);
+      queueMicrotask(() => unsubscribe?.());
+    },
+    reject
+  );
+});
+
 
       if (!user) {
         throw Error("Please login again.");
