@@ -2996,42 +2996,15 @@ function initWorkspaceTabDrag(tabList) {
     event.preventDefault();
   });
 }
-/* ==========================================================
-   EARLY TABBAR PLACEHOLDER
-   Papar ruang tabbar sementara menunggu Firebase.
-   Tidak memberi akses kepada halaman sebelum permission siap.
-   ========================================================== */
-
-function renderEarlyTabBar() {
-  const tabBar = document.getElementById("tabBar");
-
-  if (!tabBar || currentAdminProfile) return;
-
-  if (tabBar.querySelector(".admin-tab-loading")) return;
-
-  const placeholder = document.createElement("div");
-
-  placeholder.className = "admin-tab-loading";
-  placeholder.setAttribute("aria-hidden", "true");
-
-  placeholder.innerHTML = `
-    <span class="admin-tab-loading-item"></span>
-    <span class="admin-tab-loading-item"></span>
-    <span class="admin-tab-loading-item"></span>
-  `;
-
-  tabBar.appendChild(placeholder);
-}
 
 function renderTabs() {
   const tabBar = document.getElementById("tabBar");
   if (!tabBar) return;
 
-  // Jangan paparkan tab sebenar sebelum permission disahkan.
-  if (!currentAdminProfile) {
-    renderEarlyTabBar();
-    return;
-  }
+  // Tunggu profil dan permission sebenar siap.
+  if (!currentAdminProfile) return;
+
+  tabBar.innerHTML = "";
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -3125,7 +3098,7 @@ function renderTabs() {
       tabList.appendChild(element);
     });
 
-    tabBar.replaceChildren(tabList, moreWrap);
+    tabBar.append(tabList, moreWrap);
 
     // Search lama tetap digunakan, tetapi kekal di kiri.
     initTabBarSearch();
@@ -5455,7 +5428,6 @@ function initSmartContentLoading() {
 
 function init() {
   createShell();
-  renderEarlyTabBar();
   initSmartContentLoading();
   initFloatingFab();
   setupHeaderMore();
