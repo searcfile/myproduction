@@ -617,6 +617,43 @@ select:focus-visible{
   justify-content: center;
 }
 
+/* ==========================================
+   GAME LOGO - ALIGN CARD WITH TOOLBAR
+   ========================================== */
+
+#gameGrid {
+  width: 100%;
+  max-width: none;
+  padding: 12px 12px 30px;
+  box-sizing: border-box;
+}
+
+/* Full width No Data */
+#gameGrid:has(> .shared-empty-card) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#gameGrid > .shared-empty-card {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  #gameGrid {
+    padding: 12px 12px 30px;
+  }
+}
+
+@media (max-width: 440px) {
+  #gameGrid {
+    padding: 12px 12px 24px;
+  }
+}
+
 
 @media(max-width:440px){.logo-grid{gap:10px;padding:12px 10px 28px}.logo-grid .game-logo{padding:10px;min-height:265px;border-radius:12px;gap:7px}.logo-grid .logo-image-frame{height:112px}.logo-grid .game-logo .logo-image-frame img{height:102px}.logo-grid .logo-actions{gap:5px}.logo-grid .logo-actions button{padding:6px 4px;font-size:11px}}
 </style>
