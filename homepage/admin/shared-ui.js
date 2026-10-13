@@ -4192,14 +4192,6 @@ async function updateHeaderUserFromFirebase() {
     // Simpan profile hanya jika account masih aktif.
 if (!profile || profile.active !== true) {
   currentAdminProfile = null;
-  window.adminProfile = null;
-
-  window.dispatchEvent(
-    new CustomEvent("admin-profile-ready", {
-      detail: null
-    })
-  );
-
   return;
 }
 
@@ -4208,25 +4200,6 @@ currentAdminProfile = {
   role: String(profile.role || "").trim().toLowerCase(),
   permissions: profile.permissions || {}
 };
-/* =====================================================
-   SHARE ADMIN PROFILE WITH OTHER PAGES
-   ===================================================== */
-
-window.adminProfile = {
-  active: profile.active === true,
-  role: currentAdminProfile.role,
-  permissions: currentAdminProfile.permissions,
-  siteIds: Array.isArray(profile.siteIds)
-    ? profile.siteIds
-    : [],
-  uid: user.uid
-};
-
-window.dispatchEvent(
-  new CustomEvent("admin-profile-ready", {
-    detail: window.adminProfile
-  })
-);
 // Semak akses URL selepas profile Firebase dimuatkan.
 const currentPage = getCurrentFile();
 
