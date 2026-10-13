@@ -392,7 +392,8 @@ const ALLOWED_ACTIONS = new Set([
   "create",
   "edit",
   "delete",
-  "block"
+  "block",
+  "upload"
 ]);
 
 app.patch(
@@ -458,9 +459,21 @@ app.patch(
         }
 
         const uniqueActions = [...new Set(actions)];
+        // Game Logo: Delete hanya dibenarkan untuk Superadmin.
+// Site Admin tidak boleh diberikan permission Delete.
+if (
+  moduleName === "logogame.html" &&
+  uniqueActions.includes("delete")
+) {
+  return fail(
+    res,
+    400,
+    "Game Logo delete permission is Superadmin only"
+  );
+}
 
 const requiresView = uniqueActions.some(action =>
-  ["create", "edit", "delete", "block"].includes(action)
+  ["create", "edit", "delete", "block", "upload"].includes(action)
 );
 
 if (requiresView && !uniqueActions.includes("view")) {
