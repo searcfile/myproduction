@@ -684,11 +684,17 @@ function initLogoFilters() {
           (!currentPlatforms.length || currentPlatforms.some(p => platforms.includes(p))) &&
           [game.name || '', game.alias || '', ...platforms].some(x => String(x).toLowerCase().includes(searchText));
       });
-      if (!filtered.length) {
-        const empty = document.createElement('div'); empty.className='logo-empty';
-        empty.innerHTML='<strong>No game logos found</strong><span>Try another search or create your first game logo.</span>';
-        grid.append(empty); return;
-      }
+
+if (!filtered.length) {
+  NewUI.empty(
+    grid,
+    'No Data',
+    'large',
+    'center'
+  );
+  return;
+}
+
       filtered.forEach(game => {
         const div = document.createElement('div'); div.className = 'game-logo';
         const alias = document.createElement('span'); alias.className = 'game-alias'; alias.textContent = game.alias || '';
