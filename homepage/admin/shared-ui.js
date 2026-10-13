@@ -356,24 +356,30 @@ const ICON_CLEAR = `
      USER STORAGE
      ========================================================== */
 
-  function getCurrentUserStorageSuffix() {
-    try {
-      const login = JSON.parse(
-        localStorage.getItem("gmailLogin") || "{}"
-      );
+function getCurrentUserStorageSuffix() {
+  try {
+    const uid = auth.currentUser?.uid;
 
-      const email = String(login.email || "")
-        .trim()
-        .toLowerCase();
-
-      if (!email) return "guest";
-
-      return email.replace(/[^a-z0-9]/g, "_");
-
-    } catch (_) {
-      return "guest";
+    if (uid) {
+      return uid;
     }
+
+    const login = JSON.parse(
+      localStorage.getItem("gmailLogin") || "{}"
+    );
+
+    const email = String(login.email || "")
+      .trim()
+      .toLowerCase();
+
+    return email
+      ? email.replace(/[^a-z0-9]/g, "_")
+      : "guest";
+
+  } catch (error) {
+    return "guest";
   }
+}
 
 
   function getTabsStorageKey() {
