@@ -212,36 +212,34 @@ ${
      SET EMPTY DIRECTLY
   ======================================================= */
 
+
 function showEmptyState(
   target,
   text = "No data",
   size = "",
-  align = ""
+  align = "",
+  card = false
 ) {
+  const element =
+    typeof target === "string"
+      ? document.querySelector(target)
+      : target;
 
-    const element =
-      typeof target === "string"
-        ? document.querySelector(
-            target
-          )
-        : target;
+  if (!element) return;
 
-
-    if (
-      !element
-    ) {
-      return;
-    }
-
-
-element.innerHTML =
-  createEmptyState(
+  const emptyHTML = createEmptyState(
     text,
     size,
     align
   );
 
-  }
+  element.innerHTML = card
+    ? `<div class="shared-empty-card">
+         ${emptyHTML}
+       </div>`
+    : emptyHTML;
+}
+
 
 
   /* =======================================================
