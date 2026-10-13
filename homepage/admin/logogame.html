@@ -447,21 +447,43 @@ select:focus-visible{
 .logo-empty span{font-size:13px;opacity:.6}
 @media(max-width:700px){.logo-management-header{padding:16px 14px 12px}.logo-toolbar{width:100%;min-width:0;justify-content:space-between}.filter-bar{padding:10px 14px 16px;gap:10px}.logo-filter-group{min-width:145px}.logo-grid{padding:16px 14px 30px;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.logo-grid .game-logo{min-height:245px;padding:12px 9px}.logo-image-frame{height:105px}.logo-grid .game-logo .logo-image-frame img{height:95px}}
 
+
+/* 5G88 — compact toolbar and premium responsive logo cards */
+.logo-management-header{padding:20px 24px 10px;display:block}
+.logo-management-header h2{font-size:19px;font-weight:650;letter-spacing:-.35px;margin:0;color:var(--page-text)}
+.logo-toolbar-row{display:grid;grid-template-columns:minmax(210px,1.4fr) minmax(155px,.75fr) minmax(155px,.75fr) auto;align-items:center;gap:12px;padding:8px 24px 20px;border-bottom:1px solid var(--border-input)}
+.logo-toolbar-row .search-container{padding:0;margin:0;min-width:0;text-align:left}
+.logo-toolbar-row .search-container input,.logo-toolbar-row .new-ui-input-wrap,.logo-toolbar-row .new-ui-input-wrap input{width:100%;max-width:none;margin:0;min-width:0;height:40px;border-radius:9px}
+.logo-toolbar-row .logo-filter-group{min-width:0;max-width:none;width:100%;display:block;flex:none}
+.logo-toolbar-row .logo-chip-filter,.logo-toolbar-row .shared-chip-dropdown{width:100%;min-width:0;min-height:40px}
+.logo-toolbar-row .create-game-btn{height:40px;padding:0 20px;border-radius:9px;font-weight:650;white-space:nowrap;justify-self:end}
+.logo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:22px 24px 44px;max-width:none;align-items:stretch}
+.logo-grid .game-logo{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:9px;min-height:295px;padding:14px;border:1px solid var(--border-input);border-radius:16px;background:var(--page-input);box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+.logo-grid .game-logo:hover{transform:translateY(-3px);border-color:rgba(22,104,220,.65);box-shadow:0 12px 28px rgba(0,0,0,.18)}
+.logo-grid .game-logo .game-alias{display:block;min-height:0;margin:0!important;text-align:left;font-size:12px!important;line-height:1.4;font-weight:700;letter-spacing:.25px;color:var(--page-text);overflow-wrap:anywhere}
+.logo-grid .logo-image-frame{width:100%;height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:linear-gradient(145deg,rgba(128,128,128,.11),rgba(128,128,128,.035));margin:0}
+.logo-grid .game-logo .logo-image-frame img{width:100%;max-width:94%;height:130px;object-fit:contain;margin:0;cursor:pointer;transition:transform .22s}
+.logo-grid .game-logo .logo-image-frame:hover img{transform:scale(1.065)}
+.logo-grid .game-logo .game-name{display:block;text-align:left;font-size:13px;font-weight:650;color:var(--page-text);line-height:1.35;overflow-wrap:anywhere}
+.logo-grid .game-logo .logo-method-tag{display:block;text-align:left;font-size:11px;color:var(--page-text);opacity:.65}
+.logo-grid .logo-platforms{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:5px;min-height:0;margin:0}
+.logo-grid .game-logo .logo-platform-tag{font-size:10px;color:var(--blue);background:rgba(22,104,220,.11);border:1px solid rgba(22,104,220,.16);padding:4px 7px;border-radius:6px;font-weight:600}
+.logo-grid .logo-actions{margin-top:auto;padding-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;border-top:1px solid var(--border-input)}
+.logo-grid .logo-actions button{min-height:33px;padding:7px 9px;border-radius:8px;font-size:12px}
+.logo-grid .logo-actions button:hover{background:rgba(22,104,220,.08)}
+.logo-grid .logo-actions button:last-child:hover{border-color:#e45454;color:#e45454;background:rgba(228,84,84,.07)}
+@media(max-width:850px){.logo-toolbar-row{grid-template-columns:1fr;gap:10px;padding:8px 14px 18px}.logo-toolbar-row .search-container,.logo-toolbar-row .logo-filter-group,.logo-toolbar-row .create-game-btn{width:100%;max-width:none}.logo-toolbar-row .create-game-btn{justify-self:stretch}.logo-management-header{padding:16px 14px 10px}.logo-grid{padding:16px 14px 32px;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+@media(max-width:440px){.logo-grid{gap:10px;padding:12px 10px 28px}.logo-grid .game-logo{padding:10px;min-height:265px;border-radius:12px;gap:7px}.logo-grid .logo-image-frame{height:112px}.logo-grid .game-logo .logo-image-frame img{height:102px}.logo-grid .logo-actions{gap:5px}.logo-grid .logo-actions button{padding:6px 4px;font-size:11px}}
 </style>
 <body>
-<div class="logo-management-header">
-  <div class="logo-header-left"><h2>Game Logo Management</h2><span id="logoCount" class="logo-count">0 logos</span></div>
-  <div class="logo-toolbar">
-    <div class="search-container"><input type="search" id="searchInput" data-ui="search" placeholder="Search game name, alias or platform" autocomplete="off" /></div>
-    <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
-  </div>
+<div class="logo-management-header"><h2>Game Logo Management</h2></div>
+<div class="logo-toolbar-row">
+  <div class="search-container"><input type="search" id="searchInput" data-ui="search" placeholder="Search game name, alias or platform" autocomplete="off"></div>
+  <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
+  <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
+  <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
 </div>
-<div class="filter-bar">
-  <div class="logo-filter-group"><label for="methodFilter">Method</label><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
-  <div class="logo-filter-group"><label for="platformFilter">Platform</label><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
-  <button type="button" id="clearLogoFilters" class="logo-reset">Reset filters</button>
-</div>
-  <div class="logo-grid" id="gameGrid">
+<div class="logo-grid" id="gameGrid">
   </div>
   <dialog id="logoDialog" class="logo-dialog"><form id="logoForm"><h3 id="logoDialogTitle">Create Game Logo</h3><label>Game Name<input id="logoName" maxlength="120" required></label><label>Display Name / Alias<input id="logoAlias" maxlength="120" required></label><label>Method<select id="logoType"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label><fieldset><legend>Platforms</legend><label><input type="checkbox" name="logoPlatform" value="918kiss"> 918KISS</label><label><input type="checkbox" name="logoPlatform" value="mega888"> MEGA888</label><label><input type="checkbox" name="logoPlatform" value="pussy888"> PUSSY888</label><label><input type="checkbox" name="logoPlatform" value="xe88"> XE88</label></fieldset><label>Upload Image<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><label>Or Image URL<input id="logoUrl" type="url" placeholder="https://..."></label><img id="logoPreview" alt="Image preview" hidden><p id="logoStatus" role="status"></p><div class="logo-dialog-buttons"><button type="button" id="logoCancel">Cancel</button><button type="submit" id="logoSave">Save</button></div></form></dialog>
   <button id="backToTop" onclick="scrollToTop()">⬆ Back to Top</button>
@@ -487,12 +509,6 @@ select:focus-visible{
     NewUI.input('#searchInput',{search:true});
   }
   document.getElementById('searchInput').addEventListener('input',renderGames);
-  document.getElementById('clearLogoFilters').addEventListener('click',()=>{
-    methodChip?.setValue([]);platformChip?.setValue([]);
-    document.getElementById('searchInput').value='';
-    document.getElementById('searchInput').dispatchEvent(new Event('input',{bubbles:true}));
-    renderGames();
-  });
   initLogoFilters();
     function renderGames() {
       const grid = document.getElementById('gameGrid');
@@ -504,7 +520,6 @@ select:focus-visible{
           (!currentPlatforms.length || currentPlatforms.some(p => platforms.includes(p))) &&
           [game.name || '', game.alias || '', ...platforms].some(x => String(x).toLowerCase().includes(searchText));
       });
-      document.getElementById('logoCount').textContent = `${filtered.length} of ${games.length} logos`;
       if (!filtered.length) {
         const empty = document.createElement('div'); empty.className='logo-empty';
         empty.innerHTML='<strong>No game logos found</strong><span>Try another search or create your first game logo.</span>';
