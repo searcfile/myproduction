@@ -463,62 +463,11 @@ select:focus-visible{
   border: 1px solid var(--border-input);
   border-radius: 14px;
   background: var(--page-bg2);
+  margin:12px;
 }
 
 .logo-toolbar-row .search-container{padding:0;margin:0;min-width:0;text-align:left}
-
-/* Shared Search - Logo Game */
-
-.logo-toolbar-row .search-container {
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-}
-
-.logo-toolbar-row .shared-sync-search {
-  display: flex;
-  align-items: stretch;
-  width: 100%;
-  min-width: 0;
-  height: 32px;
-  overflow: hidden;
-  box-sizing: border-box;
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
-}
-
-.logo-toolbar-row .shared-sync-search-input {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  margin: 0;
-  border: 0 !important;
-  border-radius: 0 !important;
-  outline: none;
-  box-shadow: none !important;
-  background: transparent;
-}
-
-.logo-toolbar-row .shared-sync-search-button {
-  flex: 0 0 32px;
-  width: 32px;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  border-left: 1px solid var(--border-input);
-  border-radius: 0;
-  background: transparent;
-  box-sizing: border-box;
-}
-
-.logo-toolbar-row .shared-sync-search:focus-within {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 2px rgba(22,104,220,.12);
-}
-
+.logo-toolbar-row .search-container input,.logo-toolbar-row .new-ui-input-wrap,.logo-toolbar-row .new-ui-input-wrap input{width:100%;max-width:none;margin:0;min-width:0;height:32px;border-radius:8px}
 .logo-toolbar-row .logo-filter-group{min-width:0;max-width:none;width:100%;display:block;flex:none}
 .logo-toolbar-row .logo-chip-filter,.logo-toolbar-row .shared-chip-dropdown{width:100%;min-width:0;min-height:32px}
 .logo-toolbar-row .create-game-btn {
@@ -529,6 +478,7 @@ select:focus-visible{
   white-space: nowrap;
   justify-self: end;
   width: max-content;
+  font-size:14px;
 }
 
 .logo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:22px 24px 44px;max-width:none;align-items:stretch}
