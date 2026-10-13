@@ -3023,13 +3023,15 @@ function renderEarlyTabBar() {
   tabBar.appendChild(placeholder);
 }
 function renderTabs() {
+function renderTabs() {
   const tabBar = document.getElementById("tabBar");
   if (!tabBar) return;
 
-  // Tunggu profil dan permission sebenar siap.
-  if (!currentAdminProfile) return;
-
-  tabBar.innerHTML = "";
+  // Jangan paparkan tab sebenar sebelum permission disahkan.
+  if (!currentAdminProfile) {
+    renderEarlyTabBar();
+    return;
+  }
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -3123,7 +3125,7 @@ function renderTabs() {
       tabList.appendChild(element);
     });
 
-    tabBar.append(tabList, moreWrap);
+    tabBar.replaceChildren(tabList, moreWrap);
 
     // Search lama tetap digunakan, tetapi kekal di kiri.
     initTabBarSearch();
