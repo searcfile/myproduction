@@ -7,6 +7,7 @@
   <title>Maybank Editor</title>
     <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
+  <link rel="stylesheet" href="./new-ui.css">
 </head>
   <style>
     /* ===== Paper container ===== */
@@ -236,6 +237,11 @@ html {
       <button class="btn btn-green pos-change" id="btnChangeMode" type="button">Change</button>
     </div>
   </div>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="../firebase.js"></script>
+<script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js"></script>
 <script type="module">
   let counter = 0;
