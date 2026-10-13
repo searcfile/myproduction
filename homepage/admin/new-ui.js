@@ -2696,6 +2696,59 @@ const sharedModalAPI = {
 
 window.NewUI={syncSearch:createSyncSearch,init:initNewUI,input:createNewInput,dropdown:createSharedDropdown,chips:createSharedChipDropdown,icon:name=>NEW_UI_ICONS[name]||'',getValues:el=>{const e=typeof el==='string'?document.querySelector(el):el;return e?._sharedChipDropdown?.getValue?.()??e?.value??null;}};
 window.NewUI.modal=sharedModalAPI;
+
+/* =========================================================
+   SHARED IMAGE UPLOAD + PREVIEW
+   UI only; uploading to Cloudinary remains caller's responsibility.
+========================================================= */
+function createSharedImageUpload(target, options = {}) {
+  const host = typeof target === 'string' ? document.querySelector(target) : target;
+  if (!host) return null;
+  if (host._sharedImageUpload) return host._sharedImageUpload;
+  const accept = options.accept || 'image/png,image/jpeg,image/webp,image/gif';
+  const maxSizeMB = Number(options.maxSizeMB || 10);
+  const uploadSVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const deleteSVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12M10 11v6M14 11v6M9 7l1-3h4l1 3M8 7l1 13h6l1-13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const section = document.createElement('div'); section.className = 'shared-image-upload';
+  const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept=accept; fileInput.hidden=true;
+  const pick = document.createElement('button'); pick.type='button'; pick.className='shared-image-upload-btn';
+  pick.innerHTML=uploadSVG; pick.append(document.createTextNode(' '+(options.buttonText || 'Upload Image')));
+  const preview=document.createElement('div'); preview.className='shared-image-upload-preview'; preview.hidden=true;
+  const img=document.createElement('img'); img.alt='Image preview';
+  const info=document.createElement('div'); info.className='shared-image-upload-file-info';
+  const filename=document.createElement('strong'); const status=document.createElement('span'); status.textContent='Ready'; info.append(filename,status);
+  const remove=document.createElement('button');remove.type='button';remove.className='shared-image-upload-remove';remove.setAttribute('aria-label','Remove image');remove.innerHTML=deleteSVG;
+  preview.append(img,info,remove);section.append(fileInput,pick,preview);host.append(section);
+  let file=null, url='', objectURL='', destroyed=false;
+  function revoke(){if(objectURL){URL.revokeObjectURL(objectURL);objectURL='';}}
+  function clear(notify=true){revoke();file=null;url='';fileInput.value='';img.removeAttribute('src');filename.textContent='';preview.hidden=true;status.textContent='Ready';if(notify)options.onChange?.({file:null,url:''});}
+  function setUrl(nextUrl, name='Existing image'){
+    clear(false);if(!nextUrl){options.onChange?.({file:null,url:''});return;}
+    const parsed=new URL(nextUrl,location.href);
+    if(!['https:','http:'].includes(parsed.protocol))throw new Error('Invalid image URL');
+    url=parsed.href;img.src=url;filename.textContent=name;preview.hidden=false;options.onChange?.({file:null,url});
+  }
+  function showFile(nextFile){
+    if(!nextFile)return;
+    const allowed=['image/png','image/jpeg','image/webp','image/gif'];
+    if(!allowed.includes(nextFile.type)){const e=new Error('Please select PNG, JPG, WEBP or GIF.');options.onError?.(e);fileInput.value='';return;}
+    if(nextFile.size>maxSizeMB*1024*1024){const e=new Error('Image exceeds '+maxSizeMB+' MB.');options.onError?.(e);fileInput.value='';return;}
+    clear(false);file=nextFile;objectURL=URL.createObjectURL(file);img.src=objectURL;filename.textContent=file.name;preview.hidden=false;options.onChange?.({file,url:''});
+  }
+  pick.addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',()=>showFile(fileInput.files?.[0]));
+  remove.addEventListener('click',()=>clear());
+  const api={element:section,input:fileInput,preview,image:img,button:pick,
+    getFile:()=>file,getUrl:()=>url,clear,setUrl,setStatus(value){status.textContent=String(value);},
+    setDisabled(value){pick.disabled=!!value;remove.disabled=!!value;fileInput.disabled=!!value;},
+    destroy(){if(destroyed)return;destroyed=true;clear(false);section.remove();delete host._sharedImageUpload;}
+  };
+  host._sharedImageUpload=api;
+  if(options.initialUrl)setUrl(options.initialUrl,options.initialName||'Existing image');
+  return api;
+}
+
+window.NewUI.imageUpload=createSharedImageUpload;
 window.createSharedDropdown=createSharedDropdown;
 window.createSharedChipDropdown=createSharedChipDropdown;
 window.initSharedDropdowns=initSharedDropdowns;
