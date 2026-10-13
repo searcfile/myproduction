@@ -780,5 +780,52 @@ app.post(
     }
   }
 );
+/* =====================================================
+   GET GAME LOGOS FROM FIREBASE RTDB
+   ===================================================== */
+
+app.get(
+  "/api/game-logos",
+  requireAdmin,
+  requirePermission("logogame.html", "view"),
+  async (req, res) => {
+    try {
+      const siteId = String(req.query.siteId || "").trim();
+
+      // Verify site exists, active and assigned to this admin
+      if (!(await canAccessGameLogoSite(req.admin, siteId))) {
+        return fail(res, 403, "Invalid or unauthorized site");
+      }
+
+      // Read Game Logo data from Firebase
+      const snapshot = await db
+        .ref(`gameLogos/${siteId}`)
+        .once("value");
+
+      const data = snapshot.val() || {};
+
+      // Convert Firebase object to array
+      const games = Object.entries(data).map(([id, game]) => ({
+        id,
+        ...game
+      }));
+
+      // Sort newest first
+      games.sort(
+        (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
+      );
+
+      return res.json({
+        ok: true,
+        siteId,
+        games
+      });
+
+    } catch (error) {
+      console.error("Get Game Logos:", error.message);
+      return fail(res, 500, "Cannot load game logos");
+    }
+  }
+);
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
