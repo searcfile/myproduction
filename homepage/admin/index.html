@@ -48,9 +48,12 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="../firebase.js"></script>
+
 <script>
 (function () {
   const LOGIN_URL = "./login.html";
+  const auth = firebase.auth();
+
   let redirecting = false;
   let checking = false;
 
@@ -63,21 +66,21 @@
     document.documentElement.style.visibility = "hidden";
 
     try {
-      await firebase.auth().signOut();
+      await auth.signOut();
     } catch (error) {
-      console.warn("Sign out:", error);
+      console.warn("Sign out failed:", error);
+    } finally {
+      location.replace(LOGIN_URL);
     }
-
-    window.location.replace(LOGIN_URL);
   }
 
-  async function verifySession() {
+  async function verifySession(user) {
     if (checking || redirecting) return;
 
     checking = true;
 
     try {
-      const user = firebase.auth().currentUser;
+      user = user || auth.currentUser;
 
       if (!user || user.isAnonymous) {
         await goToLogin();
@@ -115,38 +118,39 @@
 
     } catch (error) {
       console.error("Session verification failed:", error);
-      // Jangan paksa logout hanya kerana network sementara gagal.
+      // Network error bukan bukti user sudah logout.
     } finally {
       checking = false;
     }
   }
 
-  firebase.auth().onAuthStateChanged(async (user) => {
+  auth.onAuthStateChanged(user => {
     if (!user || user.isAnonymous) {
-      await goToLogin();
+      goToLogin();
       return;
     }
 
-    await verifySession();
+    verifySession(user);
   });
 
-  // Semak semula apabila kembali ke halaman admin.
-  window.addEventListener("focus", verifySession);
+  window.addEventListener("focus", () => {
+    if (!redirecting) verifySession(auth.currentUser);
+  });
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      verifySession();
+    if (!document.hidden && !redirecting) {
+      verifySession(auth.currentUser);
     }
   });
 
-  // Semak berkala untuk mengesan sesi yang telah hilang.
   setInterval(() => {
-    if (firebase.auth().currentUser === null) {
+    if (!redirecting && auth.currentUser === null) {
       goToLogin();
     }
   }, 3000);
 })();
 </script>
+
 <script>window.renderMobileUserBtn = window.renderMobileUserBtn || function(){};</script>
 <audio id="christmasMusic" loop>
 <source src="https://5g88-main.vercel.app/main/merrychristmas/" type="audio/mpeg"></audio>
