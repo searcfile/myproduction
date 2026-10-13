@@ -20,10 +20,43 @@
   <meta name="twitter:title" content="Home Editor">
   <meta name="twitter:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
   <meta name="twitter:image" content="https://searcfile.github.io/myproduction/homepage/admin/logo.svg">
+  <style>
+  #adminAuthLoading {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #101114;
+    color: #ffffff;
+    font: 14px Arial, sans-serif;
+  }
+
+  .admin-auth-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255,255,255,.15);
+    border-top-color: #1677ff;
+    border-radius: 50%;
+    animation: adminAuthSpin .7s linear infinite;
+  }
+
+  @keyframes adminAuthSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  html.admin-auth-ready #adminAuthLoading {
+    display: none;
+  }
+</style>
 </head>
 <body>
 
 <div class="container" id="mainContainer">
+  <div id="adminPageContent"></div>
   <div id="emptyState" class="empty-state hidden" role="status" aria-live="polite">
     <h3 class="empty-title">Click menu open sidebar!</h3>
 
@@ -49,7 +82,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="../firebase.js"></script>
 <script>
-  document.documentElement.style.visibility = "hidden";
+  document.documentElement.classList.remove("admin-auth-ready");
 
   firebase.auth().onAuthStateChanged(async (user) => {
     try {
@@ -87,7 +120,7 @@
         return;
       }
 
-      document.documentElement.style.visibility = "";
+      document.documentElement.classList.add("admin-auth-ready");
 
     } catch (error) {
       console.error("Access verification failed:", error);
