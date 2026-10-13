@@ -2073,13 +2073,31 @@ if (verifyButton) {
 showLoginLoading();
 
   try {
-    const response = await fetch(`${ADMIN_API}/api/login/finish`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        challenge: pending2FA.acc.challenge,
-        pin
-      })
+
+const controller = new AbortController();
+
+const timeoutId = setTimeout(() => {
+  controller.abort();
+}, 20000);
+
+let response;
+
+try {
+  response = await fetch(`${ADMIN_API}/api/login/finish`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      challenge: pending2FA.acc.challenge,
+      pin
+    }),
+    signal: controller.signal
+  });
+} finally {
+  clearTimeout(timeoutId);
+}
+
     });
 
     const data = await response.json();
@@ -2242,11 +2260,28 @@ async function loginWithUsername() {
   setLoading(true, "userpass");
 
   try {
-    const response = await fetch(`${ADMIN_API}/api/login/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+
+const controller = new AbortController();
+
+const timeoutId = setTimeout(() => {
+  controller.abort();
+}, 20000);
+
+let response;
+
+try {
+  response = await fetch(`${ADMIN_API}/api/login/start`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ username, password }),
+    signal: controller.signal
+  });
+} finally {
+  clearTimeout(timeoutId);
+}
+
 
     const data = await response.json();
 
