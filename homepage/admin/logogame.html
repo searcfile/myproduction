@@ -665,7 +665,7 @@ select:focus-visible{
 .logo-dialog form>label{display:grid;gap:7px;font-size:13px;min-width:0;}
 .logo-dialog .new-ui-input-wrap{width:100%;min-width:0;}
 .logo-dialog input.new-ui-input{width:100%;height:36px;padding:0 32px 0 11px;border:1px solid var(--input-line);background:var(--input);color:var(--text);font-size:14px;}
-.logo-dialog .shared-dropdown-trigger{height:36px;}
+.logo-dialog .shared-dropdown-trigger{height:32px;}
 .logo-dialog .shared-dropdown-input{padding:0 28px 0 11px;border:0!important;background:transparent!important;box-shadow:none!important;}
 .logo-dialog .shared-chip-dropdown-trigger{min-height:36px;}
 .logo-dialog .shared-image-upload{width:100%;}
@@ -699,7 +699,20 @@ select:focus-visible{
     <label>Game Name<input id="logoName" data-new-ui-input maxlength="120" required placeholder="Enter game name"></label>
     <label>Display Name / Alias<input id="logoAlias" data-new-ui-input maxlength="120" required placeholder="Enter display name"></label>
     <label class="logo-editor-dropdown-field">Method<select id="logoType" data-shared-dropdown data-placeholder="Select method"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label>
-    <label class="logo-editor-dropdown-field">Platforms<div id="logoPlatformPicker" class="logo-editor-platforms"></div></label>
+    <label class="logo-editor-dropdown-field">
+  Platforms
+  <select
+    id="logoPlatformPicker"
+    data-shared-dropdown
+    data-placeholder="Select platform"
+  >
+    <option value="">Select platform</option>
+    <option value="918kiss">918KISS</option>
+    <option value="mega888">MEGA888</option>
+    <option value="pussy888">PUSSY888</option>
+    <option value="xe88">XE88</option>
+  </select>
+</label>
     <label>Upload Image<div id="logoImagePicker"></div></label>
     <label>Or Image URL<input id="logoUrl" data-new-ui-input type="url" placeholder="https://..."></label>
     <p id="logoStatus" role="status" aria-live="polite"></p>
@@ -1039,13 +1052,7 @@ function logoDb() {
   return firebase.database();
 }
 function validImageUrl(url) { try {return new URL(url).protocol === 'https:';} catch {return false;} }
-const logoPlatformPicker = NewUI.chips('#logoPlatformPicker', {
-  placeholder:'Select platforms',
-  options:[
-    {value:'918kiss',label:'918KISS'}, {value:'mega888',label:'MEGA888'},
-    {value:'pussy888',label:'PUSSY888'}, {value:'xe88',label:'XE88'}
-  ]
-});
+  
 const logoImagePicker = NewUI.imageUpload('#logoImagePicker', {
   buttonText:'Upload Image', maxSizeMB:5,
   onError:error=>NewUI.showToast(error.message,'error'),
@@ -1056,6 +1063,9 @@ const logoImagePicker = NewUI.imageUpload('#logoImagePicker', {
 NewUI.init(logoDialog);
 // Use the shared searchable dropdown for Method; Platforms uses shared multi-select.
 window.createSharedDropdown?.('#logoType', { placeholder: 'Select method' });
+  window.createSharedDropdown?.('#logoPlatformPicker', {
+  placeholder: 'Select platform'
+});
 function openLogoEditor(game=null) {
   editingLogoId=game?.id||null;
   logoForm.reset(); logoStatus.textContent='';
@@ -1066,7 +1076,13 @@ function openLogoEditor(game=null) {
   document.getElementById('logoType').dispatchEvent(new Event('change',{bubbles:true}));
   document.getElementById('logoUrl').value=game?.image||'';
   const platforms=Array.isArray(game?.platform)?game.platform:Object.values(game?.platform||{});
-  logoPlatformPicker.setValue(platforms,false);
+  const platformSelect = document.getElementById('logoPlatformPicker');
+
+platformSelect.value = platforms[0] || '';
+
+platformSelect.dispatchEvent(
+  new Event('change', { bubbles: true })
+);
   logoImagePicker.clear(false);
   if(game?.image) logoImagePicker.setUrl(game.image,'Current image');
   logoDialog.showModal();
@@ -1083,7 +1099,12 @@ document.getElementById('logoUrl').addEventListener('input',e=>{
 logoForm.addEventListener('submit',async e=>{
   e.preventDefault();const btn=document.getElementById('logoSave');btn.disabled=true;
   try {
-    const platforms=logoPlatformPicker.getValue();
+    const selectedPlatform =
+  document.getElementById('logoPlatformPicker').value;
+
+const platforms = selectedPlatform
+  ? [selectedPlatform]
+  : [];
     if(!platforms.length)throw new Error('Pilih sekurang-kurangnya satu platform');
     let image=document.getElementById('logoUrl').value.trim();
     const file=logoImagePicker.getFile();
