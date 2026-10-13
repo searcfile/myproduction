@@ -49,7 +49,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="../firebase.js"></script>
 <script>
-  document.documentElement.style.visibility = "hidden";
+  // Tahan kandungan utama sehingga akses disahkan.
+// Jangan sembunyikan keseluruhan HTML.
+const mainContent = document.getElementById("mainContainer");
+
+if (mainContent) {
+  mainContent.style.visibility = "hidden";
+}
 
   firebase.auth().onAuthStateChanged(async (user) => {
     try {
@@ -87,7 +93,10 @@
         return;
       }
 
-      document.documentElement.style.visibility = "";
+      // Firebase Auth, 2FA dan profil admin telah disahkan.
+if (mainContent) {
+  mainContent.style.visibility = "";
+}
 
     } catch (error) {
       console.error("Access verification failed:", error);
