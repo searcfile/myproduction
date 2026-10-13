@@ -655,13 +655,44 @@ gameCreateForm.addEventListener("submit", event => {
   );
 });
 
-// Sementara: hanya tunjuk Create kepada Superadmin.
-// Permission Site Admin akan disambungkan selepas ini.
+/* =====================================================
+   GAME LOGO CREATE PERMISSION
+   ===================================================== */
+
 const gameToolbar = document.getElementById("gameManageToolbar");
 
-if (gameToolbar) {
+function refreshGameCreatePermission() {
+  if (!gameToolbar) return;
+
+  // Default: hide until permissions are verified
   gameToolbar.hidden = true;
+
+  const profile = window.adminProfile;
+
+  if (!profile || profile.active !== true) {
+    return;
+  }
+
+  // Superadmin can create
+  if (profile.role === "superadmin") {
+    gameToolbar.hidden = false;
+    return;
+  }
+
+  // Site Admin requires show, view and create
+  if (profile.role === "siteadmin") {
+    const actions = profile.permissions?.logogame_html || [];
+
+    gameToolbar.hidden = !(
+      actions.includes("show") &&
+      actions.includes("view") &&
+      actions.includes("create")
+    );
+  }
 }
+
+// Hide by default
+refreshGameCreatePermission();
   const games = [
       {alias: "LOTUS LEGEND",name: "LotusLegend",image: "https://i.imgur.com/6bWBB6Q.png",platform: ["mega888"],type: "slot"},
       {alias: "LUCKY NEKO",name: "LuckyNeko",image: "https://i.imgur.com/OjR3A5u.png",platform: ["mega888"],type: "slot"},
