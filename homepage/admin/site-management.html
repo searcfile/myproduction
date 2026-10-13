@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Site Management · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Site Management · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"><link rel="stylesheet" href="./new-ui.css"></head><body>
 <main class="workspace"><div class="page-top"><div><div class="eyebrow">Workspace management</div><h1>Site Management</h1><p class="subtitle">Manage sites, status and wallet group references.</p></div><button id="create" class="btn primary" disabled>+ Add Site</button></div>
 <div class="stats"><div class="card stat"><small>Total sites</small><strong id="total">—</strong></div><div class="card stat"><small>Active sites</small><strong id="activeCount">—</strong></div><div class="card stat"><small>Inactive sites</small><strong id="inactiveCount">—</strong></div></div>
 <section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search site name or ID"><button id="refresh" class="btn">↻ Refresh</button></div></div><div class="tablewrap"><table><thead><tr><th>Site name</th><th>Site ID</th><th>Wallet group</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Loading sites…</td></tr></tbody></table></div><div id="status" class="status" role="status">Checking admin session…</div></section></main>
@@ -6,6 +6,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="./new-ui.js"></script>
 <script src="../firebase.js"></script>
    <script defer src="./shared-ui.js"></script>
    <script>
