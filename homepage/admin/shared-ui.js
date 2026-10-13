@@ -3022,7 +3022,7 @@ function renderEarlyTabBar() {
 
   tabBar.appendChild(placeholder);
 }
-function renderTabs() {
+
 function renderTabs() {
   const tabBar = document.getElementById("tabBar");
   if (!tabBar) return;
