@@ -2601,7 +2601,101 @@ function createSyncSearch(target, options = {}) {
   return api;
 }
 
+
+/* =========================================================
+   SHARED MODAL — extracted from Admin Users popup
+   API: NewUI.modal.open({title,content,width,onClose})
+        NewUI.modal.close(), NewUI.modal.create(options)
+   ========================================================= */
+const sharedModalCloseSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"></path><path d="M18 6L6 18"></path></svg>';
+let sharedModalCounter = 0;
+function createSharedModal(options = {}) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'shared-modal-backdrop';
+  backdrop.setAttribute('aria-hidden','true');
+  const dialog = document.createElement('div');
+  dialog.className = 'shared-modal';
+  dialog.setAttribute('role','dialog');
+  dialog.setAttribute('aria-modal','true');
+  const titleId = 'shared-modal-title-' + (++sharedModalCounter);
+  dialog.setAttribute('aria-labelledby',titleId);
+  if (options.width) dialog.style.maxWidth = typeof options.width === 'number' ? options.width + 'px' : options.width;
+  const closeButton = document.createElement('button');
+  closeButton.type='button'; closeButton.className='shared-modal-close';
+  closeButton.setAttribute('aria-label','Close');
+  closeButton.innerHTML = sharedModalCloseSVG;
+  const heading = document.createElement('h2');
+  heading.id=titleId; heading.className='shared-modal-title';
+  heading.textContent=options.title || '';
+  const body = document.createElement('div');body.className='shared-modal-body';
+  const footer = document.createElement('div');footer.className='shared-modal-actions';
+  dialog.append(closeButton,heading,body,footer);
+  backdrop.append(dialog);
+  document.body.append(backdrop);
+  let previousFocus=null, destroyed=false;
+  function setContent(value,target) {
+    target.replaceChildren();
+    if (value instanceof Node) target.append(value);
+    else if (typeof value === 'string') target.innerHTML=value; // Trusted HTML only
+  }
+  if(options.content!=null)setContent(options.content,body);
+  if(options.footer!=null)setContent(options.footer,footer);
+  if(options.footer==null)footer.hidden=true;
+  function keydown(event) {
+    if(event.key==='Escape' && options.closeOnEscape!==false){event.preventDefault();close();}
+    if(event.key==='Tab') {
+      const focusables=Array.from(dialog.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')).filter(e=>e.getClientRects().length);
+      if(!focusables.length){event.preventDefault();dialog.focus();return;}
+      const first=focusables[0],last=focusables[focusables.length-1];
+      if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  }
+  function open() {
+    if(destroyed)return;
+    document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>{if(e!==backdrop)e._sharedModalAPI?.close();});
+    previousFocus=document.activeElement;
+    backdrop.classList.add('open');backdrop.setAttribute('aria-hidden','false');
+    document.addEventListener('keydown',keydown);
+    closeButton.focus();
+    options.onOpen?.(api);
+    return api;
+  }
+  function close() {
+    if(!backdrop.classList.contains('open'))return;
+    backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');
+    document.removeEventListener('keydown',keydown);
+    if(previousFocus?.isConnected)previousFocus.focus();
+    options.onClose?.(api);
+    if(options.destroyOnClose!==false)destroy();
+  }
+  function destroy() {
+    if(destroyed)return;
+    destroyed=true;
+    document.removeEventListener('keydown',keydown);
+    backdrop.remove();
+  }
+  closeButton.addEventListener('click',close);
+  backdrop.addEventListener('mousedown',event=>{
+    if(event.target===backdrop && options.closeOnBackdrop!==false)close();
+  });
+  const api={element:backdrop,dialog,body,footer,open,close,destroy,
+    setTitle(value){heading.textContent=String(value);},
+    setContent(value){setContent(value,body);},
+    setFooter(value){footer.hidden=value==null;if(value!=null)setContent(value,footer);}
+  };
+  backdrop._sharedModalAPI=api;
+  if(options.autoOpen!==false)open();
+  return api;
+}
+const sharedModalAPI = {
+  create:createSharedModal,
+  open(options={}){return createSharedModal({...options,autoOpen:true});},
+  close(){document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>e._sharedModalAPI?.close());}
+};
+
 window.NewUI={syncSearch:createSyncSearch,init:initNewUI,input:createNewInput,dropdown:createSharedDropdown,chips:createSharedChipDropdown,icon:name=>NEW_UI_ICONS[name]||'',getValues:el=>{const e=typeof el==='string'?document.querySelector(el):el;return e?._sharedChipDropdown?.getValue?.()??e?.value??null;}};
+window.NewUI.modal=sharedModalAPI;
 window.createSharedDropdown=createSharedDropdown;
 window.createSharedChipDropdown=createSharedChipDropdown;
 window.initSharedDropdowns=initSharedDropdowns;
