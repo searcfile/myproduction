@@ -1610,53 +1610,76 @@ let games = [...legacyGames];
     let currentType = "all";
     let currentPlatform = "all";
 
-    function renderGames() {
+ 
+function renderGames() {
   const grid = document.getElementById("gameGrid");
-  const searchText = document.getElementById("searchInput").value.toLowerCase();
+  const searchText = document.getElementById("searchInput")
+    .value.toLowerCase().trim();
+
   grid.innerHTML = "";
 
+  const filtered = games.filter(game => {
+    const matchSearch =
+      String(game.name || "").toLowerCase().includes(searchText) ||
+      String(game.alias || "").toLowerCase().includes(searchText);
 
-filtered.forEach(game => {
-  const div = document.createElement("div");
-  div.className = "game-logo";
+    const matchType =
+      currentType === "all" ||
+      game.type === currentType;
 
-  const alias = document.createElement("span");
-  alias.className = "game-alias";
-  alias.textContent = game.alias || "";
+    const matchPlatform =
+      currentPlatform === "all" ||
+      (Array.isArray(game.platform) &&
+        game.platform.includes(currentPlatform));
 
-  const img = document.createElement("img");
-  img.src = game.image;
-  img.alt = game.name || "";
-  img.addEventListener("click", () => {
-    copyImageToClipboard(game.image, div);
+    return matchSearch && matchType && matchPlatform;
   });
 
-  const name = document.createElement("span");
-  name.className = "game-name";
-  name.textContent = game.name || "";
+  filtered.forEach(game => {
+    const div = document.createElement("div");
+    div.className = "game-logo";
 
-  div.append(alias, img, name);
+    const alias = document.createElement("span");
+    alias.className = "game-alias";
+    alias.textContent = game.alias || "";
 
-  if (game.id && canManageLogos) {
-    const actions = document.createElement("div");
-    actions.className = "logo-actions";
+    const img = document.createElement("img");
+    img.src = game.image || "";
+    img.alt = game.name || "";
+    img.loading = "lazy";
 
-    const edit = document.createElement("button");
-    edit.textContent = "Edit";
-    edit.onclick = () => openLogoEditor(game);
+    img.addEventListener("click", () => {
+      copyImageToClipboard(game.image, div);
+    });
 
-    const del = document.createElement("button");
-    del.textContent = "Delete";
-    del.onclick = () => deleteLogo(game);
+    const name = document.createElement("span");
+    name.className = "game-name";
+    name.textContent = game.name || "";
 
-    actions.append(edit, del);
-    div.appendChild(actions);
-  }
+    div.append(alias, img, name);
 
-  grid.appendChild(div);
-});
+    if (game.id && canManageLogos) {
+      const actions = document.createElement("div");
+      actions.className = "logo-actions";
 
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.textContent = "Edit";
+      edit.onclick = () => openLogoEditor(game);
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.textContent = "Delete";
+      del.onclick = () => deleteLogo(game);
+
+      actions.append(edit, del);
+      div.appendChild(actions);
+    }
+
+    grid.appendChild(div);
+  });
 }
+
 
     const backToTopBtn = document.getElementById('backToTop');
 
