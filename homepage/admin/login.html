@@ -2073,31 +2073,14 @@ if (verifyButton) {
 showLoginLoading();
 
   try {
-
-const controller = new AbortController();
-
-const timeoutId = setTimeout(() => {
-  controller.abort();
-}, 20000);
-
-let response;
-
-try {
-  response = await fetch(`${ADMIN_API}/api/login/finish`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      challenge: pending2FA.acc.challenge,
-      pin
-    }),
-    signal: controller.signal
-  });
-} finally {
-  clearTimeout(timeoutId);
-}
-
+    const response = await fetch(`${ADMIN_API}/api/login/finish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        challenge: pending2FA.acc.challenge,
+        pin
+      })
+    });
 
     const data = await response.json();
 
@@ -2105,28 +2088,13 @@ try {
       throw new Error(data.message || "Invalid verification.");
     }
 
+    // Firebase Auth sebenar selepas kedua-dua langkah berjaya.
+    const result = await firebase.auth().signInWithCustomToken(
+      data.customToken
+    );
 
-const adminAuth = firebase.auth();
-
-// Kekalkan Firebase Auth session selepas berpindah halaman.
-await adminAuth.setPersistence(
-  firebase.auth.Auth.Persistence.LOCAL
-);
-
-const result = await adminAuth.signInWithCustomToken(
-  data.customToken
-);
-
-const user = result.user;
-
-if (!user || user.isAnonymous) {
-  throw new Error("Admin Firebase session unavailable.");
-}
-
-console.log("[Admin Login] Auth success:", {
-  uid: user.uid,
-  projectId: firebase.app().options.projectId
-});
+    const user = result.user;
+    if (!user) throw new Error("Firebase session unavailable.");
 
     localStorage.removeItem("gmailLogin");
     localStorage.removeItem("useremail");
@@ -2259,28 +2227,11 @@ async function loginWithUsername() {
   setLoading(true, "userpass");
 
   try {
-
-const controller = new AbortController();
-
-const timeoutId = setTimeout(() => {
-  controller.abort();
-}, 20000);
-
-let response;
-
-try {
-  response = await fetch(`${ADMIN_API}/api/login/start`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ username, password }),
-    signal: controller.signal
-  });
-} finally {
-  clearTimeout(timeoutId);
-}
-
+    const response = await fetch(`${ADMIN_API}/api/login/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
     const data = await response.json();
 
