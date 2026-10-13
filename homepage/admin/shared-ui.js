@@ -356,30 +356,24 @@ const ICON_CLEAR = `
      USER STORAGE
      ========================================================== */
 
-function getCurrentUserStorageSuffix() {
-  try {
-    const uid = auth.currentUser?.uid;
+  function getCurrentUserStorageSuffix() {
+    try {
+      const login = JSON.parse(
+        localStorage.getItem("gmailLogin") || "{}"
+      );
 
-    if (uid) {
-      return uid;
+      const email = String(login.email || "")
+        .trim()
+        .toLowerCase();
+
+      if (!email) return "guest";
+
+      return email.replace(/[^a-z0-9]/g, "_");
+
+    } catch (_) {
+      return "guest";
     }
-
-    const login = JSON.parse(
-      localStorage.getItem("gmailLogin") || "{}"
-    );
-
-    const email = String(login.email || "")
-      .trim()
-      .toLowerCase();
-
-    return email
-      ? email.replace(/[^a-z0-9]/g, "_")
-      : "guest";
-
-  } catch (error) {
-    return "guest";
   }
-}
 
 
   function getTabsStorageKey() {
@@ -3000,15 +2994,10 @@ function initWorkspaceTabDrag(tabList) {
 }
 
   function renderTabs() {
+    const tabBar = document.getElementById("tabBar");
+    if (!tabBar) return;
 
-const tabBar = document.getElementById("tabBar");
-if (!tabBar) return;
-
-// Tunggu profil admin dan permission siap.
-if (!currentAdminProfile) return;
-
-tabBar.innerHTML = "";
-
+    tabBar.innerHTML = "";
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -4065,6 +4054,7 @@ if (!selected.length) {
     if (e.key === "Escape") closePanel();
   });
 
+  loadSites();
 }
 
 
@@ -4180,21 +4170,14 @@ async function updateHeaderUserFromFirebase() {
   try {
     if (typeof auth === "undefined" || typeof db === "undefined") return;
 
+    const user = await new Promise(resolve => {
+      const unsubscribe = auth.onAuthStateChanged(u => {
+        unsubscribe();
+        resolve(u);
+      });
+    });
 
-const user = await new Promise((resolve, reject) => {
-  const unsubscribe = auth.onAuthStateChanged(
-    user => resolve(user),
-    error => reject(error)
-  );
-});
-
-if (!user || user.isAnonymous) {
-  console.warn("[Admin Auth] No active admin session.");
-
-  window.location.replace("./login.html");
-  return;
-}
-
+    if (!user) return;
 
     const snap = await db.ref("adminUsers/" + user.uid).once("value");
     const profile = snap.val();
