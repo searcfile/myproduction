@@ -637,15 +637,19 @@ if (
   return;
 }
 
-    setActiveFile(tab.file);
+// Kalau tab yang sama sedang aktif, jangan reload.
+if (getCurrentFile() === targetFile) {
+  return;
+}
 
-    sessionStorage.setItem(
-      "adminShowContentLoading",
-      "1"
-    );
+setActiveFile(targetFile);
 
-    window.location.href =
-      `./${tab.file}`;
+sessionStorage.setItem(
+  "adminShowContentLoading",
+  "1"
+);
+
+window.location.href = `./${targetFile}`;
   }
 
 
@@ -2993,11 +2997,14 @@ function initWorkspaceTabDrag(tabList) {
   });
 }
 
-  function renderTabs() {
-    const tabBar = document.getElementById("tabBar");
-    if (!tabBar) return;
+function renderTabs() {
+  const tabBar = document.getElementById("tabBar");
+  if (!tabBar) return;
 
-    tabBar.innerHTML = "";
+  // Tunggu profil dan permission sebenar siap.
+  if (!currentAdminProfile) return;
+
+  tabBar.innerHTML = "";
 
     const tabs = getTabs().filter(tab =>
   canShowAdminPage(tab.file)
@@ -5317,8 +5324,8 @@ function initSmartContentLoading() {
     lastLoaded > 0 &&
     Date.now() - lastLoaded < cacheDuration;
 
-  const shouldLoad =
-    isReload || forceLoading || !recentlyLoaded;
+ const shouldLoad =
+  forceLoading || !recentlyLoaded;
 
   if (!shouldLoad) return;
 
@@ -5384,7 +5391,7 @@ function initSmartContentLoading() {
     // Minimum masa untuk nampak animasi.
     const remaining = Math.max(
       0,
-      650 - (performance.now() - started)
+      150 - (performance.now() - started)
     );
 
     setTimeout(() => {
@@ -5474,9 +5481,6 @@ setupDropdown(
     initNotifications();
 
 initPasswordModals();
-
-renderTabs();
-
 updateOpenIndicators();
 
 updateHeaderActiveState();
