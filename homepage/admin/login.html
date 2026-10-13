@@ -2088,13 +2088,28 @@ showLoginLoading();
       throw new Error(data.message || "Invalid verification.");
     }
 
-    // Firebase Auth sebenar selepas kedua-dua langkah berjaya.
-    const result = await firebase.auth().signInWithCustomToken(
-      data.customToken
-    );
 
-    const user = result.user;
-    if (!user) throw new Error("Firebase session unavailable.");
+const adminAuth = firebase.auth();
+
+// Kekalkan Firebase Auth session selepas berpindah halaman.
+await adminAuth.setPersistence(
+  firebase.auth.Auth.Persistence.LOCAL
+);
+
+const result = await adminAuth.signInWithCustomToken(
+  data.customToken
+);
+
+const user = result.user;
+
+if (!user || user.isAnonymous) {
+  throw new Error("Admin Firebase session unavailable.");
+}
+
+console.log("[Admin Login] Auth success:", {
+  uid: user.uid,
+  projectId: firebase.app().options.projectId
+});
 
     localStorage.removeItem("gmailLogin");
     localStorage.removeItem("useremail");
