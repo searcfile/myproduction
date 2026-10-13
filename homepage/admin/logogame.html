@@ -698,8 +698,8 @@ select:focus-visible{
     <h3 id="logoDialogTitle">Create Game Logo</h3>
     <label>Game Name<input id="logoName" data-new-ui-input maxlength="120" required placeholder="Enter game name"></label>
     <label>Display Name / Alias<input id="logoAlias" data-new-ui-input maxlength="120" required placeholder="Enter display name"></label>
-    <label>Method<select id="logoType" data-shared-dropdown data-placeholder="Select method"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label>
-    <label>Platforms<div id="logoPlatformPicker"></div></label>
+    <label class="logo-editor-dropdown-field">Method<select id="logoType" data-shared-dropdown data-placeholder="Select method"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label>
+    <label class="logo-editor-dropdown-field">Platforms<div id="logoPlatformPicker" class="logo-editor-platforms"></div></label>
     <label>Upload Image<div id="logoImagePicker"></div></label>
     <label>Or Image URL<input id="logoUrl" data-new-ui-input type="url" placeholder="https://..."></label>
     <p id="logoStatus" role="status" aria-live="polite"></p>
@@ -1054,6 +1054,8 @@ const logoImagePicker = NewUI.imageUpload('#logoImagePicker', {
   }
 });
 NewUI.init(logoDialog);
+// Use the shared searchable dropdown for Method; Platforms uses shared multi-select.
+window.createSharedDropdown?.('#logoType', { placeholder: 'Select method' });
 function openLogoEditor(game=null) {
   editingLogoId=game?.id||null;
   logoForm.reset(); logoStatus.textContent='';
