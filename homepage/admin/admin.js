@@ -696,33 +696,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     cleanUrl();
   }
 
-
 let adminSession = null;
 
 try {
   adminSession = await verifyAdminSession();
 } catch (error) {
-  console.error("[Admin] Session verification failed:", error);
-
-  // Database/network error bukan bukti login tidak sah.
-  // Jangan signOut pengguna kerana sambungan gagal.
-  document.body.innerHTML = `
-    <main style="font-family:system-ui;padding:32px">
-      <h2>Connection Error</h2>
-      <p>Unable to verify admin session. Please check your connection.</p>
-      <button onclick="location.reload()">Retry</button>
-    </main>
-  `;
-  return;
+  console.error("Admin verification failed:", error);
 }
 
 if (!adminSession) {
-  // Tiada sesi sah / claim atau profil tidak memenuhi syarat.
-  // Jangan buka dashboard.
+  await auth.signOut().catch(() => {});
   window.location.replace("./login.html");
   return;
 }
-
 
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
@@ -735,6 +721,10 @@ initAppUpdatePopup();
   role: adminSession.role,
   photo: ""
 };
+try {
+  await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+} catch (_) {}
+
 
   // ✅ 2) Auto-logout inactivity
   window.AutoLogout && window.AutoLogout.start();
@@ -749,23 +739,16 @@ await window.startSingleSession(ownerId, () => {
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_){}
   window.location.replace("./login.html?dup=1");
 });
+  } catch (e) {
+    console.error("[single-session] gagal start:", e);
 
-} catch (e) {
-  console.error("[single-session] gagal start:", e);
+    try {
+      await auth.signOut();
+    } catch (_) {}
 
-  // Gagal mengesahkan single-session:
-  // jangan benarkan dashboard diteruskan,
-  // tetapi jangan padam sesi Firebase kerana network error.
-  document.body.innerHTML = `
-    <main style="font-family:system-ui;padding:32px">
-      <h2>Session Connection Error</h2>
-      <p>Unable to verify single-session status.</p>
-      <button onclick="location.reload()">Retry</button>
-    </main>
-  `;
-  return;
-}
-
+    window.location.replace("./login.html?session_error=1");
+    return;
+  }
 
   // ======= SEMUA YANG DI BAWAH INI BUTUH sessionData =======
   userId = (sessionData.email || '').toLowerCase().replace(/\./g, '_');
