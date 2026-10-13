@@ -410,30 +410,57 @@ select:focus-visible{
 }
   
 .logo-management-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 0}.logo-management-header h2{font-size:17px;margin:0}.logo-management-actions button[hidden]{display:none}.logo-management-actions{display:flex;gap:8px;flex-wrap:wrap}.create-game-btn{background:#1668dc;color:#fff;border:1px solid #1668dc;border-radius:6px;padding:10px 16px;cursor:pointer}.create-game-btn:hover{background:#3c89e8}.logo-dialog{width:min(95vw,500px);max-height:90vh;overflow:auto;padding:24px;border:1px solid var(--border-input);border-radius:12px;background:var(--page-bg2);color:var(--page-text)}.logo-dialog::backdrop{background:rgba(0,0,0,.75)}.logo-dialog form{display:grid;gap:14px}.logo-dialog form>label{display:grid;gap:6px}.logo-dialog input:not([type=checkbox]),.logo-dialog select{width:100%;padding:10px;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text)}.logo-dialog fieldset{display:flex;flex-wrap:wrap;gap:12px;border:1px solid var(--border-input);border-radius:8px}.logo-dialog #logoPreview{max-width:100%;height:145px;object-fit:contain}.logo-dialog-buttons,.logo-actions{display:flex;justify-content:flex-end;gap:8px}.logo-actions{margin-top:auto;padding-top:10px}.logo-dialog button,.logo-actions button{padding:8px 12px;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);cursor:pointer}.logo-dialog #logoSave{background:#1668dc;color:#fff}.logo-actions button:hover{border-color:#1668dc}.logo-dialog #logoStatus{font-size:12px;overflow-wrap:anywhere;margin:0}.logo-grid .game-logo img{cursor:pointer}@media(max-width:640px){.logo-management-header{align-items:flex-start}.create-game-btn{padding:8px 10px}}
+
+/* === Game Logo UI Refresh === */
+.logo-management-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 24px 12px;flex-wrap:wrap}
+.logo-header-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo-header-left h2{font-size:20px;font-weight:650;letter-spacing:-.4px}
+.logo-count{font-size:12px;color:var(--page-text);opacity:.55;border:1px solid var(--border-input);border-radius:100px;padding:4px 10px}
+.logo-toolbar{display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end;min-width:280px}
+.logo-toolbar .search-container{padding:0;max-width:410px;flex:1;text-align:left}
+.logo-toolbar .search-container input{margin:0;width:100%;height:38px;border-radius:9px}
+.logo-toolbar .new-ui-input-wrap{width:100%;display:block}
+.logo-toolbar .new-ui-input-wrap input{width:100%}
+.logo-toolbar .create-game-btn{height:38px;padding:0 20px;font-weight:600;white-space:nowrap;border-radius:9px}
+.filter-bar{display:flex;align-items:end;gap:14px;flex-wrap:wrap;padding:10px 24px 18px;border-bottom:1px solid var(--border-input)}
+.logo-filter-group{display:flex;flex-direction:column;gap:7px;min-width:190px;max-width:340px;flex:1}
+.logo-filter-group>label{font-size:12px;color:var(--page-text);opacity:.7;font-weight:600}
+.logo-chip-filter{min-height:38px;width:100%}
+.logo-chip-filter .shared-chip-dropdown{width:100%;min-width:0}
+.logo-reset{height:38px;padding:0 13px;background:transparent;color:var(--page-text);border:1px solid var(--border-input);border-radius:8px;cursor:pointer}
+.logo-reset:hover{border-color:var(--blue);color:var(--blue)}
+.logo-grid{grid-template-columns:repeat(auto-fill,minmax(185px,1fr));max-width:none;padding:22px 24px 40px;gap:16px}
+.logo-grid .game-logo{min-height:276px;border-radius:13px;padding:16px 14px 14px;background:var(--page-input);box-shadow:0 1px 3px rgba(0,0,0,.12);gap:5px}
+.logo-grid .game-logo:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.19)}
+.logo-grid .game-alias{font-size:12px!important;min-height:30px;margin-bottom:2px!important;font-weight:700;color:var(--page-text);letter-spacing:.25px}
+.logo-image-frame{height:128px;width:100%;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(128,128,128,.055);margin-bottom:6px;overflow:hidden}
+.logo-grid .game-logo .logo-image-frame img{max-width:94%;height:114px;width:100%;object-fit:contain;margin:0;transition:transform .2s}
+.logo-grid .game-logo:hover img{transform:scale(1.05)}
+.logo-grid .game-logo .game-name{font-size:13px;font-weight:600;color:var(--page-text)}
+.logo-grid .game-logo .logo-method-tag{font-size:11px;color:var(--page-text);opacity:.6}
+.logo-platforms{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;min-height:20px;margin-top:3px}
+.logo-grid .game-logo .logo-platform-tag{font-size:9px;color:var(--blue);background:rgba(22,104,220,.1);border-radius:5px;padding:3px 6px;font-weight:650}
+.logo-actions{width:100%;margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:7px;padding-top:10px}
+.logo-actions button{font-size:12px;padding:7px 8px;border-radius:7px}
+.logo-actions button:last-child:hover{border-color:#e45454;color:#e45454}
+.logo-empty{grid-column:1/-1;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1px dashed var(--border-input);border-radius:13px;color:var(--page-text)}
+.logo-empty span{font-size:13px;opacity:.6}
+@media(max-width:700px){.logo-management-header{padding:16px 14px 12px}.logo-toolbar{width:100%;min-width:0;justify-content:space-between}.filter-bar{padding:10px 14px 16px;gap:10px}.logo-filter-group{min-width:145px}.logo-grid{padding:16px 14px 30px;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.logo-grid .game-logo{min-height:245px;padding:12px 9px}.logo-image-frame{height:105px}.logo-grid .game-logo .logo-image-frame img{height:95px}}
+
 </style>
 <body>
-<div class="logo-management-header"><h2>Game Logo Management</h2><div class="logo-management-actions"><button type="button" id="importLogosBtn" class="create-game-btn">Import Old Logos</button><button type="button" id="createGameBtn" class="create-game-btn">+ Create</button></div></div>
-  <div class="filter-bar">
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search Favorite Game" onkeyup="filterGames()" />
-  </div>
-
-  <div class="filter-tabs">
-    <button onclick="setFilter('all', this)" class="active">All</button>
-    <button onclick="setFilter('slot', this)">Slot</button>
-    <button onclick="setFilter('live', this)">Live Game</button>
-    <button onclick="setFilter('table', this)">Table Game</button>
-  </div>
-
-  <div class="filter-tabs platform-filters">
-    <button onclick="setPlatform('all', this)" class="active">All Platforms</button>
-    <button onclick="setPlatform('918kiss', this)">918kiss</button>
-    <button onclick="setPlatform('mega888', this)">MEGA888</button>
-    <button onclick="setPlatform('pussy888', this)">PUSSY888</button>
-    <button onclick="setPlatform('xe88', this)">XE88</button>
+<div class="logo-management-header">
+  <div class="logo-header-left"><h2>Game Logo Management</h2><span id="logoCount" class="logo-count">0 logos</span></div>
+  <div class="logo-toolbar">
+    <div class="search-container"><input type="search" id="searchInput" data-ui="search" placeholder="Search game name, alias or platform" autocomplete="off" /></div>
+    <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
   </div>
 </div>
-
+<div class="filter-bar">
+  <div class="logo-filter-group"><label for="methodFilter">Method</label><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
+  <div class="logo-filter-group"><label for="platformFilter">Platform</label><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
+  <button type="button" id="clearLogoFilters" class="logo-reset">Reset filters</button>
+</div>
   <div class="logo-grid" id="gameGrid">
   </div>
   <dialog id="logoDialog" class="logo-dialog"><form id="logoForm"><h3 id="logoDialogTitle">Create Game Logo</h3><label>Game Name<input id="logoName" maxlength="120" required></label><label>Display Name / Alias<input id="logoAlias" maxlength="120" required></label><label>Method<select id="logoType"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label><fieldset><legend>Platforms</legend><label><input type="checkbox" name="logoPlatform" value="918kiss"> 918KISS</label><label><input type="checkbox" name="logoPlatform" value="mega888"> MEGA888</label><label><input type="checkbox" name="logoPlatform" value="pussy888"> PUSSY888</label><label><input type="checkbox" name="logoPlatform" value="xe88"> XE88</label></fieldset><label>Upload Image<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><label>Or Image URL<input id="logoUrl" type="url" placeholder="https://..."></label><img id="logoPreview" alt="Image preview" hidden><p id="logoStatus" role="status"></p><div class="logo-dialog-buttons"><button type="button" id="logoCancel">Cancel</button><button type="submit" id="logoSave">Save</button></div></form></dialog>
@@ -446,27 +473,55 @@ select:focus-visible{
   <script defer src="./shared-ui.js"></script>
 <script>
   const legacyGames = [];
-    let games = [...legacyGames];
-    let currentType = "all";
-    let currentPlatform = "all";
-
+  let games = [];
+  let currentTypes = [];
+  let currentPlatforms = [];
+  let methodChip = null;
+  let platformChip = null;
+  const LOGO_METHODS = [{value:'slot',label:'Slot'},{value:'live',label:'Live Game'},{value:'table',label:'Table Game'}];
+  const LOGO_PLATFORMS = [{value:'918kiss',label:'918KISS'},{value:'mega888',label:'MEGA888'},{value:'pussy888',label:'PUSSY888'},{value:'xe88',label:'XE88'}];
+  function initLogoFilters(){
+    if (!window.NewUI?.chips) { console.error('new-ui.js chip dropdown unavailable'); return; }
+    methodChip = NewUI.chips('#methodFilter',{placeholder:'All Methods',options:LOGO_METHODS,value:[],onChange(values){currentTypes=values;renderGames();}});
+    platformChip = NewUI.chips('#platformFilter',{placeholder:'All Platforms',options:LOGO_PLATFORMS,value:[],onChange(values){currentPlatforms=values;renderGames();}});
+    NewUI.input('#searchInput',{search:true});
+  }
+  document.getElementById('searchInput').addEventListener('input',renderGames);
+  document.getElementById('clearLogoFilters').addEventListener('click',()=>{
+    methodChip?.setValue([]);platformChip?.setValue([]);
+    document.getElementById('searchInput').value='';
+    document.getElementById('searchInput').dispatchEvent(new Event('input',{bubbles:true}));
+    renderGames();
+  });
+  initLogoFilters();
     function renderGames() {
       const grid = document.getElementById('gameGrid');
       const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
       grid.replaceChildren();
       const filtered = games.filter(game => {
         const platforms = Array.isArray(game.platform) ? game.platform : Object.values(game.platform || {});
-        return (currentType === 'all' || game.type === currentType) &&
-          (currentPlatform === 'all' || platforms.includes(currentPlatform)) &&
+        return (!currentTypes.length || currentTypes.includes(game.type)) &&
+          (!currentPlatforms.length || currentPlatforms.some(p => platforms.includes(p))) &&
           [game.name || '', game.alias || '', ...platforms].some(x => String(x).toLowerCase().includes(searchText));
       });
+      document.getElementById('logoCount').textContent = `${filtered.length} of ${games.length} logos`;
+      if (!filtered.length) {
+        const empty = document.createElement('div'); empty.className='logo-empty';
+        empty.innerHTML='<strong>No game logos found</strong><span>Try another search or create your first game logo.</span>';
+        grid.append(empty); return;
+      }
       filtered.forEach(game => {
         const div = document.createElement('div'); div.className = 'game-logo';
         const alias = document.createElement('span'); alias.className = 'game-alias'; alias.textContent = game.alias || '';
         const img = document.createElement('img'); img.src = game.image || ''; img.alt = game.name || ''; img.loading = 'lazy';
         img.addEventListener('click', () => copyImageToClipboard(game.image, div));
         const name = document.createElement('span'); name.className = 'game-name'; name.textContent = game.name || '';
-        div.append(alias, img, name);
+        const platformTag=document.createElement('div');platformTag.className='logo-platforms';
+        const gamePlatforms=Array.isArray(game.platform)?game.platform:Object.values(game.platform||{});
+        gamePlatforms.forEach(p=>{const tag=document.createElement('span');tag.className='logo-platform-tag';tag.textContent=p.toUpperCase();platformTag.append(tag);});
+        const imageFrame=document.createElement('div');imageFrame.className='logo-image-frame';imageFrame.append(img);
+        const typeTag=document.createElement('span');typeTag.className='logo-method-tag';typeTag.textContent=({slot:'Slot',live:'Live Game',table:'Table Game'})[game.type]||game.type||'';
+        div.append(alias, imageFrame, name, typeTag, platformTag);
         if (game.id) {
           const actions = document.createElement('div'); actions.className = 'logo-actions';
           const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = 'Edit'; edit.addEventListener('click', () => openLogoEditor(game));
@@ -490,25 +545,8 @@ window.addEventListener('scroll', () => {
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function setPlatform(platform, btn) {
-  currentPlatform = platform;
-  document.querySelectorAll('.platform-filters button').forEach(btn => btn.classList.remove('active'));
-  (btn || window.event?.target)?.classList.add('active');
-  renderGames();
-}
-    
-    function filterGames() {
-      renderGames();
-    }
-
-    function setFilter(type, btn) {
-  currentType = type;
-  document.querySelectorAll('.filter-tabs button').forEach(btn => btn.classList.remove('active'));
-  (btn || window.event?.target)?.classList.add('active');
-  renderGames();
-}
-
-  renderGames();
+ function filterGames(){renderGames();}
+ renderGames();
 
 async function copyImageToClipboard(imageUrl, parentElement) {
 const gameName =
@@ -720,7 +758,7 @@ document.addEventListener("keydown", function(e) {
 
 /* DEVELOPMENT: Logo editor has no role-based UI restriction.
    RTDB rules still control database writes. */
-const CLOUD_NAME = 'dqctvbenv';
+const CLOUD_NAME = 'dqqctvbenv';
 const UPLOAD_PRESET = 'game_logos';
 const LOGO_PATH = 'game_logos';
 let editingLogoId = null, previewObjectUrl = null, logoDbRef = null;
@@ -770,16 +808,10 @@ logoForm.addEventListener('submit',async e=>{
  }catch(err){console.error(err);logoStatus.textContent=err.message;}finally{btn.disabled=false;}
 });
 async function deleteLogo(game){if(!confirm(`Delete ${game.alias||game.name}?`))return;try{await logoDb().ref(`${LOGO_PATH}/${game.id}`).remove();}catch(err){alert('Delete failed: '+err.message);}}
-document.getElementById('importLogosBtn').addEventListener('click',async()=>{
- if(!confirm(`Import ${legacyGames.length} old logos ke Firebase?`))return;
- try{const db=logoDb(),r=db.ref(LOGO_PATH),snap=await r.once('value');if(snap.exists())throw new Error('Database sudah ada logo. Import dibatalkan untuk elak duplicate.');
- const updates={};for(const game of legacyGames){updates[r.push().key]={...game,createdAt:firebase.database.ServerValue.TIMESTAMP,updatedAt:firebase.database.ServerValue.TIMESTAMP};}
- await r.update(updates);alert('Import completed!');}catch(err){alert('Import failed: '+err.message);}
-});
 function startLogoRealtime(){
  try{logoDbRef=logoDb().ref(LOGO_PATH);logoDbRef.on('value',snap=>{
-  if(snap.exists()){games=Object.entries(snap.val()).map(([id,game])=>({...game,id}));document.getElementById('importLogosBtn').hidden=true;}
-  else{games=[...legacyGames];document.getElementById('importLogosBtn').hidden=false;}
+  if(snap.exists()){games=Object.entries(snap.val()).map(([id,game])=>({...game,id}));}
+  else{games=[];}
   renderGames();
  },err=>{console.error('Logo read failed:',err);document.getElementById('logoStatus').textContent=err.message;});}
  catch(err){console.warn('Logo Firebase unavailable:',err.message);}
