@@ -614,16 +614,64 @@ select:focus-visible{
 <script>
   const legacyGames = [];
   let games = [];
-  let currentTypes = [];
-  let currentPlatforms = [];
+
+let currentTypes = ['slot', 'live', 'table'];
+
+let currentPlatforms = [
+  '918kiss',
+  'mega888',
+  'pussy888',
+  'xe88'
+];
+
   let methodChip = null;
   let platformChip = null;
   const LOGO_METHODS = [{value:'slot',label:'Slot'},{value:'live',label:'Live Game'},{value:'table',label:'Table Game'}];
   const LOGO_PLATFORMS = [{value:'918kiss',label:'918KISS'},{value:'mega888',label:'MEGA888'},{value:'pussy888',label:'PUSSY888'},{value:'xe88',label:'XE88'}];
-  function initLogoFilters(){
-    if (!window.NewUI?.chips) { console.error('new-ui.js chip dropdown unavailable'); return; }
-    methodChip = NewUI.chips('#methodFilter',{placeholder:'All Methods',options:LOGO_METHODS,value:[],onChange(values){currentTypes=values;renderGames();}});
-    platformChip = NewUI.chips('#platformFilter',{placeholder:'All Platforms',options:LOGO_PLATFORMS,value:[],onChange(values){currentPlatforms=values;renderGames();}});
+
+function initLogoFilters() {
+  if (!window.NewUI?.chips) {
+    console.error('new-ui.js chip dropdown unavailable');
+    return;
+  }
+
+  methodChip = NewUI.chips('#methodFilter', {
+    placeholder: 'All Methods',
+    options: LOGO_METHODS,
+    value: [...currentTypes],
+    onChange(values) {
+      currentTypes = values;
+      renderGames();
+    }
+  });
+
+  platformChip = NewUI.chips('#platformFilter', {
+    placeholder: 'All Platforms',
+    options: LOGO_PLATFORMS,
+    value: [...currentPlatforms],
+    onChange(values) {
+      currentPlatforms = values;
+      renderGames();
+    }
+  });
+
+  const logoSearch = NewUI.syncSearch('#searchInput', {
+    onSearch: async () => {
+      await new Promise(resolve =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(resolve)
+        )
+      );
+
+      renderGames();
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 500)
+      );
+    }
+  });
+}
+
 
 const logoSearch = NewUI.syncSearch('#searchInput', {
   onSearch: async () => {
