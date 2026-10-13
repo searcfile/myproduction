@@ -392,8 +392,7 @@ const ALLOWED_ACTIONS = new Set([
   "create",
   "edit",
   "delete",
-  "block",
-  "upload"
+  "block"
 ]);
 
 app.patch(
@@ -459,21 +458,9 @@ app.patch(
         }
 
         const uniqueActions = [...new Set(actions)];
-        // Game Logo: Delete hanya dibenarkan untuk Superadmin.
-// Site Admin tidak boleh diberikan permission Delete.
-if (
-  moduleName === "logogame.html" &&
-  uniqueActions.includes("delete")
-) {
-  return fail(
-    res,
-    400,
-    "Game Logo delete permission is Superadmin only"
-  );
-}
 
 const requiresView = uniqueActions.some(action =>
-  ["create", "edit", "delete", "block", "upload"].includes(action)
+  ["create", "edit", "delete", "block"].includes(action)
 );
 
 if (requiresView && !uniqueActions.includes("view")) {
@@ -652,180 +639,5 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
     return fail(res, 500, "Cannot update site");
   }
 });
-/* =====================================================
-   GAME LOGO MANAGEMENT API
-   ===================================================== */
-
-const GAME_LOGO_PLATFORMS = new Set([
-  "918kiss",
-  "mega888",
-  "pussy888",
-  "xe88"
-]);
-
-const GAME_LOGO_TYPES = new Set([
-  "slot",
-  "live",
-  "table"
-]);
-
-const gameLogoText = (value, max = 100) =>
-  typeof value === "string" &&
-  value.trim().length > 0 &&
-  value.trim().length <= max;
-
-async function canAccessGameLogoSite(admin, siteId) {
-  if (!siteIdOK(siteId)) return false;
-
-  const site = (
-    await db.ref(`sites/${siteId}`).once("value")
-  ).val();
-
-  if (!site || site.active !== true) return false;
-
-  if (admin.profile.role === "superadmin") return true;
-
-  return (
-    admin.profile.role === "siteadmin" &&
-    Array.isArray(admin.profile.siteIds) &&
-    admin.profile.siteIds.includes(siteId)
-  );
-}
-
-/* CREATE GAME LOGO */
-app.post(
-  "/api/game-logos",
-  requireAdmin,
-  requirePermission("logogame.html", "create"),
-  async (req, res) => {
-    try {
-      const {
-        siteId,
-        alias,
-        name,
-        imageUrl,
-        platform,
-        type
-      } = req.body || {};
-
-      if (
-        typeof siteId !== "string" ||
-        !(await canAccessGameLogoSite(req.admin, siteId))
-      ) {
-        return fail(res, 403, "Invalid or unauthorized site");
-      }
-
-      if (
-        !gameLogoText(alias) ||
-        !gameLogoText(name) ||
-        typeof imageUrl !== "string" ||
-        imageUrl.length > 2048
-      ) {
-        return fail(res, 400, "Invalid game details");
-      }
-
-      let parsedUrl;
-
-      try {
-        parsedUrl = new URL(imageUrl);
-      } catch {
-        return fail(res, 400, "Invalid image URL");
-      }
-
-      if (
-        parsedUrl.protocol !== "https:" ||
-        !["i.imgur.com", "res.cloudinary.com"].includes(
-          parsedUrl.hostname
-        )
-      ) {
-        return fail(res, 400, "Image host not allowed");
-      }
-
-      if (
-        !Array.isArray(platform) ||
-        platform.length === 0 ||
-        platform.length > GAME_LOGO_PLATFORMS.size ||
-        !platform.every(p => GAME_LOGO_PLATFORMS.has(p)) ||
-        new Set(platform).size !== platform.length ||
-        !GAME_LOGO_TYPES.has(type)
-      ) {
-        return fail(res, 400, "Invalid platform or game type");
-      }
-
-      const logoRef = db.ref(`gameLogos/${siteId}`).push();
-      const timestamp = now();
-
-      const game = {
-        alias: alias.trim(),
-        name: name.trim(),
-        imageUrl,
-        platform,
-        type,
-        createdBy: req.admin.uid,
-        createdAt: timestamp,
-        updatedAt: timestamp
-      };
-
-      await logoRef.set(game);
-
-      return res.status(201).json({
-        ok: true,
-        id: logoRef.key,
-        game
-      });
-
-    } catch (error) {
-      console.error("Create Game Logo:", error.message);
-      return fail(res, 500, "Cannot create game logo");
-    }
-  }
-);
-/* =====================================================
-   GET GAME LOGOS FROM FIREBASE RTDB
-   ===================================================== */
-
-app.get(
-  "/api/game-logos",
-  requireAdmin,
-  requirePermission("logogame.html", "view"),
-  async (req, res) => {
-    try {
-      const siteId = String(req.query.siteId || "").trim();
-
-      // Verify site exists, active and assigned to this admin
-      if (!(await canAccessGameLogoSite(req.admin, siteId))) {
-        return fail(res, 403, "Invalid or unauthorized site");
-      }
-
-      // Read Game Logo data from Firebase
-      const snapshot = await db
-        .ref(`gameLogos/${siteId}`)
-        .once("value");
-
-      const data = snapshot.val() || {};
-
-      // Convert Firebase object to array
-      const games = Object.entries(data).map(([id, game]) => ({
-        id,
-        ...game
-      }));
-
-      // Sort newest first
-      games.sort(
-        (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
-      );
-
-      return res.json({
-        ok: true,
-        siteId,
-        games
-      });
-
-    } catch (error) {
-      console.error("Get Game Logos:", error.message);
-      return fail(res, 500, "Cannot load game logos");
-    }
-  }
-);
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
