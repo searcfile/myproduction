@@ -842,43 +842,47 @@ select:focus-visible{
   }
 }
 
-/* ===== FIND GAME MODERN TOOLBAR (page scoped) ===== */
-.filters{position:relative!important;top:auto!important;background:transparent!important;z-index:20}
-.filters-inner{width:100%!important;margin:0!important;padding:12px!important;display:grid!important;grid-template-columns:minmax(0,400px) minmax(0,400px) minmax(max-content,1fr)!important;align-items:start;gap:12px!important;background:var(--page-bg2);border:1px solid var(--border-input);border-radius:12px}
-.fg-search-slot,.fg-platform-slot{min-width:0;width:100%}
-#q{width:100%;height:32px;background:var(--page-input);border:1px solid var(--border-input);border-radius:6px;color:var(--page-text);padding:0 11px;outline:none;font:inherit;font-size:14px}
-#q::placeholder{color:var(--blur)}
-.fg-search-slot .shared-sync-search{width:100%}
-.fg-platform-slot .shared-chip-dropdown{width:100%}
-.fg-create-slot{display:flex;justify-content:flex-end;align-items:center;min-width:0}
-.fg-create-btn{border:1px solid var(--blue);border-radius:6px;min-height:32px;padding:0 17px;background:var(--blue);color:#fff;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:background .2s}
-.fg-create-btn:hover{background:var(--blue-hover)}
-.wrap{width:100%!important;margin:12px 0 0!important;padding:0 12px 24px!important;height:auto!important;min-height:0!important}
-.grid{grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:14px}
-.list,.detail{border-radius:12px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.list-hdr,.detail-hdr{border-bottom:1px solid var(--border-input);margin-bottom:10px}
-.game{border-radius:8px;padding:12px 14px;min-width:0}
-.g-pill{max-width:48%;overflow:hidden;text-overflow:ellipsis}
-.art img{border-radius:10px}
-.fg-create-form{display:grid;gap:14px}
-.fg-create-form label{display:grid;gap:6px;color:var(--text);font-size:13px}
-.fg-create-form input,.fg-create-form select{width:100%;height:36px;padding:0 10px;border:1px solid var(--input-line);background:var(--input);color:var(--text);border-radius:6px;font:inherit}
-.fg-form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
-.fg-form-actions button{padding:8px 14px;border-radius:6px;border:1px solid var(--input-line);background:var(--input);color:var(--text);cursor:pointer}
-.fg-form-actions button[type=submit]{background:var(--blue);border-color:var(--blue);color:#fff}
-@media(max-width:979px){.grid{grid-template-columns:minmax(0,1fr)}.detail{top:12px!important}.list{min-height:0}.wrap{margin-top:12px!important}}
-@media(max-width:740px){.filters-inner{grid-template-columns:minmax(0,1fr)!important;gap:10px!important;padding:10px!important}.fg-create-slot{justify-content:flex-end}.wrap{padding:0 10px 20px!important}.detail{left:10px;right:10px;bottom:10px}.list-hdr,.detail-hdr{padding:12px}.art img{height:auto;max-height:260px}}
+
+/* 5G88 Find Game modern admin layout */
+.filters-inner{padding:14px 12px 8px!important}
+.fg-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(210px,400px) auto;align-items:start;gap:10px;width:100%}
+.fg-search,.fg-platform-chips{min-width:0;width:100%}
+.fg-search .shared-sync-search{width:100%;height:34px}
+.fg-search input:not(.shared-sync-search-input){height:34px;width:100%;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);padding:0 11px}
+.fg-platform-chips .shared-chip-dropdown-trigger{min-height:34px}
+.fg-create{min-height:34px;border:1px solid var(--blue);border-radius:7px;padding:0 17px;background:var(--blue);color:#fff;cursor:pointer;font:600 13px inherit;white-space:nowrap}
+.fg-create:hover{background:var(--blue-hover)}
+.wrap{margin-top:8px!important;padding:0 12px 24px!important;width:100%!important;min-height:0!important;height:auto!important}
+.grid{gap:14px}.list,.detail{border-radius:12px;box-shadow:0 3px 18px rgba(0,0,0,.06)}
+.game{border-radius:9px}.game.active{background:var(--page-input)}
+.fg-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.fg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fg-field.full{grid-column:1/-1}
+.fg-field label{font-size:12px;color:var(--page-text);font-weight:600}
+.fg-field input,.fg-field select,.fg-field textarea{width:100%;min-height:35px;border:1px solid var(--border-input);border-radius:6px;padding:8px 10px;background:var(--page-input);color:var(--page-text);font:inherit;outline:none}
+.fg-field textarea{min-height:86px;resize:vertical}
+.fg-field input:focus,.fg-field textarea:focus{border-color:var(--blue)}
+.fg-hint{font-size:12px;color:var(--blur)}
+.fg-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.fg-modal-actions button,.fg-detail-actions button{border:1px solid var(--border-input);border-radius:7px;background:var(--page-input);color:var(--page-text);padding:8px 14px;cursor:pointer}
+.fg-modal-actions .primary{background:var(--blue);border-color:var(--blue);color:white}
+.fg-detail-actions{display:flex;gap:7px;margin-left:auto}
+.fg-detail-actions button{padding:5px 10px;font-size:12px}
+.fg-detail-actions button.danger{color:#ff4d4f}
+@media(max-width:979px){.detail{top:12px!important}.wrap{margin-top:8px!important}}
+@media(max-width:700px){.fg-toolbar{grid-template-columns:1fr 1fr}.fg-search{grid-column:1/-1}.fg-create{justify-self:end}.fg-platform-chips{min-width:0}.fg-form{grid-template-columns:1fr}}
+@media(max-width:420px){.fg-toolbar{grid-template-columns:minmax(0,1fr) auto}.fg-platform-chips{grid-column:1}.fg-create{grid-column:2}}
 
   </style>
 <body>
-  <!-- Find Game: shared custom toolbar -->
-  <section class="filters" aria-label="Find Game filters">
+  <!-- ===== Filters (fixed) ===== -->
+  <section class="filters" aria-label="Filters">
     <div class="filters-inner">
-      <div class="fg-search-slot">
-        <input id="q" type="search" placeholder="Search game..." autocomplete="off" aria-label="Search game" />
+      <div class="fg-toolbar">
+        <div class="fg-search"><input id="q" type="text" placeholder="Search game by name, alias or paylines..." autocomplete="off" aria-label="Search games" /></div>
+        <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
+        <button type="button" class="fg-create" id="fgCreate">+ Create Game</button>
       </div>
-      <div id="fgPlatformChips" class="fg-platform-slot" aria-label="Filter platforms"></div>
-      <div class="fg-create-slot"><button id="fgCreate" type="button" class="fg-create-btn">+ Create</button></div>
     </div>
   </section>
 
@@ -926,7 +930,7 @@ select:focus-visible{
 <script src="./new-ui.js"></script>
   <script defer src="./shared-ui.js"></script>
 <script type="module">
-      const games = [
+      const legacyGames = [
       {
         name: "SILVER BULLET",
         alias: "Silver",
@@ -7492,16 +7496,17 @@ select:focus-visible{
         }
       }
     ];
+let games = legacyGames.slice();
+let firebaseGames = [];
 
 // ---- State ----
-let selectedPlatforms = (()=>{try{return JSON.parse(localStorage.getItem('fg.platforms')||'[]')}catch(_){return []}})();
-let fgChips = null;
+let selectedPlatform = localStorage.getItem('fg.platform') || 'All';
 let selectedLine = 1;
 let selectedGame = null;
 
 // ---- Elements ----
 const elQ = document.getElementById('q');
-const elTags = document.getElementById('fgPlatformChips');
+const elTags = document.getElementById('tags');
 const elList = document.getElementById('list');     // <-- scroller (.scroll)
 const elDetail = document.getElementById('detail');
 const dTitle = document.getElementById('dTitle');
@@ -7522,19 +7527,21 @@ const debounce=(fn,ms=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(
 // Restore search
 elQ.value = sessionStorage.getItem('fg.q') || '';
 
-// Shared NewUI components (only Find Game; shared files stay unchanged)
-const fgPlatformNames = [...new Set(games.flatMap(g => g.tags || []).map(t => String(t).toUpperCase()))].sort();
-fgChips = window.NewUI?.chips?.(elTags, {
-  placeholder: 'All Platforms',
-  options: fgPlatformNames.map(name => ({value:name,label:name})),
-  value: selectedPlatforms.map(x=>String(x).toUpperCase()),
-  onChange(values) {
-    selectedPlatforms = values;
-    localStorage.setItem('fg.platforms', JSON.stringify(values));
-    renderList();
-  }
-});
-window.NewUI?.syncSearch?.(elQ, {onSearch: async () => {renderList();}});
+// Shared search and multi-select platform chips
+const platformOptions = ['918kiss','mega888','pussy888'];
+let platformFilter = null;
+function updatePlatformOptions() {
+  const names = [...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].sort();
+  platformFilter?.setOptions(names.map(value=>({value,label:value.toUpperCase()})));
+}
+if (window.NewUI) {
+  NewUI.syncSearch(elQ, {onSearch:()=>renderList()});
+  platformFilter=NewUI.chips(elTags, {
+    placeholder:'All Platforms',
+    options:platformOptions.map(value=>({value,label:value.toUpperCase()})),
+    onChange:()=>renderList()
+  });
+}
 
 /* ========== NEW: kunci tinggi list ke 10 baris ========== */
 function applyListMaxHeight(visibleRows = 10){
@@ -7573,8 +7580,8 @@ function renderList(){
 
     const kw = !q || nameMatch || aliasMatch || paylineMatch;
 
-    const platOK = !selectedPlatforms.length ||
-      (g.tags || []).some(t => selectedPlatforms.includes(String(t).toUpperCase()));
+    const chosen = platformFilter?.getValue() || [];
+    const platOK = !chosen.length || (g.tags||[]).some(t=>chosen.includes(String(t).toLowerCase()));
 
     return kw && platOK;
   });
@@ -7583,8 +7590,7 @@ function renderList(){
   count.textContent = filtered.length;
 
   if(!filtered.length){
-    if (window.showEmptyState) window.showEmptyState(elList, 'No Data', 'large', 'center');
-    else elList.textContent = 'No Data';
+    if (window.showEmptyState) showEmptyState(elList,'No Data','large','center'); else elList.textContent='No games found';
     // tetap set max-height supaya box-nya tidak melebar
     requestAnimationFrame(()=>applyListMaxHeight());
     return;
@@ -7596,9 +7602,9 @@ function renderList(){
     row.id = `g-${i}`;
     row.setAttribute('role','button');
     row.setAttribute('tabindex','0');
-    row.innerHTML =
-      `<div class="g-name">${g.name}</div>
-       <div class="g-pill">${(g.tags||[]).map(t=>t.toUpperCase()).join(' • ')}</div>`;
+    const label=document.createElement('div');label.className='g-name';label.textContent=g.name;
+    const pill=document.createElement('div');pill.className='g-pill';pill.textContent=(g.tags||[]).map(t=>String(t).toUpperCase()).join(' • ');
+    row.append(label,pill);
     row.addEventListener('click',()=>openDetail(g, row));
     row.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openDetail(g, row); }});
     if(selectedGame && selectedGame.name===g.name) row.classList.add('active');
@@ -7663,43 +7669,6 @@ function changeLine(delta){
 
 // Events
 elQ.addEventListener('input', debounce(renderList, 150));
-// Create Game: local browser draft only; does not write to Firebase.
-const fgCreateButton = document.getElementById('fgCreate');
-const FG_LOCAL_KEY = 'fg.customGames.v1';
-try {
-  const stored = JSON.parse(localStorage.getItem(FG_LOCAL_KEY) || '[]');
-  if (Array.isArray(stored)) games.push(...stored.filter(g => g && typeof g.name === 'string'));
-} catch (error) { console.warn('Find Game local drafts unavailable', error); }
-fgCreateButton.addEventListener('click', () => {
-  const modal = window.NewUI?.modal?.open({title:'Create Game',width:480,content:`
-    <form id="fgCreateForm" class="fg-create-form">
-      <label>Game Name<input name="name" required maxlength="100" placeholder="Enter game name" /></label>
-      <label>Alias<input name="alias" maxlength="100" placeholder="Optional alias" /></label>
-      <label>Platform<select name="platform" required>${fgPlatformNames.map(p=>`<option value="${p}">${p}</option>`).join('')}</select></label>
-      <label>Type<input name="type" value="Slot" required maxlength="50" /></label>
-      <label>Paylines<input name="payline" type="number" min="1" max="1000" value="20" required /></label>
-      <label>Image URL<input name="image" type="url" placeholder="https://..." /></label>
-      <div class="fg-form-actions"><button type="button" data-fg-cancel>Cancel</button><button type="submit">Create Game</button></div>
-    </form>`});
-  if (!modal) { window.alert('Shared modal unavailable'); return; }
-  modal.body.querySelector('[data-fg-cancel]').addEventListener('click',()=>modal.close());
-  modal.body.querySelector('#fgCreateForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    const fd = new FormData(event.currentTarget);
-    const name = String(fd.get('name')||'').trim();
-    const payline = Number(fd.get('payline'));
-    if (!name || !Number.isInteger(payline) || payline<1 || payline>1000) return;
-    const game = {name,alias:String(fd.get('alias')||'').trim(),tags:[String(fd.get('platform'))],type:String(fd.get('type')||'Slot').trim(),payline,adjustable:true,image:String(fd.get('image')||'').trim(),bets:{}};
-    let saved=[];
-    try {saved=JSON.parse(localStorage.getItem(FG_LOCAL_KEY)||'[]');if(!Array.isArray(saved))saved=[];saved.push(game);localStorage.setItem(FG_LOCAL_KEY,JSON.stringify(saved));}
-    catch(err){window.NewUI?.showToast?.('Unable to save browser draft','error');return;}
-    games.push(game);
-    elQ.value=''; selectedPlatforms=[]; fgChips?.setValue?.([]);
-    renderList();modal.close();
-    window.NewUI?.showToast?.('Game saved in this browser only','success');
-  });
-});
-
 document.getElementById('btnMinus').addEventListener('click', ()=>changeLine(-1));
 document.getElementById('btnPlus').addEventListener('click', ()=>changeLine(1));
 document.getElementById('btnClose').addEventListener('click', ()=>{
@@ -7734,6 +7703,160 @@ window.addEventListener('resize', ()=>{
   requestAnimationFrame(()=>applyListMaxHeight());
 });
 try { new ResizeObserver(setFilterHeight).observe(document.querySelector('.filters')); } catch(_) {}
+
+
+/* ===========================================================
+   FIREBASE GAME CRUD + SHARED CREATE/EDIT MODAL + IMAGE UPLOAD
+   Uses existing shared NewUI components, no image URL input.
+=========================================================== */
+const FG_DB_PATH='find_game/games';
+const FG_CLOUD='dqqctvbenv';
+const FG_PRESET='game_logos';
+let fgDb=null;
+let fgEditing=null;
+let fgActiveModal=null;
+let fgImageUploader=null;
+function fgToast(msg,type='info'){if(window.NewUI?.showToast)NewUI.showToast(msg,type);else console.log(type,msg);}
+function fgDatabase(){
+  if(!window.firebase?.apps?.length) throw new Error('Firebase is not initialized. Check ../firebase.js');
+  return firebase.database();
+}
+function fgRebuild(){
+  // Firebase records override matching legacy names; new records append.
+  const byName=new Map(legacyGames.map(g=>[String(g.name).toLowerCase(),g]));
+  firebaseGames.forEach(g=>byName.set(String(g.name).toLowerCase(),g));
+  games=[...byName.values()];
+  updatePlatformOptions();renderList();
+  if(selectedGame){
+    const replacement=games.find(g=>g._id===selectedGame._id && g._id || g.name===selectedGame.name);
+    if(replacement){selectedGame=replacement;updateDetail();}
+    else {selectedGame=null;elDetail.classList.remove('open');dTitle.textContent='Select a game';}
+  }
+}
+function fgListen(){
+  try {
+    fgDb=fgDatabase();
+    fgDb.ref(FG_DB_PATH).on('value',snap=>{
+      firebaseGames=[];
+      snap.forEach(child=>{
+        const g=child.val();
+        if(g && typeof g==='object' && g.name)firebaseGames.push({...g,_id:child.key});
+      });
+      fgRebuild();
+    },err=>fgToast('Firebase read failed: '+err.message,'error'));
+  }catch(err){fgToast(err.message,'error');}
+}
+function fgParseBets(text,payline){
+  const value=text.trim();
+  if(!value)throw new Error('Enter bet values. Example: 0.01, 0.02, 0.05');
+  // Per-line input: 1: 0.01,0.02 | 2: 0.02,0.04
+  const rows=value.split(/\n/).map(x=>x.trim()).filter(Boolean);
+  const out={};
+  for(const row of rows){
+    const match=row.match(/^(\d+)\s*:\s*(.+)$/);
+    const line=match?Number(match[1]):1;
+    const values=(match?match[2]:row).split(/[;,\s]+/).filter(Boolean).map(Number);
+    if(!Number.isInteger(line)||line<1||line>payline||!values.length||values.some(x=>!Number.isFinite(x)||x<=0))throw new Error('Invalid bet values or line number');
+    out[line]=values;
+  }
+  return out;
+}
+function fgBetsToText(g){return Object.entries(g?.bets||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):'')).join('\n');}
+async function fgCloudUpload(file,upload){
+  if(!file) return upload?.getUrl()||'';
+  const form=new FormData();form.append('file',file);form.append('upload_preset',FG_PRESET);
+  upload?.setStatus('Uploading to Cloudinary...');
+  const response=await fetch('https://api.cloudinary.com/v1_1/'+FG_CLOUD+'/image/upload',{method:'POST',body:form});
+  const json=await response.json();
+  if(!response.ok||!/^https:\/\//.test(json.secure_url||''))throw new Error(json.error?.message||'Image upload failed');
+  return json.secure_url;
+}
+function fgOpenEditor(record=null){
+  if(!window.NewUI?.modal||!window.NewUI?.imageUpload) {fgToast('Shared modal or image upload missing in new-ui.js','error');return;}
+  fgEditing=record?record._id||null:null;
+  const form=document.createElement('form');form.className='fg-form';form.id='fgGameForm';
+  const fields=[
+    ['name','Game Name','text',record?.name||'',true],
+    ['alias','Alias','text',record?.alias||'',false],
+    ['type','Game Type','text',record?.type||'Slot',true],
+    ['payline','Paylines','number',record?.payline||20,true]
+  ];
+  fields.forEach(([id,label,type,value,required])=>{
+    const div=document.createElement('div');div.className='fg-field';
+    const lab=document.createElement('label');lab.textContent=label;lab.htmlFor='fg-'+id;
+    const input=document.createElement('input');input.id='fg-'+id;input.name=id;input.type=type;input.value=value;input.required=required;if(type==='number'){input.min='1';input.max='1000';}
+    div.append(lab,input);form.append(div);
+  });
+  const platformField=document.createElement('div');platformField.className='fg-field full';
+  platformField.innerHTML='<label>Platforms</label><div id="fgModalPlatforms"></div>';
+  form.append(platformField);
+  const adjField=document.createElement('label');adjField.className='fg-field full';
+  adjField.innerHTML='<span>Adjustable Lines</span><span><input type="checkbox" id="fg-adjustable" style="width:auto;min-height:auto" /> Yes, player can change paylines</span>';
+  form.append(adjField);
+  const betsField=document.createElement('div');betsField.className='fg-field full';
+  betsField.innerHTML='<label for="fg-bets">Bet Values (per selected line)</label><textarea id="fg-bets" required placeholder="1: 0.01, 0.02, 0.05&#10;2: 0.02, 0.04, 0.10"></textarea><div class="fg-hint">Format: line number : values separated by commas. For a fixed-line game, use one line such as 1: 0.01, 0.02.</div>';
+  form.append(betsField);
+  const imageField=document.createElement('div');imageField.className='fg-field full';
+  imageField.innerHTML='<label>Game Image</label><div id="fgImageHost"></div><div class="fg-hint">Upload PNG, JPG, WEBP or GIF (max 5 MB). Preview appears automatically.</div>';
+  form.append(imageField);
+  const buttons=document.createElement('div');buttons.className='fg-modal-actions';buttons.style.gridColumn='1/-1';
+  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';
+  const save=document.createElement('button');save.type='submit';save.className='primary';save.textContent=record?'Save Changes':'Create Game';
+  buttons.append(cancel,save);form.append(buttons);
+  fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:620,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
+  const modalChips=NewUI.chips(form.querySelector('#fgModalPlatforms'),{
+    placeholder:'Select platforms',
+    options:[...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].map(value=>({value,label:value.toUpperCase()})),
+    value:(record?.tags||[]).map(x=>String(x).toLowerCase())
+  });
+  form.querySelector('#fg-adjustable').checked=record?.adjustable!==false;
+  form.querySelector('#fg-bets').value=record?fgBetsToText(record):'1: 0.01, 0.02, 0.05';
+  fgImageUploader=NewUI.imageUpload(form.querySelector('#fgImageHost'),{buttonText:'Upload Image',maxSizeMB:5,initialUrl:record?.image||'',onError:e=>fgToast(e.message,'error')});
+  cancel.addEventListener('click',()=>fgActiveModal?.close());
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();save.disabled=true;
+    try{
+      const name=form.querySelector('#fg-name').value.trim();
+      const alias=form.querySelector('#fg-alias').value.trim();
+      const type=form.querySelector('#fg-type').value.trim();
+      const payline=Number(form.querySelector('#fg-payline').value);
+      const tags=modalChips?.getValue()||[];
+      if(!name||!type||!Number.isInteger(payline)||payline<1||payline>1000)throw new Error('Enter valid game name, type and paylines');
+      if(!tags.length)throw new Error('Choose at least one platform');
+      const bets=fgParseBets(form.querySelector('#fg-bets').value,payline);
+      const image=await fgCloudUpload(fgImageUploader?.getFile(),fgImageUploader);
+      if(!image)throw new Error('Please upload a game image');
+      const db=fgDatabase();
+      const data={name,alias,type,payline,adjustable:form.querySelector('#fg-adjustable').checked,tags,bets,image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+      if(fgEditing)await db.ref(FG_DB_PATH+'/'+fgEditing).update(data);
+      else await db.ref(FG_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+      fgToast(record?'Game updated':'Game created','success');fgActiveModal?.close();
+    }catch(err){fgToast(err.message,'error');}
+    finally{save.disabled=false;}
+  });
+}
+function fgEnsureDetailActions(){
+  const hdr=document.querySelector('.detail-hdr');
+  if(!hdr||document.getElementById('fgDetailActions'))return;
+  const actions=document.createElement('div');actions.className='fg-detail-actions';actions.id='fgDetailActions';
+  actions.innerHTML='<button type="button" id="fgEditGame">Edit</button><button type="button" class="danger" id="fgDeleteGame">Delete</button>';
+  hdr.insertBefore(actions,document.getElementById('btnClose'));
+  document.getElementById('fgEditGame').addEventListener('click',()=>{
+    if(!selectedGame)return;
+    if(!selectedGame._id){fgToast('This is a legacy game. Create a Firebase version to edit it.','warning');return;}
+    fgOpenEditor(selectedGame);
+  });
+  document.getElementById('fgDeleteGame').addEventListener('click',async()=>{
+    if(!selectedGame?._id){fgToast('Legacy games cannot be deleted until migrated to Firebase.','warning');return;}
+    const name=selectedGame.name,id=selectedGame._id;
+    const action=async()=>{await fgDatabase().ref(FG_DB_PATH+'/'+id).remove();fgToast('Game deleted','success');};
+    if(NewUI.confirm){NewUI.confirm({title:'Delete Game',message:'Delete '+name+'?',onConfirm:action});}
+    else if(window.confirm('Delete '+name+'?')){try{await action();}catch(e){fgToast(e.message,'error');}}
+  });
+}
+document.getElementById('fgCreate').addEventListener('click',()=>fgOpenEditor());
+fgEnsureDetailActions();
+fgListen();
 
 /* First paint */
 renderList();
