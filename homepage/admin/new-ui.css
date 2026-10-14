@@ -1588,7 +1588,7 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
 .shared-image-upload-btn:hover{border-color:var(--input-line-hover,#3c89e8)}
 .shared-image-upload-btn:focus-visible,.shared-image-upload-remove:focus-visible{outline:2px solid var(--input-line-focus,#1677ff);outline-offset:2px}
 .shared-image-upload-btn svg{width:16px;height:16px;flex:none}
-.shared-image-upload-preview{display:flex;align-items:center;gap:12px;box-sizing:border-box;max-width:100%;width:min(100%,440px);padding:9px 10px;border:1px solid var(--input-line,#424242);border-radius:8px;background:var(--input,#141414);color:var(--text,#ddd)}
+.shared-image-upload-preview{display:flex;align-items:center;gap:12px;box-sizing:border-box;width:100%;max-width:none;min-width:0;padding:9px 10px;border:1px solid var(--input-line,#424242);border-radius:8px;background:var(--input,#141414);color:var(--text,#ddd)}
 .shared-image-upload-preview[hidden]{display:none!important}
 .shared-image-upload-preview>img{width:56px;height:56px;object-fit:contain;flex:none;border-radius:5px;background:rgba(127,127,127,.1)}
 .shared-image-upload-file-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px;font-size:12px}
