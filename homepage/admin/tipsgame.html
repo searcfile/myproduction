@@ -845,8 +845,9 @@ const tipsPlatformFilterEl = document.getElementById('tipsPlatformFilter');
 const tipsStatusFilterEl = document.getElementById('tipsStatusFilter');
 const tipsSearchPlatformEl = document.getElementById('tipsSearchPlatform');
 NewUI.syncSearch(tipsSearchPlatformEl, {
-  onSearch: () => {
+  onSearch: async () => {
     applyTipsFilters();
+    await new Promise(resolve => setTimeout(resolve, 600));
   }
 });
 const tipsPlatformChips = NewUI.chips(tipsPlatformFilterEl, {
