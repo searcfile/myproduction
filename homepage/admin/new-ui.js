@@ -2937,37 +2937,22 @@ function showToast(
       "span"
     );
 
-
   icon.className =
     "custom-toast-icon";
 
-
   icon.innerHTML =
     toastIcons[type];
-
-
-  /* MESSAGE */
 
   const messageElement =
     document.createElement(
       "div"
     );
 
-
   messageElement.className =
     "custom-toast-message";
 
-
-  /*
-    textContent digunakan supaya
-    message tidak inject HTML.
-  */
-
   messageElement.textContent =
     String(message ?? "");
-
-
-  /* CLOSE */
 
   const closeButton =
     document.createElement(
@@ -3090,6 +3075,78 @@ window.showToast =
   showToast;
 window.NewUI.showToast=showToast;
 window.NewUI.removeToast=removeToast;
+
+/* ==========================================
+   NEW UI - SHARED BUTTON LOADING
+   ========================================== */
+
+const sharedButtonStates = new WeakMap();
+
+function setButtonLoading(target, loading, options = {}) {
+  const btn = typeof target === 'string'
+    ? document.querySelector(target)
+    : target;
+
+  if (!(btn instanceof HTMLButtonElement)) return;
+
+  if (loading) {
+    if (sharedButtonStates.has(btn)) return;
+
+    sharedButtonStates.set(btn, {
+      html: btn.innerHTML,
+      disabled: btn.disabled,
+      ariaBusy: btn.getAttribute('aria-busy')
+    });
+
+    const spinner = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'svg'
+    );
+
+    spinner.setAttribute('class', 'shared-btn-spinner');
+    spinner.setAttribute('viewBox', '0 0 24 24');
+    spinner.setAttribute('fill', 'none');
+    spinner.setAttribute('aria-hidden', 'true');
+
+    spinner.innerHTML = `
+      <circle cx="12" cy="12" r="9"
+        stroke="currentColor"
+        stroke-width="3"
+        opacity=".25"/>
+      <path d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"/>
+    `;
+
+    const label = document.createElement('span');
+    label.textContent = options.text || 'Saving...';
+
+    btn.replaceChildren(spinner, label);
+    btn.classList.add('shared-btn-loading');
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+
+    return;
+  }
+
+  const previous = sharedButtonStates.get(btn);
+  if (!previous) return;
+
+  btn.innerHTML = previous.html;
+  btn.disabled = previous.disabled;
+  btn.classList.remove('shared-btn-loading');
+
+  if (previous.ariaBusy === null) {
+    btn.removeAttribute('aria-busy');
+  } else {
+    btn.setAttribute('aria-busy', previous.ariaBusy);
+  }
+
+  sharedButtonStates.delete(btn);
+}
+
+window.NewUI.setButtonLoading = setButtonLoading;
 
 window.NewUI.imageUpload=createSharedImageUpload;
 window.createSharedDropdown=createSharedDropdown;
