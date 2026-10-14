@@ -1375,8 +1375,17 @@ document.getElementById('createGameBtn').addEventListener('click',()=>openLogoEd
 document.getElementById('logoCancel')
   .addEventListener('click', closeLogoEditor);
 
-logoForm.addEventListener('submit',async e=>{
-  e.preventDefault();const btn=document.getElementById('logoSave');btn.disabled=true;
+logoForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const btn = document.getElementById('logoSave');
+
+  if (btn.disabled) return;
+
+  NewUI.setButtonLoading(btn, true, {
+    text: editingLogoId ? 'Updating...' : 'Saving...'
+  });
+
   try {
     const selectedPlatform =
   document.getElementById('logoPlatformPicker').value;
@@ -1420,7 +1429,9 @@ if (!validImageUrl(image)) {
   logoImagePicker.setStatus('Ready');
   NewUI.showToast(err.message, 'error');
 }
-  finally{btn.disabled=false;}
+  finally {
+  NewUI.setButtonLoading(btn, false);
+}
 });
 async function deleteLogo(game){
   if(!confirm(`Delete ${game.alias||game.name}?`))return;
