@@ -742,6 +742,30 @@ select:focus-visible{
     gap: 12px;
   }
 }
+/* ==========================================
+   GAME LOGO - UPLOAD BUTTON CLICK AREA
+   ========================================== */
+
+.logo-editor-modal .logo-upload-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  width: 100%;
+}
+
+.logo-editor-modal .logo-upload-label {
+  font-size: 13px;
+  cursor: default;
+}
+
+.logo-editor-modal #logoImagePicker {
+  width: 100%;
+}
+
+.logo-editor-modal .shared-image-upload-btn {
+  cursor: pointer;
+}
 </style>
 <body>
 <div class="logo-toolbar-row">
@@ -816,10 +840,10 @@ select:focus-visible{
 
     </div>
 
-    <label class="logo-upload-field">
-      Upload Image
-      <div id="logoImagePicker"></div>
-    </label>
+<div class="logo-upload-field">
+  <span class="logo-upload-label">Upload Image</span>
+  <div id="logoImagePicker"></div>
+</div>
 
     <p id="logoStatus" role="status" aria-live="polite"></p>
 
