@@ -3177,6 +3177,277 @@ async function setButtonLoading(target, loading, options = {}) {
 window.NewUI.setButtonLoading = setButtonLoading;
 
 
+/* ================================================
+   NEW UI - SHARED CONFIRM POPOVER
+   ================================================ */
+
+let activeSharedConfirm = null;
+
+function sharedConfirm(options = {}) {
+  // Hanya satu confirm box boleh dibuka pada satu masa.
+  activeSharedConfirm?.close();
+
+  const anchor = typeof options.target === 'string'
+    ? document.querySelector(options.target)
+    : options.target;
+
+  if (!(anchor instanceof Element)) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise(resolve => {
+    let finished = false;
+    let busy = false;
+
+    const previousFocus = document.activeElement;
+
+    const pop = document.createElement('div');
+    pop.className = 'shared-confirm-popover';
+    pop.setAttribute('role', 'dialog');
+    pop.setAttribute('aria-modal', 'true');
+    pop.setAttribute('aria-label', options.title || 'Confirm action');
+    pop.tabIndex = -1;
+
+    pop.innerHTML = `
+      <div class="shared-confirm-header">
+        <span class="shared-confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 7v5"/>
+            <path d="M12 16h.01"/>
+          </svg>
+        </span>
+
+        <strong class="shared-confirm-title"></strong>
+
+        <button type="button"
+                class="shared-confirm-close"
+                aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="shared-confirm-message"></div>
+
+      <div class="shared-confirm-actions">
+        <button type="button"
+                class="shared-confirm-cancel">
+          Cancel
+        </button>
+
+        <button type="button"
+                class="shared-confirm-accept">
+          Delete
+        </button>
+      </div>
+    `;
+
+    pop.querySelector('.shared-confirm-title').textContent =
+      options.title || 'Are you sure?';
+
+    pop.querySelector('.shared-confirm-message').textContent =
+      options.message || 'This action cannot be undone.';
+
+    const cancel = pop.querySelector('.shared-confirm-cancel');
+    const accept = pop.querySelector('.shared-confirm-accept');
+    const closeBtn = pop.querySelector('.shared-confirm-close');
+
+    cancel.textContent = options.cancelText || 'Cancel';
+    accept.textContent = options.confirmText || 'Delete';
+
+    if (options.danger === false) {
+      accept.classList.add('is-primary');
+    }
+
+    function position() {
+      const rect = anchor.getBoundingClientRect();
+      const width = pop.offsetWidth;
+      const height = pop.offsetHeight;
+      const gap = 10;
+      const margin = 10;
+
+      // Default: sebelah kiri tombol.
+      let left = rect.left - width - gap;
+      let side = 'left';
+
+      // Jika kiri tidak cukup, cuba kanan.
+      if (left < margin) {
+        left = rect.right + gap;
+        side = 'right';
+      }
+
+      // Jika kanan pun tidak cukup, letak di atas.
+      if (left + width > window.innerWidth - margin) {
+        left = rect.right - width;
+        side = 'top';
+      }
+
+      left = Math.max(
+        margin,
+        Math.min(left, window.innerWidth - width - margin)
+      );
+
+      let top;
+
+      if (side === 'top') {
+        top = rect.top - height - gap;
+
+        if (top < margin) {
+          top = rect.bottom + gap;
+        }
+      } else {
+        top = rect.top + rect.height / 2 - height / 2;
+      }
+
+      top = Math.max(
+        margin,
+        Math.min(top, window.innerHeight - height - margin)
+      );
+
+      pop.style.left = `${Math.round(left)}px`;
+      pop.style.top = `${Math.round(top)}px`;
+    }
+
+    function cleanup(result) {
+      if (finished) return;
+      finished = true;
+
+      document.removeEventListener('pointerdown', onOutside, true);
+      document.removeEventListener('keydown', onKeydown, true);
+      window.removeEventListener('resize', position);
+      window.removeEventListener('scroll', position, true);
+
+      pop.remove();
+
+      if (activeSharedConfirm?.element === pop) {
+        activeSharedConfirm = null;
+      }
+
+      if (previousFocus?.isConnected) {
+        previousFocus.focus({ preventScroll: true });
+      }
+
+      resolve(result);
+    }
+
+    function onOutside(e) {
+      if (busy) return;
+
+      if (!pop.contains(e.target)) {
+        cleanup(false);
+      }
+    }
+
+    function onKeydown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!busy) cleanup(false);
+        return;
+      }
+
+      // Kekalkan keyboard focus di dalam confirm box.
+      if (e.key === 'Tab') {
+        const buttons = [closeBtn, cancel, accept];
+        const index = buttons.indexOf(document.activeElement);
+
+        if (e.shiftKey && index <= 0) {
+          e.preventDefault();
+          accept.focus();
+        } else if (!e.shiftKey && index === buttons.length - 1) {
+          e.preventDefault();
+          closeBtn.focus();
+        }
+      }
+    }
+
+    cancel.addEventListener('click', () => cleanup(false));
+    closeBtn.addEventListener('click', () => cleanup(false));
+
+    accept.addEventListener('click', async () => {
+      if (busy) return;
+
+      // Mode callback: boleh tunggu Firebase delete selesai.
+      if (typeof options.onConfirm === 'function') {
+        busy = true;
+        cancel.disabled = true;
+        closeBtn.disabled = true;
+
+        try {
+          if (window.NewUI?.setButtonLoading) {
+            NewUI.setButtonLoading(accept, true, {
+              text: options.loadingText || 'Deleting...'
+            });
+          } else {
+            accept.disabled = true;
+          }
+
+          await options.onConfirm();
+
+          if (window.NewUI?.setButtonLoading) {
+            await NewUI.setButtonLoading(accept, false);
+          }
+
+          cleanup(true);
+        } catch (err) {
+          console.error('Confirm action failed:', err);
+
+          if (window.NewUI?.setButtonLoading) {
+            await NewUI.setButtonLoading(accept, false);
+          }
+
+          accept.disabled = false;
+          cancel.disabled = false;
+          closeBtn.disabled = false;
+          busy = false;
+
+          window.NewUI?.showToast?.(
+            err.message || 'Action failed',
+            'error'
+          );
+        }
+
+        return;
+      }
+
+      cleanup(true);
+    });
+
+    document.body.appendChild(pop);
+    position();
+
+    activeSharedConfirm = {
+      element: pop,
+      close: () => {
+        if (!busy) cleanup(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', onOutside, true);
+    document.addEventListener('keydown', onKeydown, true);
+    window.addEventListener('resize', position);
+    window.addEventListener('scroll', position, true);
+
+    requestAnimationFrame(() => {
+      if (!finished) {
+        pop.classList.add('is-visible');
+        cancel.focus({ preventScroll: true });
+      }
+    });
+  });
+}
+
+window.NewUI.confirm = sharedConfirm;
+
 window.NewUI.imageUpload=createSharedImageUpload;
 window.createSharedDropdown=createSharedDropdown;
 window.createSharedChipDropdown=createSharedChipDropdown;
