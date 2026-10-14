@@ -1906,3 +1906,197 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
     animation-duration: 2s;
   }
 }
+
+/* ================================================
+   NEW UI - SHARED CONFIRM POPOVER
+   ================================================ */
+
+.shared-confirm-popover {
+  position: fixed;
+  z-index: 2147483000;
+
+  width: 300px;
+  max-width: calc(100vw - 20px);
+  padding: 16px;
+
+  background: #1f1f1f;
+  color: rgba(255,255,255,.88);
+  border: 1px solid #424242;
+  border-radius: 10px;
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.18),
+    0 12px 32px rgba(0,0,0,.22);
+
+  font-family: inherit;
+  font-size: 13px;
+
+  opacity: 0;
+  transform: translateY(5px) scale(.98);
+  transition:
+    opacity .16s ease,
+    transform .16s ease;
+
+  box-sizing: border-box;
+}
+
+.shared-confirm-popover.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.shared-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.shared-confirm-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: #faad14;
+}
+
+.shared-confirm-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.shared-confirm-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.shared-confirm-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  padding: 3px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+}
+
+.shared-confirm-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.shared-confirm-close:hover {
+  color: #fff;
+  background: rgba(255,255,255,.08);
+}
+
+.shared-confirm-message {
+  margin: 8px 0 17px 27px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.60);
+  overflow-wrap: anywhere;
+}
+
+.shared-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shared-confirm-actions button {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.shared-confirm-cancel {
+  background: #262626;
+  color: rgba(255,255,255,.85);
+  border: 1px solid #424242;
+}
+
+.shared-confirm-cancel:hover {
+  background: #333;
+}
+
+.shared-confirm-accept {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #dc4352;
+  color: #fff;
+  border: 1px solid transparent;
+}
+
+.shared-confirm-accept:hover:not(:disabled) {
+  background: #f05a69;
+}
+
+.shared-confirm-accept.is-primary {
+  background: #1668dc;
+}
+
+.shared-confirm-accept.is-primary:hover:not(:disabled) {
+  background: #3c89e8;
+}
+
+.shared-confirm-popover button:disabled {
+  cursor: not-allowed;
+  opacity: .7;
+}
+
+/* Light theme */
+html[data-admin-theme="light"] .shared-confirm-popover,
+body.light-theme .shared-confirm-popover {
+  background: #fff;
+  color: rgba(0,0,0,.88);
+  border-color: #e5e5e5;
+  box-shadow: 0 6px 24px rgba(0,0,0,.13);
+}
+
+html[data-admin-theme="light"] .shared-confirm-message,
+body.light-theme .shared-confirm-message {
+  color: rgba(0,0,0,.55);
+}
+
+html[data-admin-theme="light"] .shared-confirm-close,
+body.light-theme .shared-confirm-close {
+  color: #777;
+}
+
+html[data-admin-theme="light"] .shared-confirm-close:hover,
+body.light-theme .shared-confirm-close:hover {
+  color: #222;
+  background: #f3f3f3;
+}
+
+html[data-admin-theme="light"] .shared-confirm-cancel,
+body.light-theme .shared-confirm-cancel {
+  background: #fff;
+  color: #333;
+  border-color: #d9d9d9;
+}
+
+html[data-admin-theme="light"] .shared-confirm-cancel:hover,
+body.light-theme .shared-confirm-cancel:hover {
+  background: #f5f5f5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-confirm-popover {
+    transition: none;
+  }
+}
