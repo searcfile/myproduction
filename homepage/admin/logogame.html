@@ -776,7 +776,7 @@ select:focus-visible{
 </div>
   <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
   <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
-  <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
+  <button type="button" id="createGameBtn" class="btn-primary-new">+ Create</button>
 </div>
 <div class="logo-grid" id="gameGrid">
   </div>
@@ -845,8 +845,8 @@ select:focus-visible{
     <p id="logoStatus" role="status" aria-live="polite"></p>
 
     <div class="logo-dialog-buttons">
-      <button type="button" id="logoCancel">Cancel</button>
-      <button type="submit" id="logoSave">Save</button>
+      <button type="button" id="logoCancel" class="btn-cancel-new">Cancel</button>
+      <button type="submit" id="logoSave" class="btn-primary-new">Save</button>
     </div>
 
   </form>
@@ -961,8 +961,16 @@ if (!filtered.length) {
         div.append(alias, imageFrame, name, typeTag, platformTag);
         if (game.id) {
           const actions = document.createElement('div'); actions.className = 'logo-actions';
-          const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = 'Edit'; edit.addEventListener('click', () => openLogoEditor(game));
-          const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Delete'; del.addEventListener('click', () => deleteLogo(game));
+          const edit = document.createElement('button'); 
+          edit.type = 'button'; 
+          edit.className = 'btn-edit-new';
+          edit.textContent = 'Edit'; 
+          edit.addEventListener('click', () => openLogoEditor(game));
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'btn-delete-new';
+          del.textContent = 'Delete'; 
+          del.addEventListener('click', () => deleteLogo(game));
           actions.append(edit, del); div.append(actions);
         }
         grid.append(div);
