@@ -1423,14 +1423,26 @@ if (!validImageUrl(image)) {
     const db = logoDb();
     if(editingLogoId)await db.ref(`${LOGO_PATH}/${editingLogoId}`).update(data);
     else await db.ref(LOGO_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
-   closeLogoEditor();NewUI.showToast(editingLogoId?'Game logo updated!':'Game logo created!','success');
+
+// Tunggu minimum loading shared selesai
+await NewUI.setButtonLoading(btn, false);
+
+// Tutup modal selepas spinner selesai
+closeLogoEditor();
+
+// Paparkan success notification
+NewUI.showToast(
+  editingLogoId ? 'Game logo updated!' : 'Game logo created!',
+  'success'
+);
+
   } catch (err) {
   console.error(err);
   logoImagePicker.setStatus('Ready');
   NewUI.showToast(err.message, 'error');
 }
-  finally {
-  NewUI.setButtonLoading(btn, false);
+finally {
+  await NewUI.setButtonLoading(btn, false);
 }
 });
 async function deleteLogo(game){
