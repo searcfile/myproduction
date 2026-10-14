@@ -841,21 +841,44 @@ select:focus-visible{
     margin-top:6px;
   }
 }
+
+/* ===== FIND GAME MODERN TOOLBAR (page scoped) ===== */
+.filters{position:relative!important;top:auto!important;background:transparent!important;z-index:20}
+.filters-inner{width:100%!important;margin:0!important;padding:12px!important;display:grid!important;grid-template-columns:minmax(0,400px) minmax(0,400px) minmax(max-content,1fr)!important;align-items:start;gap:12px!important;background:var(--page-bg2);border:1px solid var(--border-input);border-radius:12px}
+.fg-search-slot,.fg-platform-slot{min-width:0;width:100%}
+#q{width:100%;height:32px;background:var(--page-input);border:1px solid var(--border-input);border-radius:6px;color:var(--page-text);padding:0 11px;outline:none;font:inherit;font-size:14px}
+#q::placeholder{color:var(--blur)}
+.fg-search-slot .shared-sync-search{width:100%}
+.fg-platform-slot .shared-chip-dropdown{width:100%}
+.fg-create-slot{display:flex;justify-content:flex-end;align-items:center;min-width:0}
+.fg-create-btn{border:1px solid var(--blue);border-radius:6px;min-height:32px;padding:0 17px;background:var(--blue);color:#fff;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;transition:background .2s}
+.fg-create-btn:hover{background:var(--blue-hover)}
+.wrap{width:100%!important;margin:12px 0 0!important;padding:0 12px 24px!important;height:auto!important;min-height:0!important}
+.grid{grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:14px}
+.list,.detail{border-radius:12px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.list-hdr,.detail-hdr{border-bottom:1px solid var(--border-input);margin-bottom:10px}
+.game{border-radius:8px;padding:12px 14px;min-width:0}
+.g-pill{max-width:48%;overflow:hidden;text-overflow:ellipsis}
+.art img{border-radius:10px}
+.fg-create-form{display:grid;gap:14px}
+.fg-create-form label{display:grid;gap:6px;color:var(--text);font-size:13px}
+.fg-create-form input,.fg-create-form select{width:100%;height:36px;padding:0 10px;border:1px solid var(--input-line);background:var(--input);color:var(--text);border-radius:6px;font:inherit}
+.fg-form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.fg-form-actions button{padding:8px 14px;border-radius:6px;border:1px solid var(--input-line);background:var(--input);color:var(--text);cursor:pointer}
+.fg-form-actions button[type=submit]{background:var(--blue);border-color:var(--blue);color:#fff}
+@media(max-width:979px){.grid{grid-template-columns:minmax(0,1fr)}.detail{top:12px!important}.list{min-height:0}.wrap{margin-top:12px!important}}
+@media(max-width:740px){.filters-inner{grid-template-columns:minmax(0,1fr)!important;gap:10px!important;padding:10px!important}.fg-create-slot{justify-content:flex-end}.wrap{padding:0 10px 20px!important}.detail{left:10px;right:10px;bottom:10px}.list-hdr,.detail-hdr{padding:12px}.art img{height:auto;max-height:260px}}
+
   </style>
 <body>
-  <!-- ===== Filters (fixed) ===== -->
-  <section class="filters" aria-label="Filters">
+  <!-- Find Game: shared custom toolbar -->
+  <section class="filters" aria-label="Find Game filters">
     <div class="filters-inner">
-      <label class="search" for="q">
-        <input id="q" type="text" placeholder="Search game by name or alias…" autocomplete="off" aria-label="Search" />
-        <button class="btn-clear" id="btnClear" title="Clear search" aria-label="Clear search">×</button>
-      </label>
-      <div class="tags" id="tags" role="tablist" aria-label="Platforms">
-        <button class="tag" data-platform="All" role="tab" aria-pressed="true">All</button>
-        <button class="tag" data-platform="918KISS" role="tab" aria-pressed="false">918KISS</button>
-        <button class="tag" data-platform="MEGA888" role="tab" aria-pressed="false">MEGA888</button>
-        <button class="tag" data-platform="PUSSY888" role="tab" aria-pressed="false">PUSSY888</button>
+      <div class="fg-search-slot">
+        <input id="q" type="search" placeholder="Search game..." autocomplete="off" aria-label="Search game" />
       </div>
+      <div id="fgPlatformChips" class="fg-platform-slot" aria-label="Filter platforms"></div>
+      <div class="fg-create-slot"><button id="fgCreate" type="button" class="fg-create-btn">+ Create</button></div>
     </div>
   </section>
 
@@ -7471,13 +7494,14 @@ select:focus-visible{
     ];
 
 // ---- State ----
-let selectedPlatform = localStorage.getItem('fg.platform') || 'All';
+let selectedPlatforms = (()=>{try{return JSON.parse(localStorage.getItem('fg.platforms')||'[]')}catch(_){return []}})();
+let fgChips = null;
 let selectedLine = 1;
 let selectedGame = null;
 
 // ---- Elements ----
 const elQ = document.getElementById('q');
-const elTags = document.getElementById('tags');
+const elTags = document.getElementById('fgPlatformChips');
 const elList = document.getElementById('list');     // <-- scroller (.scroll)
 const elDetail = document.getElementById('detail');
 const dTitle = document.getElementById('dTitle');
@@ -7490,7 +7514,7 @@ const dTags = document.getElementById('dTags');
 const dBets = document.getElementById('dBets');
 const lineText = document.getElementById('lineText');
 const count = document.getElementById('count');
-const btnClear = document.getElementById('btnClear');
+const btnClear = null;
 
 // Utilities
 const debounce=(fn,ms=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
@@ -7498,12 +7522,19 @@ const debounce=(fn,ms=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(
 // Restore search
 elQ.value = sessionStorage.getItem('fg.q') || '';
 
-// Activate saved platform tab
-[...elTags.children].forEach(btn=>{
-  const on = (btn.dataset.platform||'All') === selectedPlatform;
-  btn.classList.toggle('active', on);
-  btn.setAttribute('aria-pressed', on? 'true':'false');
+// Shared NewUI components (only Find Game; shared files stay unchanged)
+const fgPlatformNames = [...new Set(games.flatMap(g => g.tags || []).map(t => String(t).toUpperCase()))].sort();
+fgChips = window.NewUI?.chips?.(elTags, {
+  placeholder: 'All Platforms',
+  options: fgPlatformNames.map(name => ({value:name,label:name})),
+  value: selectedPlatforms.map(x=>String(x).toUpperCase()),
+  onChange(values) {
+    selectedPlatforms = values;
+    localStorage.setItem('fg.platforms', JSON.stringify(values));
+    renderList();
+  }
 });
+window.NewUI?.syncSearch?.(elQ, {onSearch: async () => {renderList();}});
 
 /* ========== NEW: kunci tinggi list ke 10 baris ========== */
 function applyListMaxHeight(visibleRows = 10){
@@ -7542,11 +7573,8 @@ function renderList(){
 
     const kw = !q || nameMatch || aliasMatch || paylineMatch;
 
-    const platOK =
-      selectedPlatform === "All" ||
-      (g.tags || []).some(t =>
-        t.toLowerCase() === selectedPlatform.toLowerCase()
-      );
+    const platOK = !selectedPlatforms.length ||
+      (g.tags || []).some(t => selectedPlatforms.includes(String(t).toUpperCase()));
 
     return kw && platOK;
   });
@@ -7555,7 +7583,8 @@ function renderList(){
   count.textContent = filtered.length;
 
   if(!filtered.length){
-    elList.innerHTML = '<div class="empty">No games found</div>';
+    if (window.showEmptyState) window.showEmptyState(elList, 'No Data', 'large', 'center');
+    else elList.textContent = 'No Data';
     // tetap set max-height supaya box-nya tidak melebar
     requestAnimationFrame(()=>applyListMaxHeight());
     return;
@@ -7634,16 +7663,41 @@ function changeLine(delta){
 
 // Events
 elQ.addEventListener('input', debounce(renderList, 150));
-document.getElementById('btnClear').addEventListener('click', ()=>{ elQ.value=''; renderList(); elQ.focus(); });
-
-elTags.addEventListener('click', (e)=>{
-  const btn = e.target.closest('.tag'); if(!btn) return;
-  [...elTags.children].forEach(x=>{x.classList.remove('active'); x.setAttribute('aria-pressed','false');});
-  btn.classList.add('active');
-  btn.setAttribute('aria-pressed','true');
-  selectedPlatform = btn.dataset.platform || 'All';
-  localStorage.setItem('fg.platform', selectedPlatform);
-  renderList();
+// Create Game: local browser draft only; does not write to Firebase.
+const fgCreateButton = document.getElementById('fgCreate');
+const FG_LOCAL_KEY = 'fg.customGames.v1';
+try {
+  const stored = JSON.parse(localStorage.getItem(FG_LOCAL_KEY) || '[]');
+  if (Array.isArray(stored)) games.push(...stored.filter(g => g && typeof g.name === 'string'));
+} catch (error) { console.warn('Find Game local drafts unavailable', error); }
+fgCreateButton.addEventListener('click', () => {
+  const modal = window.NewUI?.modal?.open({title:'Create Game',width:480,content:`
+    <form id="fgCreateForm" class="fg-create-form">
+      <label>Game Name<input name="name" required maxlength="100" placeholder="Enter game name" /></label>
+      <label>Alias<input name="alias" maxlength="100" placeholder="Optional alias" /></label>
+      <label>Platform<select name="platform" required>${fgPlatformNames.map(p=>`<option value="${p}">${p}</option>`).join('')}</select></label>
+      <label>Type<input name="type" value="Slot" required maxlength="50" /></label>
+      <label>Paylines<input name="payline" type="number" min="1" max="1000" value="20" required /></label>
+      <label>Image URL<input name="image" type="url" placeholder="https://..." /></label>
+      <div class="fg-form-actions"><button type="button" data-fg-cancel>Cancel</button><button type="submit">Create Game</button></div>
+    </form>`});
+  if (!modal) { window.alert('Shared modal unavailable'); return; }
+  modal.body.querySelector('[data-fg-cancel]').addEventListener('click',()=>modal.close());
+  modal.body.querySelector('#fgCreateForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd = new FormData(event.currentTarget);
+    const name = String(fd.get('name')||'').trim();
+    const payline = Number(fd.get('payline'));
+    if (!name || !Number.isInteger(payline) || payline<1 || payline>1000) return;
+    const game = {name,alias:String(fd.get('alias')||'').trim(),tags:[String(fd.get('platform'))],type:String(fd.get('type')||'Slot').trim(),payline,adjustable:true,image:String(fd.get('image')||'').trim(),bets:{}};
+    let saved=[];
+    try {saved=JSON.parse(localStorage.getItem(FG_LOCAL_KEY)||'[]');if(!Array.isArray(saved))saved=[];saved.push(game);localStorage.setItem(FG_LOCAL_KEY,JSON.stringify(saved));}
+    catch(err){window.NewUI?.showToast?.('Unable to save browser draft','error');return;}
+    games.push(game);
+    elQ.value=''; selectedPlatforms=[]; fgChips?.setValue?.([]);
+    renderList();modal.close();
+    window.NewUI?.showToast?.('Game saved in this browser only','success');
+  });
 });
 
 document.getElementById('btnMinus').addEventListener('click', ()=>changeLine(-1));
