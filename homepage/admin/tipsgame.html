@@ -844,10 +844,20 @@ async function deletePlatform(id,button) {
 const tipsPlatformFilterEl = document.getElementById('tipsPlatformFilter');
 const tipsStatusFilterEl = document.getElementById('tipsStatusFilter');
 const tipsSearchPlatformEl = document.getElementById('tipsSearchPlatform');
-NewUI.syncSearch(tipsSearchPlatformEl, {
+NewUI.syncSearch('#tipsSearchPlatform', {
   onSearch: async () => {
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
+
+
     applyTipsFilters();
-    await new Promise(resolve => setTimeout(resolve, 600));
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 500)
+    );
   }
 });
 const tipsPlatformChips = NewUI.chips(tipsPlatformFilterEl, {
