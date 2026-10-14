@@ -51,14 +51,17 @@ background: var(--page-bg);
    html::-webkit-scrollbar {
      display: none;
     }
-    .platform-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      z-index: 0;
-      margin:0 12px;
-    }
+.platform-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 16px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  box-sizing: border-box;
+}
 
     .platform-box {
       background: var(--page-bg2);
@@ -68,11 +71,34 @@ background: var(--page-bg);
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 280px;
+ width: 280px;
+max-width: 100%;
+box-sizing: border-box;
+flex: 0 0 280px;
       padding: 10px;
       z-index: 0;
     }
+/* Tips Game - Responsive Platform Cards */
+@media (max-width: 600px) {
+  .platform-row {
+    gap: 12px;
+    margin: 0 10px;
+    width: calc(100% - 20px);
+  }
 
+  .platform-box {
+    flex: 0 1 280px;
+    width: 280px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 320px) {
+  .platform-box {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
     .platform-header {
       font-size: 24px;
       font-weight: bold;
