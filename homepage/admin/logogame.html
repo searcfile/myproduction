@@ -673,7 +673,75 @@ select:focus-visible{
 .logo-dialog .logo-dialog-buttons button{min-height:32px; padding:0 15px; border-radius:6px; font-size:14px;}
 .logo-dialog .shared-dropdown-panel,.logo-dialog .shared-chip-dropdown-panel{z-index:10050;}
 @media(max-width:600px){.logo-dialog{padding:16px;width:calc(100vw - 24px)}.logo-dialog form{max-height:calc(90vh - 32px)}}
+/* ==========================================
+   GAME LOGO MODAL - 2 COLUMN FORM
+   ========================================== */
 
+.logo-editor-modal #logoForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.logo-editor-modal .logo-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.logo-editor-modal .logo-form-grid > label,
+.logo-editor-modal .logo-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.logo-editor-modal .logo-form-grid .new-ui-input-wrap,
+.logo-editor-modal .logo-form-grid .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.logo-editor-modal .logo-upload-field {
+  width: 100%;
+}
+
+.logo-editor-modal .logo-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.logo-editor-modal .logo-dialog-buttons button {
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logo-editor-modal #logoSave {
+  background: #1668dc;
+  border: 1px solid #1668dc;
+  color: #fff;
+}
+
+.logo-editor-modal #logoSave:hover {
+  background: #3c89e8;
+}
+
+/* Mobile: tukar kepada 1 kolum */
+@media (max-width: 480px) {
+  .logo-editor-modal .logo-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
 </style>
 <body>
 <div class="logo-toolbar-row">
@@ -691,29 +759,77 @@ select:focus-visible{
 </div>
 <div class="logo-grid" id="gameGrid">
   </div>
-  <div id="logoDialog" hidden><form id="logoForm">
-    <label>Game Name<input id="logoName" data-new-ui-input maxlength="120" required placeholder="Enter game name"></label>
-    <label>Display Name / Alias<input id="logoAlias" data-new-ui-input maxlength="120" required placeholder="Enter display name"></label>
-    <label class="logo-editor-dropdown-field">Method<select id="logoType" data-shared-dropdown data-placeholder="Select method"><option value="slot">Slot</option><option value="live">Live Game</option><option value="table">Table Game</option></select></label>
-    <label class="logo-editor-dropdown-field">
-  Platforms
-  <select
-    id="logoPlatformPicker"
-    data-shared-dropdown
-    data-placeholder="Select platform"
-  >
-    <option value="">Select platform</option>
-    <option value="918kiss">918KISS</option>
-    <option value="mega888">MEGA888</option>
-    <option value="pussy888">PUSSY888</option>
-    <option value="xe88">XE88</option>
-  </select>
-</label>
-    <label>Upload Image<div id="logoImagePicker"></div></label>
-    <label>Or Image URL<input id="logoUrl" data-new-ui-input type="url" placeholder="https://..."></label>
+<div id="logoDialog" hidden>
+  <form id="logoForm">
+
+    <div class="logo-form-grid">
+
+      <label>
+        Game Name
+        <input
+          id="logoName"
+          data-new-ui-input
+          maxlength="120"
+          required
+          placeholder="Enter game name"
+        >
+      </label>
+
+      <label>
+        Display Name / Alias
+        <input
+          id="logoAlias"
+          data-new-ui-input
+          maxlength="120"
+          required
+          placeholder="Enter display name"
+        >
+      </label>
+
+      <label class="logo-editor-dropdown-field">
+        Method
+        <select
+          id="logoType"
+          data-shared-dropdown
+          data-placeholder="Select method"
+        >
+          <option value="slot">Slot</option>
+          <option value="live">Live Game</option>
+          <option value="table">Table Game</option>
+        </select>
+      </label>
+
+      <label class="logo-editor-dropdown-field">
+        Platforms
+        <select
+          id="logoPlatformPicker"
+          data-shared-dropdown
+          data-placeholder="Select platform"
+        >
+          <option value="">Select platform</option>
+          <option value="918kiss">918KISS</option>
+          <option value="mega888">MEGA888</option>
+          <option value="pussy888">PUSSY888</option>
+          <option value="xe88">XE88</option>
+        </select>
+      </label>
+
+    </div>
+
+    <label class="logo-upload-field">
+      Upload Image
+      <div id="logoImagePicker"></div>
+    </label>
+
     <p id="logoStatus" role="status" aria-live="polite"></p>
-    <div class="logo-dialog-buttons"><button type="button" id="logoCancel">Cancel</button><button type="submit" id="logoSave">Save</button></div>
-  </form></div>
+
+    <div class="logo-dialog-buttons">
+      <button type="button" id="logoCancel">Cancel</button>
+      <button type="submit" id="logoSave">Save</button>
+    </div>
+
+  </form>
+</div>
   <button id="backToTop" onclick="scrollToTop()">⬆ Back to Top</button>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -1083,11 +1199,9 @@ function logoDb() {
 function validImageUrl(url) { try {return new URL(url).protocol === 'https:';} catch {return false;} }
   
 const logoImagePicker = NewUI.imageUpload('#logoImagePicker', {
-  buttonText:'Upload Image', maxSizeMB:5,
-  onError:error=>NewUI.showToast(error.message,'error'),
-  onChange:({file,url})=>{
-    if(file) document.getElementById('logoUrl').value='';
-  }
+  buttonText: 'Upload Image',
+  maxSizeMB: 5,
+  onError: error => NewUI.showToast(error.message, 'error')
 });
 NewUI.init(logoForm);
 // Use the shared searchable dropdown for Method; Platforms uses shared multi-select.
@@ -1102,7 +1216,6 @@ function openLogoEditor(game=null) {
   document.getElementById('logoAlias').value=game?.alias||'';
   document.getElementById('logoType').value=game?.type||'slot';
   document.getElementById('logoType').dispatchEvent(new Event('change',{bubbles:true}));
-  document.getElementById('logoUrl').value=game?.image||'';
   const platforms=Array.isArray(game?.platform)?game.platform:Object.values(game?.platform||{});
   const platformSelect = document.getElementById('logoPlatformPicker');
 
@@ -1120,12 +1233,7 @@ showLogoModal(
 document.getElementById('createGameBtn').addEventListener('click',()=>openLogoEditor());
 document.getElementById('logoCancel')
   .addEventListener('click', closeLogoEditor);
-document.getElementById('logoUrl').addEventListener('input',e=>{
-  const url=e.target.value.trim();
-  if(logoImagePicker.getFile()) return;
-  if(!url) logoImagePicker.clear(false);
-  else if(validImageUrl(url)) logoImagePicker.setUrl(url,'Image URL');
-});
+
 logoForm.addEventListener('submit',async e=>{
   e.preventDefault();const btn=document.getElementById('logoSave');btn.disabled=true;
   try {
@@ -1136,8 +1244,18 @@ const platforms = selectedPlatform
   ? [selectedPlatform]
   : [];
     if(!platforms.length)throw new Error('Pilih sekurang-kurangnya satu platform');
-    let image=document.getElementById('logoUrl').value.trim();
-    const file=logoImagePicker.getFile();
+let image = '';
+
+const file = logoImagePicker.getFile();
+
+// Edit: kekalkan gambar lama jika tidak upload gambar baru
+if (editingLogoId) {
+  const existingGame = games.find(
+    game => game.id === editingLogoId
+  );
+
+  image = existingGame?.image || '';
+}
     if(file){
       if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)||file.size>5*1024*1024)throw new Error('PNG/JPG/WEBP/GIF maksimum 5MB');
       logoStatus.textContent='Uploading image...';logoImagePicker.setStatus('Uploading...');
@@ -1147,7 +1265,9 @@ const platforms = selectedPlatform
       if(!response.ok||!validImageUrl(result.secure_url))throw new Error(result.error?.message||'Cloudinary upload failed');
       image=result.secure_url;
     }
-    if(!validImageUrl(image))throw new Error('Upload image atau masukkan HTTPS image URL');
+if (!validImageUrl(image)) {
+  throw new Error('Sila upload image terlebih dahulu');
+}
     const data={name:document.getElementById('logoName').value.trim(),alias:document.getElementById('logoAlias').value.trim(),type:document.getElementById('logoType').value,platform:platforms,image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
     if(!data.name||!data.alias)throw new Error('Nama dan alias diperlukan');
     logoStatus.textContent='Saving to Firebase...';const db=logoDb();
