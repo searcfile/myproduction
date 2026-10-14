@@ -699,7 +699,6 @@ const platformIdByName = new Map();
 let tipsRecords = {};
 let tipsDb = null;
 let tipsLoaded = false;
-const tipsStatus = document.getElementById('tipsStatus');
 const tipsCreate = document.getElementById('tipsCreate');
 
 function escapeTipsHtml(value) {
@@ -738,7 +737,7 @@ function renderPlatformsFromDatabase() {
     empty.textContent='No platforms yet. Click + Create Platform to add your first platform.';
     document.getElementById('row-1').appendChild(empty);
   }
-  tipsStatus.textContent=`${records.length} platform(s) · Firebase realtime`;
+  
 }
 function tipsDatabase() {
   if(tipsDb)return tipsDb;
@@ -801,10 +800,12 @@ function startTipsRealtime() {
       renderPlatformsFromDatabase();
     },error=>{
       console.error('Tips Firebase listener:',error);
-      tipsStatus.textContent='Firebase access error: '+error.message;
       tipsToast('Cannot load Tips Game data: '+error.message,'error');
     });
-  }catch(err){console.error(err);tipsStatus.textContent='Firebase not connected';tipsToast(err.message,'error');}
+}catch(err){
+  console.error('Tips Firebase connection:', err);
+  tipsToast(err.message || 'Firebase not connected', 'error');
+}
 }
 tipsCreate.addEventListener('click',()=>openPlatformEditor());
 // Legacy card buttons use inline handlers. Expose only the existing UI actions.
