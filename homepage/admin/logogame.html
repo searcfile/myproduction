@@ -1068,17 +1068,7 @@ del.addEventListener('click', () => {
 
 actions.append(copy, edit, del);
 div.append(actions);
-          const edit = document.createElement('button'); 
-          edit.type = 'button'; 
-          edit.className = 'btn-edit-new';
-          edit.textContent = 'Edit'; 
-          edit.addEventListener('click', () => openLogoEditor(game));
-          const del = document.createElement('button');
-          del.type = 'button';
-          del.className = 'btn-delete-new';
-          del.textContent = 'Delete'; 
-          del.addEventListener('click', () => deleteLogo(game));
-          actions.append(edit, del); div.append(actions);
+
         }
         grid.append(div);
       });
