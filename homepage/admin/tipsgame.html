@@ -969,7 +969,7 @@ function openPlatformEditor(id=null) {
   if(id&&!record){tipsToast('Platform no longer exists.','error');return;}
   const form=document.createElement('form');form.className='tips-form';
   form.innerHTML=`
-    <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="e.g. MEGA888" required></div>
+    <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="Platform Name" required></div>
     <div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
     <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
