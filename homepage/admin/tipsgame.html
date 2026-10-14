@@ -597,6 +597,36 @@ select:focus-visible{
     box-sizing: border-box;
   }
 }
+/* =========================================
+   TIPS GAME - CUSTOM SHARED NO DATA
+   ========================================= */
+
+.tips-no-data {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 160px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  background: var(--page-bg2);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+}
+
+/* Pastikan custom empty state berada di tengah */
+.tips-no-data > * {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
   </style>
 <body>
   <div class="tips-admin-toolbar">
@@ -983,12 +1013,6 @@ function renderPlatformsFromDatabase() {
   }
   updateTipsFilterOptions(records);
   applyTipsFilters();
-  if(!records.length) {
-    const empty=document.createElement('div');empty.className='tips-empty';
-    empty.textContent='No platforms yet. Click + Create Platform to add your first platform.';
-    document.getElementById('row-1').appendChild(empty);
-  }
-  
 }
 function tipsDatabase() {
   if(tipsDb)return tipsDb;
@@ -1082,16 +1106,59 @@ function applyTipsFilters() {
   const selected = new Set(tipsPlatformChips?.getValue() || []);
   const statuses = new Set(tipsStatusChips?.getValue() || []);
   const query = (tipsSearchPlatformEl?.value || '').trim().toLowerCase();
-  document.querySelectorAll('.platform-box').forEach(box=>{
-    const id=box.dataset.platformId;
-    const record=tipsRecords[id];
-    if(!record) return;
-    const active=record.active !== false;
-    const matchPlatform=!selected.size || selected.has(id);
-    const matchStatus=!statuses.size || statuses.has(active?'active':'inactive');
-    const matchSearch=String(record.name||'').toLowerCase().includes(query);
-    box.hidden=!(matchPlatform && matchStatus && matchSearch);
+
+  const row = document.getElementById('row-1');
+  if (!row) return;
+
+  // Buang No Data sebelumnya
+  row.querySelector('.tips-no-data')?.remove();
+
+  let visibleCount = 0;
+
+  row.querySelectorAll('.platform-box').forEach(box => {
+    const id = box.dataset.platformId;
+    const record = tipsRecords[id];
+
+    if (!record) {
+      box.hidden = true;
+      return;
+    }
+
+    const active = record.active !== false;
+
+    const matchPlatform =
+      !selected.size || selected.has(id);
+
+    const matchStatus =
+      !statuses.size ||
+      statuses.has(active ? 'active' : 'inactive');
+
+    const matchSearch =
+      String(record.name || '').toLowerCase().includes(query);
+
+    const show =
+      matchPlatform &&
+      matchStatus &&
+      matchSearch;
+
+    box.hidden = !show;
+
+    if (show) visibleCount++;
   });
+
+  // Paparkan custom No Data jika tiada hasil
+  if (tipsLoaded && visibleCount === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'tips-no-data';
+
+    row.appendChild(empty);
+
+    if (typeof window.showEmptyState === 'function') {
+      window.showEmptyState(empty, 'No Data');
+    } else {
+      empty.textContent = 'No Data';
+    }
+  }
 }
 function applyPlatformActive(box, active) {
   box.classList.toggle('tips-platform-disabled', !active);
