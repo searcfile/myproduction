@@ -1584,7 +1584,7 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
    SHARED IMAGE UPLOAD + PREVIEW (Notice style)
 ========================================================= */
 .shared-image-upload{width:100%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-.shared-image-upload-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:34px;padding:5px 14px;border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);color:var(--text,#ddd);font:inherit;font-size:13px;cursor:pointer;transition:border-color .2s,background .2s}
+.shared-image-upload-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:28px;padding:0px 15px;border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);color:var(--text,#ddd);font:inherit;font-size:12px;cursor:pointer;transition:border-color .2s,background .2s}
 .shared-image-upload-btn:hover{border-color:var(--input-line-hover,#3c89e8)}
 .shared-image-upload-btn:focus-visible,.shared-image-upload-remove:focus-visible{outline:2px solid var(--input-line-focus,#1677ff);outline-offset:2px}
 .shared-image-upload-btn svg{width:16px;height:16px;flex:none}
