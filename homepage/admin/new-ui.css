@@ -1863,3 +1863,42 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
    color:#ad393a;
    border-color: #ad393a;
 }
+
+/* ==========================================
+   NEW UI - SHARED BUTTON LOADING
+   ========================================== */
+
+.shared-btn-loading {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  cursor: wait !important;
+}
+
+.shared-btn-spinner {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: inherit;
+  animation: sharedBtnSpin .7s linear infinite;
+}
+
+@keyframes sharedBtnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.shared-btn-loading:disabled {
+  cursor: wait !important;
+  opacity: .8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-btn-spinner {
+    animation-duration: 2s;
+  }
+}
