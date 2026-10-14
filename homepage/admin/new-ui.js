@@ -3080,9 +3080,12 @@ window.NewUI.removeToast=removeToast;
    NEW UI - SHARED BUTTON LOADING
    ========================================== */
 
+
+/* SHARED BUTTON LOADING - SMOOTH */
+
 const sharedButtonStates = new WeakMap();
 
-function setButtonLoading(target, loading, options = {}) {
+async function setButtonLoading(target, loading, options = {}) {
   const btn = typeof target === 'string'
     ? document.querySelector(target)
     : target;
@@ -3092,11 +3095,15 @@ function setButtonLoading(target, loading, options = {}) {
   if (loading) {
     if (sharedButtonStates.has(btn)) return;
 
-    sharedButtonStates.set(btn, {
+    const state = {
       html: btn.innerHTML,
       disabled: btn.disabled,
-      ariaBusy: btn.getAttribute('aria-busy')
-    });
+      ariaBusy: btn.getAttribute('aria-busy'),
+      startedAt: performance.now(),
+      stopping: null
+    };
+
+    sharedButtonStates.set(btn, state);
 
     const spinner = document.createElementNS(
       'http://www.w3.org/2000/svg',
@@ -3130,23 +3137,45 @@ function setButtonLoading(target, loading, options = {}) {
     return;
   }
 
-  const previous = sharedButtonStates.get(btn);
-  if (!previous) return;
+  const state = sharedButtonStates.get(btn);
+  if (!state) return;
 
-  btn.innerHTML = previous.html;
-  btn.disabled = previous.disabled;
-  btn.classList.remove('shared-btn-loading');
+  // Elakkan dua panggilan stop berjalan serentak.
+  if (state.stopping) return state.stopping;
 
-  if (previous.ariaBusy === null) {
-    btn.removeAttribute('aria-busy');
-  } else {
-    btn.setAttribute('aria-busy', previous.ariaBusy);
-  }
+  state.stopping = (async () => {
+    const minDuration = Math.max(
+      0,
+      Number(options.minDuration ?? 700) || 0
+    );
 
-  sharedButtonStates.delete(btn);
+    const elapsed = performance.now() - state.startedAt;
+    const remaining = Math.max(0, minDuration - elapsed);
+
+    if (remaining > 0) {
+      await new Promise(resolve => setTimeout(resolve, remaining));
+    }
+
+    if (sharedButtonStates.get(btn) !== state) return;
+
+    btn.innerHTML = state.html;
+    btn.disabled = state.disabled;
+    btn.classList.remove('shared-btn-loading');
+
+    if (state.ariaBusy === null) {
+      btn.removeAttribute('aria-busy');
+    } else {
+      btn.setAttribute('aria-busy', state.ariaBusy);
+    }
+
+    sharedButtonStates.delete(btn);
+  })();
+
+  return state.stopping;
 }
 
 window.NewUI.setButtonLoading = setButtonLoading;
+
 
 window.NewUI.imageUpload=createSharedImageUpload;
 window.createSharedDropdown=createSharedDropdown;
