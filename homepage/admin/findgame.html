@@ -849,6 +849,31 @@ select:focus-visible{
 .filters-inner{padding:14px 12px 8px!important}
 .fg-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(210px,400px) auto;align-items:start;gap:10px;width:100%}
 .fg-search,.fg-platform-chips{min-width:0;width:100%}
+/* FIND GAME - SEARCH MAX WIDTH */
+.fg-toolbar {
+  grid-template-columns: minmax(0, 400px) minmax(210px, 400px) auto;
+}
+
+.fg-search {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.fg-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (max-width: 700px) {
+  .fg-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fg-search {
+    grid-column: 1 / -1;
+  }
+}
 .fg-search .shared-sync-search{width:100%;height:34px}
 .fg-search input:not(.shared-sync-search-input){height:34px;width:100%;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);padding:0 11px}
 .fg-platform-chips .shared-chip-dropdown-trigger{min-height:34px}
@@ -924,6 +949,30 @@ select:focus-visible{
 
   .g-name {
     min-width: 0;
+  }
+}
+  /* FIND GAME - FINAL SEARCH WIDTH */
+.fg-toolbar {
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    auto;
+}
+
+.fg-search,
+.fg-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .fg-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .fg-search {
+    grid-column: 1 / -1;
   }
 }
   </style>
@@ -1023,7 +1072,15 @@ function updatePlatformOptions() {
   platformFilter?.setOptions(names.map(value=>({value,label:value.toUpperCase()})));
 }
 if (window.NewUI) {
-  NewUI.syncSearch(elQ, {onSearch:()=>renderList()});
+  NewUI.syncSearch(elQ, {
+  onSearch: async () => {
+    // Jalankan search seperti biasa
+    renderList();
+
+    // Beri masa supaya animasi spinner nampak
+    await new Promise(resolve => setTimeout(resolve, 650));
+  }
+});
   platformFilter=NewUI.chips(elTags, {
     placeholder:'All Platforms',
     options:platformOptions.map(value=>({value,label:value.toUpperCase()})),
