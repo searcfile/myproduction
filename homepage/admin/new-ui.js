@@ -3459,4 +3459,39 @@ window.showLoadingState=showLoadingState;
 window.clearSharedState=clearSharedState;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>initNewUI(),{once:true});
 else initNewUI();
+
+/* =========================================================
+   SHARED ACTIVE / INACTIVE SWITCH
+   Reusable across all admin tabs. No Firebase dependency.
+   HTML: <label class="shared-active-switch"><input type="checkbox"
+         data-active-label="Active Notice" data-inactive-label="Inactive Notice" checked>
+         <span class="shared-active-track"><span class="shared-active-text"></span>
+         <span class="shared-active-knob" aria-hidden="true"></span></span></label>
+   Read .checked and listen for "change" to persist using each page's logic.
+   ========================================================= */
+function syncSharedActiveSwitch(input) {
+  if (!input || !input.matches('.shared-active-switch input[type="checkbox"]')) return;
+  const label = input.nextElementSibling?.querySelector('.shared-active-text');
+  const activeText = input.dataset.activeLabel || 'Active';
+  const inactiveText = input.dataset.inactiveLabel || 'Inactive';
+  const text = input.checked ? activeText : inactiveText;
+  if (label) label.textContent = text;
+  input.setAttribute('aria-label', text);
+}
+function initSharedActiveSwitches(root = document) {
+  if (root.matches?.('.shared-active-switch input[type="checkbox"]')) syncSharedActiveSwitch(root);
+  root.querySelectorAll?.('.shared-active-switch input[type="checkbox"]').forEach(syncSharedActiveSwitch);
+}
+document.addEventListener('change', event => {
+  if (event.target.matches?.('.shared-active-switch input[type="checkbox"]')) {
+    syncSharedActiveSwitch(event.target);
+  }
+});
+window.SharedActiveSwitch = { init: initSharedActiveSwitches, sync: syncSharedActiveSwitch };
+window.NewUI.activeSwitch = window.SharedActiveSwitch;
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => initSharedActiveSwitches(), { once: true });
+} else {
+  initSharedActiveSwitches();
+}
 })();
