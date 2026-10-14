@@ -1106,57 +1106,116 @@ function scrollToTop() {
  function filterGames(){renderGames();}
  renderGames();
 
+
+/* ==========================================
+   GAME LOGO - RELIABLE COPY IMAGE
+   JPEG / WEBP / PNG -> PNG Clipboard
+   ========================================== */
+
 async function copyImageToClipboard(imageUrl, parentElement) {
-const gameName =
-    parentElement?.querySelector(".game-name")?.innerText ||
-    parentElement?.querySelector(".game-alias")?.innerText ||
-    "Image";
 
-  sendUserAction("COPY IMAGE", {
-    method: "logo-game-click",
-    image: String(gameName).replace(/\s+/g, " ").trim().slice(0, 60),
-    url: imageUrl
-  });
-  function showNotice(text, type = "info") {
-    window.NewUI?.showToast?.(text, type);
-  }
+  const gameName =
+    parentElement?.querySelector('.game-name')?.textContent ||
+    parentElement?.querySelector('.game-alias')?.textContent ||
+    'Image';
 
-  // 1) Cuba copy terus dalam child
+  const name = String(gameName)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+
   try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error("Fetch failed: " + response.status);
 
-    const blob = await response.blob();
-
-    if (!window.ClipboardItem || !navigator.clipboard?.write) {
-      throw new Error("Clipboard API not supported");
+    if (!window.isSecureContext) {
+      throw new Error('Clipboard requires HTTPS');
     }
 
-    const item = new ClipboardItem({ [blob.type]: blob });
-    await navigator.clipboard.write([item]);
+    if (!navigator.clipboard?.write || !window.ClipboardItem) {
+      throw new Error('Image clipboard not supported');
+    }
 
-    showNotice("Image Copied!", "success");
-    return;
+    if (!imageUrl) {
+      throw new Error('Image URL is empty');
+    }
+
+    // Mulakan penyediaan PNG tanpa menunggu
+    // sebelum memanggil Clipboard API.
+    const pngPromise = (async () => {
+
+      const response = await fetch(imageUrl, {
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error('Image fetch failed: ' + response.status);
+      }
+
+      const blob = await response.blob();
+
+      if (!blob.type.startsWith('image/')) {
+        throw new Error('Invalid image format');
+      }
+
+      // Convert JPEG / WEBP / GIF kepada PNG.
+      const bitmap = await createImageBitmap(blob);
+
+      try {
+        const canvas = document.createElement('canvas');
+
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          throw new Error('Canvas unavailable');
+        }
+
+        ctx.drawImage(bitmap, 0, 0);
+
+        return await new Promise((resolve, reject) => {
+          canvas.toBlob(result => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(new Error('PNG conversion failed'));
+            }
+          }, 'image/png');
+        });
+
+      } finally {
+        bitmap.close?.();
+      }
+
+    })();
+
+    // Penting: panggil clipboard.write sebelum
+    // sebarang await pada proses fetch / conversion.
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'image/png': pngPromise
+      })
+    ]);
+
+    NewUI.showToast('Image Copied!', 'success');
+
+    sendUserAction('COPY IMAGE', {
+      method: 'png-clipboard',
+      image: name
+    });
+
   } catch (err) {
-    console.warn("Direct child copy failed:", err);
-  }
 
-  // 2) Fallback ke parent
-  if (window.parent !== window) {
-    try {
-      window.parent.postMessage(
-        { action: "copy-image", url: imageUrl },
-        "https://5g88-main.vercel.app"
-      );
-      showNotice("Sending copy request...", "info");
-      return;
-    } catch (err) {
-      console.error("PostMessage fallback failed:", err);
-    }
-  }
+    console.error('Copy image failed:', err);
 
-  showNotice("❌ Failed to copy image", "error");
+    NewUI.showToast(
+      'Failed to copy image: ' + err.message,
+      'error'
+    );
+
+  }
 }
+
 (function () {
   const THEME_KEY = "siteTheme";
 
