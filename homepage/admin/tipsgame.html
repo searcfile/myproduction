@@ -412,13 +412,73 @@ select:focus-visible{
   border-radius: 12px;
   text-align: left;
 }
+/* =========================================
+   TIPS GAME - EDIT & DELETE BUTTON
+   ========================================= */
+
+.tips-platform-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.tips-mini-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto;
+  min-width: 54px;
+  height: 26px;
+  padding: 0 10px;
+
+  border: 1px solid var(--border-input);
+  border-radius: 5px;
+
+  background: transparent;
+  color: var(--page-text);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+
+  white-space: nowrap;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  cursor: pointer;
+
+  transition:
+    background-color .2s ease,
+    border-color .2s ease,
+    color .2s ease;
+}
+
+/* Edit hover */
+.tips-edit:hover {
+  border-color: var(--blue-hover);
+  color: var(--blue-hover);
+}
+
+/* Delete hover */
+.tips-delete:hover {
+  border-color: #dc4352;
+  color: #dc4352;
+}
+
+/* Button pressed */
+.tips-mini-btn:active {
+  transform: scale(.97);
+}
 .tips-admin-toolbar-text{display:flex;flex-direction:column;gap:4px}.tips-admin-toolbar-text strong{font-size:20px}.tips-admin-toolbar-text span{font-size:12px;opacity:.65}
 .tips-admin-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .tips-btn-primary,.tips-btn-secondary{border:1px solid transparent;border-radius:6px;min-height:34px;padding:0 14px;color:white;background:var(--blue);cursor:pointer;font:inherit;font-size:13px}
 .tips-btn-primary:hover{background:var(--blue-hover)}.tips-btn-secondary{background:var(--page-bg2);color:var(--page-text);border-color:var(--border-input)}
 .tips-btn-secondary:hover{border-color:var(--blue-hover)}
 .tips-platform-actions{display:flex;gap:4px;align-items:center}.tips-platform-title{overflow-wrap:anywhere}.platform-header{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding-bottom:7px;font-size:19px}
-.tips-mini-btn{border:1px solid var(--border-input);border-radius:5px;background:transparent;color:var(--page-text);height:26px;width:27px;cursor:pointer;font-size:16px;flex:none}.tips-mini-btn:hover{border-color:var(--blue-hover)}.tips-delete:hover{color:#dc4352;border-color:#dc4352}
 .tips-form{display:grid;gap:14px;text-align:left}.tips-field{display:flex;flex-direction:column;gap:6px}.tips-field label{font-size:13px;color:var(--text)}.tips-field .shared-textarea{min-height:200px;resize:vertical;width:100%;box-sizing:border-box}.tips-field .shared-input{box-sizing:border-box}
 .tips-help{font-size:12px;color:var(--muted);line-height:1.5}.tips-form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:8px}
 .tips-empty{margin:36px auto;color:var(--page-text);opacity:.75;font-size:14px}
@@ -471,16 +531,14 @@ select:focus-visible{
   justify-content: center;
   align-items: center;
   flex: 0 0 auto;
-
   width: max-content;
   max-width: 100%;
   min-width: max-content;
-  height: 34px;
-  padding: 0 14px;
-
+  height: 32px;
+  padding: 0 15px;
   white-space: nowrap;
   box-sizing: border-box;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -565,7 +623,7 @@ select:focus-visible{
 <input
   type="search"
   id="tipsSearchPlatform"
-  placeholder="Search platform..."
+  placeholder="Search"
   aria-label="Search platform"
   autocomplete="off"
 >
@@ -693,8 +751,23 @@ function createPlatform(name, tips, rowId) {
           <input type="checkbox" class="tips-platform-active" data-active-label="Active" data-inactive-label="Inactive">
           <span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span>
         </label>
-        <div class="tips-platform-actions"><button type="button" class="tips-mini-btn tips-edit" title="Edit platform and games" aria-label="Edit platform">✎</button><button type="button" class="tips-mini-btn tips-delete" title="Delete platform" aria-label="Delete platform">×</button></div>
-      </div>
+<div class="tips-platform-actions">
+  <button
+    type="button"
+    class="tips-mini-btn tips-edit"
+    title="Edit platform and games"
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    class="tips-mini-btn tips-delete"
+    title="Delete platform"
+  >
+    Delete
+  </button>
+</div>      </div>
     </div>
   `;
 
