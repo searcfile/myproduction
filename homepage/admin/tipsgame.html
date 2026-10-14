@@ -57,7 +57,7 @@ background: var(--page-bg);
       justify-content: center;
       gap: 16px;
       z-index: 0;
-      margin: 16px 12px 10px;
+      margin:0 12px;
     }
 
     .platform-box {
@@ -432,7 +432,7 @@ select:focus-visible{
     repeat(3, minmax(0, 400px))
     minmax(140px, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   min-width: 0;
 }
@@ -571,7 +571,7 @@ select:focus-visible{
 >
       <div id="tipsStatusFilter" data-placeholder="All Status" aria-label="Filter status"></div>
       <div id="tipsPlatformFilter" data-placeholder="All Platforms" aria-label="Filter platforms"></div>
-      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="tips-btn-primary">+ Create Platform</button></div>
+      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="btn-primary-new">+ Create Platform</button></div>
     </div>
   </div>
   <div class="platform-row" id="row-1"></div>
@@ -902,7 +902,7 @@ function openPlatformEditor(id=null) {
   form.innerHTML=`
     <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="e.g. MEGA888" required></div>
     <div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
-    <div class="tips-form-actions"><button type="button" class="tips-btn-secondary" data-cancel>Cancel</button><button type="submit" class="tips-btn-primary" data-save>${id?'Update':'Create'}</button></div>`;
+    <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
   const gamesInput=form.querySelector('#tipsGameNames');
   const save=form.querySelector('[data-save]');
