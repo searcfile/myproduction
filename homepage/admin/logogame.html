@@ -716,10 +716,11 @@ select:focus-visible{
 
 .logo-editor-modal .logo-dialog-buttons button {
   min-height: 32px;
-  padding: 0 16px;
+  padding: 0 15px;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
 .logo-editor-modal #logoSave {
@@ -731,7 +732,9 @@ select:focus-visible{
 .logo-editor-modal #logoSave:hover {
   background: #3c89e8;
 }
-
+.logo-editor-modal #logoSave:active {
+  background: #1554ad;
+}
 /* Mobile: tukar kepada 1 kolum */
 @media (max-width: 480px) {
   .logo-editor-modal .logo-form-grid {
