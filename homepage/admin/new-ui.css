@@ -2100,3 +2100,19 @@ body.light-theme .shared-confirm-cancel:hover {
     transition: none;
   }
 }
+
+/* =========================================================
+   5G88 SHARED ACTIVE / INACTIVE TOGGLE SWITCH
+   Based on Notice switch; reusable with new-ui.js.
+   ========================================================= */
+.shared-active-switch{display:inline-flex;position:relative;vertical-align:middle;cursor:pointer;user-select:none;font-family:inherit;line-height:1;flex:none}
+.shared-active-switch input[type="checkbox"]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.shared-active-track{position:relative;display:inline-flex;align-items:center;box-sizing:border-box;min-width:88px;max-width:170px;height:22px;border-radius:999px;padding:0 9px 0 23px;background:#696969;color:#fff;transition:background-color .2s ease;overflow:hidden}
+.shared-active-text{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:700;letter-spacing:-.15px;max-width:125px}
+.shared-active-knob{position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .2s ease}
+.shared-active-switch input[type="checkbox"]:checked+.shared-active-track{background:#1769dc;padding-left:9px;padding-right:23px}
+.shared-active-switch input[type="checkbox"]:checked+.shared-active-track .shared-active-knob{left:calc(100% - 19px)}
+.shared-active-switch input[type="checkbox"]:focus-visible+.shared-active-track{outline:2px solid #69a8ff;outline-offset:2px}
+.shared-active-switch input[type="checkbox"]:disabled+.shared-active-track{opacity:.5}
+.shared-active-switch:has(input[type="checkbox"]:disabled){cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.shared-active-track,.shared-active-knob{transition:none}}
