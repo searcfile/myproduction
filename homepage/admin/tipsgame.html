@@ -977,7 +977,7 @@ function openPlatformEditor(id=null) {
   const save=form.querySelector('[data-save]');
   nameInput.value=record?.name||'';
   gamesInput.value=(record?.games||[]).join('\n');
-  const modal=NewUI.modal.open({title:id?'Edit Tips Platform':'Create Tips Platform',content:form,width:540});
+  const modal=NewUI.modal.open({title:id?'Edit Tips Platform':'Create Tips Platform',content:form,width:800});
   form.querySelector('[data-cancel]').addEventListener('click',()=>modal.close());
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(save.disabled)return;
