@@ -262,93 +262,41 @@ background: var(--page-bg);
   background: var(--page-bg2);
   color: var(--page-text);
 }
-.tip-top-bar{
+/* Search Tips menggunakan custom shared-sync-search */
+.tip-top-bar {
   width: 90%;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin: 0 0 10px 0;
-}
-
-.tip-search-input{
-  flex: 1;
   min-width: 0;
-  height: 30px;
-  padding: 0 10px;
-  margin: 0;
-  border: 1px solid var(--border-input);
-  border-right:1px solid var(--border-input);
-  border-radius: 6px 0 0 6px;
-  background: var(--page-input);
-  color: var(--page-text);
-  outline: none;
-  box-sizing: border-box;
-  font-size: 13px;
-  transition: all 0.3s ease;
+  margin: 0 0 10px;
 }
 
-.tip-search-input::placeholder{
-  color: rgba(255,255,255,0.45);
+.tip-top-bar .shared-sync-search {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
 }
 
-body.light-theme .tip-search-input::placeholder{
-  color: rgba(0,0,0,0.35);
-}
-.tip-search-input:hover{
-  border-color: var(--blue-hover);
-}
-.tip-search-input:focus{
-  border-color: var(--blue);
+.tip-top-bar .shared-sync-search-input {
+  min-width: 0;
 }
 
-.percent-toggle-wrap{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 30px;
-  flex: 0 0 50px;
-  margin: 0;
-  padding: 0;
+/* Percentage menggunakan custom shared slide switch */
+.tips-percent-group {
+  flex: 0 0 auto;
+  min-width: 54px;
 }
 
-.percent-checkbox{
-  appearance: none;
-  -webkit-appearance: none;
-  width: 50px;
-  height: 30px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--border-input);
-  border-radius: 0 6px 6px 0;
-  background: var(--page-input);
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  flex: 0 0 50px;
+.tips-percent-group .shared-active-switch {
+  max-width: 100%;
 }
-.percent-checkbox:checked{
-  color: var(--blue);
-  border:1px solid var(--blue);
+
+.tips-percent-group .shared-active-track {
+  min-width: 54px;
+  max-width: 54px;
+  height: 22px;
 }
-.percent-checkbox::after{
-  content: "OFF";
-  color: white;
-  font-size: 11px;
-  letter-spacing: 0;
-  line-height: 1;
-}
-.percent-checkbox:checked::after{
-  content: "%"; /* boleh tukar jadi ON kalau mau */
-  color: #3c89e8;
-  font-size: 13px;
-}
-.percent-checkbox:hover{
-  border-color: var(--blue-hover);
+
+.tips-percent-group .shared-active-text {
+  font-size: 10px;
 }
 /* ================= SCROLLBAR GLOBAL ================= */
 
@@ -697,24 +645,16 @@ function createPlatform(name, tips, rowId) {
   container.innerHTML = `
     <div class="platform-header"><span class="tips-platform-title"></span></div>
 
-    <div class="tip-top-bar">
-      <input
-        type="text"
-        class="tip-search-input"
-        id="${searchId}"
-        placeholder="Search tips..."
-        oninput="refreshList('${name}')"
-      >
-
-      <label class="percent-toggle-wrap" for="${percentId}">
-        <input
-          type="checkbox"
-          class="percent-checkbox"
-          id="${percentId}"
-          onchange="togglePercent('${name}')"
-        >
-      </label>
-    </div>
+<div class="tip-top-bar">
+  <input
+    type="search"
+    class="tip-search-input"
+    id="${searchId}"
+    placeholder="Search tips..."
+    aria-label="Search tips"
+    autocomplete="off"
+  >
+</div>
 
     <div class="tip-list" id="${tipListId}"></div>
 
@@ -726,6 +666,23 @@ function createPlatform(name, tips, rowId) {
       </div>
 
       <div class="row-center">
+      <div class="input-group tips-percent-group">
+  <label class="shared-active-switch" title="Toggle percentage">
+    <input
+      type="checkbox"
+      class="percent-checkbox"
+      id="${percentId}"
+      data-active-label="ON"
+      data-inactive-label="OFF"
+      onchange="togglePercent('${name}')"
+    >
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
+  <div class="input-label">Percent</div>
+</div>
         <div class="input-group">
           <input class="count-input" type="number" id="${countId}" value="3" min="1" max="${Math.max(tips.length,1)}" title="Game List">
           <div class="input-label">List Input</div>
@@ -772,6 +729,31 @@ function createPlatform(name, tips, rowId) {
   `;
 
   container.querySelector('.tips-platform-title').textContent = name;
+  // Search Tips menggunakan custom NewUI
+const tipsSearchInput = container.querySelector('.tip-search-input');
+
+NewUI.syncSearch(tipsSearchInput, {
+  onSearch: async () => {
+    // Bagi browser peluang memaparkan spinner
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
+
+    refreshList(name);
+
+    // Spinner berputar selama 500ms
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+});
+
+// Filter secara realtime ketika menaip
+tipsSearchInput.addEventListener('input', () => {
+  const box = tipsSearchInput.closest('.platform-box');
+  if (box?.classList.contains('tips-platform-disabled')) return;
+  refreshList(name);
+});
   const recordId = platformIdByName.get(name);
   const isActive = tipsRecords[recordId]?.active !== false;
   const activeInput = container.querySelector('.tips-platform-active');
@@ -795,13 +777,15 @@ container.querySelector('.btn-delete-new').addEventListener('click', e => {
     if (numberBtn) numberBtn.classList.add('active');
   }
 
-  const percentCheckbox = document.getElementById(percentId);
-  const savedPercent = localStorage.getItem(`percent-${name}`);
-  if (savedPercent === 'on') {
-    percentCheckbox.checked = true;
-  }
+const percentCheckbox = container.querySelector('.percent-checkbox');
+const savedPercent = localStorage.getItem(`percent-${name}`);
 
-  refreshList(name);
+if (percentCheckbox) {
+  percentCheckbox.checked = savedPercent === 'on';
+  window.SharedActiveSwitch?.sync(percentCheckbox);
+}
+
+refreshList(name);
 
   const autoCheckbox = document.getElementById(`auto-${name}`);
   const savedStatus = localStorage.getItem(`auto-${name}`);
@@ -898,7 +882,14 @@ function toggleAuto(name) {
 
 function togglePercent(name) {
   const checkbox = document.getElementById(`percent-${name}`);
-  localStorage.setItem(`percent-${name}`, checkbox.checked ? 'on' : 'off');
+  if (!checkbox) return;
+
+  localStorage.setItem(
+    `percent-${name}`,
+    checkbox.checked ? 'on' : 'off'
+  );
+
+  window.SharedActiveSwitch?.sync(checkbox);
   refreshList(name);
 }
     function filterPlatforms(query) {
@@ -1074,13 +1065,14 @@ function applyPlatformActive(box, active) {
 
   // Disable fungsi game sahaja.
   // Toggle Active/Inactive, Edit dan Delete kekal boleh digunakan.
-  box.querySelectorAll(
-    '.tip-top-bar input, ' +
-    '.bottom-controls .row-center button, ' +
-    '.bottom-controls .row-center input'
-  ).forEach(el => {
-    el.disabled = !active;
-  });
+box.querySelectorAll(
+  '.tip-top-bar input, ' +
+  '.tip-top-bar .shared-sync-search-button, ' +
+  '.bottom-controls .row-center button, ' +
+  '.bottom-controls .row-center input'
+).forEach(el => {
+  el.disabled = !active;
+});
 
   // Toggle status mesti sentiasa boleh digunakan.
   const activeToggle = box.querySelector('.tips-platform-active');
