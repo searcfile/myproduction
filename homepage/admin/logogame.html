@@ -866,8 +866,6 @@ select:focus-visible{
   <div id="logoImagePicker"></div>
 </div>
 
-    <p id="logoStatus" role="status" aria-live="polite"></p>
-
     <div class="logo-dialog-buttons">
       <button type="button" id="logoCancel" class="btn-cancel-new">Cancel</button>
       <button type="submit" id="logoSave" class="btn-primary-new">Save</button>
@@ -1211,7 +1209,6 @@ const LOGO_PATH = 'game_logos';
 let editingLogoId = null, previewObjectUrl = null, logoDbRef = null;
 const logoDialog = document.getElementById('logoDialog');
 const logoForm = document.getElementById('logoForm');
-const logoStatus = document.getElementById('logoStatus');
 
 let logoModal = null;
 
@@ -1264,7 +1261,7 @@ window.createSharedDropdown?.('#logoType', { placeholder: 'Select method' });
 });
 function openLogoEditor(game=null) {
   editingLogoId=game?.id||null;
-  logoForm.reset(); logoStatus.textContent='';
+  logoForm.reset();
   document.getElementById('logoName').value=game?.name||'';
   document.getElementById('logoAlias').value=game?.alias||'';
   document.getElementById('logoType').value=game?.type||'slot';
@@ -1311,7 +1308,7 @@ if (editingLogoId) {
 }
     if(file){
       if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)||file.size>5*1024*1024)throw new Error('PNG/JPG/WEBP/GIF maksimum 5MB');
-      logoStatus.textContent='Uploading image...';logoImagePicker.setStatus('Uploading...');
+      logoImagePicker.setStatus('Uploading...');
       const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);
       const response=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});
       const result=await response.json();
@@ -1323,11 +1320,15 @@ if (!validImageUrl(image)) {
 }
     const data={name:document.getElementById('logoName').value.trim(),alias:document.getElementById('logoAlias').value.trim(),type:document.getElementById('logoType').value,platform:platforms,image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
     if(!data.name||!data.alias)throw new Error('Nama dan alias diperlukan');
-    logoStatus.textContent='Saving to Firebase...';const db=logoDb();
+    const db = logoDb();
     if(editingLogoId)await db.ref(`${LOGO_PATH}/${editingLogoId}`).update(data);
     else await db.ref(LOGO_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
    closeLogoEditor();NewUI.showToast(editingLogoId?'Game logo updated!':'Game logo created!','success');
-  }catch(err){console.error(err);logoStatus.textContent=err.message;logoImagePicker.setStatus('Ready');NewUI.showToast(err.message,'error');}
+  } catch (err) {
+  console.error(err);
+  logoImagePicker.setStatus('Ready');
+  NewUI.showToast(err.message, 'error');
+}
   finally{btn.disabled=false;}
 });
 async function deleteLogo(game){
