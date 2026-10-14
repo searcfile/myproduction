@@ -410,11 +410,34 @@ select:focus-visible{
 .tips-admin-toolbar button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:600px){.tips-admin-toolbar{align-items:stretch}.tips-admin-toolbar-actions{width:100%}.tips-admin-toolbar-actions button{flex:1}}
 
+
+/* ===== 5G88 Tips Game — shared toolbar + card management ===== */
+.tips-admin-toolbar{max-width:none;width:100%;box-sizing:border-box;margin:16px auto 8px;padding:0 16px;display:block}
+.tips-toolbar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,400px)) minmax(max-content,1fr);gap:12px;align-items:start;width:100%}
+.tips-toolbar-grid>div,.tips-toolbar-grid>input{min-width:0;width:100%;box-sizing:border-box}
+.tips-toolbar-grid .tips-admin-toolbar-actions{display:flex;justify-content:flex-end;align-items:center}
+.tips-toolbar-grid #tipsCreate{white-space:nowrap;min-height:34px}
+.tips-toolbar-grid #tipsSearchPlatform{height:34px;border-radius:6px;background:var(--page-input);border:1px solid var(--border-input);color:var(--page-text);padding:0 12px;font:inherit;font-size:13px}
+.tips-toolbar-grid .shared-chip-dropdown{width:100%;min-width:0}
+.platform-header{justify-content:center;text-align:center;margin-bottom:14px}
+.tips-platform-title{width:100%;text-align:center}
+.tips-card-footer{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:9px;border-top:1px solid var(--border-input)}
+.tips-platform-actions{margin-left:auto}
+.platform-box.tips-platform-disabled{opacity:.62}
+.platform-box.tips-platform-disabled .tip-top-bar,.platform-box.tips-platform-disabled .tip-list,.platform-box.tips-platform-disabled .bottom-controls{filter:grayscale(.7);pointer-events:none}
+.platform-box.tips-platform-disabled .tips-card-footer{opacity:1;filter:none;pointer-events:auto}
+.platform-box[hidden]{display:none!important}
+@media(max-width:1100px){.tips-toolbar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tips-toolbar-grid .tips-admin-toolbar-actions{justify-content:flex-end}}
+@media(max-width:600px){.tips-admin-toolbar{padding:0 12px}.tips-toolbar-grid{grid-template-columns:minmax(0,1fr);gap:9px}.tips-toolbar-grid .tips-admin-toolbar-actions{width:100%}.tips-toolbar-grid #tipsCreate{width:100%}.platform-row{margin-left:8px;margin-right:8px}.platform-box{max-width:100%;box-sizing:border-box}}
+
   </style>
 <body>
   <div class="tips-admin-toolbar">
-    <div class="tips-admin-toolbar-actions">
-      <button type="button" id="tipsCreate" class="tips-btn-primary">+ Create Platform</button>
+    <div class="tips-toolbar-grid">
+      <div id="tipsPlatformFilter" data-placeholder="All Platforms" aria-label="Filter platforms"></div>
+      <input type="search" id="tipsSearchPlatform" data-ui="search" placeholder="Search platform..." aria-label="Search platform">
+      <div id="tipsStatusFilter" data-placeholder="All Status" aria-label="Filter status"></div>
+      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="tips-btn-primary">+ Create Platform</button></div>
     </div>
   </div>
   <div class="platform-row" id="row-1"></div>
@@ -469,6 +492,7 @@ function createPlatform(name, tips, rowId) {
   const container = document.createElement('div');
   container.className = 'platform-box';
   container.setAttribute('data-platform', name.toLowerCase());
+  container.dataset.platformId=platformIdByName.get(name);
 
   const tipListId = `tips-${name}`;
   const countId = `count-${name}`;
@@ -479,7 +503,7 @@ function createPlatform(name, tips, rowId) {
   const percentId = `percent-${name}`;
 
   container.innerHTML = `
-    <div class="platform-header"><span class="tips-platform-title"></span><span class="tips-platform-actions"><button type="button" class="tips-mini-btn tips-edit" title="Edit platform and games" aria-label="Edit platform">✎</button><button type="button" class="tips-mini-btn tips-delete" title="Delete platform" aria-label="Delete platform">×</button></span></div>
+    <div class="platform-header"><span class="tips-platform-title"></span></div>
 
     <div class="tip-top-bar">
       <input
@@ -530,10 +554,24 @@ function createPlatform(name, tips, rowId) {
       </div>
 
       <div class="timestamp" id="${timeId}">Last Updated on --</div>
+      <div class="tips-card-footer">
+        <label class="shared-active-switch" title="Enable or disable platform">
+          <input type="checkbox" class="tips-platform-active" data-active-label="Active" data-inactive-label="Inactive">
+          <span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span>
+        </label>
+        <div class="tips-platform-actions"><button type="button" class="tips-mini-btn tips-edit" title="Edit platform and games" aria-label="Edit platform">✎</button><button type="button" class="tips-mini-btn tips-delete" title="Delete platform" aria-label="Delete platform">×</button></div>
+      </div>
     </div>
   `;
 
   container.querySelector('.tips-platform-title').textContent = name;
+  const recordId = platformIdByName.get(name);
+  const isActive = tipsRecords[recordId]?.active !== false;
+  const activeInput = container.querySelector('.tips-platform-active');
+  activeInput.checked = isActive;
+  window.SharedActiveSwitch?.sync(activeInput);
+  activeInput.addEventListener('change', () => savePlatformActive(recordId, activeInput));
+  applyPlatformActive(container, isActive);
   container.querySelector('.tips-edit').addEventListener('click', () => openPlatformEditor(platformIdByName.get(name)));
   container.querySelector('.tips-delete').addEventListener('click', e => deletePlatform(platformIdByName.get(name), e.currentTarget));
   document.getElementById(rowId).appendChild(container);
@@ -557,7 +595,8 @@ function createPlatform(name, tips, rowId) {
   const savedStatus = localStorage.getItem(`auto-${name}`);
   if (savedStatus === 'on') {
     autoCheckbox.checked = true;
-    toggleAuto(name); 
+    if(isActive) toggleAuto(name);
+    else { autoCheckbox.checked=false; localStorage.setItem(`auto-${name}`,'off'); }
   }
 }
 function renderTips(name, tips) {
@@ -601,7 +640,7 @@ function refreshList(name) {
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text).then(() => {
     setLastUpdatedFromCopy(name);
-      showCopyNotice(button);
+      tipsToast('Tips copied to clipboard!');
     }).catch(() => {
       fallbackCopy();
     });
@@ -620,37 +659,11 @@ function refreshList(name) {
     let copied=false;
     try {copied=document.execCommand("copy");} catch(err) {console.error(err);}
     document.body.removeChild(tempInput);
-    if(copied){showCopyNotice(button);setLastUpdatedFromCopy(name);}
+    if(copied){tipsToast('Tips copied to clipboard!');setLastUpdatedFromCopy(name);}
     else NewUI.showToast('Copy failed. Please check clipboard permission.','error');
   }
 
-  function showCopyNotice(button) {
-    let notice = button.parentElement.querySelector('.copy-notice');
-    if (!notice) {
-      notice = document.createElement('div');
-      notice.className = 'copy-notice';
-      notice.innerText = 'Copied!';
-      notice.style.position = 'absolute';
-      notice.style.bottom = '100%';
-      notice.style.left = '50%';
-      notice.style.transform = 'translateX(-50%)';
-      notice.style.background = '#222';
-      notice.style.color = '#fff';
-      notice.style.fontSize = '11px';
-      notice.style.padding = '2px 6px';
-      notice.style.borderRadius = '4px';
-      notice.style.marginBottom = '6px';
-      notice.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-      notice.style.zIndex = '999';
-      button.parentElement.style.position = 'relative';
-      button.parentElement.appendChild(notice);
-    }
 
-    notice.style.display = 'block';
-    setTimeout(() => {
-      notice.style.display = 'none';
-    }, 1500);
-  }
 }
 
 function toggleAuto(name) {
@@ -732,6 +745,8 @@ function renderPlatformsFromDatabase() {
     platformData[name]=record.games.filter(x=>typeof x==='string');
     createPlatform(name,platformData[name],'row-1');
   }
+  updateTipsFilterOptions(records);
+  applyTipsFilters();
   if(!records.length) {
     const empty=document.createElement('div');empty.className='tips-empty';
     empty.textContent='No platforms yet. Click + Create Platform to add your first platform.';
@@ -775,6 +790,7 @@ function openPlatformEditor(id=null) {
       NewUI.setButtonLoading(save,true,{text:id?'Updating...':'Saving...'});
       const db=tipsDatabase();
       const data={name,games,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+       if(!id) data.active = true;
       if(id)await db.ref(`${TIPS_DB_PATH}/${id}`).update(data);
       else await db.ref(TIPS_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
       success=true;
@@ -792,6 +808,62 @@ async function deletePlatform(id,button) {
   try {await tipsDatabase().ref(`${TIPS_DB_PATH}/${id}`).remove();tipsToast('Platform deleted!');}
   catch(err){console.error(err);tipsToast('Delete failed: '+err.message,'error');}
 }
+/* ===== Platform status + shared filters ===== */
+const tipsPlatformFilterEl = document.getElementById('tipsPlatformFilter');
+const tipsStatusFilterEl = document.getElementById('tipsStatusFilter');
+const tipsSearchPlatformEl = document.getElementById('tipsSearchPlatform');
+const tipsPlatformChips = NewUI.chips(tipsPlatformFilterEl, {
+  placeholder:'All Platforms', options:[], value:[], onChange:applyTipsFilters
+});
+const tipsStatusChips = NewUI.chips(tipsStatusFilterEl, {
+  placeholder:'All Status',
+  options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],
+  value:[],onChange:applyTipsFilters
+});
+tipsSearchPlatformEl.addEventListener('input',applyTipsFilters);
+function updateTipsFilterOptions(records) {
+  const current = tipsPlatformChips.getValue();
+  tipsPlatformChips.setOptions(records.map(r=>({value:r.id,label:r.name})).sort((a,b)=>a.label.localeCompare(b.label)));
+  tipsPlatformChips.setValue(current.filter(id=>tipsRecords[id]),false);
+}
+function applyTipsFilters() {
+  const selected = new Set(tipsPlatformChips?.getValue() || []);
+  const statuses = new Set(tipsStatusChips?.getValue() || []);
+  const query = (tipsSearchPlatformEl?.value || '').trim().toLowerCase();
+  document.querySelectorAll('.platform-box').forEach(box=>{
+    const id=box.dataset.platformId;
+    const record=tipsRecords[id];
+    if(!record) return;
+    const active=record.active !== false;
+    const matchPlatform=!selected.size || selected.has(id);
+    const matchStatus=!statuses.size || statuses.has(active?'active':'inactive');
+    const matchSearch=String(record.name||'').toLowerCase().includes(query);
+    box.hidden=!(matchPlatform && matchStatus && matchSearch);
+  });
+}
+function applyPlatformActive(box, active) {
+  box.classList.toggle('tips-platform-disabled',!active);
+  box.querySelectorAll('.tip-top-bar input,.bottom-controls button,.bottom-controls input').forEach(el=>{
+    el.disabled=!active;
+  });
+  if(!active){
+    const name=box.querySelector('.tips-platform-title')?.textContent;
+    if(name && autoIntervals[name]){clearInterval(autoIntervals[name]);delete autoIntervals[name];}
+  }
+}
+async function savePlatformActive(id,input) {
+  const next=input.checked;
+  input.disabled=true;
+  try {
+    await tipsDatabase().ref(`${TIPS_DB_PATH}/${id}`).update({active:next,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+    tipsToast(next?'Platform activated!':'Platform deactivated!');
+  }catch(error){
+    input.checked=!next;
+    window.SharedActiveSwitch?.sync(input);
+    tipsToast('Cannot update platform: '+error.message,'error');
+  }finally{input.disabled=false;}
+}
+
 function startTipsRealtime() {
   try {
     tipsDatabase().ref(TIPS_DB_PATH).on('value',snapshot=>{
