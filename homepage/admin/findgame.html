@@ -872,7 +872,58 @@ select:focus-visible{
 @media(max-width:979px){.detail{top:12px!important}.wrap{margin-top:8px!important}}
 @media(max-width:700px){.fg-toolbar{grid-template-columns:1fr 1fr}.fg-search{grid-column:1/-1}.fg-create{justify-self:end}.fg-platform-chips{min-width:0}.fg-form{grid-template-columns:1fr}}
 @media(max-width:420px){.fg-toolbar{grid-template-columns:minmax(0,1fr) auto}.fg-platform-chips{grid-column:1}.fg-create{grid-column:2}}
+/* FIND GAME - RESULTS ACTION BUTTONS */
 
+.fg-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fg-row-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 5px 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  background: var(--page-input);
+  color: var(--page-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.fg-row-edit:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.fg-row-delete:hover {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+  background: rgba(255,77,79,.06);
+}
+
+@media (max-width: 480px) {
+  .fg-row-actions {
+    gap: 5px;
+  }
+
+  .fg-row-actions button {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .g-name {
+    min-width: 0;
+  }
+}
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1037,9 +1088,64 @@ function renderList(){
     row.id = `g-${i}`;
     row.setAttribute('role','button');
     row.setAttribute('tabindex','0');
-    const label=document.createElement('div');label.className='g-name';label.textContent=g.name;
-    const pill=document.createElement('div');pill.className='g-pill';pill.textContent=(g.tags||[]).map(t=>String(t).toUpperCase()).join(' • ');
-    row.append(label,pill);
+const label = document.createElement('div');
+label.className = 'g-name';
+label.textContent = g.name;
+
+const actions = document.createElement('div');
+actions.className = 'fg-row-actions';
+
+const editBtn = document.createElement('button');
+editBtn.type = 'button';
+editBtn.className = 'fg-row-edit';
+editBtn.innerHTML = '✎ Edit';
+
+editBtn.addEventListener('click', e => {
+  e.stopPropagation();
+
+  if (!g._id) {
+    fgToast('Game lama belum disimpan ke Firebase.', 'warning');
+    return;
+  }
+
+  fgOpenEditor(g);
+});
+
+const deleteBtn = document.createElement('button');
+deleteBtn.type = 'button';
+deleteBtn.className = 'fg-row-delete';
+deleteBtn.innerHTML = '✕ Delete';
+
+deleteBtn.addEventListener('click', e => {
+  e.stopPropagation();
+
+  if (!g._id) {
+    fgToast('Game lama belum disimpan ke Firebase.', 'warning');
+    return;
+  }
+
+  const removeGame = async () => {
+    try {
+      await fgDatabase().ref(FG_DB_PATH + '/' + g._id).remove();
+      fgToast('Game deleted', 'success');
+    } catch (err) {
+      fgToast(err.message, 'error');
+    }
+  };
+
+  if (window.NewUI?.confirm) {
+    NewUI.confirm({
+      title: 'Delete Game',
+      message: 'Delete ' + g.name + '?',
+      onConfirm: removeGame
+    });
+  } else if (window.confirm('Delete ' + g.name + '?')) {
+    removeGame();
+  }
+});
+
+actions.append(editBtn, deleteBtn);
+row.append(label, actions);
     row.addEventListener('click',()=>openDetail(g, row));
     row.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openDetail(g, row); }});
     if(selectedGame && selectedGame.name===g.name) row.classList.add('active');
@@ -1290,7 +1396,6 @@ function fgEnsureDetailActions(){
   });
 }
 document.getElementById('fgCreate').addEventListener('click',()=>fgOpenEditor());
-fgEnsureDetailActions();
 fgListen();
 
 /* First paint */
