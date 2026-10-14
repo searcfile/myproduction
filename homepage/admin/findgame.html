@@ -1174,7 +1174,18 @@ function updateDetail(){
   dTitle.textContent = g.name;
   dImg.src = g.image || '';
   dImg.alt = g.name + ' image';
-  dImg.onerror = ()=>{ dImg.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 120%22%3E%3Crect width=%22200%22 height=%22120%22 fill=%22%23111111%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2214%22 font-family=%22Arial%22%3ENo image%3C/text%3E%3C/svg%3E'; };
+  dImg.onerror = () => {
+  dImg.onerror = null;
+
+  dImg.src =
+    'data:image/svg+xml,' +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">' +
+      '<rect width="200" height="120" fill="#111111"/>' +
+      '<text x="100" y="60" text-anchor="middle" dominant-baseline="middle" fill="#999999" font-size="14" font-family="Arial">No image</text>' +
+      '</svg>'
+    );
+};
   dName.textContent = g.alias || g.name;
   dType.textContent = g.type || '-';
   dPay.textContent = g.payline ?? '-';
@@ -1395,8 +1406,30 @@ function fgEnsureDetailActions(){
     else if(window.confirm('Delete '+name+'?')){try{await action();}catch(e){fgToast(e.message,'error');}}
   });
 }
-document.getElementById('fgCreate').addEventListener('click',()=>fgOpenEditor());
-fgListen();
+document.getElementById('fgCreate').addEventListener('click', () => fgOpenEditor());
+
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) {
+    console.warn('[Find Game] Firebase Auth belum login');
+    fgToast('Firebase Auth belum login', 'error');
+    return;
+  }
+
+  try {
+    const token = await user.getIdTokenResult(true);
+
+    console.log('[Find Game] Auth Check:', {
+      uid: user.uid,
+      secondVerified: token.claims.secondVerified,
+      pinVersion: token.claims.pinVersion
+    });
+
+    fgListen();
+  } catch (err) {
+    console.error('[Find Game] Auth Check failed:', err);
+    fgToast(err.message, 'error');
+  }
+});
 
 /* First paint */
 renderList();
