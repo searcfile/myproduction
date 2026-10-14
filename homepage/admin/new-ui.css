@@ -1783,3 +1783,83 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
   }
 
 }
+.btn-primary-new {
+   height:32px;
+   border-radius:6px;
+   padding:0 15px;
+   font-weight: 400;
+   font-size:14px;
+   cursor:pointer;
+   color:#ffffff;
+   background:#1668dc;
+   border:1px solid transparent;
+   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.btn-primary-blue:hover {
+   color:#ffffff;
+   background: #3c89e8;
+}
+.btn-primary-blue:active {
+   color:#ffffff;
+   background: #1554ad;
+}
+.btn-cancel-new {
+   height:32px;
+   border-radius:6px;
+   padding:0 15px;
+   font-weight: 400;
+   font-size:14px;
+   cursor:pointer;
+   color: rgba(255, 255, 255, 0.85);
+   border:1px solid #424242;
+   background: #141414;
+   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.btn-cancel-other:hover {
+   color:#3c89e8;
+   border-color: #3c89e8;
+}
+.btn-cancel-other:active {
+   color:#1554ad;
+   border-color: #1554ad;
+}
+.btn-edit-new {
+   height:32px;
+   border-radius:6px;
+   padding:0 15px;
+   font-weight: 400;
+   font-size:14px;
+   cursor:pointer;
+   color: #1668dc;
+   border:1px solid #1668dc;
+   background: #141414;
+   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.btn-edit-new:hover {
+   color:#3c89e8;
+   border-color: #3c89e8;
+}
+.btn-edit-new:active {
+   color:#1554ad;
+   border-color: #1554ad;
+}
+.btn-delete-new {
+   height:32px;
+   border-radius:6px;
+   padding:0 15px;
+   font-weight: 400;
+   font-size:14px;
+   cursor:pointer;
+   color: #dc4446;
+   border:1px solid #dc4446;
+   background: #141414;
+   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.btn-delete-other:hover {
+   color:#e86e6b;
+   border-color: #7e2e2f;
+}
+.btn-delete-other:active {
+   color:#ad393a;
+   border-color: #ad393a;
+}
