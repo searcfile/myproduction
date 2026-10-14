@@ -479,6 +479,7 @@ select:focus-visible{
   justify-self: end;
   width: max-content;
   font-size:14px;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
 .logo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:22px 24px 44px;max-width:none;align-items:stretch}
@@ -775,7 +776,7 @@ select:focus-visible{
 </div>
   <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
   <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
-  <button type="button" id="createGameBtn" class="btn-primary-new">+ Create</button>
+  <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
 </div>
 <div class="logo-grid" id="gameGrid">
   </div>
