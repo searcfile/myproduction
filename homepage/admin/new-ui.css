@@ -1883,10 +1883,14 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
   height: 15px;
   flex: 0 0 15px;
   color: inherit;
-  animation: sharedBtnSpin .7s linear infinite;
+  animation: sharedBtnSpin 1.2s linear infinite;
 }
 
 @keyframes sharedBtnSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
   to {
     transform: rotate(360deg);
   }
