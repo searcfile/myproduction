@@ -417,15 +417,42 @@ select:focus-visible{
 .tips-toolbar-grid>div,.tips-toolbar-grid>input{min-width:0;width:100%;box-sizing:border-box}
 .tips-toolbar-grid .tips-admin-toolbar-actions{display:flex;justify-content:flex-end;align-items:center}
 .tips-toolbar-grid #tipsCreate{white-space:nowrap;min-height:34px}
-.tips-toolbar-grid #tipsSearchPlatform{height:34px;border-radius:6px;background:var(--page-input);border:1px solid var(--border-input);color:var(--page-text);padding:0 12px;font:inherit;font-size:13px}
 .tips-toolbar-grid .shared-chip-dropdown{width:100%;min-width:0}
+/* Search Platform menggunakan NewUI custom input */
+.tips-toolbar-grid .new-ui-input-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.tips-toolbar-grid #tipsSearchPlatform {
+  width: 100%;
+  height: 34px;
+  box-sizing: border-box;
+}
 .platform-header{justify-content:center;text-align:center;margin-bottom:14px}
 .tips-platform-title{width:100%;text-align:center}
 .tips-card-footer{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:9px;border-top:1px solid var(--border-input)}
 .tips-platform-actions{margin-left:auto}
-.platform-box.tips-platform-disabled{opacity:.62}
+.platform-box.tips-platform-disabled {
+  opacity: 1;
+}
 .platform-box.tips-platform-disabled .tip-top-bar,.platform-box.tips-platform-disabled .tip-list,.platform-box.tips-platform-disabled .bottom-controls{filter:grayscale(.7);pointer-events:none}
 .platform-box.tips-platform-disabled .tips-card-footer{opacity:1;filter:none;pointer-events:auto}
+/* Footer management kekal aktif walaupun platform Inactive */
+.platform-box.tips-platform-disabled .tips-card-footer,
+.platform-box.tips-platform-disabled .tips-card-footer * {
+  pointer-events: auto;
+  filter: none;
+}
+
+.platform-box.tips-platform-disabled .tips-platform-active {
+  cursor: pointer;
+}
+
+.platform-box.tips-platform-disabled .tips-edit,
+.platform-box.tips-platform-disabled .tips-delete {
+  cursor: pointer;
+}
 .platform-box[hidden]{display:none!important}
 @media(max-width:1100px){.tips-toolbar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tips-toolbar-grid .tips-admin-toolbar-actions{justify-content:flex-end}}
 @media(max-width:600px){.tips-admin-toolbar{padding:0 12px}.tips-toolbar-grid{grid-template-columns:minmax(0,1fr);gap:9px}.tips-toolbar-grid .tips-admin-toolbar-actions{width:100%}.tips-toolbar-grid #tipsCreate{width:100%}.platform-row{margin-left:8px;margin-right:8px}.platform-box{max-width:100%;box-sizing:border-box}}
@@ -435,7 +462,15 @@ select:focus-visible{
   <div class="tips-admin-toolbar">
     <div class="tips-toolbar-grid">
       <div id="tipsPlatformFilter" data-placeholder="All Platforms" aria-label="Filter platforms"></div>
-      <input type="search" id="tipsSearchPlatform" data-ui="search" placeholder="Search platform..." aria-label="Search platform">
+      <input
+  type="search"
+  id="tipsSearchPlatform"
+  class="shared-input"
+  data-ui="search"
+  placeholder="Search platform..."
+  aria-label="Search platform"
+  autocomplete="off"
+>
       <div id="tipsStatusFilter" data-placeholder="All Status" aria-label="Filter status"></div>
       <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="tips-btn-primary">+ Create Platform</button></div>
     </div>
@@ -812,6 +847,7 @@ async function deletePlatform(id,button) {
 const tipsPlatformFilterEl = document.getElementById('tipsPlatformFilter');
 const tipsStatusFilterEl = document.getElementById('tipsStatusFilter');
 const tipsSearchPlatformEl = document.getElementById('tipsSearchPlatform');
+NewUI.input(tipsSearchPlatformEl, { search: true });
 const tipsPlatformChips = NewUI.chips(tipsPlatformFilterEl, {
   placeholder:'All Platforms', options:[], value:[], onChange:applyTipsFilters
 });
@@ -842,13 +878,40 @@ function applyTipsFilters() {
   });
 }
 function applyPlatformActive(box, active) {
-  box.classList.toggle('tips-platform-disabled',!active);
-  box.querySelectorAll('.tip-top-bar input,.bottom-controls button,.bottom-controls input').forEach(el=>{
-    el.disabled=!active;
+  box.classList.toggle('tips-platform-disabled', !active);
+
+  // Disable fungsi game sahaja.
+  // Toggle Active/Inactive, Edit dan Delete kekal boleh digunakan.
+  box.querySelectorAll(
+    '.tip-top-bar input, ' +
+    '.bottom-controls .row-center button, ' +
+    '.bottom-controls .row-center input'
+  ).forEach(el => {
+    el.disabled = !active;
   });
-  if(!active){
-    const name=box.querySelector('.tips-platform-title')?.textContent;
-    if(name && autoIntervals[name]){clearInterval(autoIntervals[name]);delete autoIntervals[name];}
+
+  // Toggle status mesti sentiasa boleh digunakan.
+  const activeToggle = box.querySelector('.tips-platform-active');
+
+  if (activeToggle) {
+    activeToggle.disabled = false;
+    activeToggle.checked = active;
+    window.SharedActiveSwitch?.sync(activeToggle);
+  }
+
+  // Hentikan AUTO apabila platform Inactive.
+  if (!active) {
+    const name = box.querySelector('.tips-platform-title')?.textContent;
+
+    if (name) {
+      clearInterval(autoIntervals[name]);
+      delete autoIntervals[name];
+
+      const autoCheckbox = box.querySelector(`#${CSS.escape('auto-' + name)}`);
+      if (autoCheckbox) autoCheckbox.checked = false;
+
+      localStorage.setItem(`auto-${name}`, 'off');
+    }
   }
 }
 async function savePlatformActive(id,input) {
