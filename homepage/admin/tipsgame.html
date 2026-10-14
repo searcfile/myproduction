@@ -396,7 +396,21 @@ select:focus-visible{
 }
 
 /* Tips Game management additions; form controls reuse new-ui.css */
-.tips-admin-toolbar{max-width:1240px;margin:18px auto 4px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--page-text);text-align:left}
+.tips-admin-toolbar{
+  max-width:1240px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:12px;
+  padding: 10px 12px;
+  flex-wrap:wrap;
+  background: var(--page-bg2);
+  color:var(--page-text);
+  border-radius: 12px;
+  border: 1px solid var(--border-input);
+  text-align:left;
+}
 .tips-admin-toolbar-text{display:flex;flex-direction:column;gap:4px}.tips-admin-toolbar-text strong{font-size:20px}.tips-admin-toolbar-text span{font-size:12px;opacity:.65}
 .tips-admin-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .tips-btn-primary,.tips-btn-secondary{border:1px solid transparent;border-radius:6px;min-height:34px;padding:0 14px;color:white;background:var(--blue);cursor:pointer;font:inherit;font-size:13px}
@@ -411,7 +425,6 @@ select:focus-visible{
 
 
 /* ===== 5G88 Tips Game — shared toolbar + card management ===== */
-.tips-admin-toolbar{max-width:none;width:100%;box-sizing:border-box;margin:16px auto 8px;padding:0 16px;display:block}
 .tips-toolbar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,400px)) minmax(max-content,1fr);gap:12px;align-items:start;width:100%}
 .tips-toolbar-grid>div,.tips-toolbar-grid>input{min-width:0;width:100%;box-sizing:border-box}
 .tips-toolbar-grid .tips-admin-toolbar-actions{display:flex;justify-content:flex-end;align-items:center}
