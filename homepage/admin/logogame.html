@@ -1446,12 +1446,15 @@ finally {
 }
 });
 
+
 /* ==========================================
-   DELETE GAME LOGO - SHARED CONFIRM BOX
+   DELETE GAME LOGO - CONFIRM FIRST
    ========================================== */
 
 async function deleteLogo(game, button) {
-  await NewUI.confirm({
+
+  // STEP 1: Paparkan shared confirm box
+  const confirmed = await NewUI.confirm({
     target: button,
 
     title: 'Delete Game Logo?',
@@ -1462,21 +1465,33 @@ async function deleteLogo(game, button) {
 
     confirmText: 'Delete',
     cancelText: 'Cancel',
-    loadingText: 'Deleting...',
-    danger: true,
-
-    onConfirm: async () => {
-      await logoDb()
-        .ref(`${LOGO_PATH}/${game.id}`)
-        .remove();
-
-      NewUI.showToast(
-        'Game logo deleted!',
-        'success'
-      );
-    }
+    danger: true
   });
+
+  if (!confirmed) return;
+
+  await new Promise(resolve => setTimeout(resolve, 180));
+
+  try {
+    await logoDb()
+      .ref(`${LOGO_PATH}/${game.id}`)
+      .remove();
+
+    NewUI.showToast(
+      'Game logo deleted!',
+      'success'
+    );
+
+  } catch (err) {
+    console.error('Delete game logo failed:', err);
+
+    NewUI.showToast(
+      'Delete failed: ' + err.message,
+      'error'
+    );
+  }
 }
+
 
 function startLogoRealtime(){
  try{logoDbRef=logoDb().ref(LOGO_PATH);logoDbRef.on('value',snap=>{
