@@ -1795,11 +1795,11 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
    border:1px solid transparent;
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.btn-primary-blue:hover {
+.btn-primary-new:hover {
    color:#ffffff;
    background: #3c89e8;
 }
-.btn-primary-blue:active {
+.btn-primary-new:active {
    color:#ffffff;
    background: #1554ad;
 }
@@ -1815,11 +1815,11 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
    background: #141414;
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.btn-cancel-other:hover {
+.btn-cancel-new:hover {
    color:#3c89e8;
    border-color: #3c89e8;
 }
-.btn-cancel-other:active {
+.btn-cancel-new:active {
    color:#1554ad;
    border-color: #1554ad;
 }
@@ -1855,11 +1855,11 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
    background: #141414;
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.btn-delete-other:hover {
+.btn-delete-new:hover {
    color:#e86e6b;
    border-color: #7e2e2f;
 }
-.btn-delete-other:active {
+.btn-delete-new:active {
    color:#ad393a;
    border-color: #ad393a;
 }
