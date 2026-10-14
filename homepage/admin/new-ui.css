@@ -2132,7 +2132,7 @@ body.light-theme .shared-confirm-cancel:hover {
   align-items: center;
   box-sizing: border-box;
 
-  min-width: 88px;
+  min-width: 50px;
   max-width: 170px;
   height: 22px;
 
