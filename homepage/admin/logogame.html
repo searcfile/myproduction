@@ -493,9 +493,48 @@ select:focus-visible{
 .logo-grid .game-logo .logo-method-tag{display:block;text-align:left;font-size:11px;color:var(--page-text);opacity:.65}
 .logo-grid .logo-platforms{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:5px;min-height:0;margin:0}
 .logo-grid .game-logo .logo-platform-tag{font-size:10px;color:var(--blue);background:rgba(22,104,220,.11);border:1px solid rgba(22,104,220,.16);padding:4px 7px;border-radius:6px;font-weight:600}
-.logo-grid .logo-actions{margin-top:auto;padding-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;border-top:1px solid var(--border-input)}
+.logo-grid .logo-actions{margin-top:auto;padding-top:9px;display:grid;grid-template-columns: repeat(3, minmax(0, 1fr));gap:8px;width:100%;border-top:1px solid var(--border-input)}
 .logo-grid .logo-actions button{min-height:33px;padding:7px 9px;border-radius:8px;font-size:12px}
+/* GAME LOGO - COPY BUTTON */
 
+.logo-grid .logo-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.logo-grid .btn-copy-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  color: #1668dc;
+  border: 1px solid #1668dc;
+  background: transparent;
+
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 0;
+  transition: all 0.2s ease;
+}
+
+.logo-grid .btn-copy-new:hover {
+  color: #4096ff;
+  border-color: #4096ff;
+  background: rgba(22, 104, 220, 0.08);
+}
+
+.logo-grid .btn-copy-new:active {
+  color: #1554ad;
+  border-color: #1554ad;
+}
+
+.logo-grid .btn-copy-new svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
 /* ========================================
    DESKTOP / MEDIUM SCREEN
    ======================================== */
@@ -980,7 +1019,55 @@ if (!filtered.length) {
         const typeTag=document.createElement('span');typeTag.className='logo-method-tag';typeTag.textContent=({slot:'Slot',live:'Live Game',table:'Table Game'})[game.type]||game.type||'';
         div.append(alias, imageFrame, name, typeTag, platformTag);
         if (game.id) {
-          const actions = document.createElement('div'); actions.className = 'logo-actions';
+          const actions = document.createElement('div');
+actions.className = 'logo-actions';
+
+// COPY BUTTON
+const copy = document.createElement('button');
+copy.type = 'button';
+copy.className = 'btn-copy-new';
+
+copy.innerHTML = `
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="14" height="14"
+       viewBox="0 0 24 24"
+       fill="none"
+       stroke="currentColor"
+       stroke-width="2"
+       stroke-linecap="round"
+       stroke-linejoin="round">
+    <rect width="14" height="14" x="8" y="8" rx="2"/>
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+  </svg>
+  <span>Copy</span>
+`;
+
+copy.addEventListener('click', () => {
+  copyImageToClipboard(game.image, div);
+});
+
+// EDIT BUTTON
+const edit = document.createElement('button');
+edit.type = 'button';
+edit.className = 'btn-edit-new';
+edit.textContent = 'Edit';
+
+edit.addEventListener('click', () => {
+  openLogoEditor(game);
+});
+
+// DELETE BUTTON
+const del = document.createElement('button');
+del.type = 'button';
+del.className = 'btn-delete-new';
+del.textContent = 'Delete';
+
+del.addEventListener('click', () => {
+  deleteLogo(game);
+});
+
+actions.append(copy, edit, del);
+div.append(actions);
           const edit = document.createElement('button'); 
           edit.type = 'button'; 
           edit.className = 'btn-edit-new';
