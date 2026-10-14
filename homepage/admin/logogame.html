@@ -494,7 +494,19 @@ select:focus-visible{
 .logo-grid .logo-platforms{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:5px;min-height:0;margin:0}
 .logo-grid .game-logo .logo-platform-tag{font-size:10px;color:var(--blue);background:rgba(22,104,220,.11);border:1px solid rgba(22,104,220,.16);padding:4px 7px;border-radius:6px;font-weight:600}
 .logo-grid .logo-actions{margin-top:auto;padding-top:9px;display:grid;grid-template-columns: repeat(3, minmax(0, 1fr));gap:8px;width:100%;border-top:1px solid var(--border-input)}
-.logo-grid .logo-actions button{height:32px;padding:0 15px;border-radius:8px;font-size:14px}
+.logo-grid .logo-actions button {
+  height: 32px;
+  min-width: 0;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+}
 /* GAME LOGO - COPY BUTTON */
 
 .logo-grid .logo-actions {
@@ -530,16 +542,36 @@ select:focus-visible{
   height: 14px;
   flex-shrink: 0;
 }
-/* COPY BUTTON - FORCE WHITE TEXT & ICON */
+/* COPY BUTTON - WHITE TEXT & SVG */
 
-.logo-grid .logo-actions .btn-copy-new,
-.logo-grid .logo-actions .btn-copy-new span,
-.logo-grid .logo-actions .btn-copy-new svg {
+.logo-grid .logo-actions .btn-copy-new {
   color: #ffffff !important;
+  background: #1668dc;
+}
+
+.logo-grid .logo-actions .btn-copy-new span {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  flex: 0 0 auto;
 }
 
 .logo-grid .logo-actions .btn-copy-new svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   stroke: #ffffff !important;
+}
+
+.logo-grid .logo-actions .btn-copy-new:hover {
+  background: #3c89e8;
+}
+
+.logo-grid .logo-actions .btn-copy-new:active {
+  background: #1554ad;
 }
 /* ========================================
    DESKTOP / MEDIUM SCREEN
