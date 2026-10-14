@@ -1079,7 +1079,7 @@ del.className = 'btn-delete-new';
 del.textContent = 'Delete';
 
 del.addEventListener('click', () => {
-  deleteLogo(game);
+  deleteLogo(game, del);
 });
 
 actions.append(copy, edit, del);
@@ -1445,11 +1445,39 @@ finally {
   await NewUI.setButtonLoading(btn, false);
 }
 });
-async function deleteLogo(game){
-  if(!confirm(`Delete ${game.alias||game.name}?`))return;
-  try{await logoDb().ref(`${LOGO_PATH}/${game.id}`).remove();NewUI.showToast('Game logo deleted!','success');}
-  catch(err){NewUI.showToast('Delete failed: '+err.message,'error');}
+
+/* ==========================================
+   DELETE GAME LOGO - SHARED CONFIRM BOX
+   ========================================== */
+
+async function deleteLogo(game, button) {
+  await NewUI.confirm({
+    target: button,
+
+    title: 'Delete Game Logo?',
+
+    message:
+      `Are you sure you want to delete "${game.alias || game.name}"? ` +
+      'This action cannot be undone.',
+
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    loadingText: 'Deleting...',
+    danger: true,
+
+    onConfirm: async () => {
+      await logoDb()
+        .ref(`${LOGO_PATH}/${game.id}`)
+        .remove();
+
+      NewUI.showToast(
+        'Game logo deleted!',
+        'success'
+      );
+    }
+  });
 }
+
 function startLogoRealtime(){
  try{logoDbRef=logoDb().ref(LOGO_PATH);logoDbRef.on('value',snap=>{
   if(snap.exists()){games=Object.entries(snap.val()).map(([id,game])=>({...game,id}));}
