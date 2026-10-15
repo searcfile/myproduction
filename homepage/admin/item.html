@@ -600,6 +600,40 @@ select:focus-visible{
     max-width: 100%;
   }
 }
+  /* ==========================================
+   ITEM COLLECTION - FULL WIDTH NO DATA CARD
+   ========================================== */
+
+.item-page .card-grid > .shared-empty-card {
+  grid-column: 1 / -1 !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+
+  min-height: 200px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--page-bg2);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+
+  box-sizing: border-box;
+}
+
+/* Center icon dan text */
+.item-page .shared-empty-card .shared-empty {
+  width: 100%;
+  min-height: 200px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
   </style>
 </head>
 <body>
