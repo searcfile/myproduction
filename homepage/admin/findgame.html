@@ -2372,8 +2372,15 @@ betsField.innerHTML = `
   imageField.innerHTML='<label>Game Image</label><div id="fgImageHost"></div><div class="fg-hint">Upload PNG, JPG, WEBP or GIF (max 5 MB). Preview appears automatically.</div>';
   form.append(imageField);
   const buttons=document.createElement('div');buttons.className='fg-modal-actions';buttons.style.gridColumn='1/-1';
-  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';
-  const save=document.createElement('button');save.type='submit';save.className='primary';save.textContent=record?'Save Changes':'Create Game';
+const cancel = document.createElement('button');
+cancel.type = 'button';
+cancel.className = 'btn-cancel-new';
+cancel.textContent = 'Cancel';
+
+const save = document.createElement('button');
+save.type = 'submit';
+save.className = 'btn-primary-new';
+save.textContent = record ? 'Save Changes' : 'Create Game';
   buttons.append(cancel,save);form.append(buttons);
   fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:800,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
   const modalChips=NewUI.chips(form.querySelector('#fgModalPlatforms'),{
