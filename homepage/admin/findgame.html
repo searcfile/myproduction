@@ -1310,7 +1310,7 @@ select:focus-visible{
   height: 100dvh !important;
   z-index: 999999 !important;
   overflow: hidden !important;
-  background: rgba(0, 0, 0, .97);
+  background: rgba(0, 0, 0, .45);
   backdrop-filter: none;
 }
 
@@ -1343,8 +1343,8 @@ select:focus-visible{
   height: 36px;
   pointer-events: auto;
   z-index: 30;
-  background: rgba(30,30,30,.75);
-  backdrop-filter: blur(10px);
+  background:transparent;
+  transition: all .2s ease;
 }
 
 /* Kawasan gambar fullscreen */
