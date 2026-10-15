@@ -995,21 +995,18 @@ select:focus-visible{
   grid-column: 3;
   grid-row: 1;
   justify-self: end;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: max-content !important;
   min-width: max-content;
   max-width: none;
-
   height: 32px;
   padding: 0 15px;
   margin: 0;
-
+  cursor:pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
@@ -1037,13 +1034,16 @@ select:focus-visible{
   }
 
   /* Row 2: Dropdown */
-  .fg-toolbar .fg-platform-chips {
-    grid-column: 1;
-    grid-row: 2;
-    width: 100%;
-    max-width: 400px;
-    justify-self: start;
-  }
+.fg-toolbar .fg-platform-chips {
+  grid-column: 1;
+  grid-row: 2;
+
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+
+  justify-self: stretch;
+}
 
   /* Row 3: Create */
   .fg-toolbar #fgCreate {
@@ -1054,7 +1054,27 @@ select:focus-visible{
     min-width: max-content;
   }
 }
+/* ==========================================
+   FIND GAME - FULL WIDTH MOBILE CHIPS
+   ========================================== */
 
+@media (max-width: 950px) {
+
+  .fg-toolbar .fg-platform-chips {
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100% !important;
+    justify-self: stretch;
+  }
+
+  /* Custom chips component */
+  .fg-platform-chips > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
 /* ==========================================
    MOBILE
    ========================================== */
