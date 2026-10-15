@@ -454,8 +454,11 @@ select:focus-visible{
 .item-form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;}
 .item-page .shared-empty{grid-column:1/-1;min-height:200px;}
 @media(max-width:1300px){.item-page .card-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
-@media(max-width:1050px){.item-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}.item-toolbar-search,.item-filter{max-width:none;}#itemCreate{grid-column:2;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
-@media(max-width:700px){.item-toolbar{grid-template-columns:minmax(0,1fr);}.item-toolbar-search,.item-filter{grid-column:1;width:100%;}.item-toolbar .shared-chip-dropdown,.item-toolbar .shared-chip-dropdown-trigger{width:100%;}#itemCreate{grid-column:1;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.item-form-grid{grid-template-columns:1fr;}}
+@media (max-width: 1050px) {
+  .item-page .card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}@media(max-width:700px){.item-toolbar{grid-template-columns:minmax(0,1fr);}.item-toolbar-search,.item-filter{grid-column:1;width:100%;}.item-toolbar .shared-chip-dropdown,.item-toolbar .shared-chip-dropdown-trigger{width:100%;}#itemCreate{grid-column:1;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.item-form-grid{grid-template-columns:1fr;}}
 @media(max-width:390px){.item-page .card-grid{grid-template-columns:1fr;}}
 
 
@@ -530,6 +533,72 @@ select:focus-visible{
 /* Aktifkan container query pada setiap card */
 .item-page .item-card {
   container-type: inline-size;
+}
+/* ==========================================
+   ITEM COLLECTION - RESPONSIVE TOOLBAR
+   ========================================== */
+
+/* Jadikan halaman Item sebagai container */
+.item-page {
+  container-type: inline-size;
+}
+
+/* Desktop */
+.item-page .item-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(max-content, 1fr);
+
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.item-page .item-toolbar-search,
+.item-page .item-filter {
+  min-width: 0;
+  width: 100%;
+}
+
+.item-page #itemCreate {
+  justify-self: end;
+  width: max-content;
+  max-width: 100%;
+}
+
+/* Layar kecil / ruang admin sempit */
+@container (max-width: 1050px) {
+
+  .item-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .item-toolbar-search,
+  .item-filter {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .item-toolbar .shared-sync-search,
+  .item-toolbar .shared-chip-dropdown,
+  .item-toolbar .shared-chip-dropdown-trigger {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  #itemCreate {
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: max-content;
+    max-width: 100%;
+  }
 }
   </style>
 </head>
