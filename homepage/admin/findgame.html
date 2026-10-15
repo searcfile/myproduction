@@ -846,10 +846,42 @@ select:focus-visible{
   width: 100%;
 }
 
-/* Kekalkan checkbox Adjustable Lines */
-.fg-field input[type="checkbox"] {
-  width: auto;
-  min-height: auto;
+/* ==========================================
+   FIND GAME - ADJUSTABLE LINES
+   SHARED TOGGLE LAYOUT
+   ========================================== */
+
+.fg-adjustable-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.fg-adjustable-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fg-adjustable-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--page-text);
+}
+
+.fg-adjustable-description {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--blur);
+}
+
+.fg-adjustable-row .shared-active-switch {
+  flex-shrink: 0;
 }
 .fg-hint{font-size:12px;color:var(--blur)}
 .fg-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
@@ -2344,9 +2376,47 @@ if (type === 'number') {
   const platformField=document.createElement('div');platformField.className='fg-field full';
   platformField.innerHTML='<label>Platforms</label><div id="fgModalPlatforms"></div>';
   form.append(platformField);
-  const adjField=document.createElement('label');adjField.className='fg-field full';
-  adjField.innerHTML='<span>Adjustable Lines</span><span><input type="checkbox" id="fg-adjustable" style="width:auto;min-height:auto" /> Yes, player can change paylines</span>';
-  form.append(adjField);
+/* ==========================================
+   ADJUSTABLE LINES - SHARED TOGGLE
+   ========================================== */
+
+const adjField = document.createElement('div');
+adjField.className = 'fg-field full';
+
+adjField.innerHTML = `
+  <div class="fg-adjustable-row">
+
+    <div class="fg-adjustable-info">
+      <span class="fg-adjustable-title">
+        Adjustable Lines
+      </span>
+
+      <span class="fg-adjustable-description">
+        Player can change paylines
+      </span>
+    </div>
+
+    <label class="shared-active-switch">
+      <input
+        type="checkbox"
+        id="fg-adjustable"
+        data-active-label="ON"
+        data-inactive-label="OFF"
+      >
+
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span
+          class="shared-active-knob"
+          aria-hidden="true"
+        ></span>
+      </span>
+    </label>
+
+  </div>
+`;
+
+form.append(adjField);
   const betsField=document.createElement('div');betsField.className='fg-field full';
 betsField.innerHTML = `
   <label for="fg-bets">
@@ -2387,7 +2457,13 @@ save.textContent = record ? 'Save Changes' : 'Create Game';
     options:[...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].map(value=>({value,label:value.toUpperCase()})),
     value:(record?.tags||[]).map(x=>String(x).toLowerCase())
   });
-  form.querySelector('#fg-adjustable').checked=record?.adjustable!==false;
+  const adjustableToggle = form.querySelector('#fg-adjustable');
+
+// Kekalkan nilai daripada Firebase ketika Edit Game
+adjustableToggle.checked = record?.adjustable !== false;
+
+// Sync custom toggle selepas popup dibina
+window.SharedActiveSwitch?.sync(adjustableToggle);
   form.querySelector('#fg-bets').value=record?fgBetsToText(record):'1: 0.01, 0.02, 0.05';
   fgImageUploader=NewUI.imageUpload(form.querySelector('#fgImageHost'),{buttonText:'Upload Image',maxSizeMB:5,initialUrl:record?.image||'',onError:e=>fgToast(e.message,'error')});
   cancel.addEventListener('click',()=>fgActiveModal?.close());
