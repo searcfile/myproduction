@@ -597,33 +597,24 @@ select:focus-visible{
 }
 
 
+
 /* ==========================================
-   ITEM COLLECTION - FINAL TOOLBAR FIX
+   ITEM COLLECTION - TOOLBAR LIKE FIND GAME
    ========================================== */
 
-.item-page {
-  width: calc(100% - 24px);
-  max-width: none;
-  min-width: 0;
-  margin: 12px;
-  container-type: inline-size;
-}
-
-/* Desktop: input max 400px, Create di kanan */
+/* Desktop */
 .item-page .item-toolbar {
   display: grid;
   grid-template-columns:
     minmax(0, 400px)
     minmax(0, 400px)
     minmax(0, 400px)
-    minmax(0, 1fr);
+    minmax(max-content, 1fr);
 
-  gap: 10px;
   align-items: center;
+  gap: 10px;
   width: 100%;
-  max-width: 100%;
   min-width: 0;
-  padding: 12px;
   box-sizing: border-box;
 }
 
@@ -631,10 +622,11 @@ select:focus-visible{
 .item-page .item-toolbar-search,
 .item-page .item-filter {
   width: 100%;
-  max-width: 400px;
   min-width: 0;
+  max-width: 400px;
 }
 
+/* Shared search dan chips */
 .item-page .item-toolbar .shared-sync-search,
 .item-page .item-toolbar .shared-chip-dropdown,
 .item-page .item-toolbar .shared-chip-dropdown-trigger {
@@ -644,21 +636,17 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
-/* Create sentiasa di hujung kanan */
+/* Create Item sentiasa di kanan */
 .item-page #itemCreate {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  grid-column: 4;
-  grid-row: 1;
-
   justify-self: end;
-  align-self: center;
-
   width: max-content;
-  max-width: 100%;
-  min-width: 0;
+  min-width: max-content;
+  max-width: none;
+
   height: 32px;
   padding: 0 15px;
   margin: 0;
@@ -667,8 +655,12 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
-/* Responsive: satu column */
-@container (max-width: 1050px) {
+/* ==========================================
+   RESPONSIVE - LIKE FIND GAME
+   ========================================== */
+
+@media (max-width: 950px) {
+
   .item-page .item-toolbar {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
@@ -677,24 +669,27 @@ select:focus-visible{
   .item-page .item-toolbar-search,
   .item-page .item-filter {
     grid-column: 1;
-    grid-row: auto;
-
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    justify-self: stretch;
+  }
+
+  .item-page .item-filter > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .item-page #itemCreate {
     grid-column: 1;
-    grid-row: auto;
-
     justify-self: end;
-    align-self: center;
-
     width: max-content;
-    margin-top: 2px;
+    min-width: max-content;
   }
 }
+
 
   </style>
 </head>
