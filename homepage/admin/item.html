@@ -458,6 +458,31 @@ select:focus-visible{
 @media(max-width:700px){.item-toolbar{grid-template-columns:minmax(0,1fr);}.item-toolbar-search,.item-filter{grid-column:1;width:100%;}.item-toolbar .shared-chip-dropdown,.item-toolbar .shared-chip-dropdown-trigger{width:100%;}#itemCreate{grid-column:1;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.item-form-grid{grid-template-columns:1fr;}}
 @media(max-width:390px){.item-page .card-grid{grid-template-columns:1fr;}}
 
+
+/* ITEM COLLECTION V2 - compact modern cards and clean modal */
+.item-page{margin-top:14px;}
+.item-toolbar{border-radius:12px;padding:11px 12px;gap:10px;}
+.item-page .card-grid{margin-top:18px;gap:14px;}
+.item-page .item-card{gap:11px;padding:11px;border-radius:12px;transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease;}
+.item-page .item-card:hover{border-color:var(--blue);box-shadow:0 6px 20px rgba(0,0,0,.12);transform:translateY(-2px);}
+.item-page .image-wrap{background:var(--page-input);border-radius:9px;}
+.item-page .item-info{flex-grow:0;margin-top:1px;min-height:21px;}
+.item-page .item-title{font-size:13px;font-weight:600;}
+.item-page .item-actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;margin-top:auto;align-items:center;}
+.item-page .item-actions:has(> :only-child){grid-template-columns:minmax(0,1fr);}
+.item-page .item-actions .copy-btn{height:32px;width:100%;font-size:12px;font-weight:500;padding:0 8px;white-space:nowrap;letter-spacing:0;}
+.item-page .item-action-button{height:32px;padding:0 11px;min-width:0;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);font:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;}
+.item-page .item-action-button:hover{border-color:var(--blue);color:var(--blue-hover);}
+.item-page .item-action-button.danger:hover{border-color:#e5484d;color:#e5484d;}
+.item-form .item-form-grid{gap:15px;}
+.item-form .item-form-full{grid-column:1/-1;}
+.item-form #itemFormTagChips,.item-form #itemFormTagChips>*{width:100%;min-width:0;}
+.item-form .item-form-field{gap:7px;}
+.item-form .item-form-actions{border-top:1px solid var(--border-input);padding-top:15px;}
+.item-empty{grid-column:1/-1;text-align:center;color:var(--blur);padding:60px 12px;}
+@media(max-width:700px){.item-page .card-grid{margin-top:12px;}.item-page .item-card{padding:9px;}.item-page .item-actions{grid-template-columns:1fr 1fr;}.item-page .item-actions .copy-btn{grid-column:1/-1;}.item-page .item-action-button{width:100%;}}
+@media(max-width:390px){.item-page .item-actions{grid-template-columns:minmax(0,1fr) auto auto;}.item-page .item-actions .copy-btn{grid-column:auto;}}
+
   </style>
 </head>
 <body>
@@ -469,10 +494,8 @@ select:focus-visible{
       <div id="itemCollectionChips" class="item-filter" aria-label="Filter collections"></div>
       <button id="itemCreate" class="item-primary" type="button">+ Create Item</button>
     </div>
-    <div class="item-meta"><span id="itemCount">Loading items...</span></div>
     <div class="card-grid" id="cardGrid"></div>
   </main>
-  <div class="copy-toast" id="copyToast"><span>Image copied!</span></div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -489,14 +512,13 @@ select:focus-visible{
   const CLOUDINARY_UPLOAD_PRESET = "game_logos";
   const LEGACY_ITEMS = [];
   const grid=document.getElementById('cardGrid');
-  const count=document.getElementById('itemCount');
   const search=document.getElementById('searchInput');
   const notify=(msg,type='info')=>window.NewUI?.showToast?.(msg,type) || console.log(msg);
   const clean=v=>String(v??'').trim();
   const lower=v=>clean(v).toLocaleLowerCase();
   const records=new Map();
+  const ITEM_TAGS=['Bank Item','Game Item','Other Item'];
   let tagFilter,collectionFilter,searchUI,dbRef=null,loaded=false;
-  const htmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const legacy=LEGACY_ITEMS.map((r,i)=>({
     id:'legacy-'+i,title:r.title,code:r.code,img:r.img,tag:r.tag,
     collection:r.title,legacy:true
@@ -504,7 +526,7 @@ select:focus-visible{
   function allItems(){return [...legacy,...records.values()].sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));}
   function refreshFilters(){
     const items=allItems();
-    const tags=[...new Set(items.flatMap(x=>clean(x.tag).split(',').map(s=>s.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
+    const tags=[...new Set([...ITEM_TAGS,...items.flatMap(x=>clean(x.tag).split(',').map(s=>s.trim()).filter(Boolean))])].sort((a,b)=>a.localeCompare(b));
     const collections=[...new Set(items.map(x=>clean(x.collection||x.title)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
     tagFilter?.setOptions(tags.map(v=>({value:v,label:v})));
     collectionFilter?.setOptions(collections.map(v=>({value:v,label:v})));
@@ -513,7 +535,7 @@ select:focus-visible{
     const q=lower(search.value),tags=tagFilter?.getValue()||[],cols=collectionFilter?.getValue()||[];
     return allItems().filter(x=>{
       const itemTags=clean(x.tag).split(',').map(s=>s.trim());
-      return (!q || [x.title,x.code,x.tag,x.collection].some(s=>lower(s).includes(q)))
+      return (!q || [x.title,x.tag,x.collection].some(s=>lower(s).includes(q)))
         && (!tags.length || tags.some(t=>itemTags.includes(t)))
         && (!cols.length || cols.includes(clean(x.collection||x.title)));
     });
@@ -524,24 +546,21 @@ select:focus-visible{
     const img=document.createElement('img');img.src=item.img;img.alt=item.title;img.loading='lazy';image.append(img);
     const info=document.createElement('div');info.className='item-info';
     const title=document.createElement('div');title.className='item-title';title.textContent=item.title;
-    const code=document.createElement('div');code.className='item-code';code.textContent=item.code||'—';
-    const meta=document.createElement('div');meta.className='item-card-meta';meta.textContent=[item.collection,item.tag].filter(Boolean).join(' · ');
-    info.append(title,code,meta);
+    info.append(title);
     const actions=document.createElement('div');actions.className='item-actions';
     const copy=document.createElement('button');copy.type='button';copy.className='copy-btn';copy.textContent='Copy Image';
     copy.addEventListener('click',()=>copyImage(item,copy));
     actions.append(copy);
     if(!item.legacy){
-      const edit=document.createElement('button');edit.type='button';edit.className='item-icon-button';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='✎';edit.addEventListener('click',()=>openForm(item));
-      const del=document.createElement('button');del.type='button';del.className='item-icon-button danger';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='×';del.addEventListener('click',()=>removeItem(item));
+      const edit=document.createElement('button');edit.type='button';edit.className='item-action-button';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='Edit';edit.addEventListener('click',()=>openForm(item));
+      const del=document.createElement('button');del.type='button';del.className='item-action-button danger';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='Delete';del.addEventListener('click',()=>removeItem(item));
       actions.append(edit,del);
     }
     el.append(image,info,actions);return el;
   }
   function render(){
     const items=filtered();grid.replaceChildren();
-    count.textContent=`${items.length} item${items.length===1?'':'s'}${loaded?'':' · Loading database...'}`;
-    if(!items.length){window.showEmptyState?.(grid,'No Data','large','center');return;}
+    if(!items.length){if(window.showEmptyState)window.showEmptyState(grid,'No Data','large','center');else{const empty=document.createElement('div');empty.className='item-empty';empty.textContent='No Data';grid.append(empty);}return;}
     const frag=document.createDocumentFragment();items.forEach(i=>frag.append(card(i)));grid.append(frag);
   }
   async function copyImage(item,btn){
@@ -555,7 +574,7 @@ select:focus-visible{
         bmp.close?.();
       }
       await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-      btn.textContent='Copied!';notify('Image copied','success');setTimeout(()=>{if(btn.isConnected)btn.textContent='Copy Image';},1200);
+      notify('Image copied','success');
     }catch(e){console.error(e);notify('Copy gagal. Image host mungkin block CORS.','error');}
   }
   function inputField(label,id,value='',required=false){
@@ -575,8 +594,16 @@ select:focus-visible{
     if(!dbRef){notify('Firebase belum tersedia atau akses ditolak. Semak login dan rules.','error');return;}
     const form=document.createElement('form');form.className='item-form';form.noValidate=true;
     const row=document.createElement('div');row.className='item-form-grid';
-    row.append(inputField('Item Name','itemName',item?.title||'',true),inputField('Collection / Platform','itemCollection',item?.collection||'',true),
-      inputField('Code','itemCode',item?.code||'5G88_Site',true),inputField('Tags (pisahkan dengan koma)','itemTags',item?.tag||'',true));
+    row.append(
+      inputField('Item Name','itemName',item?.title||'',true),
+      inputField('Collection / Platform','itemCollection',item?.collection||'',true)
+    );
+    const tagField=document.createElement('div');
+    tagField.className='item-form-field item-form-full';
+    const tagLabel=document.createElement('span');tagLabel.textContent='Tags';
+    const tagHost=document.createElement('div');tagHost.id='itemFormTagChips';
+    tagField.append(tagLabel,tagHost);
+    row.append(tagField);
     const imageLabel=document.createElement('div');imageLabel.className='item-form-field item-form-full';
     const span=document.createElement('span');span.textContent='Item Image';
     const uploadHost=document.createElement('div');uploadHost.id='itemUploadHost';imageLabel.append(span,uploadHost);
@@ -587,18 +614,26 @@ select:focus-visible{
     const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:660});
     cancel.addEventListener('click',()=>modal.close());
     row.querySelectorAll('input').forEach(el=>NewUI.input(el));
+    const savedTags=clean(item?.tag).split(',').map(t=>t.trim()).filter(Boolean);
+    const modalTagOptions=[...new Set([...ITEM_TAGS,...savedTags])].map(v=>({value:v,label:v}));
+    const modalTags=NewUI.chips(tagHost,{
+      placeholder:'Select Tags',
+      options:modalTagOptions
+    });
+    if(savedTags.length)modalTags.setValue(savedTags);
     const uploader=NewUI.imageUpload(uploadHost,{maxSizeMB:5,initialUrl:item?.img||'',initialName:item?.title||'Existing image',onError:e=>notify(e.message,'error')});
     form.addEventListener('submit',async e=>{
       e.preventDefault();if(save.disabled)return;
       const title=clean(form.querySelector('#itemName').value),collection=clean(form.querySelector('#itemCollection').value),
-        code=clean(form.querySelector('#itemCode').value),tag=clean(form.querySelector('#itemTags').value);
+        tag=(modalTags.getValue()||[]).join(', ');
       if(!title||!collection||!code||!tag){notify('Lengkapkan semua input dahulu.','warning');return;}
       if(!uploader.getFile()&&!uploader.getUrl()){notify('Sila upload gambar.','warning');return;}
       NewUI.setButtonLoading(save,true,{text:item?'Saving...':'Creating...'});
       try{
         let img=uploader.getUrl();
         if(uploader.getFile())img=await cloudinaryUpload(uploader.getFile());
-        const data={title,collection,code,tag,img,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+        // Legacy rules require 'code'; preserve it in Firebase only, without showing a Code field.
+        const data={title,collection,code:item?.code||'5G88_Site',tag,img,updatedAt:firebase.database.ServerValue.TIMESTAMP};
         if(item)await dbRef.child(item.id).update(data);
         else await dbRef.push().set({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
         notify(item?'Item updated':'Item created','success');modal.close();
@@ -614,7 +649,7 @@ select:focus-visible{
   }
   function startRealtime(){
     try{
-      if(typeof firebase==='undefined'||!firebase.apps?.length){loaded=true;count.textContent='Firebase belum initialized';render();notify('Firebase app belum initialized. Semak ../firebase.js','error');return;}
+      if(typeof firebase==='undefined'||!firebase.apps?.length){loaded=true;render();notify('Firebase app belum initialized. Semak ../firebase.js','error');return;}
       const auth=firebase.auth();
       auth.onAuthStateChanged(user=>{
         if(dbRef){dbRef.off();dbRef=null;}
