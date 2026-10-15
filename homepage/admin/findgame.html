@@ -1297,16 +1297,117 @@ select:focus-visible{
     margin: 0 2px;
   }
 }
-    /* ==========================================
-   FIND GAME - IMAGE DRAG FIX
+/* ==========================================
+   FIND GAME - FULLSCREEN IMAGE VIEWER
    ========================================== */
 
-.fg-preview-stage {
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
+/* Overlay memenuhi skrin */
+.fg-image-preview {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 999999 !important;
+  overflow: hidden !important;
+  background: rgba(0, 0, 0, .97);
+  backdrop-filter: none;
 }
 
+.fg-image-preview.open {
+  display: block !important;
+}
+
+/* Header tidak mengambil ruang */
+.fg-preview-header {
+  position: absolute !important;
+  inset: 0 0 auto 0;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.fg-preview-title {
+  display: none !important;
+}
+
+/* Close di penjuru kanan atas */
+.fg-preview-close {
+  position: fixed !important;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  width: 36px;
+  height: 36px;
+  pointer-events: auto;
+  z-index: 30;
+  background: rgba(30,30,30,.75);
+  backdrop-filter: blur(10px);
+}
+
+/* Kawasan gambar fullscreen */
+.fg-preview-stage {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Gambar ikut saiz skrin sebelum zoom */
+.fg-preview-stage img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Toolbar terapung, bukan footer */
+.fg-preview-toolbar {
+  position: absolute !important;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 25;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap !important;
+  gap: 8px;
+
+  width: max-content;
+  max-width: calc(100vw - 20px);
+  padding: 8px 10px !important;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: rgba(25,25,25,.65);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.3);
+}
+
+/* Hilangkan footer hint */
+.fg-preview-hint {
+  display: none !important;
+}
+
+/* Kekalkan drag */
 .fg-preview-stage.zoomed {
   cursor: grab !important;
 }
@@ -1315,14 +1416,52 @@ select:focus-visible{
   cursor: grabbing !important;
 }
 
-.fg-preview-stage img {
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
 .fg-preview-stage.dragging img {
   transition: none !important;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .fg-preview-toolbar {
+    gap: 4px;
+    padding: 6px !important;
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .fg-preview-toolbar button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+  }
+
+  .fg-preview-toolbar button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .fg-preview-toolbar #fgZoomReset {
+    min-width: 48px;
+    padding: 0 6px;
+  }
+
+  .fg-preview-divider {
+    margin: 0 1px;
+  }
+}
+
+@media (max-width: 380px) {
+  .fg-preview-toolbar {
+    gap: 2px;
+  }
+
+  .fg-preview-toolbar button {
+    width: 27px;
+    height: 28px;
+  }
+
+  .fg-preview-toolbar #fgZoomReset {
+    min-width: 42px;
+  }
 }
   </style>
 <body>
