@@ -605,11 +605,11 @@ select:focus-visible{
 /* Desktop */
 .item-page .item-toolbar {
   display: grid;
-  grid-template-columns:
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(max-content, 1fr);
+grid-template-columns:
+  minmax(0, 400px)
+  minmax(0, 400px)
+  minmax(0, 400px)
+  minmax(110px, 1fr);
 
   align-items: center;
   gap: 10px;
@@ -655,11 +655,39 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
+
 /* ==========================================
-   RESPONSIVE - LIKE FIND GAME
+   ITEM TOOLBAR - RESPONSIVE FINAL FIX
    ========================================== */
 
-@media (max-width: 950px) {
+/* Gunakan lebar halaman Item sebagai rujukan */
+.item-page {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+/* Pastikan semua komponen tidak overflow */
+.item-page .item-toolbar {
+  min-width: 0;
+  width: 100%;
+}
+
+.item-page .item-toolbar > * {
+  min-width: 0;
+}
+
+/* Tombol Create tidak boleh mengecil */
+.item-page #itemCreate {
+  width: max-content;
+  min-width: max-content;
+  max-width: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  justify-self: end;
+}
+
+/* Bila halaman Item lebih kecil daripada 950px */
+@container (max-width: 950px) {
 
   .item-page .item-toolbar {
     grid-template-columns: minmax(0, 1fr);
@@ -669,27 +697,21 @@ select:focus-visible{
   .item-page .item-toolbar-search,
   .item-page .item-filter {
     grid-column: 1;
+    grid-row: auto;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    justify-self: stretch;
-  }
-
-  .item-page .item-filter > * {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0;
-    box-sizing: border-box;
   }
 
   .item-page #itemCreate {
     grid-column: 1;
+    grid-row: auto;
     justify-self: end;
     width: max-content;
     min-width: max-content;
+    margin: 0;
   }
 }
-
 
   </style>
 </head>
