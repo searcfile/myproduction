@@ -570,7 +570,6 @@ margin:12px;
 
   .wrap{
     width:calc(100% - 20px);
-    margin-top:calc(var(--flt-h) + 8px);
     height:auto;
     min-height:calc(100vh - var(--flt-h) - 8px);
     padding-bottom:16px;
@@ -650,7 +649,6 @@ margin:12px;
 
   .wrap{
     width:100%;
-    margin-top:calc(var(--flt-h) + 6px);
   }
 
   .list,
@@ -832,19 +830,6 @@ select:focus-visible{
     overflow:visible;
   }
 }
-
-@media (max-width:979px){
-  .wrap{
-    margin-top:10px;
-  }
-}
-
-@media (max-width:640px){
-  .wrap{
-    margin-top:6px;
-  }
-}
-
 .fg-search .shared-sync-search{width:100%;height:32px}
 .fg-search input:not(.shared-sync-search-input){height:32px;width:100%;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);padding:0 11px}
 .fg-create{  
@@ -867,7 +852,7 @@ select:focus-visible{
 }
 .fg-create:hover{background:var(--blue-hover)}
 .fg-create:active{background:var(--blue-active)}
-.wrap{margin-top:8px!important;padding:0 12px 24px!important;width:100%!important;min-height:0!important;height:auto!important}
+.wrap{padding:0 12px;width:100%!important;min-height:0!important;height:auto!important}
 .grid{gap:14px}.list,.detail{border-radius:12px;box-shadow:0 3px 18px rgba(0,0,0,.06)}
 .game{border-radius:9px}.game.active{background:var(--page-input)}
 .fg-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
@@ -1081,26 +1066,10 @@ select:focus-visible{
 
 @media (max-width: 480px) {
 
-  .filters-inner {
-    width: calc(100% - 20px);
-    margin: 10px;
-    padding: 10px;
-  }
-
-  .fg-toolbar {
-    gap: 8px;
-  }
-
   .fg-toolbar .fg-search,
   .fg-toolbar .fg-platform-chips {
     width: 100%;
     max-width: 100%;
-  }
-
-  .fg-toolbar #fgCreate {
-    height: 32px;
-    padding: 0 12px;
-    font-size: 13px;
   }
 }
   </style>
