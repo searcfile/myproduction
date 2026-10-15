@@ -422,330 +422,228 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
+
+/* ITEM COLLECTION - modern, responsive, scoped */
+.item-page{max-width:none;width:calc(100% - 32px);margin:16px auto 32px;}
+.item-toolbar{display:grid;grid-template-columns:minmax(0,400px) minmax(0,400px) minmax(0,400px) minmax(max-content,1fr);align-items:center;gap:10px;padding:12px;background:var(--page-bg2);border:1px solid var(--border-input);border-radius:12px;min-width:0;}
+.item-toolbar-search,.item-filter{min-width:0;width:100%;}
+.item-toolbar .shared-sync-search{width:100%;height:32px;max-width:none;}
+.item-toolbar .shared-chip-dropdown{width:100%;min-width:0;}
+.item-primary,.item-secondary,.item-icon-button{height:32px;border-radius:6px;padding:0 15px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;}
+.item-primary{background:var(--blue);color:white;border:1px solid transparent;}
+.item-primary:hover{background:var(--blue-hover);}
+.item-secondary,.item-icon-button{background:var(--page-input);color:var(--page-text);border:1px solid var(--border-input);}
+#itemCreate{justify-self:end;width:max-content;}
+.item-meta{padding:14px 4px;color:var(--blur);font-size:12px;}
+.item-page .card-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;justify-content:stretch;align-items:stretch;}
+.item-page .item-card{flex:none;max-width:none;width:100%;min-width:0;min-height:0;border-radius:12px;padding:10px;will-change:auto;}
+.item-page .image-wrap{height:auto;aspect-ratio:1/1;border-radius:9px;}
+.item-page .item-info{min-width:0;margin-top:2px;}
+.item-page .item-title{font-size:14px;}
+.item-page .item-code{font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.item-card-meta{color:var(--blur);font-size:11px;line-height:1.5;overflow-wrap:anywhere;}
+.item-actions{display:flex;gap:6px;align-items:center;margin-top:auto;}
+.item-actions .copy-btn{margin:0;flex:1;min-width:0;letter-spacing:0;font-size:12px;padding:0 7px;}
+.item-icon-button{width:32px;flex:none;padding:0;font-size:18px;}
+.item-icon-button.danger:hover{border-color:#dc4352;color:#dc4352;}
+.item-form{display:flex;flex-direction:column;gap:18px;}
+.item-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.item-form-field{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;font-weight:600;color:var(--page-text);}
+.item-form-field input{width:100%;height:34px;border-radius:6px;background:var(--page-input);border:1px solid var(--border-input);color:var(--page-text);padding:0 10px;font:inherit;font-size:13px;}
+.item-form-field .new-ui-input-wrap{width:100%;}
+.item-form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;}
+.item-page .shared-empty{grid-column:1/-1;min-height:200px;}
+@media(max-width:1300px){.item-page .card-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+@media(max-width:1050px){.item-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}.item-toolbar-search,.item-filter{max-width:none;}#itemCreate{grid-column:2;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media(max-width:700px){.item-toolbar{grid-template-columns:minmax(0,1fr);}.item-toolbar-search,.item-filter{grid-column:1;width:100%;}.item-toolbar .shared-chip-dropdown,.item-toolbar .shared-chip-dropdown-trigger{width:100%;}#itemCreate{grid-column:1;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.item-form-grid{grid-template-columns:1fr;}}
+@media(max-width:390px){.item-page .card-grid{grid-template-columns:1fr;}}
+
   </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <!-- SEARCH BAR -->
-  <div class="search-wrapper">
-    <div class="search-box" id="searchBox">
-      <span class="search-icon">
-        <svg viewBox="0 0 24 24" class="search-svg">
-          <path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"/>
-        </svg>
-      </span>
-      <input
-        type="text"
-        id="searchInput"
-        class="search-input"
-        placeholder="Search Item"
-        autocomplete="off"
-      />
-      <button type="button" id="clearSearch" class="clear-btn" aria-label="Clear search">✕</button>
+  <main class="wrapper item-page">
+    <div class="item-toolbar">
+      <div class="item-toolbar-search"><input type="search" id="searchInput" placeholder="Search item, tag or collection..." aria-label="Search items"></div>
+      <div id="itemTagChips" class="item-filter" aria-label="Filter tags"></div>
+      <div id="itemCollectionChips" class="item-filter" aria-label="Filter collections"></div>
+      <button id="itemCreate" class="item-primary" type="button">+ Create Item</button>
     </div>
-  </div>
-
-  <!-- GRID -->
-  <div class="card-grid" id="cardGrid"></div>
-</div>
-
-<div class="copy-toast" id="copyToast">
-  <span>Image copied!</span>
-</div>
+    <div class="item-meta"><span id="itemCount">Loading items...</span></div>
+    <div class="card-grid" id="cardGrid"></div>
+  </main>
+  <div class="copy-toast" id="copyToast"><span>Image copied!</span></div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js"></script>
-<script type="module">
-  function showToast(){
-    const toast = document.getElementById('copyToast');
-    toast.classList.add('show');
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(()=> toast.classList.remove('show'), 1300);
+<script>
+(() => {
+  "use strict";
+  const DB_PATH = "item_collection/items";
+  // Isi dua nilai ini menggunakan Cloudinary unsigned upload preset milik bro.
+  // Tanpa konfigurasi ini, create melalui upload image akan tunjuk error yang jelas.
+  const CLOUDINARY_CLOUD_NAME = "dqctvbenv";
+  const CLOUDINARY_UPLOAD_PRESET = "game_logos";
+  const LEGACY_ITEMS = [];
+  const grid=document.getElementById('cardGrid');
+  const count=document.getElementById('itemCount');
+  const search=document.getElementById('searchInput');
+  const notify=(msg,type='info')=>window.NewUI?.showToast?.(msg,type) || console.log(msg);
+  const clean=v=>String(v??'').trim();
+  const lower=v=>clean(v).toLocaleLowerCase();
+  const records=new Map();
+  let tagFilter,collectionFilter,searchUI,dbRef=null,loaded=false;
+  const htmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const legacy=LEGACY_ITEMS.map((r,i)=>({
+    id:'legacy-'+i,title:r.title,code:r.code,img:r.img,tag:r.tag,
+    collection:r.title,legacy:true
+  }));
+  function allItems(){return [...legacy,...records.values()].sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));}
+  function refreshFilters(){
+    const items=allItems();
+    const tags=[...new Set(items.flatMap(x=>clean(x.tag).split(',').map(s=>s.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
+    const collections=[...new Set(items.map(x=>clean(x.collection||x.title)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    tagFilter?.setOptions(tags.map(v=>({value:v,label:v})));
+    collectionFilter?.setOptions(collections.map(v=>({value:v,label:v})));
   }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const ITEMS = [
-       // game evo888
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/jk34By8.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/mN9KUAL.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/eaghnnM.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/1GGdTAZ.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/uN14tnV.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/Cc5RNqu.png",   tag:"game logo evo888" },
-      { title: "Evo888",     code: "5G88_Site", img: "https://i.imgur.com/XrjCRDo.png",   tag:"game logo evo888" },
-      // game joker
-      { title: "Joker",     code: "5G88_Site", img: "https://i.imgur.com/Hbxgxwv.png",   tag:"game logo joker" },
-      { title: "Joker",     code: "5G88_Site", img: "https://i.imgur.com/eqzF9lH.png",   tag:"game logo joker" },
-      { title: "Joker",     code: "5G88_Site", img: "https://i.imgur.com/cZHBj0j.png",   tag:"game logo joker" },
-      { title: "Joker",     code: "5G88_Site", img: "https://i.imgur.com/c09fxzZ.png",   tag:"game logo joker" },
-      { title: "Joker",     code: "5G88_Site", img: "https://i.imgur.com/kW7HJFO.png",   tag:"game logo joker" },
-      // game pussy888
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/a9G6zWb.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/9VbLRSN.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/SjVWWt1.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/bOHu3PB.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/lQgzJuN.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/3Wlx8Cd.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/WXwdxDI.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/Pl3JWk0.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/wRXPWUg.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/AfTkIvb.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/xATw7Yh.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/7qWC3fA.png",   tag:"game logo pussy888" },
-      { title: "Pussy888",     code: "5G88_Site", img: "https://i.imgur.com/crEHHkZ.png",   tag:"game logo pussy888" },
-      // logo mega8888
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/ghiaprv.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/Dy8xQDM.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/XR9s9Gq.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/g5MJvN0.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/As9JjYl.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/dyVXrR8.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/GUHdq9e.gif",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/Qw5TvT3.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/RlBrF74.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/MDkPaPe.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/hLneyId.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/hJTqz8b.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/9qnegff.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/Ly0kXWR.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/Z6t6cS7.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/vood3GE.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/JzHhTCY.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/ozMctk8.png",   tag:"game logo mega888" },
-      { title: "Mega888",     code: "5G88_Site", img: "https://i.imgur.com/Zof00dL.png",   tag:"game logo mega888" },
-       // logo 918kiss
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/qLD5poL.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/Fctljrf.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/Uy2YobK.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/PNU4LGP.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/Gk2ubHh.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/Ha1I0oS.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/MvclZ1C.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/AYyugEk.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/wv7WRFa.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/YxfGmXu.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/ofGeiMX.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/w1BXwO5.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/hSYiVYS.png",   tag:"game logo 918kiss" },
-      { title: "918kiss",     code: "5G88_Site", img: "https://i.imgur.com/dGKDg1i.png",   tag:"game logo 918kiss" },
-      // Bank list
-      { title: "Reload Pin UMobile",     code: "5G88_Site", img: "https://i.imgur.com/13udQTU.png",   tag:"Bank" },
-      { title: "Reload Pin Maxis",     code: "5G88_Site", img: "https://i.imgur.com/ovwn97X.png",   tag:"Bank" },
-      { title: "Reload Pin Celcom",     code: "5G88_Site", img: "https://i.imgur.com/HcioZQq.png",   tag:"Bank" },
-      { title: "Reload Pin Digi",     code: "5G88_Site", img: "https://i.imgur.com/Zv6MLkp.png",   tag:"Bank" },
-      { title: "Allience Bank",     code: "5G88_Site", img: "https://i.imgur.com/nh2B37Z.png",   tag:"Alliance Bank" },
-      { title: "Bank Telco",        code: "5G88_Site", img: "https://i.imgur.com/XHr1Vgr.png",   tag:"Bank Telco" },
-      { title: "Bank RHB",          code: "5G88_Site", img: "https://i.imgur.com/JQN3UYB.png",   tag:"RHB" },
-      { title: "Bank Islam",        code: "5G88_Site", img: "https://i.imgur.com/Q8Rw0LH.png",   tag:"Bank Islam" },
-      { title: "Duitnow Bank",      code: "5G88_Site", img: "https://i.imgur.com/p4wVhHV.png",   tag:"Duitnow" },
-      { title: "UOB Bank",          code: "5G88_Site", img: "https://i.imgur.com/i9dDsWW.png",   tag:"UOB" },
-      { title: "HSBC Bank",         code: "5G88_Site", img: "https://i.imgur.com/i82YkHm.png",   tag:"HSBC" },
-      { title: "Agro Bank",         code: "5G88_Site", img: "https://i.imgur.com/V1JyFtI.png",   tag:"Agro" },
-      { title: "Maybank",           code: "5G88_Site", img: "https://i.imgur.com/Ki1pk1j.png",   tag:"Maybank" },
-      { title: "Hong Leong Bank",   code: "5G88_Site", img: "https://i.imgur.com/P19A5Jp.png",   tag:"Hong Leong" },
-      { title: "AmBank",            code: "5G88_Site", img: "https://i.imgur.com/VRSwGfj.png",   tag:"AmBank" },
-      { title: "GXBank",            code: "5G88_Site", img: "https://i.imgur.com/BOhOQLV.png",   tag:"GXBank" },
-      { title: "TNG-Ewallet",       code: "5G88_Site", img: "https://i.imgur.com/FQHeQLJ.png",   tag:"TNG" },
-      { title: "Cimb Bank",         code: "5G88_Site", img: "https://i.imgur.com/dJflRmT.png",   tag:"CIMB" },
-      { title: "Affin Bank",        code: "5G88_Site", img: "https://i.imgur.com/rg3009J.png",   tag:"Affin" },
-      { title: "Bank Rakyat",       code: "5G88_Site", img: "https://i.imgur.com/aQiEYk3.png",   tag:"Bank Rakyat" },
-      { title: "Bank Muamalat",     code: "5G88_Site", img: "https://i.imgur.com/5cMKvGF.png",   tag:"Muamalat" },
-      { title: "Bank Simpanan Nasional", code: "5G88_Site", img: "https://i.imgur.com/n7SJnQs.png", tag:"BSN" },
-      { title: "Public Bank",       code: "5G88_Site", img: "https://i.imgur.com/SMxOfMd.png",   tag:"Public Bank" }
-    ];
-
-    const grid = document.getElementById('cardGrid');
-
-    // generate card
-    ITEMS.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.dataset.item = item.tag || item.title;
-
-      card.innerHTML = `
-        <div class="image-wrap">
-          <img src="${item.img}" alt="${item.title}" loading="lazy">
-        </div>
-        <div class="item-info">
-          <div class="item-title">${item.title}</div>
-          <div class="item-code">${item.code}</div>
-        </div>
-        <button class="copy-btn">
-          <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="copy-icon-svg">
-              <path d="m22 7c0-.478-.379-1-1-1h-14c-.62 0-1 .519-1 1v14c0 .621.52 1 1 1h14c.478 0 1-.379 1-1zm-14.5.5h13v13h-13zm-5.5 7.5v2c0 .621.52 1 1 1h2v-1.5h-1.5v-1.5zm13.369-5s-2.136.002-4.616.003c-.414 0-.75.336-.75.75-.001 2.479-.003 4.612-.003 4.612 0 .41.335.745.75.745.414 0 .75-.334.75-.745v-2.804l4.439 4.439c.293.293.768.293 1.061 0s.293-.768 0-1.061l-4.439-4.439h2.808c.409 0 .741-.336.741-.75s-.333-.75-.741-.75zm-11.869.637v3.363h-1.5v-3.363zm0-4.637v3.637h-1.5v-3.637zm11.5-4v1.5h1.5v1.5h1.5v-2c0-.478-.379-1-1-1zm-10 0h-2c-.62 0-1 .519-1 1v2h1.5v-1.5h1.5zm4.5 1.5h-3.5v-1.5h3.5zm4.5 0h-3.5v-1.5h3.5z"/>
-            </svg>
-          </span>
-          <span>Copy Image</span>
-        </button>
-      `;
-
-      grid.appendChild(card);
+  function filtered(){
+    const q=lower(search.value),tags=tagFilter?.getValue()||[],cols=collectionFilter?.getValue()||[];
+    return allItems().filter(x=>{
+      const itemTags=clean(x.tag).split(',').map(s=>s.trim());
+      return (!q || [x.title,x.code,x.tag,x.collection].some(s=>lower(s).includes(q)))
+        && (!tags.length || tags.some(t=>itemTags.includes(t)))
+        && (!cols.length || cols.includes(clean(x.collection||x.title)));
     });
-
-    const cards = document.querySelectorAll('.item-card');
-
-    // COPY IMAGE
-    cards.forEach(card => {
-      const btn = card.querySelector('.copy-btn');
-
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-
-        const img = card.querySelector('img');
-        if (!img) return;
-
-        if (!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem)) {
-          alert('Browser tidak support copy image ke clipboard. Coba Chrome / Edge terbaru ya bro.');
-          return;
-        }
-
-        try{
-          const res = await fetch(img.src);
-          const blob = await res.blob();
-
-          await navigator.clipboard.write([
-            new ClipboardItem({ [blob.type]: blob })
-          ]);
-
-          card.classList.add('copied');
-          const labelSpan = btn.querySelector('span:last-child');
-          const oldText = labelSpan.textContent;
-          labelSpan.textContent = 'Copied!';
-          showToast();
-
-          setTimeout(() => {
-            card.classList.remove('copied');
-            labelSpan.textContent = oldText;
-          }, 1200);
-
-        }catch(err){
-          console.error('Gagal copy image', err);
-          alert('Gagal copy image. Mungkin karena permission / CORS.');
-        }
-      });
-    });
-
-    // SEARCH
-    const searchInput = document.getElementById('searchInput');
-    const clearBtn = document.getElementById('clearSearch');
-    const searchBox = document.getElementById('searchBox');
-
-    function applyFilter(){
-      const term = searchInput.value.trim().toLowerCase();
-      if (term.length > 0){
-        searchBox.classList.add('has-value');
-      } else {
-        searchBox.classList.remove('has-value');
+  }
+  function card(item){
+    const el=document.createElement('article');el.className='item-card';
+    const image=document.createElement('div');image.className='image-wrap';
+    const img=document.createElement('img');img.src=item.img;img.alt=item.title;img.loading='lazy';image.append(img);
+    const info=document.createElement('div');info.className='item-info';
+    const title=document.createElement('div');title.className='item-title';title.textContent=item.title;
+    const code=document.createElement('div');code.className='item-code';code.textContent=item.code||'—';
+    const meta=document.createElement('div');meta.className='item-card-meta';meta.textContent=[item.collection,item.tag].filter(Boolean).join(' · ');
+    info.append(title,code,meta);
+    const actions=document.createElement('div');actions.className='item-actions';
+    const copy=document.createElement('button');copy.type='button';copy.className='copy-btn';copy.textContent='Copy Image';
+    copy.addEventListener('click',()=>copyImage(item,copy));
+    actions.append(copy);
+    if(!item.legacy){
+      const edit=document.createElement('button');edit.type='button';edit.className='item-icon-button';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='✎';edit.addEventListener('click',()=>openForm(item));
+      const del=document.createElement('button');del.type='button';del.className='item-icon-button danger';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='×';del.addEventListener('click',()=>removeItem(item));
+      actions.append(edit,del);
+    }
+    el.append(image,info,actions);return el;
+  }
+  function render(){
+    const items=filtered();grid.replaceChildren();
+    count.textContent=`${items.length} item${items.length===1?'':'s'}${loaded?'':' · Loading database...'}`;
+    if(!items.length){window.showEmptyState?.(grid,'No Data','large','center');return;}
+    const frag=document.createDocumentFragment();items.forEach(i=>frag.append(card(i)));grid.append(frag);
+  }
+  async function copyImage(item,btn){
+    if(!navigator.clipboard?.write || !window.ClipboardItem){notify('Browser tidak support copy image','error');return;}
+    try{
+      const res=await fetch(item.img,{mode:'cors'});if(!res.ok)throw Error('Image request failed');
+      let blob=await res.blob();
+      if(blob.type!=='image/png'){
+        const bmp=await createImageBitmap(blob);const canvas=document.createElement('canvas');canvas.width=bmp.width;canvas.height=bmp.height;
+        canvas.getContext('2d').drawImage(bmp,0,0);blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Conversion failed')),'image/png'));
+        bmp.close?.();
       }
-
-      cards.forEach(card => {
-        const titleEl  = card.querySelector('.item-title');
-        const titleText = (titleEl?.textContent || '').toLowerCase();
-        const dataItem  = (card.dataset.item || '').toLowerCase();
-        const match = term === '' || titleText.includes(term) || dataItem.includes(term);
-        card.style.display = match ? '' : 'none';
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      btn.textContent='Copied!';notify('Image copied','success');setTimeout(()=>{if(btn.isConnected)btn.textContent='Copy Image';},1200);
+    }catch(e){console.error(e);notify('Copy gagal. Image host mungkin block CORS.','error');}
+  }
+  function inputField(label,id,value='',required=false){
+    const wrap=document.createElement('label');wrap.className='item-form-field';
+    const text=document.createElement('span');text.textContent=label;
+    const input=document.createElement('input');input.id=id;input.value=value;input.required=required;input.autocomplete='off';
+    wrap.append(text,input);return wrap;
+  }
+  async function cloudinaryUpload(file){
+    if(!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET)throw Error('Sila isi CLOUDINARY_CLOUD_NAME dan CLOUDINARY_UPLOAD_PRESET dalam item.html dahulu.');
+    const data=new FormData();data.append('file',file);data.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(CLOUDINARY_CLOUD_NAME)}/image/upload`,{method:'POST',body:data});
+    const json=await res.json();if(!res.ok||!json.secure_url)throw Error(json.error?.message||'Cloudinary upload failed');
+    return json.secure_url;
+  }
+  function openForm(item=null){
+    if(!dbRef){notify('Firebase belum tersedia atau akses ditolak. Semak login dan rules.','error');return;}
+    const form=document.createElement('form');form.className='item-form';form.noValidate=true;
+    const row=document.createElement('div');row.className='item-form-grid';
+    row.append(inputField('Item Name','itemName',item?.title||'',true),inputField('Collection / Platform','itemCollection',item?.collection||'',true),
+      inputField('Code','itemCode',item?.code||'5G88_Site',true),inputField('Tags (pisahkan dengan koma)','itemTags',item?.tag||'',true));
+    const imageLabel=document.createElement('div');imageLabel.className='item-form-field item-form-full';
+    const span=document.createElement('span');span.textContent='Item Image';
+    const uploadHost=document.createElement('div');uploadHost.id='itemUploadHost';imageLabel.append(span,uploadHost);
+    const footer=document.createElement('div');footer.className='item-form-actions';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='item-secondary';cancel.textContent='Cancel';
+    const save=document.createElement('button');save.type='submit';save.className='item-primary';save.textContent=item?'Save Changes':'Create Item';
+    footer.append(cancel,save);form.append(row,imageLabel,footer);
+    const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:660});
+    cancel.addEventListener('click',()=>modal.close());
+    row.querySelectorAll('input').forEach(el=>NewUI.input(el));
+    const uploader=NewUI.imageUpload(uploadHost,{maxSizeMB:5,initialUrl:item?.img||'',initialName:item?.title||'Existing image',onError:e=>notify(e.message,'error')});
+    form.addEventListener('submit',async e=>{
+      e.preventDefault();if(save.disabled)return;
+      const title=clean(form.querySelector('#itemName').value),collection=clean(form.querySelector('#itemCollection').value),
+        code=clean(form.querySelector('#itemCode').value),tag=clean(form.querySelector('#itemTags').value);
+      if(!title||!collection||!code||!tag){notify('Lengkapkan semua input dahulu.','warning');return;}
+      if(!uploader.getFile()&&!uploader.getUrl()){notify('Sila upload gambar.','warning');return;}
+      NewUI.setButtonLoading(save,true,{text:item?'Saving...':'Creating...'});
+      try{
+        let img=uploader.getUrl();
+        if(uploader.getFile())img=await cloudinaryUpload(uploader.getFile());
+        const data={title,collection,code,tag,img,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+        if(item)await dbRef.child(item.id).update(data);
+        else await dbRef.push().set({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+        notify(item?'Item updated':'Item created','success');modal.close();
+      }catch(err){console.error(err);notify(err.message||'Save failed','error');}
+      finally{await NewUI.setButtonLoading(save,false,{minDuration:600});}
+    });
+  }
+  async function removeItem(item){
+    if(!dbRef)return;
+    if(!confirm(`Delete "${item.title}"? This cannot be undone.`))return;
+    try{await dbRef.child(item.id).remove();notify('Item deleted','success');}
+    catch(e){console.error(e);notify('Delete failed: '+e.message,'error');}
+  }
+  function startRealtime(){
+    try{
+      if(typeof firebase==='undefined'||!firebase.apps?.length){loaded=true;count.textContent='Firebase belum initialized';render();notify('Firebase app belum initialized. Semak ../firebase.js','error');return;}
+      const auth=firebase.auth();
+      auth.onAuthStateChanged(user=>{
+        if(dbRef){dbRef.off();dbRef=null;}
+        records.clear();
+        if(!user){loaded=true;refreshFilters();render();notify('Sila login untuk Create Item','warning');return;}
+        dbRef=firebase.database().ref(DB_PATH);loaded=false;
+        dbRef.on('value',snapshot=>{
+          records.clear();
+          snapshot.forEach(child=>{const v=child.val();if(v&&v.title&&v.img)records.set(child.key,{...v,id:child.key,legacy:false});});
+          loaded=true;refreshFilters();render();
+        },err=>{loaded=true;notify('Database: '+err.message,'error');render();});
       });
-    }
-
-    searchInput.addEventListener('input', applyFilter);
-
-    clearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      applyFilter();
-      searchInput.focus();
-    });
-  });
-(function () {
-  const THEME_KEY = "siteTheme";
-
-  function applyChildTheme(theme) {
-    document.body.classList.remove("light-theme", "dark-theme");
-    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+    }catch(err){loaded=true;console.error(err);notify('Firebase initialization error: '+err.message,'error');render();}
   }
-
-  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
-
-  window.addEventListener("message", function (e) {
-    const allowedOrigins = [
-      "https://5g88-main.vercel.app"
-    ];
-    if (!allowedOrigins.includes(e.origin)) return;
-
-    const data = e.data || {};
-    if (data.type === "theme-change") {
-      const theme = data.theme === "dark" ? "dark" : "light";
-      localStorage.setItem(THEME_KEY, theme);
-      applyChildTheme(theme);
-    }
-  });
+  tagFilter=NewUI.chips('#itemTagChips',{placeholder:'All Tags',options:[],onChange:render});
+  collectionFilter=NewUI.chips('#itemCollectionChips',{placeholder:'All Collections',options:[],onChange:render});
+  searchUI=NewUI.syncSearch(search,{onSearch:async()=>{render();await new Promise(r=>setTimeout(r,450));}});
+  search.addEventListener('input',render);
+  document.getElementById('itemCreate').addEventListener('click',()=>openForm());
+  refreshFilters();render();startRealtime();
+  // Keep original parent-frame activity tracking.
+  window.HISTORY_TAB_NAME='ITEM COLLECTION';
+  const parentOrigin='https://5g88-main.vercel.app';
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('button,a,[data-action]');if(!el||el.disabled)return;
+    window.parent?.postMessage({type:'user-tab-action',tab:window.HISTORY_TAB_NAME,
+      action:clean(el.dataset.action||el.title||el.getAttribute('aria-label')||el.textContent).slice(0,40),time:Date.now()},parentOrigin);
+  },true);
 })();
-// ✅ Tukar ikut page
-window.HISTORY_TAB_NAME = "ITEM COLLECTION";
-// ✅ Hantar ke main page
-function sendUserAction(actionName, extra = {}) {
-  if (!actionName) return;
-  window.parent.postMessage({
-    type: "user-tab-action",
-    tab: window.HISTORY_TAB_NAME,
-    action: actionName,
-    extra,
-    time: Date.now()
-  }, "https://5g88-main.vercel.app");
-}
-/* =========================
-   AUTO TRACK CLICK - COUNT SEMUA CLICK
-========================= */
-document.addEventListener("click", function(e) {
-  const el = e.target.closest("button, [onclick], a, .btn, [data-action]");
-  if (!el) return;
-
-  if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
-
-  let name =
-    el.getAttribute("data-action") ||
-    el.getAttribute("title") ||
-    el.getAttribute("aria-label") ||
-    el.innerText ||
-    el.textContent ||
-    el.id ||
-    "";
-
-  name = String(name)
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!name || name.length < 2) return;
-
-  name = name.slice(0, 40);
-
-  sendUserAction(name);
-}, true);
-/* =========================
-   AUTO TRACK CTRL + C / COPY IMAGE
-========================= */
-document.addEventListener("keydown", function(e) {
-  const key = String(e.key || "").toLowerCase();
-
-  if ((e.ctrlKey || e.metaKey) && key === "c") {
-    sendUserAction("COPY IMAGE", {
-      method: "keyboard",
-      shortcut: "Ctrl+C"
-    });
-  }
-}, true);
-/* =========================
-   AUTO TRACK BROWSER COPY EVENT
-========================= */
-document.addEventListener("copy", function() {
-  sendUserAction("COPY IMAGE", {
-    method: "copy-event"
-  });
-}, true);
 </script>
 </body>
 </html>
