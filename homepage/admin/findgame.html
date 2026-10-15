@@ -2544,7 +2544,13 @@ window.SharedActiveSwitch?.sync(adjustableToggle);
   fgImageUploader=NewUI.imageUpload(form.querySelector('#fgImageHost'),{buttonText:'Upload Image',maxSizeMB:5,initialUrl:record?.image||'',onError:e=>fgToast(e.message,'error')});
   cancel.addEventListener('click',()=>fgActiveModal?.close());
   form.addEventListener('submit',async e=>{
-    e.preventDefault();save.disabled=true;
+e.preventDefault();
+
+if (save.disabled) return;
+
+NewUI.setButtonLoading(save, true, {
+  text: record ? 'Saving Changes...' : 'Creating Game...'
+});
     try{
       const name=form.querySelector('#fg-name').value.trim();
       const alias=form.querySelector('#fg-alias').value.trim();
@@ -2562,7 +2568,11 @@ window.SharedActiveSwitch?.sync(adjustableToggle);
       else await db.ref(FG_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
       fgToast(record?'Game updated':'Game created','success');fgActiveModal?.close();
     }catch(err){fgToast(err.message,'error');}
-    finally{save.disabled=false;}
+   finally {
+  await NewUI.setButtonLoading(save, false, {
+    minDuration: 700
+  });
+}
   });
 }
 function fgEnsureDetailActions(){
