@@ -675,11 +675,44 @@ select:focus-visible{
     }
     el.append(image,info,actions);return el;
   }
-  function render(){
-    const items=filtered();grid.replaceChildren();
-    if(!items.length){if(window.showEmptyState)window.showEmptyState(grid,'No Data','large','center');else{const empty=document.createElement('div');empty.className='item-empty';empty.textContent='No Data';grid.append(empty);}return;}
-    const frag=document.createDocumentFragment();items.forEach(i=>frag.append(card(i)));grid.append(frag);
+function render() {
+  const items = filtered();
+
+  grid.replaceChildren();
+
+  if (!items.length) {
+
+    if (typeof window.showEmptyState === 'function') {
+
+      window.showEmptyState(
+        grid,
+        'No Data',
+        'large',
+        'center',
+        true
+      );
+
+    } else {
+
+      const empty = document.createElement('div');
+
+      empty.className = 'item-empty';
+      empty.textContent = 'No Data';
+
+      grid.append(empty);
+    }
+
+    return;
   }
+
+  const frag = document.createDocumentFragment();
+
+  items.forEach(item => {
+    frag.append(card(item));
+  });
+
+  grid.append(frag);
+}
   async function copyImage(item,btn){
     if(!navigator.clipboard?.write || !window.ClipboardItem){notify('Browser tidak support copy image','error');return;}
     try{
