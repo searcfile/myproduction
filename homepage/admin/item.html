@@ -595,8 +595,10 @@ select:focus-visible{
   align-items: center;
   justify-content: center;
 }
-  /* ==========================================
-   ITEM COLLECTION - FINAL TOOLBAR RESPONSIVE
+
+
+/* ==========================================
+   ITEM COLLECTION - FINAL TOOLBAR FIX
    ========================================== */
 
 .item-page {
@@ -607,7 +609,7 @@ select:focus-visible{
   container-type: inline-size;
 }
 
-/* Desktop */
+/* Desktop: input max 400px, Create di kanan */
 .item-page .item-toolbar {
   display: grid;
   grid-template-columns:
@@ -616,140 +618,84 @@ select:focus-visible{
     minmax(0, 400px)
     minmax(0, 1fr);
 
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* Semua input tidak boleh melebihi ruang grid */
-.item-page .item-toolbar > * {
-  min-width: 0;
-  max-width: 100%;
-}
-
-.item-page .item-toolbar-search,
-.item-page .item-filter {
-  width: 100%;
-  min-width: 0;
-}
-
-.item-page .item-toolbar .shared-sync-search,
-.item-page .item-toolbar .shared-chip-dropdown,
-.item-page .item-toolbar .shared-chip-dropdown-trigger {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Tombol Create sentiasa di kanan */
-.item-page #itemCreate {
-  justify-self: end;
-  width: max-content;
-  max-width: 100%;
-  min-width: 0;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ==========================================
-   ITEM TOOLBAR - CLEAN RESPONSIVE LAYOUT
-   ========================================== */
-
-.item-page {
-  width: calc(100% - 24px);
-  max-width: none;
-  min-width: 0;
-  margin: 12px;
-  container-type: inline-size;
-}
-
-/* Desktop */
-.item-page .item-toolbar {
-  display: grid;
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(0, 1fr)
-    minmax(0, 1fr)
-    max-content;
-
   gap: 10px;
   align-items: center;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   padding: 12px;
   box-sizing: border-box;
 }
 
-/* Search dan dropdown */
+/* Search, Tags, Collections */
 .item-page .item-toolbar-search,
 .item-page .item-filter {
   width: 100%;
+  max-width: 400px;
   min-width: 0;
-  max-width: 100%;
 }
 
 .item-page .item-toolbar .shared-sync-search,
 .item-page .item-toolbar .shared-chip-dropdown,
 .item-page .item-toolbar .shared-chip-dropdown-trigger {
   width: 100%;
-  min-width: 0;
   max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
-/* Create Button */
+/* Create sentiasa di hujung kanan */
 .item-page #itemCreate {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  position: static;
-  grid-column: auto;
-  grid-row: auto;
-
-  width: max-content;
-  min-width: max-content;
-  max-width: 100%;
-  height: 32px;
-
-  padding: 0 15px;
-  margin: 0;
+  grid-column: 4;
+  grid-row: 1;
 
   justify-self: end;
   align-self: center;
+
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 15px;
+  margin: 0;
 
   white-space: nowrap;
   box-sizing: border-box;
 }
 
-/* Responsive - satu column */
+/* Responsive: satu column */
 @container (max-width: 1050px) {
-
   .item-page .item-toolbar {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
-    align-items: stretch;
   }
 
   .item-page .item-toolbar-search,
   .item-page .item-filter {
     grid-column: 1;
     grid-row: auto;
+
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
   }
 
   .item-page #itemCreate {
     grid-column: 1;
     grid-row: auto;
+
     justify-self: end;
     align-self: center;
+
+    width: max-content;
     margin-top: 2px;
   }
 }
+
   </style>
 </head>
 <body>
