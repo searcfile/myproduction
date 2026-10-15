@@ -697,6 +697,10 @@ select:focus-visible{
     const tags=[...new Set([...ITEM_TAGS,...items.flatMap(x=>clean(x.tag).split(',').map(s=>s.trim()).filter(Boolean))])].sort((a,b)=>a.localeCompare(b));
     const collections=[...new Set(items.map(x=>clean(x.collection||x.title)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
     tagFilter?.setOptions(tags.map(v=>({value:v,label:v})));
+    // Kekalkan pilihan default jika belum ada pilihan
+if (tagFilter && !(tagFilter.getValue() || []).length) {
+  tagFilter.setValue([...ITEM_TAGS]);
+}
     collectionFilter?.setOptions(collections.map(v=>({value:v,label:v})));
   }
   function filtered(){
