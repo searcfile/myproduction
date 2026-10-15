@@ -656,67 +656,98 @@ select:focus-visible{
 }
 
 /* ==========================================
-   ITEM TOOLBAR - RESPONSIVE FINAL FIX
+   ITEM TOOLBAR - CLEAN RESPONSIVE LAYOUT
    ========================================== */
 
-/* Pastikan semua grid children boleh mengecil */
+.item-page {
+  width: calc(100% - 24px);
+  max-width: none;
+  min-width: 0;
+  margin: 12px;
+  container-type: inline-size;
+}
+
+/* Desktop */
 .item-page .item-toolbar {
-  min-width: 0;
-  max-width: 100%;
-}
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    max-content;
 
-.item-page .item-toolbar > * {
+  gap: 10px;
+  align-items: center;
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
-}
-
-/* Button Create tidak boleh terpotong */
-.item-page #itemCreate {
+  padding: 12px;
   box-sizing: border-box;
+}
+
+/* Search dan dropdown */
+.item-page .item-toolbar-search,
+.item-page .item-filter {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.item-page .item-toolbar .shared-sync-search,
+.item-page .item-toolbar .shared-chip-dropdown,
+.item-page .item-toolbar .shared-chip-dropdown-trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Create Button */
+.item-page #itemCreate {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
+  position: static;
+  grid-column: auto;
+  grid-row: auto;
+
   width: max-content;
   min-width: max-content;
   max-width: 100%;
+  height: 32px;
 
   padding: 0 15px;
-  white-space: nowrap;
-  overflow: visible;
+  margin: 0;
 
   justify-self: end;
-  grid-column: auto;
+  align-self: center;
+
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-/* Ruang sederhana - terus jadi 1 column */
+/* Responsive - satu column */
 @container (max-width: 1050px) {
 
   .item-page .item-toolbar {
     grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
   }
 
   .item-page .item-toolbar-search,
   .item-page .item-filter {
-    grid-column: 1 / -1;
-    width: 100%;
+    grid-column: 1;
+    grid-row: auto;
     min-width: 0;
-    max-width: 100%;
-  }
-
-  .item-page .item-toolbar .shared-sync-search,
-  .item-page .item-toolbar .shared-chip-dropdown,
-  .item-page .item-toolbar .shared-chip-dropdown-trigger {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
   }
 
   .item-page #itemCreate {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: auto;
     justify-self: end;
-    width: max-content;
-    min-width: max-content;
+    align-self: center;
+    margin-top: 2px;
   }
 }
   </style>
