@@ -1297,6 +1297,33 @@ select:focus-visible{
     margin: 0 2px;
   }
 }
+    /* ==========================================
+   FIND GAME - IMAGE DRAG FIX
+   ========================================== */
+
+.fg-preview-stage {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.fg-preview-stage.zoomed {
+  cursor: grab !important;
+}
+
+.fg-preview-stage.dragging {
+  cursor: grabbing !important;
+}
+
+.fg-preview-stage img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.fg-preview-stage.dragging img {
+  transition: none !important;
+}
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1792,10 +1819,17 @@ fgArtPreview.addEventListener('keydown', e => {
 /* Close */
 fgPreviewClose.addEventListener('click', fgCloseImagePreview);
 
-/* Klik luar gambar */
+/* Klik luar gambar - elak close selepas drag */
 fgPreview.addEventListener('click', e => {
-  if (e.target === fgPreviewStage ||
-      e.target === fgPreview) {
+  if (fgDidDrag) {
+    fgDidDrag = false;
+    return;
+  }
+
+  if (
+    e.target === fgPreviewStage ||
+    e.target === fgPreview
+  ) {
     fgCloseImagePreview();
   }
 });
@@ -1860,11 +1894,26 @@ document.getElementById('fgFlipVertical')
     fgFlipY *= -1;
     fgUpdateZoom();
   });
-/* Drag gambar */
+/* ==========================================
+   FIND GAME - FIX DRAG / PAN
+   ========================================== */
+
+let fgDidDrag = false;
+let fgPointerStartX = 0;
+let fgPointerStartY = 0;
+
 fgPreviewStage.addEventListener('pointerdown', e => {
-  if (fgZoom <= 1 || e.button !== 0) return;
+  if (fgZoom <= 1) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+  e.preventDefault();
 
   fgDragging = true;
+  fgDidDrag = false;
+
+  fgPointerStartX = e.clientX;
+  fgPointerStartY = e.clientY;
+
   fgDragX = e.clientX - fgPanX;
   fgDragY = e.clientY - fgPanY;
 
@@ -1875,20 +1924,42 @@ fgPreviewStage.addEventListener('pointerdown', e => {
 fgPreviewStage.addEventListener('pointermove', e => {
   if (!fgDragging) return;
 
+  e.preventDefault();
+
+  if (
+    Math.abs(e.clientX - fgPointerStartX) > 3 ||
+    Math.abs(e.clientY - fgPointerStartY) > 3
+  ) {
+    fgDidDrag = true;
+  }
+
   fgPanX = e.clientX - fgDragX;
   fgPanY = e.clientY - fgDragY;
 
   fgUpdateZoom();
 });
 
-function fgStopDragging() {
+function fgStopDragging(e) {
+  if (!fgDragging) return;
+
   fgDragging = false;
   fgPreviewStage.classList.remove('dragging');
+
+  if (
+    e &&
+    fgPreviewStage.hasPointerCapture(e.pointerId)
+  ) {
+    fgPreviewStage.releasePointerCapture(e.pointerId);
+  }
 }
 
 fgPreviewStage.addEventListener('pointerup', fgStopDragging);
 fgPreviewStage.addEventListener('pointercancel', fgStopDragging);
-fgPreviewStage.addEventListener('lostpointercapture', fgStopDragging);
+
+fgPreviewStage.addEventListener('lostpointercapture', () => {
+  fgDragging = false;
+  fgPreviewStage.classList.remove('dragging');
+});
 
 /* ESC + keyboard focus */
 document.addEventListener('keydown', e => {
