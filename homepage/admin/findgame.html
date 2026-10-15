@@ -831,6 +831,42 @@ select:focus-visible{
 .grid{gap:14px}
 .game.active{background:var(--page-input)}
 .fg-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+/* Susunan form Create/Edit Game */
+.fg-form > .fg-field:has(#fg-name) {
+  order: 1;
+}
+
+.fg-form > .fg-field:has(#fg-alias) {
+  order: 2;
+}
+
+.fg-form > .fg-field:has(#fg-type) {
+  order: 3;
+}
+
+.fg-form > .fg-field:has(#fg-payline) {
+  order: 4;
+}
+
+.fg-form > .fg-field:has(#fgModalPlatforms) {
+  order: 5;
+}
+
+.fg-form > .fg-field:has(#fg-adjustable) {
+  order: 6;
+}
+
+.fg-form > .fg-field:has(#fg-bets) {
+  order: 7;
+}
+
+.fg-form > .fg-field:has(#fgImageHost) {
+  order: 8;
+}
+
+.fg-form > .fg-modal-actions {
+  order: 9;
+}
 .fg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .fg-field.full{grid-column:1/-1}
 .fg-field label{font-size:12px;color:var(--page-text);font-weight:600}
@@ -853,12 +889,26 @@ select:focus-visible{
 
 .fg-adjustable-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
   width: 100%;
   min-width: 0;
   padding: 8px 0;
+}
+
+.fg-adjustable-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fg-adjustable-row .shared-active-switch {
+  align-self: flex-start;
+  margin: 0;
 }
 
 .fg-adjustable-info {
@@ -2350,7 +2400,6 @@ function fgOpenEditor(record=null){
   const fields=[
     ['name','Game Name','text',record?.name||'',true],
     ['alias','Alias','text',record?.alias||'',false],
-    ['type','Game Type','text',record?.type||'Slot',true],
     ['payline','Paylines','number',record?.payline||20,true]
   ];
   fields.forEach(([id,label,type,value,required])=>{
@@ -2373,7 +2422,33 @@ if (type === 'number') {
 }
     div.append(lab,input);form.append(div);
   });
-  const platformField=document.createElement('div');platformField.className='fg-field full';
+  /* ==========================================
+   GAME TYPE - CUSTOM SHARED DROPDOWN
+   ========================================== */
+
+const gameTypeField = document.createElement('div');
+gameTypeField.className = 'fg-field';
+
+gameTypeField.innerHTML = `
+  <label for="fg-type">Game Type</label>
+
+  <select
+    id="fg-type"
+    name="type"
+    data-shared-dropdown
+    data-placeholder="Select Game Type"
+    required
+  >
+    <option value="">Select Game Type</option>
+    <option value="Slot">Slot</option>
+    <option value="Live Game">Live Game</option>
+    <option value="Table">Table</option>
+  </select>
+`;
+
+form.append(gameTypeField);
+  const platformField=document.createElement('div');
+  platformField.className='fg-field full';
   platformField.innerHTML='<label>Platforms</label><div id="fgModalPlatforms"></div>';
   form.append(platformField);
 /* ==========================================
@@ -2452,6 +2527,17 @@ save.className = 'btn-primary-new';
 save.textContent = record ? 'Save Changes' : 'Create Game';
   buttons.append(cancel,save);form.append(buttons);
   fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:800,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
+  /* Initialize Game Type shared dropdown */
+
+const gameTypeSelect = form.querySelector('#fg-type');
+
+gameTypeSelect.value = record?.type || 'Slot';
+
+if (typeof window.createSharedDropdown === 'function') {
+  window.createSharedDropdown(gameTypeSelect, {
+    placeholder: 'Select Game Type'
+  });
+}
   const modalChips=NewUI.chips(form.querySelector('#fgModalPlatforms'),{
     placeholder:'Select platforms',
     options:[...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].map(value=>({value,label:value.toUpperCase()})),
