@@ -834,9 +834,23 @@ select:focus-visible{
 .fg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .fg-field.full{grid-column:1/-1}
 .fg-field label{font-size:12px;color:var(--page-text);font-weight:600}
-.fg-field input,.fg-field select,.fg-field textarea{width:100%;min-height:35px;border:1px solid var(--border-input);border-radius:6px;padding:8px 10px;background:var(--page-input);color:var(--page-text);font:inherit;outline:none}
-.fg-field textarea{min-height:86px;resize:vertical}
-.fg-field input:focus,.fg-field textarea:focus{border-color:var(--blue)}
+/* =========================================
+   FIND GAME - USE SHARED INPUT & TEXTAREA
+   ========================================= */
+
+.fg-field > .shared-input {
+  width: 100%;
+}
+
+.fg-field > .shared-textarea {
+  width: 100%;
+}
+
+/* Kekalkan checkbox Adjustable Lines */
+.fg-field input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+}
 .fg-hint{font-size:12px;color:var(--blur)}
 .fg-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
 .fg-modal-actions button,.fg-detail-actions button{border:1px solid var(--border-input);border-radius:7px;background:var(--page-input);color:var(--page-text);padding:8px 14px;cursor:pointer}
@@ -2311,7 +2325,21 @@ function fgOpenEditor(record=null){
   fields.forEach(([id,label,type,value,required])=>{
     const div=document.createElement('div');div.className='fg-field';
     const lab=document.createElement('label');lab.textContent=label;lab.htmlFor='fg-'+id;
-    const input=document.createElement('input');input.id='fg-'+id;input.name=id;input.type=type;input.value=value;input.required=required;if(type==='number'){input.min='1';input.max='1000';}
+const input = document.createElement('input');
+
+input.id = 'fg-' + id;
+input.name = id;
+input.type = type;
+input.value = value;
+input.required = required;
+
+// Guna custom shared input
+input.classList.add('shared-input');
+
+if (type === 'number') {
+  input.min = '1';
+  input.max = '1000';
+}
     div.append(lab,input);form.append(div);
   });
   const platformField=document.createElement('div');platformField.className='fg-field full';
@@ -2321,7 +2349,24 @@ function fgOpenEditor(record=null){
   adjField.innerHTML='<span>Adjustable Lines</span><span><input type="checkbox" id="fg-adjustable" style="width:auto;min-height:auto" /> Yes, player can change paylines</span>';
   form.append(adjField);
   const betsField=document.createElement('div');betsField.className='fg-field full';
-  betsField.innerHTML='<label for="fg-bets">Bet Values (per selected line)</label><textarea id="fg-bets" required placeholder="1: 0.01, 0.02, 0.05&#10;2: 0.02, 0.04, 0.10"></textarea><div class="fg-hint">Format: line number : values separated by commas. For a fixed-line game, use one line such as 1: 0.01, 0.02.</div>';
+betsField.innerHTML = `
+  <label for="fg-bets">
+    Bet Values (per selected line)
+  </label>
+
+  <textarea
+    id="fg-bets"
+    class="shared-textarea"
+    required
+    placeholder="1: 0.01, 0.02, 0.05&#10;2: 0.02, 0.04, 0.10"
+  ></textarea>
+
+  <div class="fg-hint">
+    Format: line number : values separated by commas.
+    For a fixed-line game, use one line such as
+    1: 0.01, 0.02.
+  </div>
+`;
   form.append(betsField);
   const imageField=document.createElement('div');imageField.className='fg-field full';
   imageField.innerHTML='<label>Game Image</label><div id="fgImageHost"></div><div class="fg-hint">Upload PNG, JPG, WEBP or GIF (max 5 MB). Preview appears automatically.</div>';
