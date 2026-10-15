@@ -74,8 +74,8 @@ body{
 }
 
 .filters-inner{
-  width:100%;
-  margin:12px;
+width:calc(100% - 24px);
+margin:12px;
   padding:10px 12px;
   background:#1f1f1f;
   border:1px solid #424242;
@@ -968,8 +968,21 @@ select:focus-visible{
     min-width: 0;
   }
 }
-/* FIND GAME - FINAL TOOLBAR LAYOUT */
-/* FIND GAME - FINAL TOOLBAR LAYOUT */
+/* ==========================================
+   FIND GAME - RESPONSIVE TOOLBAR FINAL
+   ========================================== */
+
+/* Toolbar container */
+.filters-inner {
+  width: calc(100% - 24px);
+  max-width: none;
+  margin: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Desktop */
 .fg-toolbar {
   display: grid;
   grid-template-columns:
@@ -978,31 +991,113 @@ select:focus-visible{
     minmax(0, 1fr);
 
   align-items: center;
-  gap: 10px;
+  column-gap: 10px;
+  row-gap: 10px;
+
   width: 100%;
+  min-width: 0;
 }
 
-/* CREATE GAME - ALIGN RIGHT */
-.fg-toolbar #fgCreate {
-  width: max-content !important;
-  justify-self: end;
-  white-space: nowrap;
-}
-
-.fg-search,
-.fg-search .shared-sync-search {
+/* Search */
+.fg-toolbar .fg-search {
+  grid-column: 1;
   width: 100%;
   max-width: 400px;
   min-width: 0;
 }
 
-@media (max-width: 700px) {
+/* Dropdown Chips */
+.fg-toolbar .fg-platform-chips {
+  grid-column: 2;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+/* Create button */
+.fg-toolbar #fgCreate {
+  grid-column: 3;
+  justify-self: end;
+
+  width: max-content !important;
+  max-width: 100%;
+  min-width: 0;
+
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* ==========================================
+   TABLET / SMALL SCREEN
+   ========================================== */
+
+@media (max-width: 950px) {
+
   .fg-toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
   }
 
-  .fg-search {
+  /* Search full row */
+  .fg-toolbar .fg-search {
     grid-column: 1 / -1;
+    grid-row: 1;
+    max-width: 100%;
+  }
+
+  /* Dropdown on left */
+  .fg-toolbar .fg-platform-chips {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 400px;
+  }
+
+  /* Create on right */
+  .fg-toolbar #fgCreate {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+}
+
+/* ==========================================
+   MOBILE
+   ========================================== */
+
+@media (max-width: 480px) {
+
+  .filters-inner {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 10px;
+  }
+
+  .fg-toolbar {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+
+    gap: 8px;
+  }
+
+  .fg-toolbar .fg-search {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .fg-toolbar .fg-platform-chips {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .fg-toolbar #fgCreate {
+    grid-column: 2;
+    justify-self: end;
+    font-size: 12px;
+    padding: 0 10px;
+    height: 32px;
   }
 }
   </style>
