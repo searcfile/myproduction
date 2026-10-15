@@ -626,7 +626,10 @@ select:focus-visible{
       e.preventDefault();if(save.disabled)return;
       const title=clean(form.querySelector('#itemName').value),collection=clean(form.querySelector('#itemCollection').value),
         tag=(modalTags.getValue()||[]).join(', ');
-      if(!title||!collection||!code||!tag){notify('Lengkapkan semua input dahulu.','warning');return;}
+     if (!title || !collection || !tag) {
+  notify('Lengkapkan semua input dahulu.', 'warning');
+  return;
+}
       if(!uploader.getFile()&&!uploader.getUrl()){notify('Sila upload gambar.','warning');return;}
       NewUI.setButtonLoading(save,true,{text:item?'Saving...':'Creating...'});
       try{
