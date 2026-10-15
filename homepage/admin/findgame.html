@@ -1298,38 +1298,60 @@ select:focus-visible{
   </main>
 
   <button class="fab" id="fabTop" title="Back to top" aria-label="Back to top" style="display:none">↑</button>
-  <!-- FIND GAME IMAGE PREVIEW -->
-<div
-  id="fgImagePreview"
-  class="fg-image-preview"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Game image preview"
-  aria-hidden="true"
->
-  <button
-    type="button"
-    class="fg-preview-close"
-    id="fgPreviewClose"
-    aria-label="Close image preview"
-    title="Close"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M18 6 6 18"/>
-      <path d="m6 6 12 12"/>
-    </svg>
-  </button>
+<!-- FIND GAME IMAGE PREVIEW -->
+<div id="fgImagePreview"
+     class="fg-image-preview"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Game image preview"
+     aria-hidden="true">
 
-  <img id="fgPreviewImg" src="" alt="Game image preview">
+  <div class="fg-preview-header">
+    <span class="fg-preview-title" id="fgPreviewTitle">
+      Image Preview
+    </span>
+
+    <button type="button"
+            class="fg-preview-close"
+            id="fgPreviewClose"
+            title="Close"
+            aria-label="Close preview">
+      <svg viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           aria-hidden="true">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="fg-preview-stage" id="fgPreviewStage">
+    <img id="fgPreviewImg" src="" alt="Game image preview"
+         draggable="false">
+  </div>
+
+  <div class="fg-preview-toolbar">
+    <button type="button" id="fgZoomOut"
+            title="Zoom Out" aria-label="Zoom out">−</button>
+
+    <span class="fg-preview-zoom-value" id="fgZoomValue">
+      100%
+    </span>
+
+    <button type="button" id="fgZoomIn"
+            title="Zoom In" aria-label="Zoom in">+</button>
+
+    <button type="button" id="fgZoomReset"
+            title="Reset zoom">Reset</button>
+  </div>
+
+  <div class="fg-preview-hint">
+    Scroll to zoom • Drag to move • ESC to close
+  </div>
 </div>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
