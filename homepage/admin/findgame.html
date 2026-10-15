@@ -1059,82 +1059,174 @@ select:focus-visible{
    FIND GAME - IMAGE PREVIEW LIGHTBOX
    ========================================== */
 
-/* Hover pada gambar */
-.art img {
+/* ==========================================
+   FIND GAME - ADVANCED IMAGE PREVIEW
+   ========================================== */
+
+/* Hover preview */
+.fg-art-preview {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
   cursor: zoom-in;
-  transition: filter .2s ease, transform .2s ease;
 }
 
-.art img:hover {
-  filter: brightness(.78);
+.fg-art-preview img {
+  transition: filter .2s ease;
 }
 
-/* Overlay preview */
+.fg-art-preview:hover img {
+  filter: brightness(.65);
+}
+
+.fg-art-preview-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+.fg-art-preview:hover .fg-art-preview-label,
+.fg-art-preview:focus-visible .fg-art-preview-label {
+  opacity: 1;
+}
+
+/* Fullscreen overlay */
 .fg-image-preview {
   position: fixed;
   inset: 0;
   z-index: 999999;
   display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 55px 24px;
-  background: rgba(0, 0, 0, .85);
+  flex-direction: column;
+  background: rgba(0,0,0,.92);
   backdrop-filter: blur(8px);
+  color: white;
 }
 
 .fg-image-preview.open {
   display: flex;
-  animation: fgPreviewFade .2s ease;
 }
 
-/* Gambar besar */
-.fg-image-preview img {
-  display: block;
-  max-width: 95vw;
-  max-height: 85vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 20px 70px rgba(0, 0, 0, .45);
-  animation: fgPreviewZoom .2s ease;
+/* Header */
+.fg-preview-header {
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
 }
 
-/* Close SVG */
-.fg-preview-close {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  width: 36px;
-  height: 36px;
+.fg-preview-title {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Image area */
+.fg-preview-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, .12);
-  border: 1px solid rgba(255, 255, 255, .2);
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  transition: background .2s ease;
+  cursor: default;
+  touch-action: none;
 }
 
+.fg-preview-stage.zoomed {
+  cursor: grab;
+}
+
+.fg-preview-stage.dragging {
+  cursor: grabbing;
+}
+
+.fg-preview-stage img {
+  display: block;
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Toolbar */
+.fg-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.fg-preview-toolbar button,
+.fg-preview-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  color: white;
+  cursor: pointer;
+}
+
+.fg-preview-toolbar button:hover,
 .fg-preview-close:hover {
-  background: rgba(255, 255, 255, .25);
+  background: rgba(255,255,255,.22);
 }
 
 .fg-preview-close svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 }
 
-@keyframes fgPreviewFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.fg-preview-zoom-value {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
 }
 
-@keyframes fgPreviewZoom {
-  from { transform: scale(.95); }
-  to { transform: scale(1); }
+.fg-preview-hint {
+  text-align: center;
+  color: rgba(255,255,255,.55);
+  font-size: 12px;
+  padding: 0 10px 12px;
+}
+
+@media(max-width:600px) {
+  .fg-preview-header {
+    padding: 0 12px;
+  }
+
+  .fg-preview-stage img {
+    max-width: 96%;
+    max-height: 96%;
+  }
 }
   </style>
 <body>
@@ -1165,7 +1257,26 @@ select:focus-visible{
           <button class="btn-primary-new" id="btnClose" title="Close">Close</button>
         </div>
         <div id="fgDetailEmpty" class="fg-detail-empty"></div>
-        <div class="art"><img id="dImg" src="" alt="Game visual" loading="lazy"/></div>
+<div class="art">
+  <div class="fg-art-preview" id="fgArtPreview"
+       role="button" tabindex="0"
+       aria-label="Preview game image">
+
+    <img id="dImg" src="" alt="Game visual" loading="lazy">
+
+    <div class="fg-art-preview-label">
+      <svg viewBox="0 0 24 24" width="18" height="18"
+           fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <span>Preview</span>
+    </div>
+
+  </div>
+</div>
         <div class="info">
           <div class="row"><span class="k">Game name</span><span class="v" id="dName">—</span></div>
           <div class="row"><span class="k">Type</span><span class="v" id="dType">—</span></div>
