@@ -1742,6 +1742,7 @@ if (window.NewUI) {
     options:platformOptions.map(value=>({value,label:value.toUpperCase()})),
     onChange:()=>renderList()
   });
+  platformFilter.setValue([...platformOptions]);
   gameTypeFilter = NewUI.chips(
   document.getElementById('fgTypeFilter'),
   {
@@ -1749,6 +1750,10 @@ if (window.NewUI) {
     options: gameTypeOptions,
     onChange: () => renderList()
   }
+);
+// Default select semua game type
+gameTypeFilter.setValue(
+  gameTypeOptions.map(option => option.value)
 );
 }
 
