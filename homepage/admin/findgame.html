@@ -963,16 +963,24 @@ select:focus-visible{
   }
 }
 /* FIND GAME - FINAL TOOLBAR LAYOUT */
+/* FIND GAME - FINAL TOOLBAR LAYOUT */
 .fg-toolbar {
   display: grid;
   grid-template-columns:
     minmax(0, 400px)
     minmax(0, 400px)
-    max-content;
-  justify-content: start;
+    minmax(0, 1fr);
+
   align-items: center;
   gap: 10px;
   width: 100%;
+}
+
+/* CREATE GAME - ALIGN RIGHT */
+.fg-toolbar #fgCreate {
+  width: max-content !important;
+  justify-self: end;
+  white-space: nowrap;
 }
 
 .fg-search,
