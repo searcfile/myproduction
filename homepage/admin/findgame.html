@@ -1032,6 +1032,29 @@ select:focus-visible{
     max-width: 100%;
   }
 }
+/* FIND GAME - DETAIL NO DATA */
+
+.fg-detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 260px;
+  flex: 1;
+  padding: 20px;
+}
+
+.detail:not(.has-game) .art,
+.detail:not(.has-game) .info,
+.detail:not(.has-game) .platforms,
+.detail:not(.has-game) .bets,
+.detail:not(.has-game) .line {
+  display: none !important;
+}
+
+.detail.has-game .fg-detail-empty {
+  display: none !important;
+}
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1060,6 +1083,7 @@ select:focus-visible{
           <div class="detail-title" id="dTitle">Select a game</div>
           <button class="btn-primary-new" id="btnClose" title="Close">Close</button>
         </div>
+        <div id="fgDetailEmpty" class="fg-detail-empty"></div>
         <div class="art"><img id="dImg" src="" alt="Game visual" loading="lazy"/></div>
         <div class="info">
           <div class="row"><span class="k">Game name</span><span class="v" id="dName">—</span></div>
@@ -1271,7 +1295,28 @@ row.append(label, actions);
   // hitung ulang tinggi setelah DOM jadi
   requestAnimationFrame(()=>applyListMaxHeight());
 }
+/* =========================================
+   FIND GAME - DETAIL EMPTY STATE
+   ========================================= */
 
+function updateDetailEmpty() {
+  const empty = document.getElementById('fgDetailEmpty');
+  if (!empty) return;
+
+  const hasGame = !!selectedGame;
+
+  elDetail.classList.toggle('has-game', hasGame);
+
+  if (!hasGame) {
+    empty.replaceChildren();
+
+    if (typeof window.showEmptyState === 'function') {
+      window.showEmptyState(empty, 'No Data');
+    } else {
+      empty.textContent = 'No Data';
+    }
+  }
+}
 // Open detail
 function openDetail(game, rowEl){
   selectedGame = game;
@@ -1285,7 +1330,12 @@ function openDetail(game, rowEl){
 }
 
 function updateDetail(){
-  if(!selectedGame){ dTitle.textContent = 'Select a game'; return; }
+  updateDetailEmpty();
+
+  if (!selectedGame) {
+    dTitle.textContent = 'Select a game';
+    return;
+  }
   const g = selectedGame;
   dTitle.textContent = g.name;
   dImg.src = g.image || '';
@@ -1398,7 +1448,11 @@ function fgRebuild(){
   if(selectedGame){
     const replacement=games.find(g=>g._id===selectedGame._id && g._id || g.name===selectedGame.name);
     if(replacement){selectedGame=replacement;updateDetail();}
-    else {selectedGame=null;elDetail.classList.remove('open');dTitle.textContent='Select a game';}
+    else {
+  selectedGame = null;
+  elDetail.classList.remove('open');
+  updateDetail();
+}
   }
 }
 function fgListen(){
@@ -1549,6 +1603,7 @@ firebase.auth().onAuthStateChanged(async user => {
 
 /* First paint */
 renderList();
+updateDetail();
 (function () {
   const THEME_KEY = "siteTheme";
 
