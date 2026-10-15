@@ -2330,7 +2330,7 @@ function fgOpenEditor(record=null){
   const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';
   const save=document.createElement('button');save.type='submit';save.className='primary';save.textContent=record?'Save Changes':'Create Game';
   buttons.append(cancel,save);form.append(buttons);
-  fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:620,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
+  fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:800,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
   const modalChips=NewUI.chips(form.querySelector('#fgModalPlatforms'),{
     placeholder:'Select platforms',
     options:[...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].map(value=>({value,label:value.toUpperCase()})),
