@@ -868,9 +868,23 @@ function render() {
       });
     }catch(err){loaded=true;console.error(err);notify('Firebase initialization error: '+err.message,'error');render();}
   }
-  tagFilter=NewUI.chips('#itemTagChips',{placeholder:'All Tags',options:[],onChange:render});
-  tagFilter.setValue([...ITEM_TAGS]);
-  collectionFilter=NewUI.chips('#itemCollectionChips',{placeholder:'All Collections',options:[],onChange:render});
+tagFilter = NewUI.chips('#itemTagChips', {
+  placeholder: 'All Tags',
+  options: ITEM_TAGS.map(tag => ({
+    value: tag,
+    label: tag
+  })),
+  onChange: render
+});
+
+// Default pilih semua Tags
+tagFilter.setValue([...ITEM_TAGS]);
+
+collectionFilter = NewUI.chips('#itemCollectionChips', {
+  placeholder: 'All Collections',
+  options: [],
+  onChange: render
+});
   searchUI=NewUI.syncSearch(search,{onSearch:async()=>{render();await new Promise(r=>setTimeout(r,450));}});
   search.addEventListener('input',render);
   document.getElementById('itemCreate').addEventListener('click',()=>openForm());
