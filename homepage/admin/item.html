@@ -719,8 +719,8 @@ select:focus-visible{
     copy.addEventListener('click',()=>copyImage(item,copy));
     actions.append(copy);
     if(!item.legacy){
-      const edit=document.createElement('button');edit.type='button';edit.className='item-action-button';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='Edit';edit.addEventListener('click',()=>openForm(item));
-      const del=document.createElement('button');del.type='button';del.className='item-action-button danger';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='Delete';del.addEventListener('click',()=>removeItem(item));
+      const edit=document.createElement('button');edit.type='button';edit.className='btn-edit-new';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='Edit';edit.addEventListener('click',()=>openForm(item));
+      const del=document.createElement('button');del.type='button';del.className='btn-delete-new';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='Delete';del.addEventListener('click',()=>removeItem(item));
       actions.append(edit,del);
     }
     el.append(image,info,actions);return el;
