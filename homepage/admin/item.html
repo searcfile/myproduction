@@ -600,35 +600,56 @@ select:focus-visible{
     max-width: 100%;
   }
 }
-  /* ==========================================
-   ITEM COLLECTION - FULL WIDTH NO DATA CARD
+/* ==========================================
+   ITEM COLLECTION - NO DATA FULL WIDTH FIX
    ========================================== */
 
-.item-page .card-grid > .shared-empty-card {
-  grid-column: 1 / -1 !important;
-
-  width: 100% !important;
-  max-width: 100% !important;
+/* Grid normal apabila ada item */
+.item-page #cardGrid {
+  width: 100%;
   min-width: 0;
+}
 
-  min-height: 200px;
+/* Apabila No Data wujud, guna satu column penuh */
+.item-page #cardGrid:has(.shared-empty-card) {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Pastikan semua direct child memenuhi grid */
+.item-page #cardGrid:has(.shared-empty-card) > * {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+}
+
+/* Custom No Data card */
+.item-page #cardGrid .shared-empty-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+  min-height: 160px;
+
+  margin: 0;
+  padding: 20px;
+
+  box-sizing: border-box;
 
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 
   background: var(--page-bg2);
   border: 1px solid var(--border-input);
   border-radius: 12px;
-
-  box-sizing: border-box;
 }
 
-/* Center icon dan text */
-.item-page .shared-empty-card .shared-empty {
+/* Icon dan text */
+.item-page #cardGrid .shared-empty {
   width: 100%;
-  min-height: 200px;
-
+  max-width: none;
   display: flex;
   flex-direction: column;
   align-items: center;
