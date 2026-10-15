@@ -458,8 +458,17 @@ select:focus-visible{
   .item-page .card-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-}@media(max-width:700px){.item-toolbar{grid-template-columns:minmax(0,1fr);}.item-toolbar-search,.item-filter{grid-column:1;width:100%;}.item-toolbar .shared-chip-dropdown,.item-toolbar .shared-chip-dropdown-trigger{width:100%;}#itemCreate{grid-column:1;justify-self:end;}.item-page .card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.item-form-grid{grid-template-columns:1fr;}}
-@media(max-width:390px){.item-page .card-grid{grid-template-columns:1fr;}}
+}
+@media (max-width:700px) {
+  .item-page .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .item-form-grid {
+    grid-template-columns: 1fr;
+  }
+}@media(max-width:390px){.item-page .card-grid{grid-template-columns:1fr;}}
 
 
 /* ITEM COLLECTION V2 - compact modern cards and clean modal */
@@ -534,72 +543,7 @@ select:focus-visible{
 .item-page .item-card {
   container-type: inline-size;
 }
-/* ==========================================
-   ITEM COLLECTION - RESPONSIVE TOOLBAR
-   ========================================== */
 
-/* Jadikan halaman Item sebagai container */
-.item-page {
-  container-type: inline-size;
-}
-
-/* Desktop */
-.item-page .item-toolbar {
-  display: grid;
-  grid-template-columns:
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(max-content, 1fr);
-
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.item-page .item-toolbar-search,
-.item-page .item-filter {
-  min-width: 0;
-  width: 100%;
-}
-
-.item-page #itemCreate {
-  justify-self: end;
-  width: max-content;
-  max-width: 100%;
-}
-
-/* Layar kecil / ruang admin sempit */
-@container (max-width: 1050px) {
-
-  .item-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-
-  .item-toolbar-search,
-  .item-filter {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .item-toolbar .shared-sync-search,
-  .item-toolbar .shared-chip-dropdown,
-  .item-toolbar .shared-chip-dropdown-trigger {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-  }
-
-  #itemCreate {
-    grid-column: 1 / -1;
-    justify-self: end;
-    width: max-content;
-    max-width: 100%;
-  }
-}
 /* ==========================================
    ITEM COLLECTION - NO DATA FULL WIDTH FIX
    ========================================== */
@@ -650,6 +594,99 @@ select:focus-visible{
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+  /* ==========================================
+   ITEM COLLECTION - FINAL TOOLBAR RESPONSIVE
+   ========================================== */
+
+.item-page {
+  width: calc(100% - 24px);
+  max-width: none;
+  min-width: 0;
+  margin: 12px;
+  container-type: inline-size;
+}
+
+/* Desktop */
+.item-page .item-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(0, 1fr);
+
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Semua input tidak boleh melebihi ruang grid */
+.item-page .item-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.item-page .item-toolbar-search,
+.item-page .item-filter {
+  width: 100%;
+  min-width: 0;
+}
+
+.item-page .item-toolbar .shared-sync-search,
+.item-page .item-toolbar .shared-chip-dropdown,
+.item-page .item-toolbar .shared-chip-dropdown-trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tombol Create sentiasa di kanan */
+.item-page #itemCreate {
+  justify-self: end;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Tablet / ruang admin sederhana */
+@container (max-width: 1050px) {
+  .item-page .item-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .item-page #itemCreate {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+/* Phone / ruang admin sempit */
+@container (max-width: 700px) {
+  .item-page .item-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .item-page .item-toolbar-search,
+  .item-page .item-filter {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .item-page #itemCreate {
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: max-content;
+    max-width: 100%;
+  }
 }
   </style>
 </head>
