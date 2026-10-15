@@ -655,21 +655,43 @@ select:focus-visible{
   flex-shrink: 0;
 }
 
-/* Tablet / ruang admin sederhana */
-@container (max-width: 1050px) {
-  .item-page .item-toolbar {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
+/* ==========================================
+   ITEM TOOLBAR - RESPONSIVE FINAL FIX
+   ========================================== */
 
-  .item-page #itemCreate {
-    grid-column: 2;
-    justify-self: end;
-  }
+/* Pastikan semua grid children boleh mengecil */
+.item-page .item-toolbar {
+  min-width: 0;
+  max-width: 100%;
 }
 
-/* Phone / ruang admin sempit */
-@container (max-width: 700px) {
+.item-page .item-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Button Create tidak boleh terpotong */
+.item-page #itemCreate {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: max-content;
+  min-width: max-content;
+  max-width: 100%;
+
+  padding: 0 15px;
+  white-space: nowrap;
+  overflow: visible;
+
+  justify-self: end;
+  grid-column: auto;
+}
+
+/* Ruang sederhana - terus jadi 1 column */
+@container (max-width: 1050px) {
+
   .item-page .item-toolbar {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -679,13 +701,22 @@ select:focus-visible{
     grid-column: 1 / -1;
     width: 100%;
     min-width: 0;
+    max-width: 100%;
+  }
+
+  .item-page .item-toolbar .shared-sync-search,
+  .item-page .item-toolbar .shared-chip-dropdown,
+  .item-page .item-toolbar .shared-chip-dropdown-trigger {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .item-page #itemCreate {
     grid-column: 1 / -1;
     justify-self: end;
     width: max-content;
-    max-width: 100%;
+    min-width: max-content;
   }
 }
   </style>
