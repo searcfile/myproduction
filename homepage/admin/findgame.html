@@ -1228,6 +1228,75 @@ select:focus-visible{
     max-height: 96%;
   }
 }
+/* ==========================================
+   FIND GAME - VIEWER TOOLBAR UPGRADE
+   ========================================== */
+
+.fg-preview-toolbar {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.fg-preview-toolbar button {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  box-shadow: none;
+  font-size: 18px;
+  font-weight: 400;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.fg-preview-toolbar button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.fg-preview-toolbar button:hover {
+  border-color: #1668dc;
+  background: rgba(22,104,220,.2);
+}
+
+.fg-preview-toolbar #fgZoomReset {
+  width: auto;
+  min-width: 58px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.fg-preview-divider {
+  width: 1px;
+  height: 22px;
+  flex: 0 0 1px;
+  background: rgba(255,255,255,.2);
+  margin: 0 4px;
+}
+
+.fg-preview-stage img {
+  transition: transform .15s ease;
+}
+
+.fg-preview-stage.dragging img {
+  transition: none;
+}
+
+@media (max-width: 600px) {
+  .fg-preview-toolbar {
+    gap: 6px;
+    padding: 10px 8px;
+  }
+
+  .fg-preview-toolbar button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .fg-preview-divider {
+    margin: 0 2px;
+  }
+}
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1334,20 +1403,70 @@ select:focus-visible{
          draggable="false">
   </div>
 
-  <div class="fg-preview-toolbar">
-    <button type="button" id="fgZoomOut"
-            title="Zoom Out" aria-label="Zoom out">−</button>
+<div class="fg-preview-toolbar">
 
-    <span class="fg-preview-zoom-value" id="fgZoomValue">
-      100%
-    </span>
+  <button type="button" id="fgZoomOut"
+          title="Zoom Out" aria-label="Zoom out">−</button>
 
-    <button type="button" id="fgZoomIn"
-            title="Zoom In" aria-label="Zoom in">+</button>
+  <span class="fg-preview-zoom-value" id="fgZoomValue">
+    100%
+  </span>
 
-    <button type="button" id="fgZoomReset"
-            title="Reset zoom">Reset</button>
-  </div>
+  <button type="button" id="fgZoomIn"
+          title="Zoom In" aria-label="Zoom in">+</button>
+
+  <span class="fg-preview-divider"></span>
+
+  <button type="button" id="fgRotateLeft"
+          title="Rotate Left" aria-label="Rotate left">
+    <svg viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 11a9 9 0 1 1 2.7 6.4"/>
+      <path d="M3 4v7h7"/>
+    </svg>
+  </button>
+
+  <button type="button" id="fgRotateRight"
+          title="Rotate Right" aria-label="Rotate right">
+    <svg viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11a9 9 0 1 0-2.7 6.4"/>
+      <path d="M21 4v7h-7"/>
+    </svg>
+  </button>
+
+  <span class="fg-preview-divider"></span>
+
+  <button type="button" id="fgFlipHorizontal"
+          title="Flip Horizontal" aria-label="Flip horizontal">
+    <svg viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v18" stroke-dasharray="2 3"/>
+      <path d="m9 7-5 5 5 5V7Z"/>
+      <path d="m15 7 5 5-5 5V7Z"/>
+    </svg>
+  </button>
+
+  <button type="button" id="fgFlipVertical"
+          title="Flip Vertical" aria-label="Flip vertical">
+    <svg viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12h18" stroke-dasharray="2 3"/>
+      <path d="m7 9 5-5 5 5H7Z"/>
+      <path d="m7 15 5 5 5-5H7Z"/>
+    </svg>
+  </button>
+
+  <span class="fg-preview-divider"></span>
+
+  <button type="button" id="fgZoomReset"
+          title="Reset image">Reset</button>
+
+</div>
 
   <div class="fg-preview-hint">
     Scroll to zoom • Drag to move • ESC to close
@@ -1589,7 +1708,9 @@ let fgDragX = 0;
 let fgDragY = 0;
 let fgPreviewPreviousFocus = null;
 let fgPreviousBodyOverflow = '';
-
+let fgRotation = 0;
+let fgFlipX = 1;
+let fgFlipY = 1;
 function fgUpdateZoom() {
   fgZoom = Math.max(1, Math.min(5, fgZoom));
 
@@ -1598,8 +1719,11 @@ function fgUpdateZoom() {
     fgPanY = 0;
   }
 
-  fgPreviewImg.style.transform =
-    `translate(${fgPanX}px, ${fgPanY}px) scale(${fgZoom})`;
+  fgPreviewImg.style.transform = `
+    translate(${fgPanX}px, ${fgPanY}px)
+    rotate(${fgRotation}deg)
+    scale(${fgZoom * fgFlipX}, ${fgZoom * fgFlipY})
+  `;
 
   fgZoomValue.textContent = Math.round(fgZoom * 100) + '%';
 
@@ -1624,10 +1748,13 @@ function fgOpenImagePreview() {
 
   fgPreviewTitle.textContent = selectedGame.name || 'Image Preview';
 
-  fgZoom = 1;
-  fgPanX = 0;
-  fgPanY = 0;
-  fgUpdateZoom();
+fgZoom = 1;
+fgPanX = 0;
+fgPanY = 0;
+fgRotation = 0;
+fgFlipX = 1;
+fgFlipY = 1;
+fgUpdateZoom();
 
   fgPreview.classList.add('open');
   fgPreview.setAttribute('aria-hidden', 'false');
@@ -1695,9 +1822,44 @@ document.getElementById('fgZoomReset').addEventListener('click', () => {
   fgZoom = 1;
   fgPanX = 0;
   fgPanY = 0;
+  fgRotation = 0;
+  fgFlipX = 1;
+  fgFlipY = 1;
+
   fgUpdateZoom();
 });
+/* ==========================================
+   ROTATE LEFT / RIGHT
+   ========================================== */
 
+document.getElementById('fgRotateLeft')
+  .addEventListener('click', () => {
+    fgRotation -= 90;
+    fgUpdateZoom();
+  });
+
+document.getElementById('fgRotateRight')
+  .addEventListener('click', () => {
+    fgRotation += 90;
+    fgUpdateZoom();
+  });
+
+
+/* ==========================================
+   FLIP HORIZONTAL / VERTICAL
+   ========================================== */
+
+document.getElementById('fgFlipHorizontal')
+  .addEventListener('click', () => {
+    fgFlipX *= -1;
+    fgUpdateZoom();
+  });
+
+document.getElementById('fgFlipVertical')
+  .addEventListener('click', () => {
+    fgFlipY *= -1;
+    fgUpdateZoom();
+  });
 /* Drag gambar */
 fgPreviewStage.addEventListener('pointerdown', e => {
   if (fgZoom <= 1 || e.button !== 0) return;
@@ -1738,12 +1900,16 @@ document.addEventListener('keydown', e => {
   }
 
   if (e.key === 'Tab') {
-    const controls = [
-      fgPreviewClose,
-      document.getElementById('fgZoomOut'),
-      document.getElementById('fgZoomIn'),
-      document.getElementById('fgZoomReset')
-    ];
+const controls = [
+  fgPreviewClose,
+  document.getElementById('fgZoomOut'),
+  document.getElementById('fgZoomIn'),
+  document.getElementById('fgRotateLeft'),
+  document.getElementById('fgRotateRight'),
+  document.getElementById('fgFlipHorizontal'),
+  document.getElementById('fgFlipVertical'),
+  document.getElementById('fgZoomReset')
+];
 
     const index = controls.indexOf(document.activeElement);
 
