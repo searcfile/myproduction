@@ -467,7 +467,14 @@ select:focus-visible{
 .item-page .image-wrap{background:var(--page-input);border-radius:9px;}
 .item-page .item-info{flex-grow:0;margin-top:1px;min-height:21px;}
 .item-page .item-title{font-size:13px;font-weight:600;}
-.item-page .item-actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;margin-top:auto;align-items:center;}
+.item-page .item-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  margin-top: auto;
+  align-items: center;
+  min-width: 0;
+}
 .item-page .item-actions:has(> :only-child){grid-template-columns:minmax(0,1fr);}
 .item-page .item-actions .copy-btn{height:32px;width:100%;font-size:12px;font-weight:500;padding:0 8px;white-space:nowrap;letter-spacing:0;}
 .item-page .item-action-button{height:32px;padding:0 11px;min-width:0;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);font:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;}
@@ -481,7 +488,49 @@ select:focus-visible{
 .item-empty{grid-column:1/-1;text-align:center;color:var(--blur);padding:60px 12px;}
 @media(max-width:700px){.item-page .card-grid{margin-top:12px;}.item-page .item-card{padding:9px;}.item-page .item-actions{grid-template-columns:1fr 1fr;}.item-page .item-actions .copy-btn{grid-column:1/-1;}.item-page .item-action-button{width:100%;}}
 @media(max-width:390px){.item-page .item-actions{grid-template-columns:minmax(0,1fr) auto auto;}.item-page .item-actions .copy-btn{grid-column:auto;}}
+/* ==========================================
+   ITEM CARD - FIX COPY BUTTON OVERFLOW
+   ========================================== */
 
+.item-page .item-actions {
+  min-width: 0;
+}
+
+.item-page .item-actions .copy-btn {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 8px;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.item-page .item-action-button {
+  flex-shrink: 0;
+}
+
+/* Bila card sempit, Copy Image ambil satu baris */
+@container (max-width: 230px) {
+  .item-page .item-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .item-page .item-actions .copy-btn {
+    grid-column: 1 / -1;
+  }
+
+  .item-page .item-action-button {
+    width: 100%;
+  }
+}
+
+/* Aktifkan container query pada setiap card */
+.item-page .item-card {
+  container-type: inline-size;
+}
   </style>
 </head>
 <body>
