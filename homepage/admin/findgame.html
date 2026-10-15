@@ -978,7 +978,7 @@ select:focus-visible{
   }
 }
 /* ==========================================
-   FIND GAME - CLEAN RESPONSIVE TOOLBAR
+   FIND GAME - RESPONSIVE TOOLBAR
    ========================================== */
 
 .filters-inner {
@@ -989,22 +989,23 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
-/* Desktop: Search | Dropdown | Create */
+/* Desktop */
 .fg-toolbar {
   display: grid;
   grid-template-columns:
     minmax(0, 400px)
     minmax(0, 400px)
+    minmax(0, 400px)
     minmax(max-content, 1fr);
-  gap: 10px;
   align-items: center;
+  gap: 10px;
   width: 100%;
   min-width: 0;
 }
 
-.fg-toolbar .fg-search {
-  grid-column: 1;
-  grid-row: 1;
+.fg-toolbar .fg-search,
+.fg-toolbar .fg-platform-chips,
+.fg-toolbar .fg-type-chips {
   width: 100%;
   min-width: 0;
   max-width: 400px;
@@ -1016,109 +1017,60 @@ select:focus-visible{
   height: 32px;
 }
 
-.fg-toolbar .fg-platform-chips {
-  grid-column: 2;
-  grid-row: 1;
-  width: 100%;
-  min-width: 0;
-  max-width: 400px;
-}
-
-/* Create Game */
 .fg-toolbar #fgCreate {
-  grid-column: 3;
-  grid-row: 1;
   justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: max-content !important;
   min-width: max-content;
   max-width: none;
   height: 32px;
   padding: 0 15px;
   margin: 0;
-  cursor:pointer;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1;
   white-space: nowrap;
-  flex-shrink: 0;
   box-sizing: border-box;
 }
 
-/* ==========================================
-   SMALL SCREEN - 3 SEPARATE ROWS
-   ========================================== */
-
+/* Tablet dan phone */
 @media (max-width: 950px) {
-
   .fg-toolbar {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
     gap: 10px;
   }
 
-  /* Row 1: Search */
-  .fg-toolbar .fg-search {
+  .fg-toolbar .fg-search,
+  .fg-toolbar .fg-platform-chips,
+  .fg-toolbar .fg-type-chips {
     grid-column: 1;
-    grid-row: 1;
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Row 2: Dropdown */
-.fg-toolbar .fg-platform-chips {
-  grid-column: 1;
-  grid-row: 2;
-
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-
-  justify-self: stretch;
-}
-
-  /* Row 3: Create */
-  .fg-toolbar #fgCreate {
-    grid-column: 1;
-    grid-row: 3;
-    justify-self: end;
-    width: max-content !important;
-    min-width: max-content;
-  }
-}
-/* ==========================================
-   FIND GAME - FULL WIDTH MOBILE CHIPS
-   ========================================== */
-
-@media (max-width: 950px) {
-
-  .fg-toolbar .fg-platform-chips {
     width: 100% !important;
-    min-width: 0;
     max-width: 100% !important;
+    min-width: 0;
     justify-self: stretch;
   }
 
-  /* Custom chips component */
-  .fg-platform-chips > * {
+  .fg-toolbar .fg-search {
+    grid-row: 1;
+  }
+
+  .fg-toolbar .fg-platform-chips {
+    grid-row: 2;
+  }
+
+  .fg-toolbar .fg-type-chips {
+    grid-row: 3;
+  }
+
+  .fg-toolbar .fg-platform-chips > *,
+  .fg-toolbar .fg-type-chips > * {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0;
     box-sizing: border-box;
   }
-}
-/* ==========================================
-   MOBILE
-   ========================================== */
 
-@media (max-width: 480px) {
-
-  .fg-toolbar .fg-search,
-  .fg-toolbar .fg-platform-chips {
-    width: 100%;
-    max-width: 100%;
+  .fg-toolbar #fgCreate {
+    grid-column: 1;
+    grid-row: 4;
+    justify-self: end;
+    width: max-content !important;
   }
 }
 /* FIND GAME - DETAIL NO DATA */
@@ -1554,6 +1506,7 @@ select:focus-visible{
       <div class="fg-toolbar">
         <div class="fg-search"><input id="q" type="text" placeholder="Search" autocomplete="off" aria-label="Search games" /></div>
         <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
+        <div id="fgTypeFilter"class="fg-type-chips" aria-label="Game types"></div>
         <button type="button" class="fg-create" id="fgCreate">+ Create Game</button>
       </div>
     </div>
@@ -1763,6 +1716,13 @@ elQ.value = sessionStorage.getItem('fg.q') || '';
 // Shared search and multi-select platform chips
 const platformOptions = ['918kiss','mega888','pussy888'];
 let platformFilter = null;
+let gameTypeFilter = null;
+
+const gameTypeOptions = [
+  { value: 'slot', label: 'Slot' },
+  { value: 'live game', label: 'Live Game' },
+  { value: 'table', label: 'Table' }
+];
 function updatePlatformOptions() {
   const names = [...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].sort();
   platformFilter?.setOptions(names.map(value=>({value,label:value.toUpperCase()})));
@@ -1782,6 +1742,14 @@ if (window.NewUI) {
     options:platformOptions.map(value=>({value,label:value.toUpperCase()})),
     onChange:()=>renderList()
   });
+  gameTypeFilter = NewUI.chips(
+  document.getElementById('fgTypeFilter'),
+  {
+    placeholder: 'All Game Types',
+    options: gameTypeOptions,
+    onChange: () => renderList()
+  }
+);
 }
 
 /* ========== NEW: kunci tinggi list ke 10 baris ========== */
@@ -1822,9 +1790,23 @@ function renderList(){
     const kw = !q || nameMatch || aliasMatch || paylineMatch;
 
     const chosen = platformFilter?.getValue() || [];
-    const platOK = !chosen.length || (g.tags||[]).some(t=>chosen.includes(String(t).toLowerCase()));
+const platOK =
+  !chosen.length ||
+  (g.tags || []).some(t =>
+    chosen.includes(String(t).toLowerCase())
+  );
 
-    return kw && platOK;
+const chosenTypes = gameTypeFilter?.getValue() || [];
+
+const gameType = String(g.type || '')
+  .trim()
+  .toLowerCase();
+
+const typeOK =
+  !chosenTypes.length ||
+  chosenTypes.includes(gameType);
+
+return kw && platOK && typeOK;
   });
 
   elList.innerHTML = '';
