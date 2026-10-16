@@ -1085,34 +1085,63 @@ select:focus-visible{
 
 
 /* ==========================================
-   MEGA888 - FIX CUSTOM INPUT CLEAR ICON
+   MEGA888 - FIX NEW UI INPUT CLEAR ICON
    ========================================== */
 
-/* Wrapper ikut lebar penuh kolum */
+/* Wrapper ikut lebar input */
 .mg-panel .new-ui-input-wrap {
   position: relative !important;
-  display: block;
+  display: flex !important;
+  align-items: center !important;
   width: 100% !important;
   min-width: 0 !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* Input kekalkan ruang untuk clear icon */
-.mg-panel .new-ui-input-wrap > input {
+/* Input penuh dengan ruang icon di kanan */
+.mg-panel .new-ui-input-wrap > .new-ui-input {
+  display: block !important;
   width: 100% !important;
   min-width: 0 !important;
+  max-width: 100% !important;
   padding-right: 36px !important;
   box-sizing: border-box !important;
 }
 
-/* Clear icon berada di hujung kanan wrapper */
-.mg-panel .new-ui-input-wrap .new-ui-input-clear {
+/* Clear icon sentiasa di hujung kanan */
+.mg-panel .new-ui-input-wrap > .new-ui-input-icon {
   position: absolute !important;
-  right: 10px !important;
-  left: auto !important;
   top: 50% !important;
+  right: 7px !important;
+  left: auto !important;
+  bottom: auto !important;
   transform: translateY(-50%) !important;
+
+  display: flex;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  height: 24px !important;
+
+  padding: 3px !important;
   margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  z-index: 2;
+}
+
+/* Kekalkan saiz SVG */
+.mg-panel .new-ui-input-icon svg {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
 }
 
 /* Dropdown list mesti muncul atas elemen lain */
