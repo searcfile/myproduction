@@ -12,6 +12,7 @@
 </head>
   <style>
 
+
       :root{
     --page-bg: #000;
     --page-text: rgba(255,255,255,0.85);
@@ -48,25 +49,12 @@
 
 html body,
 html body *:not(svg):not(path) {
-  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
+  font-family: "Source Sans 3", "Source Sans Pro", Arial, sans-serif !important;
 }
 
 /* Khusus input dan komponen custom UI */
-html body input,
-html body select,
-html body textarea,
-html body button,
-html body .cs-display,
-html body .cs-item,
-html body .cs-search input,
-html body .mg-panel,
-html body .mg-head,
-html body #gameLog,
-html body #gameLog th,
-html body #gameLog td {
-  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
-}
-body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg) ;margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
+
+body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: "Source Sans 3", "Source Sans Pro", Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg) ;margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
   .screenshot-mode th {border: 1px solid #ddd !important;}
   html { scrollbar-width: none;-ms-overflow-style: none;}html.body::-webkit-scrollbar {display: none;}
 table {
@@ -143,41 +131,13 @@ table {
     }
 
 /* MEGA888 - HANYA BUTTON GENERATOR */
-.mg-panel button:not(.new-ui-input-icon),
-.mg-head-actions button {
-  padding: 5px 10px;
-  font-size: 14px;
-  height: 32px;
-  background: var(--blue);
-  color: white;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  outline: none;
-  cursor: pointer;
-  position: relative;
-  overflow: visible;
-  transition: background .2s ease, transform .15s ease;
-}
 
-.mg-panel button:not(.new-ui-input-icon):hover,
-.mg-head-actions button:hover {
-  background: var(--blue-hover);
-}
 
-.mg-panel button:not(.new-ui-input-icon):active,
-.mg-head-actions button:active {
-  background: var(--blue-active);
-}
 
-.mg-panel button.clicked:not(.new-ui-input-icon)::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: 0 0 2px 6px #15417e;
-  animation: fadeOut .9s ease forwards;
-  pointer-events: none;
-}
+
+
+
+
 
 @keyframes fadeOut {
   from { opacity: 1; }
@@ -411,15 +371,9 @@ body{
   scroll-behavior:smooth;
 }
 /* ===== REMOVE NUMBER INPUT SPINNER ===== */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
 
-input[type="number"] {
-  -moz-appearance: textfield;
-}
+
+
 
 
 .bottom-gap{
@@ -461,28 +415,13 @@ input[type="number"] {
   }
 }
 
-.cs-wrap{
-  width: 100%;
-  min-width: 0;
-}
 
-.cs-display{
-  width: 100%;
-  box-sizing: border-box;
-}
 
-.cs-label{
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-}
 
-.cs-item.disabled{
-  color: var(--blur);
-  cursor: default;
-}
+
+
+
+
 :where(button, a, .btn, [tabindex]):focus-visible{
   outline: 3px solid #15325b;
   outline-offset: 1px;
@@ -527,16 +466,7 @@ input[type="number"] {
 }
 
 /* Input, select, custom dropdown */
-.mg-panel .form-row-top input,
-.mg-panel .form-row-top select,
-.mg-panel .form-row-top .cs-wrap,
-.mg-panel .form-row-top .shared-dropdown,
-.mg-panel .form-row-top .cs-display {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
+
 
 /* Semua button termasuk Set Free Game */
 .mg-panel .form-row-top > button {
@@ -557,13 +487,7 @@ input[type="number"] {
 }
 
 /* Pastikan text dropdown tidak bertindih */
-.mg-panel .form-row-top .cs-label {
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+
 
 /* Input tarikh */
 
@@ -574,8 +498,8 @@ input[type="number"] {
   }
 }
 
-.mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
-.mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
+
+.mg-panel button{white-space:nowrap}
 /* ===== MEGA888 GAME LOG FIX ===== */
 
 .mg-log-panel {
@@ -609,8 +533,8 @@ input[type="number"] {
   display: table-row-group;
 }
 .mg-modal-form{display:flex;flex-direction:column;gap:12px}.mg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
-.mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
-.mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
+.mg-field label{font-size:13px;font-weight:600}
+.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
 .mg-betrow{border:1px solid var(--input-line);border-radius:9px;padding:10px;display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,2fr) auto;gap:10px;align-items:end}
 .mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
 .mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
@@ -642,12 +566,7 @@ input[type="number"] {
 
 /* Semua input dan button ikut saiz grid */
 
-.mg-panel .form-row-middle .new-ui-input-wrap {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
+
 
 .mg-panel .form-row-middle > button {
   width: 100%;
@@ -678,13 +597,7 @@ input[type="number"] {
     gap: 8px;
   }
 
-.mg-panel .form-row-middle input,
-.mg-panel .form-row-middle > button {
-    height: 32px;
-    font-size: 13px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
+
 }
 
 /* ==========================================
@@ -751,11 +664,7 @@ input[type="number"] {
 }
 
 /* Dropdown NewUI juga tidak boleh melebihi card */
-.mg-panel .form-row-top .new-ui-dropdown,
-.mg-panel .form-row-top [data-new-ui-dropdown] {
-  max-width: 100%;
-  min-width: 0;
-}
+
 /* ==========================================
    MEGA888 - GAME SETTINGS + SCORE ONE CARD
    ========================================== */
@@ -807,57 +716,25 @@ input[type="number"] {
    ========================================== */
 
 /* Shared dropdown */
-.mg-panel .shared-dropdown {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-}
 
-.mg-panel .shared-dropdown-trigger {
-  width: 100%;
-  box-sizing: border-box;
-}
 
-.mg-panel .shared-dropdown-input {
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  box-sizing: border-box;
-}
+
+
+
 
 /* ==========================================
    MEGA888 - CUSTOM INPUT NEW UI
    ========================================== */
 
-.mg-panel .new-ui-input-wrap {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
 
-.mg-panel .new-ui-input-wrap > input {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  height: 32px !important;
-  box-sizing: border-box !important;
-}
+
+
 
 /* Game Settings */
-.mg-panel .form-row-top > .new-ui-input-wrap {
-  width: 100% !important;
-  min-width: 0 !important;
-}
+
 
 /* Score & Winner Controls */
-.mg-panel .form-row-middle .new-ui-input-wrap {
-  width: 100% !important;
-  min-width: 0 !important;
-}
+
 
 /* Kekalkan susunan grid untuk input custom */
 .mg-panel .form-row-middle .inline-group {
@@ -866,26 +743,33 @@ input[type="number"] {
 
 
 /* Dropdown list mesti muncul atas elemen lain */
-.mg-panel .shared-dropdown.open {
-  z-index: 1000;
-}
+
 
 /* Pastikan wrapper custom ikut kolum grid */
-.mg-panel .form-row-top > .shared-dropdown,
-.mg-panel .form-row-top > .new-ui-input-wrap {
-  width: 100% !important;
-  min-width: 0 !important;
-}
+
 
 /* Score row */
-.mg-panel .form-row-middle .new-ui-input-wrap {
-  min-width: 0;
-  width: 100%;
-}
+
 
 
 .mg-panel button.reset-button { background:#e60000; }
 .mg-panel button.reset-button:hover { background:#ff4d4d; }
+
+
+/* MEGA888 — layout only. Input, dropdown and chips appearance belongs to new-ui.css. */
+.mg-panel .form-row-top > *,
+.mg-panel .form-row-middle > *,
+.mg-panel .form-row-middle .inline-group > *,
+.mg-field .new-ui-input-wrap { min-width:0; max-width:100%; }
+.mg-panel .form-row-top > .new-ui-input-wrap,
+.mg-panel .form-row-top > .shared-dropdown,
+.mg-panel .form-row-middle .new-ui-input-wrap { width:100%; min-width:0; }
+.mg-panel .form-row-middle .inline-group { display:contents; }
+.mg-field .new-ui-input-wrap { width:100%; }
+.mg-field textarea { width:100%; min-width:0; resize:vertical; min-height:70px; }
+.mg-panel .shared-dropdown.open { z-index:1000; }
+/* Exclude custom input clear buttons from generator button styling. */
+.mg-panel .new-ui-input-icon { background:transparent; border:0; box-shadow:none; }
 
 </style>
 <body>
@@ -906,7 +790,6 @@ input[type="number"] {
 
 <select
   id="gameSelect"
-  class="select-main"
   data-shared-dropdown
   data-placeholder="Select Game"
 >
@@ -915,7 +798,6 @@ input[type="number"] {
 
 <select
   id="betSelect"
-  class="select-main"
   data-shared-dropdown
   data-placeholder="Select Bet"
 >
@@ -924,17 +806,16 @@ input[type="number"] {
 
 <select
   id="pecahanSelect"
-  class="select-main"
   data-shared-dropdown
   data-placeholder="Select Win"
 >
   <option value="" disabled selected hidden>Select Win</option>
 </select>
 
-   <input data-new-ui-input  type="text" id="manualTime" placeholder="Set Time" class="input-time" />
+   <input data-new-ui-input type="text" id="manualTime" placeholder="Set Time" class="input-time" />
    <button onclick="setNow()" class="btn-main h38 px12 fs16">Click Now</button>
     
-   <input data-new-ui-input  type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
+   <input data-new-ui-input type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
 
     <button id="setFreeGameBtn" class="btn-main h38">Set Free Game</button>
 
@@ -948,7 +829,7 @@ input[type="number"] {
 
 <div class="mg-panel-title">Score & Winner Controls</div><div class="form-row form-row-middle bottom-gap">
     <div class="inline-group">
-      <input data-new-ui-input  type="number" id="manualScore" placeholder="Add Score" class="input-score" />
+      <input data-new-ui-input type="number" id="manualScore" placeholder="Add Score" class="input-score" />
 <button id="autoAddScoreBtn" type="button" class="switch-btn active mg-toggle">
   <span class="switch-text">Active</span>
   <span class="switch-circle"></span>
@@ -956,19 +837,19 @@ input[type="number"] {
     </div>
 
     <div class="inline-group">
-      <input data-new-ui-input  type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
+      <input data-new-ui-input type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
     </div>
 
     <button onclick="addJackpot()" class="btn-main h38">Set Jackpot</button>
 
     <div class="inline-group">
-      <input data-new-ui-input  type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
+      <input data-new-ui-input type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
     </div>
 
     <button onclick="addManualSetScore()" class="btn-main h38">Support Back</button>
 
     <div class="inline-group">
-      <input data-new-ui-input  type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
+      <input data-new-ui-input type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
     </div>
 
     <button onclick="setRandomWin()" class="btn-main h38">Set Winner</button>
@@ -1870,7 +1751,7 @@ function resetLog() {
 
   idsToClear.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = "";
+    if (el) { el.value = ""; el.dispatchEvent(new Event("input", { bubbles:true })); }
   });
 
   // kosongkan table
@@ -2393,13 +2274,7 @@ function mgManager(){
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
   
-window.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(
-    ".mg-panel input[data-new-ui-input]"
-  ).forEach(input => {
-    NewUI.input(input);
-  });
-});
+
 
 window.addEventListener('DOMContentLoaded',mgStart);
 </script>
