@@ -140,32 +140,49 @@ table {
    align-items: center;      
    margin: 10px auto;         
     }
-button {padding: 5px 10px;font-size: 14px;height: 32px;background: var(--blue);color: white;border: 1px solid transparent;border-radius: 6px;outline: none;appearance: none; -webkit-appearance: none;cursor: pointer;position: relative;overflow: visible;transition:background .2s cubic-bezier(0.645,0.045,0.355,1),transform  .15s ease,box-shadow .6s ease;}button:hover {background:var(--blue-hover);}button:active {background:var(--blue-active);}button.clicked::after{content:"";position:absolute;inset: 0;border-radius: inherit;box-shadow: 0 0 2px 6px #15417e;animation: fadeOut .9s ease forwards;pointer-events:none;}@keyframes fadeOut { from {opacity:1} to {opacity:0} }
-    select, input {
-      padding: 4px 11px !important;
-      font-size: 14px;
-      border-radius: 6px;
-      background: var(--page-input);
-      border: 1px solid var(--border-input);
-      color: var(--page-text);
-      height: 32px;
-      transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-      text-align: left;
-    }
-    input:hover {
-      border: 1px solid var(--blue-hover);
-    }
-    input:focus {
-      border: 1px solid var(--blue);
-      outline: none;
-    }
-    select:hover {
-      border: 1px solid var(--blue-hover);
-    }
-    select:focus {
-      border: 1px solid var(--blue);
-      outline: none;
-    }
+
+/* MEGA888 - HANYA BUTTON GENERATOR */
+.mg-panel button:not(.new-ui-input-icon),
+.mg-head-actions button {
+  padding: 5px 10px;
+  font-size: 14px;
+  height: 32px;
+  background: var(--blue);
+  color: white;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+  transition: background .2s ease, transform .15s ease;
+}
+
+.mg-panel button:not(.new-ui-input-icon):hover,
+.mg-head-actions button:hover {
+  background: var(--blue-hover);
+}
+
+.mg-panel button:not(.new-ui-input-icon):active,
+.mg-head-actions button:active {
+  background: var(--blue-active);
+}
+
+.mg-panel button.clicked:not(.new-ui-input-icon)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 2px 6px #15417e;
+  animation: fadeOut .9s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
     #nowTime {
      font-weight: bold;
      margin-left: 10px;
@@ -325,45 +342,6 @@ border-radius:4px;
 .flex-center {
   display: flex;
   align-items: center;
-}
-
-.input-time {
-  padding: 0px 15px;
-  height: 32px;
-  color: var(--page-text);
-}
-
-.input-small {
-  width: 70px;
-  height: 32px;
-  font-size: 14px;
-  padding: 0px 15px;
-  color: var(--page-text);
-}
-
-.input-score {
-  width: 100px;
-  height: 32px;
-  font-size: 14px;
-  padding: 0px 15px;
-  color: var(--page-text);
-}
-
-.input-jackpot,
-.input-win {
-  width: 120px;
-  height: 32px;
-  font-size: 14px;
-  padding: 0px 15px;
-  color: var(--page-text);
-}
-
-.input-support {
-  width: 100px;
-  height: 32px;
-  font-size: 14px;
-  padding: 0px 15px;
-  color: var(--page-text);
 }
 
 .switch-btn{
@@ -550,7 +528,7 @@ input[type="number"] {
   text-align: left;
 }
 
-.form-row-middle button{
+.form-row-middle > button {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -594,7 +572,7 @@ input[type="number"] {
   }
 
   .form-row-middle input,
-  .form-row-middle button{
+ .form-row-middle > button
     font-size: 14px;
   }
 
@@ -602,7 +580,7 @@ input[type="number"] {
     padding: 0px 15px;
   }
 
-  .form-row-middle button{
+ .form-row-middle > button{
     padding: 0px 15px;
   }
 }
@@ -761,7 +739,7 @@ select:focus-visible{
 }
 
 /* Semua button termasuk Set Free Game */
-.mg-panel .form-row-top button {
+.mg-panel .form-row-top > button {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -868,7 +846,7 @@ select:focus-visible{
 
 /* Semua input dan button ikut saiz grid */
 .mg-panel .form-row-middle input,
-.mg-panel .form-row-middle button {
+.mg-panel .form-row-middle > button {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -897,8 +875,8 @@ select:focus-visible{
     gap: 8px;
   }
 
-  .mg-panel .form-row-middle input,
-  .mg-panel .form-row-middle button {
+.mg-panel .form-row-middle input,
+.mg-panel .form-row-middle > button {
     height: 32px;
     font-size: 13px;
     padding-left: 8px;
@@ -1083,66 +1061,6 @@ select:focus-visible{
   display: contents !important;
 }
 
-
-/* ==========================================
-   MEGA888 - FIX NEW UI INPUT CLEAR ICON
-   ========================================== */
-
-/* Wrapper ikut lebar input */
-.mg-panel .new-ui-input-wrap {
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Input penuh dengan ruang icon di kanan */
-.mg-panel .new-ui-input-wrap > .new-ui-input {
-  display: block !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  padding-right: 36px !important;
-  box-sizing: border-box !important;
-}
-
-/* Clear icon sentiasa di hujung kanan */
-.mg-panel .new-ui-input-wrap > .new-ui-input-icon {
-  position: absolute !important;
-  top: 50% !important;
-  right: 7px !important;
-  left: auto !important;
-  bottom: auto !important;
-  transform: translateY(-50%) !important;
-
-  display: flex;
-  align-items: center !important;
-  justify-content: center !important;
-
-  width: 24px !important;
-  min-width: 24px !important;
-  max-width: 24px !important;
-  height: 24px !important;
-
-  padding: 3px !important;
-  margin: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  box-sizing: border-box !important;
-  z-index: 2;
-}
-
-/* Kekalkan saiz SVG */
-.mg-panel .new-ui-input-icon svg {
-  display: block;
-  width: 16px !important;
-  height: 16px !important;
-  flex: none;
-}
 
 /* Dropdown list mesti muncul atas elemen lain */
 .mg-panel .shared-dropdown.open {
