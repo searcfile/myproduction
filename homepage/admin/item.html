@@ -448,7 +448,7 @@ select:focus-visible{
 .item-icon-button.danger:hover{border-color:#dc4352;color:#dc4352;}
 .item-form{display:flex;flex-direction:column;gap:18px;}
 .item-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
-.item-form-field{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;font-weight:600;color:var(--page-text);}
+.item-form-field{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;font-weight:400;color:var(--page-text);}
 .item-form-field input{width:100%;height:34px;border-radius:6px;background:var(--page-input);border:1px solid var(--border-input);color:var(--page-text);padding:0 10px;font:inherit;font-size:13px;}
 .item-form-field .new-ui-input-wrap{width:100%;}
 .item-form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;}
@@ -496,7 +496,6 @@ select:focus-visible{
 .item-form .item-form-full{grid-column:1/-1;}
 .item-form #itemFormTagChips,.item-form #itemFormTagChips>*{width:100%;min-width:0;}
 .item-form .item-form-field{gap:7px;}
-.item-form .item-form-actions{border-top:1px solid var(--border-input);padding-top:15px;}
 .item-empty{grid-column:1/-1;text-align:center;color:var(--blur);padding:60px 12px;}
 @media(max-width:700px){.item-page .card-grid{margin-top:12px;}.item-page .item-card{padding:9px;}.item-page .item-actions{grid-template-columns:1fr 1fr;}.item-page .item-actions .copy-btn{grid-column:1/-1;}.item-page .item-action-button{width:100%;}}
 @media(max-width:390px){.item-page .item-actions{grid-template-columns:minmax(0,1fr) auto auto;}.item-page .item-actions .copy-btn{grid-column:auto;}}
@@ -722,7 +721,7 @@ grid-template-columns:
       <div class="item-toolbar-search"><input type="search" id="searchInput" placeholder="Search" aria-label="Search items"></div>
       <div id="itemTagChips" class="item-filter" aria-label="Filter tags"></div>
       <div id="itemCollectionChips" class="item-filter" aria-label="Filter collections"></div>
-      <button id="itemCreate" class="item-primary" type="button">+ Create Item</button>
+      <button id="itemCreate" class="btn-primary-new" type="button">+ Create Item</button>
     </div>
     <div class="card-grid" id="cardGrid"></div>
   </main>
@@ -875,8 +874,8 @@ function render() {
     const span=document.createElement('span');span.textContent='Item Image';
     const uploadHost=document.createElement('div');uploadHost.id='itemUploadHost';imageLabel.append(span,uploadHost);
     const footer=document.createElement('div');footer.className='item-form-actions';
-    const cancel=document.createElement('button');cancel.type='button';cancel.className='item-secondary';cancel.textContent='Cancel';
-    const save=document.createElement('button');save.type='submit';save.className='item-primary';save.textContent=item?'Save Changes':'Create Item';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='btn-cancel-new';cancel.textContent='Cancel';
+    const save=document.createElement('button');save.type='submit';save.className='btn-primary-new';save.textContent=item?'Save Changes':'Create Item';
     footer.append(cancel,save);form.append(row,imageLabel,footer);
     const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:660});
     cancel.addEventListener('click',()=>modal.close());
