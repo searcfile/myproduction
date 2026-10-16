@@ -822,7 +822,6 @@ select:focus-visible{
 .mg-panel .form-row-top>*{width:100%!important;min-width:0!important;grid-area:auto!important}
 .mg-panel .form-row-top .cs-wrap,.mg-panel .form-row-top .shared-dropdown{width:100%;min-width:0}
 .mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
-.mg-panel .form-row-bottom button{flex:1 1 135px;min-height:34px}
 .mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
 /* ===== MEGA888 GAME LOG FIX ===== */
 
@@ -928,6 +927,65 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   MEGA888 - GENERATOR ACTIONS INLINE
+   ========================================== */
+
+/* Jarak antara Score Controls dan Actions */
+.mg-panel .mg-actions-divider {
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Tombol Actions dalam satu baris */
+.mg-panel .form-row-bottom {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+/* Tombol ikut panjang tulisan */
+.mg-panel .form-row-bottom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+
+  flex: 0 0 auto !important;
+
+  height: 32px;
+  min-height: 32px;
+
+  padding: 0 15px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Phone: tetap ikut panjang tulisan,
+   turun baris apabila ruang tidak cukup */
+@media (max-width: 768px) {
+  .mg-panel .form-row-bottom {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    grid-template-columns: none !important;
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-bottom button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+
 </style>
 <body>
 <header class="mg-head"><div><h1>MEGA888 Generator</h1><p>Manage games & generate game logs</p></div><div class="mg-head-actions"><button id="mgManage" type="button" class="btn-primary-new">Manage Games</button><button id="mgCreate" type="button" class="btn-primary-new">+ Create Game</button></div></header>
@@ -981,7 +1039,8 @@ select:focus-visible{
     <button onclick="setRandomWin()" class="btn-main h38">Set Winner</button>
   </div>
 
-  </section><section class="mg-panel"><div class="mg-panel-title">Generator Actions</div><div class="form-row form-row-bottom bottom-gap">
+  <div class="mg-actions-divider"></div>
+    <div class="form-row form-row-bottom bottom-gap">
     <button onclick="generateLog()" class="btn-main h38">Change</button>
     <button onclick="deleteCents()" class="btn-main h38">Delete Cents</button>
     <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
