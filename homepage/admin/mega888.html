@@ -1021,6 +1021,66 @@ select:focus-visible{
   white-space: nowrap;
 }
 
+/* ==========================================
+   MEGA888 - SHARED NEW UI INPUT & DROPDOWN
+   ========================================== */
+
+/* Shared dropdown */
+.mg-panel .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mg-panel .shared-dropdown-trigger {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .shared-dropdown-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+/* Shared input */
+.mg-panel .new-ui-input-wrap {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .new-ui-input-wrap > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Dropdown list mesti muncul atas elemen lain */
+.mg-panel .shared-dropdown.open {
+  z-index: 1000;
+}
+
+/* Pastikan wrapper custom ikut kolum grid */
+.mg-panel .form-row-top > .shared-dropdown,
+.mg-panel .form-row-top > .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score row */
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  min-width: 0;
+  width: 100%;
+}
+
 </style>
 <body>
 
@@ -1037,13 +1097,34 @@ select:focus-visible{
 </header>
 <section class="mg-panel"><div class="mg-panel-title">Game Settings</div>
   <div class="form-row form-row-top">
-    <select id="gameSelect" class="select2 select-main"><option value="" disabled selected hidden>Select Game</option></select>
-    <select id="betSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Bet</option>
-    </select>
-    <select id="pecahanSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Win</option>
-    </select>
+
+<select
+  id="gameSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Game"
+>
+  <option value="" disabled selected hidden>Select Game</option>
+</select>
+
+<select
+  id="betSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Bet"
+>
+  <option value="" disabled selected hidden>Select Bet</option>
+</select>
+
+<select
+  id="pecahanSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Win"
+>
+  <option value="" disabled selected hidden>Select Win</option>
+</select>
+
    <input data-new-ui-input  type="text" id="manualTime" placeholder="Set Time" class="input-time" />
    <button onclick="setNow()" class="btn-main h38 px12 fs16">Click Now</button>
     
@@ -1347,9 +1428,19 @@ function initCustomSelect(selectId, withSearch = false, searchPlaceholder = "Sea
   native._csApi = api;
   return api;
 }
-const gameCS = NewUI.dropdown('#gameSelect',{placeholder:'Select Game'});
-const betCS = NewUI.dropdown('#betSelect',{placeholder:'Select Bet'});
-const winCS = NewUI.dropdown('#pecahanSelect',{placeholder:'Select Win'});
+
+const gameCS = NewUI.dropdown("#gameSelect", {
+  placeholder: "Select Game"
+});
+
+const betCS = NewUI.dropdown("#betSelect", {
+  placeholder: "Select Bet"
+});
+
+const winCS = NewUI.dropdown("#pecahanSelect", {
+  placeholder: "Select Win"
+});
+
 document.getElementById("gameSelect").addEventListener("change", function () {
   const game = this.value;
   const betSelect = document.getElementById("betSelect");
