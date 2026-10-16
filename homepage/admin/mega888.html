@@ -821,7 +821,6 @@ select:focus-visible{
 .mg-panel .form-row-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:10px}
 .mg-panel .form-row-top>*{width:100%!important;min-width:0!important;grid-area:auto!important}
 .mg-panel .form-row-top .cs-wrap,.mg-panel .form-row-top .shared-dropdown{width:100%;min-width:0}
-.mg-panel .form-row-middle .inline-group{min-width:130px;flex:1 1 155px;gap:8px}
 .mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
 .mg-panel .form-row-bottom button{flex:1 1 135px;min-height:34px}
 .mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
@@ -864,6 +863,71 @@ select:focus-visible{
 .mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
 .mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
 @media(max-width:600px){.mg-panel{padding:10px}.mg-head h1{font-size:18px}.mg-betrow{grid-template-columns:minmax(0,1fr)}.mg-betrow button{justify-self:end}}
+
+/* ==========================================
+   MEGA888 - SCORE & WINNER RESPONSIVE GRID
+   ========================================== */
+
+/* Desktop: 8 kolum dalam satu baris */
+.mg-panel .form-row-middle {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr) 100px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+/* Buka wrapper supaya input dan button
+   menjadi item grid berasingan */
+.mg-panel .form-row-middle .inline-group {
+  display: contents !important;
+}
+
+/* Semua input dan button ikut saiz grid */
+.mg-panel .form-row-middle input,
+.mg-panel .form-row-middle button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Toggle Add Score */
+.mg-panel .form-row-middle #autoAddScoreBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Tablet / panel admin yang sempit */
+@media (max-width: 1100px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: kekalkan 2 kolum */
+@media (max-width: 640px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-middle input,
+  .mg-panel .form-row-middle button {
+    height: 32px;
+    font-size: 13px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
 </style>
 <body>
 <header class="mg-head"><div><h1>MEGA888 Generator</h1><p>Manage games & generate game logs</p></div><div class="mg-head-actions"><button id="mgManage" type="button" class="btn-primary-new">Manage Games</button><button id="mgCreate" type="button" class="btn-primary-new">+ Create Game</button></div></header>
