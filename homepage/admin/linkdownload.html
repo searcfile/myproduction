@@ -57,13 +57,21 @@ const cardsRef = db.ref(PATH);
 
 cardsRef.on('value', snap => {
   records = snap.val() || {};
-  console.log('[LINK DOWNLOAD] Firebase connected');
-  console.log('[LINK DOWNLOAD] Data exists:', snap.exists());
-  console.log('[LINK DOWNLOAD] Total cards:', Object.keys(records).length);
   loading = false;
 
+try {
   refreshOptions();
+} catch (err) {
+  console.error('[LINK DOWNLOAD] Chips error:', err);
+}
+
+try {
   render();
+  console.log('[LINK DOWNLOAD] Render completed');
+} catch (err) {
+  console.error('[LINK DOWNLOAD] Render error:', err);
+  showEmpty('Unable to display cards');
+}
 
 }, err => {
   console.error('Link Download Firebase error:', err);
