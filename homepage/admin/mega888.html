@@ -801,8 +801,38 @@ select:focus-visible{
 .mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
 .mg-panel .form-row-bottom button{flex:1 1 135px;min-height:34px}
 .mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
-.mg-log-panel{overflow:hidden}.mg-log-panel .table-wrap{width:100%;max-width:100%;margin:0;overflow:auto}
-.mg-log-panel #gameLog{min-width:1300px;width:max-content;table-layout:auto}
+/* ===== MEGA888 GAME LOG FIX ===== */
+
+.mg-log-panel {
+  overflow: visible;
+  min-width: 0;
+  height: auto;
+}
+
+.mg-log-panel .table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mg-log-panel #gameLog {
+  display: table;
+  min-width: 1300px;
+  width: max-content;
+  table-layout: auto;
+}
+
+.mg-log-panel #gameLog thead {
+  display: table-header-group;
+}
+
+.mg-log-panel #gameLog tbody {
+  display: table-row-group;
+}
 .mg-modal-form{display:flex;flex-direction:column;gap:12px}.mg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
 .mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
