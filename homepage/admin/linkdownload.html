@@ -19,8 +19,25 @@ const clean=s=>String(s??'').trim();
 let records={},db=null,chip=null,modal=null,upload=null,editing=null,loading=true;
 const grid=$('#ldGrid'),search=$('#ldSearch');
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
-function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
-function showStatus(message) {
+function showEmpty(text = 'No Data') {
+  grid.replaceChildren();
+
+  const host = document.createElement('div');
+  host.className = 'ld-empty';
+
+  grid.appendChild(host);
+
+  if (typeof window.showEmptyState === 'function') {
+    try {
+      window.showEmptyState(host, text, 'large', 'center');
+    } catch (err) {
+      console.error('Custom No Data error:', err);
+      host.textContent = text;
+    }
+  } else {
+    host.textContent = text;
+  }
+}function showStatus(message) {
   loading = false;
   showEmpty(message);
 }
@@ -40,6 +57,9 @@ const cardsRef = db.ref(PATH);
 
 cardsRef.on('value', snap => {
   records = snap.val() || {};
+  console.log('[LINK DOWNLOAD] Firebase connected');
+  console.log('[LINK DOWNLOAD] Data exists:', snap.exists());
+  console.log('[LINK DOWNLOAD] Total cards:', Object.keys(records).length);
   loading = false;
 
   refreshOptions();
