@@ -572,7 +572,7 @@ input[type="number"] {
   }
 
   .form-row-middle input,
- .form-row-middle > button
+ .form-row-middle > button {
     font-size: 14px;
   }
 
@@ -845,7 +845,14 @@ select:focus-visible{
 }
 
 /* Semua input dan button ikut saiz grid */
-.mg-panel .form-row-middle input,
+
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .mg-panel .form-row-middle > button {
   width: 100%;
   min-width: 0;
