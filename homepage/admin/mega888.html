@@ -986,6 +986,29 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   MEGA888 - GAME SETTINGS + SCORE ONE CARD
+   ========================================== */
+
+/* Divider antara Game Settings dan Score */
+.mg-panel .mg-section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Pastikan baris Game Settings kemas */
+.mg-panel .form-row-top {
+  margin: 0;
+}
+
+/* Tajuk Score selepas divider */
+.mg-panel .mg-section-divider + .mg-panel-title {
+  margin-bottom: 13px;
+}
+
 </style>
 <body>
 <header class="mg-head"><div><h1>MEGA888 Generator</h1><p>Manage games & generate game logs</p></div><div class="mg-head-actions"><button id="mgManage" type="button" class="btn-primary-new">Manage Games</button><button id="mgCreate" type="button" class="btn-primary-new">+ Create Game</button></div></header>
@@ -1011,7 +1034,9 @@ select:focus-visible{
 </button>
   </div>
 
- </section><section class="mg-panel"><div class="mg-panel-title">Score & Winner Controls</div><div class="form-row form-row-middle bottom-gap">
+<div class="mg-section-divider"></div>
+
+<div class="mg-panel-title">Score & Winner Controls</div><div class="form-row form-row-middle bottom-gap">
     <div class="inline-group">
       <input data-new-ui-input  type="number" id="manualScore" placeholder="Add Score" class="input-score" />
 <button id="autoAddScoreBtn" type="button" class="switch-btn active mg-toggle">
