@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <title>MEGA888 Generator</title>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;700&display=swap" rel="stylesheet">
@@ -440,12 +441,13 @@ border-radius:4px;
   transition: all 0.3s;
 }
 
+/* Toggle ikut ruang responsive */
 .form-row-top #autoFreeGameBtn,
-.form-row-middle #autoAddScoreBtn{
-  width:98px !important;
-  min-width:98px !important;
-  max-width:98px !important;
-  padding:0 !important;
+.form-row-middle #autoAddScoreBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
 }
 *{
   scrollbar-width:thin;
@@ -519,107 +521,7 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
-/* ===== TOP CONTROL ROW ===== */
-.form-row-top{
-  display: grid;
-  grid-template-columns: 1.7fr 0.9fr 0.9fr 1.35fr auto 0.9fr auto auto;
-  gap: 8px;
-  align-items: center;
-  margin: 16px 12px 10px;
-}
 
-.form-row-top .cs-wrap,
-.form-row-top select,
-.form-row-top .input-time,
-.form-row-top .input-small{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  text-align: left;
-}
-
-.form-row-top button{
-  width: 100%;
-  min-width: 0;
-  padding: 0px 15px;
-  white-space: nowrap;
-}
-
-.form-row-top .cs-display{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* desktop kecil / laptop kecil */
-@media (max-width: 1180px){
-  .form-row-top{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      "game bet win"
-      "time time now"
-      "rows free auto";
-  }
-
-  .form-row-top .cs-wrap-gameSelect{
-    grid-area: game;
-  }
-
-  .form-row-top .cs-wrap-betSelect{
-    grid-area: bet;
-  }
-
-  .form-row-top .cs-wrap-pecahanSelect{
-    grid-area: win;
-  }
-
-  .form-row-top #manualTime{
-    grid-area: time;
-  }
-
-  .form-row-top button[onclick="setNow()"]{
-    grid-area: now;
-  }
-
-  .form-row-top #freeGameInput{
-    grid-area: rows;
-  }
-
-  .form-row-top #setFreeGameBtn{
-    grid-area: free;
-  }
-
-  .form-row-top #autoFreeGameBtn{
-    grid-area: auto;
-  }
-}
-
-/* phone */
-@media (max-width: 640px){
-  .form-row-top{
-    gap: 8px;
-  }
-
-  .form-row-top button,
-  .form-row-top .input-time,
-  .form-row-top .input-small,
-  .form-row-top select,
-  .form-row-top .cs-display{
-    font-size: 14px;
-  }
-}
-.form-row-top button,
-.form-row-top .cs-display,
-.form-row-top input,
-.form-row-top select{
-  overflow: hidden;
-}
-
-.form-row-top #setFreeGameBtn,
-.form-row-top #autoFreeGameBtn,
-.form-row-top .btn-main{
-  max-width: 100%;
-}
 
 /* ===== MIDDLE CONTROL ROW FINAL ===== */
 .form-row-middle{
@@ -818,9 +720,86 @@ select:focus-visible{
 .mg-panel{min-width:0;max-width:100%;border:1px solid var(--border-input);border-radius:12px;padding:14px;margin:0 0 12px;background:var(--page-input)}
 .mg-panel-title{font-size:14px;font-weight:700;margin:0 0 13px;opacity:.9}
 .mg-panel .form-row{margin:0;gap:10px;align-items:center;display:flex;flex-wrap:wrap}
-.mg-panel .form-row-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:10px}
-.mg-panel .form-row-top>*{width:100%!important;min-width:0!important;grid-area:auto!important}
-.mg-panel .form-row-top .cs-wrap,.mg-panel .form-row-top .shared-dropdown{width:100%;min-width:0}
+
+/* ==========================================
+   MEGA888 - GAME SETTINGS RESPONSIVE FINAL
+   ========================================== */
+
+/* Responsive ikut lebar card / iframe */
+.mg-panel .form-row-top {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 165px), 1fr)
+  ) !important;
+  gap: 10px !important;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Semua item ikut saiz kolum */
+.mg-panel .form-row-top > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  grid-area: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Input, select, custom dropdown */
+.mg-panel .form-row-top input,
+.mg-panel .form-row-top select,
+.mg-panel .form-row-top .cs-wrap,
+.mg-panel .form-row-top .shared-dropdown,
+.mg-panel .form-row-top .cs-display {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Semua button termasuk Set Free Game */
+.mg-panel .form-row-top button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box !important;
+}
+
+/* Buang fixed width lama pada toggle */
+.mg-panel .form-row-top #autoFreeGameBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Pastikan text dropdown tidak bertindih */
+.mg-panel .form-row-top .cs-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Input tarikh */
+.mg-panel .form-row-top #manualTime {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Panel sangat sempit: satu kolum */
+@container (max-width: 240px) {
+  .mg-panel .form-row-top {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
 .mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
 .mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
 /* ===== MEGA888 GAME LOG FIX ===== */
@@ -985,7 +964,17 @@ select:focus-visible{
     flex: 0 0 auto !important;
   }
 }
+/* Card boleh mengukur lebar sendiri */
+.mg-panel {
+  container-type: inline-size;
+}
 
+/* Dropdown NewUI juga tidak boleh melebihi card */
+.mg-panel .form-row-top .new-ui-dropdown,
+.mg-panel .form-row-top [data-new-ui-dropdown] {
+  max-width: 100%;
+  min-width: 0;
+}
 /* ==========================================
    MEGA888 - GAME SETTINGS + SCORE ONE CARD
    ========================================== */
