@@ -998,9 +998,43 @@ select:focus-visible{
   margin-bottom: 13px;
 }
 
+/* MEGA888 HEADER BUTTONS - RIGHT ALIGN */
+
+.mg-head {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.mg-head-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.mg-head-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 </style>
 <body>
-<header class="mg-head"><div><h1>MEGA888 Generator</h1><p>Manage games & generate game logs</p></div><div class="mg-head-actions"><button id="mgManage" type="button" class="btn-primary-new">Manage Games</button><button id="mgCreate" type="button" class="btn-primary-new">+ Create Game</button></div></header>
+
+<header class="mg-head">
+  <div class="mg-head-actions">
+    <button id="mgManage" type="button" class="btn-primary-new">
+      Manage Games
+    </button>
+
+    <button id="mgCreate" type="button" class="btn-primary-new">
+      + Create Game
+    </button>
+  </div>
+</header>
 <section class="mg-panel"><div class="mg-panel-title">Game Settings</div>
   <div class="form-row form-row-top">
     <select id="gameSelect" class="select2 select-main"><option value="" disabled selected hidden>Select Game</option></select>
