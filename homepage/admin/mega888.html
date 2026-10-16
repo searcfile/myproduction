@@ -1084,6 +1084,37 @@ select:focus-visible{
 }
 
 
+/* ==========================================
+   MEGA888 - FIX CUSTOM INPUT CLEAR ICON
+   ========================================== */
+
+/* Wrapper ikut lebar penuh kolum */
+.mg-panel .new-ui-input-wrap {
+  position: relative !important;
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Input kekalkan ruang untuk clear icon */
+.mg-panel .new-ui-input-wrap > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding-right: 36px !important;
+  box-sizing: border-box !important;
+}
+
+/* Clear icon berada di hujung kanan wrapper */
+.mg-panel .new-ui-input-wrap .new-ui-input-clear {
+  position: absolute !important;
+  right: 10px !important;
+  left: auto !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
+
 /* Dropdown list mesti muncul atas elemen lain */
 .mg-panel .shared-dropdown.open {
   z-index: 1000;
