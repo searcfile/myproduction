@@ -1047,21 +1047,42 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
-/* Shared input */
+/* ==========================================
+   MEGA888 - CUSTOM INPUT NEW UI
+   ========================================== */
+
 .mg-panel .new-ui-input-wrap {
-  display: inline-flex;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .mg-panel .new-ui-input-wrap > input {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
+  height: 32px !important;
   box-sizing: border-box !important;
 }
+
+/* Game Settings */
+.mg-panel .form-row-top > .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score & Winner Controls */
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Kekalkan susunan grid untuk input custom */
+.mg-panel .form-row-middle .inline-group {
+  display: contents !important;
+}
+
 
 /* Dropdown list mesti muncul atas elemen lain */
 .mg-panel .shared-dropdown.open {
@@ -2586,6 +2607,15 @@ function mgManager(){
 }
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
+  
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(
+    ".mg-panel input[data-new-ui-input]"
+  ).forEach(input => {
+    NewUI.input(input);
+  });
+});
+
 window.addEventListener('DOMContentLoaded',mgStart);
 </script>
 </body>
