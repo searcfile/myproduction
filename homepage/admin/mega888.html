@@ -494,7 +494,9 @@ input[type="number"] {
   }
 
   .form-row-middle .score-group{ grid-area: score; }
-  .form-row-middle #autoAddScoreBtn{ grid-area: auto; }
+  .form-row-middle .shared-active-switch {
+  grid-area: auto;
+}
 
   .form-row-middle .jackpot-group{ grid-area: jackpot; }
   .form-row-middle .btn-jackpot{ grid-area: setjackpot; }
@@ -998,31 +1000,66 @@ select:focus-visible{
   min-width: 0;
   width: 100%;
 }
-/* MEGA888 — CUSTOM NEWUI SWITCH */
+/* ==========================================
+   MEGA888 - CUSTOM SWITCH RESPONSIVE FIX
+   ========================================== */
 
+/* Jangan biarkan checkbox ikut CSS input biasa */
+.mg-panel .shared-active-switch > input[type="checkbox"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Switch ikut ruang tersedia */
 .mg-panel .shared-active-switch {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: flex-start;
-  width: max-content;
-  max-width: 100%;
-  min-width: 0;
-  flex: 0 0 auto;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.mg-panel .shared-active-track {
-  min-width: 90px;
-  max-width: 100%;
+/* Track tidak boleh melebihi kolum */
+.mg-panel .shared-active-switch .shared-active-track {
+  width: 90px;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-shrink: 1;
 }
 
+/* Game Settings */
 .mg-panel .form-row-top > .shared-active-switch {
-  width: max-content !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score & Winner - label mesti menjadi grid item */
+.mg-panel .form-row-middle .inline-group > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
   max-width: 100% !important;
 }
 
-.mg-panel .form-row-middle .inline-group > .shared-active-switch {
-  width: max-content;
-  flex: 0 0 auto;
+/* Pastikan semua grid item boleh mengecil */
+.mg-panel .form-row-middle > *,
+.mg-panel .form-row-top > * {
+  min-width: 0 !important;
+}
+
+/* Grid 2 kolum untuk panel sempit */
+@container (max-width: 500px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 </style>
 <body>
