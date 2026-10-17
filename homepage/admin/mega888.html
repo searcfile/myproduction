@@ -2548,9 +2548,38 @@ function mgEditor(oldName=''){
  if(mgGameIds[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
  const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
  if(!bets.length){mgToast('Add at least one Bet','error');return;}
- save.disabled=true;
- try{const id=oldName?mgGameIds[oldName]:mgRef.push().key;await mgRef.child(id).set({name:gameName,bets,pecahan,freeGameOptions:freeOptions,updatedAt:firebase.database.ServerValue.TIMESTAMP});modal.close();mgToast('Game saved');}
- catch(err){mgToast('Save failed: '+err.message,'error');}finally{save.disabled=false;}
+// Custom NewUI loading spinner
+await NewUI.setButtonLoading(save, true, {
+  text: "Saving..."
+});
+
+try {
+  const id = oldName
+    ? mgGameIds[oldName]
+    : mgRef.push().key;
+
+  await mgRef.child(id).set({
+    name: gameName,
+    bets,
+    pecahan,
+    freeGameOptions: freeOptions,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // Pastikan spinner sempat kelihatan
+  await NewUI.setButtonLoading(save, false, {
+    minDuration: 700
+  });
+
+  modal.close();
+  mgToast("Game saved", "success");
+
+} catch (err) {
+  mgToast("Save failed: " + err.message, "error");
+
+} finally {
+  await NewUI.setButtonLoading(save, false);
+}
  });
 }
 
