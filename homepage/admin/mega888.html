@@ -1194,7 +1194,11 @@ select:focus-visible{
     <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
     <button onclick="resetLog()" class="reset-button">Reset Log</button>
   </div>
-</section><section class="mg-panel mg-log-panel"><div class="mg-panel-title">Game Log</div><div class="table-wrap">
+</section>
+<!-- CARD GAME LOG -->
+<section class="mg-panel mg-log-panel" id="gameLogCard">
+  <div class="mg-panel-title">Game Log</div>
+  <div class="table-wrap">
   <table id="gameLog">
     <thead>
       <tr>
@@ -1210,8 +1214,16 @@ select:focus-visible{
     <tbody>
     </tbody>
   </table>
-</div>
-<div id="gameLogEmpty" style="display:none;"></div>
+  </div>
+</section>
+
+<!-- CARD NO DATA - BERASINGAN -->
+<section
+  class="mg-panel"
+  id="gameLogEmptyCard"
+  style="display:none;"
+>
+  <div id="gameLogEmpty"></div>
 </section>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -2647,37 +2659,45 @@ window.addEventListener('DOMContentLoaded',mgStart);
    ========================================================= */
 
 (function () {
-  function updateGameLogEmpty() {
-    const table = document.getElementById("gameLog");
-    const tbody = table?.querySelector("tbody");
-    const empty = document.getElementById("gameLogEmpty");
+function updateGameLogEmpty() {
+  const table = document.getElementById("gameLog");
+  const tbody = table?.querySelector("tbody");
 
-    if (!table || !tbody || !empty) return;
+  const gameLogCard = document.getElementById("gameLogCard");
+  const emptyCard = document.getElementById("gameLogEmptyCard");
+  const empty = document.getElementById("gameLogEmpty");
 
-    const hasData = !!tbody.querySelector("tr.log-row");
+  if (!table || !tbody || !gameLogCard || !emptyCard || !empty) {
+    return;
+  }
 
-    // Ada data = show table
-    table.style.display = hasData ? "table" : "none";
+  const hasData = tbody.querySelector("tr.log-row") !== null;
 
-    // Tiada data = show shared empty card
-    empty.style.display = hasData ? "none" : "block";
+  // Tunjuk salah satu card sahaja
+  gameLogCard.style.display = hasData ? "" : "none";
+  emptyCard.style.display = hasData ? "none" : "";
 
-    if (!hasData) {
+  // Pastikan table boleh dipaparkan semula
+  table.style.display = hasData ? "table" : "none";
+
+  if (!hasData) {
+    if (empty.dataset.rendered !== "true") {
       if (typeof window.showEmptyState === "function") {
         window.showEmptyState(
           empty,
           "No data",
           "large",
           "center",
-          true
+          false
         );
       } else {
         empty.textContent = "No data";
       }
-    } else {
-      empty.innerHTML = "";
+
+      empty.dataset.rendered = "true";
     }
   }
+}
 
   function initGameLogEmpty() {
     const tbody = document.querySelector("#gameLog tbody");
