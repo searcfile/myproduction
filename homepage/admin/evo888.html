@@ -836,16 +836,554 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
-  /* EVO888 shared dropdown placement: does not affect game-log table. */
-  .form-row-top .shared-dropdown-wrapper,
+
+/* EVO888 MANAGEMENT & PANEL UI */
+.mg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px}
+.mg-head h1{font-size:21px;font-weight:650;margin:0}.mg-head p{margin:3px 0 0;color:var(--muted,#999)}
+.mg-head-actions{display:flex;flex-wrap:wrap;gap:8px}.mg-head-actions button{min-height:32px}
+.mg-panel{min-width:0;max-width:100%;border:1px solid var(--border-input);border-radius:12px;padding:12px;margin: 0 12px 12px;background:var(--page-input)}
+.mg-panel-title{font-size:14px;font-weight:700;margin:0 0 13px;opacity:.9}
+.mg-panel .form-row{margin:0;gap:10px;align-items:center;display:flex;flex-wrap:wrap}
+
+/* ==========================================
+   PUSSY888 - GAME SETTINGS RESPONSIVE FINAL
+   ========================================== */
+
+/* Responsive ikut lebar card / iframe */
+.mg-panel .form-row-top {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 165px), 1fr)
+  ) !important;
+  gap: 10px !important;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Semua item ikut saiz kolum */
+.mg-panel .form-row-top > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  grid-area: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Input, select, custom dropdown */
+.mg-panel .form-row-top input,
+.mg-panel .form-row-top select,
+.mg-panel .form-row-top .cs-wrap,
+.mg-panel .form-row-top .shared-dropdown,
+.mg-panel .form-row-top .cs-display {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Semua button termasuk Set Free Game */
+.mg-panel .form-row-top button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box !important;
+}
+
+/* Buang fixed width lama pada toggle */
+.mg-panel .form-row-top #autoFreeGameBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Pastikan text dropdown tidak bertindih */
+.mg-panel .form-row-top .cs-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Input tarikh */
+.mg-panel .form-row-top #manualTime {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Panel sangat sempit: satu kolum */
+@container (max-width: 240px) {
+  .mg-panel .form-row-top {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+.mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
+.mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
+/* ===== PUSSY888 GAME LOG FIX ===== */
+
+.mg-log-panel {
+  overflow: visible;
+  min-width: 0;
+  height: auto;
+}
+
+.mg-log-panel .table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mg-log-panel #gameLog {
+  display: table;
+  min-width: 1300px;
+  width: max-content;
+  table-layout: auto;
+}
+
+.mg-log-panel #gameLog thead {
+  display: table-header-group;
+}
+
+.mg-log-panel #gameLog tbody {
+  display: table-row-group;
+}
+.mg-modal-form{display:flex;flex-direction:column;gap:12px}.mg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
+.mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
+.mg-betrow{border:1px solid var(--input-line);border-radius:9px;padding:10px;display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,2fr) auto;gap:10px;align-items:end}
+.mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
+.mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
+@media(max-width:600px){.mg-head h1{font-size:18px}.mg-betrow{grid-template-columns:minmax(0,1fr)}.mg-betrow button{justify-self:end}}
+
+/* ==========================================
+   PUSSY888 - SCORE & WINNER RESPONSIVE GRID
+   ========================================== */
+
+/* Desktop: 8 kolum dalam satu baris */
+.mg-panel .form-row-middle {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr) 100px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+/* Buka wrapper supaya input dan button
+   menjadi item grid berasingan */
+.mg-panel .form-row-middle .inline-group {
+  display: contents !important;
+}
+
+/* Semua input dan button ikut saiz grid */
+.mg-panel .form-row-middle input,
+.mg-panel .form-row-middle button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Toggle Add Score */
+.mg-panel .form-row-middle #autoAddScoreBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Tablet / panel admin yang sempit */
+@media (max-width: 1100px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: kekalkan 2 kolum */
+@media (max-width: 640px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-middle input,
+  .mg-panel .form-row-middle button {
+    height: 32px;
+    font-size: 13px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* ==========================================
+   PUSSY888 - GENERATOR ACTIONS INLINE
+   ========================================== */
+
+/* Jarak antara Score Controls dan Actions */
+.mg-panel .mg-actions-divider {
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Tombol Actions dalam satu baris */
+.mg-panel .form-row-bottom {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+/* Tombol ikut panjang tulisan */
+.mg-panel .form-row-bottom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+
+  flex: 0 0 auto !important;
+
+  height: 32px;
+  min-height: 32px;
+
+  padding: 0 15px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Phone: tetap ikut panjang tulisan,
+   turun baris apabila ruang tidak cukup */
+@media (max-width: 768px) {
+  .mg-panel .form-row-bottom {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    grid-template-columns: none !important;
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-bottom button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+/* Card boleh mengukur lebar sendiri */
+.mg-panel {
+  container-type: inline-size;
+}
+
+/* Dropdown NewUI juga tidak boleh melebihi card */
+.mg-panel .form-row-top .new-ui-dropdown,
+.mg-panel .form-row-top [data-new-ui-dropdown] {
+  max-width: 100%;
+  min-width: 0;
+}
+/* ==========================================
+   PUSSY888 - GAME SETTINGS + SCORE ONE CARD
+   ========================================== */
+
+/* Divider antara Game Settings dan Score */
+.mg-panel .mg-section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Pastikan baris Game Settings kemas */
+.mg-panel .form-row-top {
+  margin: 0;
+}
+
+/* Tajuk Score selepas divider */
+.mg-panel .mg-section-divider + .mg-panel-title {
+  margin-bottom: 13px;
+}
+
+/* PUSSY888 HEADER BUTTONS - RIGHT ALIGN */
+
+.mg-head {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.mg-head-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.mg-head-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   PUSSY888 - SHARED NEW UI INPUT & DROPDOWN
+   ========================================== */
+
+/* Shared dropdown */
+.mg-panel .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mg-panel .shared-dropdown-trigger {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .shared-dropdown-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+/* Shared input */
+.mg-panel .new-ui-input-wrap {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .new-ui-input-wrap > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Dropdown list mesti muncul atas elemen lain */
+.mg-panel .shared-dropdown.open {
+  z-index: 1000;
+}
+
+/* Pastikan wrapper custom ikut kolum grid */
+.mg-panel .form-row-top > .shared-dropdown,
+.mg-panel .form-row-top > .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score row */
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  min-width: 0;
+  width: 100%;
+}
+  /* ==========================================
+   PUSSY888 - NEWUI INPUT CLEAR BUTTON FIX
+   ========================================== */
+
+/* Wrapper input kekal sebagai satu komponen */
+.mg-panel .new-ui-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Input tidak ditutup oleh button clear */
+.mg-panel .new-ui-input-wrap > input {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Button clear kecil di sebelah kanan */
+.mg-panel .new-ui-input-wrap > button {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--blur) !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Hover clear tidak menutup input */
+.mg-panel .new-ui-input-wrap > button:hover,
+.mg-panel .new-ui-input-wrap > button:active,
+.mg-panel .new-ui-input-wrap > button:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--page-text) !important;
+}
+
+/* SVG kekal di tengah button kecil */
+.mg-panel .new-ui-input-wrap > button svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  pointer-events: none;
+}
+/* ==========================================
+   PUSSY888 - CUSTOM SWITCH RESPONSIVE FIX
+   ========================================== */
+
+/* Jangan biarkan checkbox ikut CSS input biasa */
+.mg-panel .shared-active-switch > input[type="checkbox"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Switch ikut ruang tersedia */
+.mg-panel .shared-active-switch {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Track tidak boleh melebihi kolum */
+.mg-panel .shared-active-switch .shared-active-track {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-shrink: 1;
+}
+
+/* Game Settings */
+.mg-panel .form-row-top > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score & Winner - label mesti menjadi grid item */
+.mg-panel .form-row-middle .inline-group > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Pastikan semua grid item boleh mengecil */
+.mg-panel .form-row-middle > *,
+.mg-panel .form-row-top > * {
+  min-width: 0 !important;
+}
+
+/* Grid 2 kolum untuk panel sempit */
+@container (max-width: 500px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* =========================================================
+   PUSSY888 UI UPGRADE — Settings & Controls ONLY
+   Game Log layout, table and calculation logic are untouched.
+   ========================================================= */
+.mg-head-actions button,
+.form-row-top button,
+.form-row-middle button,
+.form-row-bottom button {
+  transition: background-color .18s ease, border-color .18s ease,
+              box-shadow .18s ease, opacity .18s ease;
+}
+.mg-head-actions button:focus-visible,
+.form-row-top button:focus-visible,
+.form-row-middle button:focus-visible,
+.form-row-bottom button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+.form-row-top .shared-dropdown,
+.form-row-top .shared-input,
+.form-row-middle .shared-input {
+  min-width: 0;
+  max-width: 100%;
+}
+.form-row-top .shared-dropdown:focus-within {
+  z-index: 30;
+}
+.mg-panel button:disabled,
+.mg-head-actions button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+@media (max-width: 640px) {
+  .mg-head-actions { flex-wrap: wrap; }
+  .mg-head-actions button { max-width: 100%; }
   .form-row-top .shared-dropdown,
-  .form-row-top [class*="shared-dropdown"] { min-width:0; max-width:100%; }
+  .form-row-top .shared-input,
+  .form-row-middle .shared-input { width: 100%; }
+}
+
+
+
+
+/* Isolate generator buttons from shared NewUI modal/toast buttons */
+body > .mg-head button, .mg-panel button {cursor:pointer}
   </style>
 <body>
  <div class="form-row form-row-top">
     <select id="gameSelect" class="select2 select-main">
     <option value="" disabled selected hidden>Select Game</option>
-    <option value="BonusBears">BonusBears</option><option value="GreatChina">GreatChina</option><option value="AmazingThailand">AmazingThailand</option><option value="FairyGarden">FairyGarden</option><option value="TripleTwister">TripleTwister</option><option value="DolphinReef">DolphinReef</option><option value="GreatBlue">GreatBlue</option><option value="WaterMargin">WaterMargin</option><option value="PantherMoon">PantherMoon</option><option value="Laura">Laura</option><option value="HighWay">HighWay</option><option value="HalloweenFortune">HalloweenFortune</option><option value="SilverBullets">SilverBullets</option><option value="BigProsperity">BigProsperity</option><option value="GreatBlue">GreatBlue</option><option value="SafariHeat">SafariHeat</option><option value="Samurai">Samurai</option><option value="ZhaoCaiJinBao">ZhaoCaiJinBao</option><option value="FootBall">FootBall</option><option value="Iceland">Iceland</option><option value="GodOfWealth">GodOfWealth</option><option value="GoldenTour">GoldenTour</option><option value="Boyking">Boyking</option><option value="Victory">Victory</option><option value="GoldRush">GoldRush</option><option value="Amazon">Amazon</option>
   </select>
     
     <select id="betSelect" class="select-main">
@@ -855,10 +1393,10 @@ select:focus-visible{
       <option value="" disabled selected hidden>Select Win</option>
     </select>
     
-   <input type="text" id="manualTime" placeholder="Set Time" class="input-time" />
+   <input type="text" data-new-ui-input id="manualTime" placeholder="Set Time" class="input-time" />
    <button onclick="setNow()" class="btn-main h38 px12 fs16">Click Now</button>
     
-   <input type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
+   <input type="number" data-new-ui-input id="freeGameInput" placeholder="Set Rows" class="input-small" />
 
     <button id="setFreeGameBtn" class="btn-main h38">Set Free Game</button>
 
@@ -870,7 +1408,7 @@ select:focus-visible{
 
  <div class="form-row form-row-middle bottom-gap">
     <div class="inline-group">
-      <input type="number" id="manualScore" placeholder="Add Score" class="input-score" />
+      <input type="number" data-new-ui-input id="manualScore" placeholder="Add Score" class="input-score" />
 <button id="autoAddScoreBtn" type="button" class="switch-btn active">
   <span class="switch-text">Active</span>
   <span class="switch-circle"></span>
@@ -878,30 +1416,33 @@ select:focus-visible{
     </div>
 
     <div class="inline-group">
-      <input type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
+      <input type="number" data-new-ui-input id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
     </div>
 
     <button onclick="addJackpot()" class="btn-main h38">Set Jackpot</button>
 
     <div class="inline-group">
-      <input type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
+      <input type="number" data-new-ui-input id="manualScoreInput" placeholder="Support Amount" class="input-support" />
     </div>
 
     <button onclick="addManualSetScore()" class="btn-main h38">Support Back</button>
 
     <div class="inline-group">
-      <input type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
+      <input type="number" data-new-ui-input id="manualWinInput" placeholder="Win Amount" class="input-win" />
     </div>
 
     <button onclick="setRandomWin()" class="btn-main h38">Set Winner</button>
   </div>
 
+  <div class="mg-actions-divider"></div>
   <div class="form-row form-row-bottom bottom-gap">
     <button onclick="generateLog()" class="btn-main h38">Change</button>
     <button onclick="deleteCents()" class="btn-main h38">Delete Cents</button>
     <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
     <button onclick="resetLog()" class="reset-button">Reset Log</button>
   </div>
+</section>
+<section class="mg-panel mg-log-panel" id="gameLogCard"><div class="mg-panel-title">Game Log</div>
 <div class="table-wrap">
   <table id="gameLog">
     <thead>
@@ -918,7 +1459,8 @@ select:focus-visible{
     <tbody>
     </tbody>
   </table>
-</div>
+</div></section>
+<section class="mg-panel" id="gameLogEmptyCard" style="display:none"><div id="gameLogEmpty"></div></section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -936,60 +1478,7 @@ let autoAddScoreOn = false;
 let isRestoringSelection = false;
 let lastWinRowIndex = -1;
 let manualWinAmount = 0;
-const gameData = {
-"TripleTwister": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"GreatChina": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"AmazingThailand": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [30.00, 50.00, 100.00, 150.00],5.00: [50.00, 80.00, 100.00, 200.00],12.50: [80.00, 100.00, 130.00, 300.00],25.00: [100.00, 150.00, 200.00, 500.00]}},
-"GoldRush": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Amazon": 
-{ bets: [1.80, 4.50, 9.00, 18.00, 27.00],pecahan: {1.80: [30.00, 50.00, 70.00, 90.00],4.50: [40.00, 60.00, 110.00, 160.00],9.00: [60.00, 90.00, 110.00, 210.00],18.00: [90.00, 110.00, 140.00, 310.00],27.00: [110.00, 160.00, 210.00, 550.00]}},
-"Victory": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Boyking": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Iceland": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [30.00, 50.00, 100.00, 150.00],5.00: [50.00, 80.00, 100.00, 200.00],12.50: [80.00, 100.00, 130.00, 300.00],25.00: [100.00, 150.00, 200.00, 500.00]}},
-"GoldenTour": 
-{ bets: [1.25, 2.50, 5.00, 25.00],pecahan: {1.25: [30.00, 60.00, 100.00, 130.00],2.50: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],25.00: [100.00, 150.00, 200.00, 500.00]}},
-"GodOfWealth": 
-{ bets: [1.80, 4.50, 9.00, 18.00, 27.00],pecahan: {1.80: [30.00, 50.00, 70.00, 90.00],4.50: [40.00, 60.00, 110.00, 160.00],9.00: [60.00, 90.00, 110.00, 210.00],18.00: [90.00, 110.00, 140.00, 310.00],27.00: [110.00, 160.00, 210.00, 550.00]}},
-"HalloweenFortune": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"FootBall": 
-{ bets: [1.00, 1.50, 3.00, 5.00, 15.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],1.50: [60.00, 90.00, 110.00, 150.00],3.00: [90.00, 120.00, 150.00, 180.00],5.00: [120.00, 150.00, 180.00, 210.00],15.00: [100.00, 150.00, 200.00, 500.00]}},
-"ZhaoCaiJinBao": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"Samurai": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"GreatBlue": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"SafariHeat": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"BigProsperity": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"Laura": 
-{ bets: [1.50, 3.00, 7.50, 15.00, 30.00],pecahan: {1.50: [30.00, 50.00, 100.00, 130.00],3.00: [50.00, 80.00, 100.00, 150.00],7.50: [80.00, 100.00, 130.00, 180.00],15.00: [130.00, 150.00, 180.00, 300.00],30.00: [150.00, 180.00, 200.00, 500.00]}},
-"HighWay": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"SilverBullets": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"PantherMoon": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"WaterMargin": 
-{ bets: [1.80, 4.50, 9.00, 18.00, 27.00],pecahan: {1.80: [30.00, 50.00, 70.00, 90.00],4.50: [40.00, 60.00, 110.00, 160.00],9.00: [60.00, 90.00, 110.00, 210.00],18.00: [90.00, 110.00, 140.00, 310.00],27.00: [110.00, 160.00, 210.00, 550.00]}},
-"GreatBlue": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"DolphinReef": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"BonusBears": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"FairyGarden": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}}
-};
+const gameData = {};
 function updateAutoAddScoreButtonUI() {
   const btn = document.getElementById("autoAddScoreBtn");
   if (!btn) return;
@@ -1020,18 +1509,194 @@ function saveCurrentSelectionOnly() {
 
   localStorage.setItem("gameLogDataEvo888", JSON.stringify(newData));
 }
-/* EVO888: use shared NewUI dropdown, preserve existing refresh calls. */
 function initCustomSelect(selectId, withSearch = false, searchPlaceholder = "Search...") {
   const native = document.getElementById(selectId);
   if (!native) return null;
-  if (window.NewUI && typeof window.NewUI.dropdown === "function") {
-    return window.NewUI.dropdown(native, {
-      placeholder: native.options[0]?.textContent || "Select option",
-      emptyText: "No data"
+
+  if (native.dataset.csReady === "1") {
+    return native._csApi || null;
+  }
+  native.dataset.csReady = "1";
+
+  // sembunyikan select asli
+  native.style.position = "absolute";
+  native.style.left = "-9999px";
+  native.style.width = "1px";
+  native.style.height = "1px";
+  native.style.opacity = "0";
+  native.style.pointerEvents = "none";
+
+  const wrap = document.createElement("div");
+  wrap.className = `cs-wrap cs-wrap-${selectId}`;
+
+  const display = document.createElement("div");
+  display.className = "cs-display";
+  display.tabIndex = 0;
+
+  const label = document.createElement("span");
+  label.className = "cs-label";
+
+  const arrow = document.createElement("span");
+  arrow.className = "cs-arrow";
+  arrow.innerHTML = `
+  <svg viewBox="64 64 896 896" aria-hidden="true">
+    <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path>
+  </svg>
+  `;
+
+  display.appendChild(label);
+  display.appendChild(arrow);
+
+  const list = document.createElement("div");
+  list.className = "cs-list";
+
+  let searchInput = null;
+  let itemsBox = document.createElement("div");
+  itemsBox.className = "cs-items";
+
+  if (withSearch) {
+    const searchBox = document.createElement("div");
+    searchBox.className = "cs-search";
+
+    searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = searchPlaceholder;
+    searchInput.autocomplete = "off";
+
+    searchBox.appendChild(searchInput);
+    list.appendChild(searchBox);
+  }
+
+  list.appendChild(itemsBox);
+
+  native.parentNode.insertBefore(wrap, native.nextSibling);
+  wrap.appendChild(display);
+  wrap.appendChild(list);
+
+  function getPlaceholderText() {
+    const first = native.options[0];
+    return first ? first.textContent : "-- Choose --";
+  }
+
+  function refresh() {
+    itemsBox.innerHTML = "";
+
+    const options = Array.from(native.options);
+    const selectedOpt = native.options[native.selectedIndex];
+    const hasValue =
+      selectedOpt &&
+      selectedOpt.value !== "" &&
+      !selectedOpt.disabled;
+
+    label.textContent = hasValue ? selectedOpt.textContent : getPlaceholderText();
+    display.classList.toggle("placeholder", !hasValue);
+
+    options.forEach((opt, index) => {
+      const item = document.createElement("div");
+      item.className = "cs-item";
+      item.textContent = opt.textContent;
+      item.dataset.value = opt.value;
+
+      if (opt.disabled && opt.value === "") {
+        item.classList.add("disabled");
+      }
+
+      if (index === native.selectedIndex && hasValue) {
+        item.classList.add("active");
+      }
+
+      item.addEventListener("click", () => {
+        if (opt.disabled) return;
+
+        native.selectedIndex = index;
+        native.value = opt.value;
+        native.dispatchEvent(new Event("change", { bubbles: true }));
+        close();
+        refresh();
+      });
+
+      itemsBox.appendChild(item);
+    });
+
+    if (searchInput) {
+      searchInput.value = "";
+      applyFilter("");
+    }
+  }
+
+  function applyFilter(q) {
+    const query = String(q || "").trim().toLowerCase();
+    const items = Array.from(itemsBox.querySelectorAll(".cs-item"));
+
+    items.forEach(item => {
+      const show = item.textContent.toLowerCase().includes(query);
+      item.style.display = show ? "" : "none";
     });
   }
-  console.warn("EVO888: NewUI dropdown unavailable", selectId);
-  return { refresh() {}, open() {}, close() {} };
+
+  function open() {
+    document.querySelectorAll(".cs-wrap.open").forEach(w => {
+      if (w !== wrap) w.classList.remove("open");
+    });
+    wrap.classList.add("open");
+
+    if (searchInput) {
+      searchInput.value = "";
+      applyFilter("");
+      setTimeout(() => searchInput.focus(), 0);
+    }
+  }
+
+  function close() {
+    wrap.classList.remove("open");
+  }
+
+  function toggle() {
+    wrap.classList.contains("open") ? close() : open();
+  }
+
+  display.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggle();
+  });
+
+  display.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle();
+    } else if (e.key === "Escape") {
+      close();
+    }
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      applyFilter(e.target.value);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target)) close();
+  });
+
+  native.addEventListener("change", refresh);
+
+  const observer = new MutationObserver(() => refresh());
+  observer.observe(native, {
+    childList: true,
+    subtree: false,
+    attributes: true
+  });
+
+  refresh();
+
+  const api = { refresh, open, close, wrap, display, list };
+  native._csApi = api;
+  return api;
 }
 const gameCS = initCustomSelect("gameSelect", true, "Search game...");
 const betCS = initCustomSelect("betSelect", false);
@@ -1130,10 +1795,6 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
   const formatted = `${mm}/${dd}/${yyyy} ${hours}:${minutes}:${seconds} ${ampm}`;
   document.getElementById("manualTime").value = formatted;
 }
-  function rnd(min, max, dec = 2){
-    return parseFloat((Math.random() * (max - min) + min).toFixed(dec));
-  }
-
   let globalTime = null;
 
   function rnd(min, max, dec = 2){
@@ -1451,7 +2112,8 @@ logs.forEach(log => {
 
   // ✅ kalau AUTO ON, random-kan jumlah Free game dulu
   if (autoFreeGameOn) {
-    const randomCount = Math.floor(Math.random() * MAX_FREE_GAME_ROWS) + 1;
+    const allowed = (gameData[game]?.freeGameOptions || []).filter(n => Number.isInteger(n) && n > 0 && n <= MAX_FREE_GAME_ROWS);
+    const randomCount = allowed.length ? allowed[Math.floor(Math.random() * allowed.length)] : Math.floor(Math.random() * MAX_FREE_GAME_ROWS) + 1;
     document.getElementById('freeGameInput').value = randomCount;
   }
 
@@ -1627,7 +2289,7 @@ if (typeof hiddenRow !== "undefined" && hiddenRow) {
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
-  if (isNaN(inputScore)) return showToast("Nilai tidak sah", "error");
+  if (isNaN(inputScore)) return alert("❌ Nilai tidak sah");
 
   const tbody = document.querySelector("#gameLog tbody");
 
@@ -1638,12 +2300,12 @@ function addManualSetScore() {
   const setScoreNegatifRow = Array.from(tbody.querySelectorAll("tr.set-score-row:not(.jackpot)"))
     .find(row => row.children[1].textContent.includes("-"));
 
-  if (!setScoreNegatifRow) return showToast("Baris set score negatif tidak ditemukan!", "error");
+  if (!setScoreNegatifRow) return alert("❌ Baris set score negatif tidak ditemukan!");
 
   // Ambil waktu dari baris negatif dan parse manual
   const belowTimeText = setScoreNegatifRow.children[6].textContent.trim();
   const match = belowTimeText.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2}) (AM|PM)$/);
-  if (!match) return showToast("Format waktu di baris negatif tidak valid!", "error");
+  if (!match) return alert("❌ Format waktu di baris negatif tidak valid!");
 
   let [, month, day, year, hh, mm, ss, ampm] = match;
   month = parseInt(month, 10);
@@ -1849,7 +2511,6 @@ window.addEventListener("DOMContentLoaded", () => {
   applyFreeGame();
   saveCurrentSelectionOnly();
 });
-/* EVO888: all messages use shared custom toast. */
 function showToast(message, type = "success", duration = 3500) {
   if (window.NewUI && typeof window.NewUI.showToast === "function") {
     return window.NewUI.showToast(message, type, duration);
@@ -2139,6 +2800,144 @@ document.addEventListener("copy", function() {
     method: "copy-event"
   });
 }, true);
+
+/* ================= EVO888 FIREBASE GAME CATALOG ================= */
+const MG_PATH='evo888/games';
+let mgRef=null, mgCatalogLoaded=false, mgGameIds={};
+function mgToast(msg, type = "success") {
+  return showToast(msg, type);
+}
+function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
+function mgOptions(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10))].sort((a,b)=>a-b);}
+function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
+function mgField(label,value='',type='text',hint=''){
+ const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
+}
+function mgApplyCatalog(snapshot){
+ const previous=document.getElementById('gameSelect').value;
+ const data=snapshot||{};
+
+for (const key of Object.keys(gameData)) {
+  delete gameData[key];
+}
+
+mgGameIds = {};
+
+ Object.entries(data).forEach(([id,v])=>{
+   if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
+   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
+   mgGameIds[v.name]=id;
+ });
+ const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
+ Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
+ const saved=(()=>{try{return JSON.parse(localStorage.getItem('gameLogDataEvo888')||'{}')}catch{return {}}})();
+ const selected=gameData[previous]?previous:gameData[saved.game]?saved.game:'';
+ if(selected){select.value=selected;isRestoringSelection=true;select.dispatchEvent(new Event('change',{bubbles:true}));
+ if(saved.game===selected&&saved.bet!==undefined){document.getElementById('betSelect').value=String(saved.bet);document.getElementById('betSelect').dispatchEvent(new Event('change',{bubbles:true}));if(saved.pecahan!==undefined)document.getElementById('pecahanSelect').value=String(saved.pecahan);}
+ isRestoringSelection=false;}
+ gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
+ mgCatalogLoaded=true;
+}
+function mgStart(){
+ const create=document.getElementById('mgCreate'),manage=document.getElementById('mgManage');
+ create.addEventListener('click',()=>mgEditor());manage.addEventListener('click',mgManager);
+ if(!window.firebase?.apps?.length){mgToast('Firebase is not initialized. Check firebase.js','error');return;}
+ try{mgRef=firebase.database().ref(MG_PATH);mgRef.on('value',s=>mgApplyCatalog(s.val()),e=>mgToast('Game loading failed: '+e.message,'error'));}
+ catch(e){mgToast('Firebase connection error: '+e.message,'error');}
+}
+function mgEditor(oldName=''){
+ if(!mgRef){mgToast('Firebase not ready','error');return;}
+ const old=gameData[oldName]||{};
+ const form=mgElement('form','mg-modal-form');
+ const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
+ const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10 — AUTO picks only these counts.');free.input.placeholder='5, 10';form.append(free.host);
+ const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
+ const rows=mgElement('div','mg-modal-form');form.append(rows);
+ function addBet(bet='',wins=''){
+   const row=mgElement('div','mg-betrow');const a=mgField('Bet',String(bet),'number');a.input.step='any';a.input.min='0';const b=mgField('Win Options',String(wins),'text');b.input.placeholder='30, 60, 100';const del=mgElement('button','btn-delete-new','Remove');del.type='button';del.onclick=()=>row.remove();row.append(a.host,b.host,del);rows.append(row);
+   row._get=()=>({bet:Number(a.input.value),betText:a.input.value.trim(),wins:mgNumberList(b.input.value)});
+   window.NewUI?.input?.(a.input);window.NewUI?.input?.(b.input);
+ }
+ (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
+ if(!old.bets?.length)addBet();
+ const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
+ const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+ const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+ form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
+ form.addEventListener('submit',async e=>{
+ e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
+ if(!gameName){mgToast('Enter game name','error');return;}
+ if(free.input.value.trim()&&!freeOptions.length){mgToast('Free Game options must be between 1 and 10','error');return;}
+ if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
+ const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
+ if(!bets.length){mgToast('Add at least one Bet','error');return;}
+// Custom NewUI loading spinner
+await NewUI.setButtonLoading(save, true, {
+  text: "Saving..."
+});
+
+try {
+  const id = (oldName && mgGameIds[oldName])
+    ? mgGameIds[oldName]
+    : mgRef.push().key;
+
+  await mgRef.child(id).set({
+    name: gameName,
+    bets,
+    pecahan,
+    freeGameOptions: freeOptions,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // Pastikan spinner sempat kelihatan
+  await NewUI.setButtonLoading(save, false, {
+    minDuration: 700
+  });
+
+  modal.close();
+  mgToast("Game saved", "success");
+
+} catch (err) {
+  mgToast("Save failed: " + err.message, "error");
+
+} finally {
+  await NewUI.setButtonLoading(save, false);
+}
+ });
+}
+
+
+
+function mgManager(){
+const host = mgElement('div', 'mg-manager');
+
+const names = Object.keys(gameData).sort((a, b) =>
+  a.localeCompare(b)
+); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
+ names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
+ const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
+ 
+del.disabled = !mgGameIds[name];
+del.title = "Delete Game";
+
+ del.onclick=async()=>{if(!mgGameIds[name])return;if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{await mgRef.child(mgGameIds[name]).remove();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
+ acts.append(edit,del);item.append(title,acts);host.append(item);});
+ const modal=NewUI.modal.open({title:'Manage EVO888 Games',content:host,width:650});
+}
+
+Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
+window.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-new-ui-input]').forEach(el=>window.NewUI?.input?.(el));
+  mgStart();
+  const tbody=document.querySelector('#gameLog tbody');
+  const refresh=()=>{
+    const hasRows=!!tbody?.querySelector('tr');
+    document.getElementById('gameLogCard').style.display=hasRows?'':'none';
+    const empty=document.getElementById('gameLogEmptyCard');empty.style.display=hasRows?'none':'';
+    if(!hasRows){const host=document.getElementById('gameLogEmpty');if(!host.dataset.ready){window.showEmptyState?.(host,'No data','large','center');host.dataset.ready='1';}}
+  };
+  if(tbody){new MutationObserver(refresh).observe(tbody,{childList:true,subtree:true});refresh();}
+});
 </script>
 </body>
 </html>
