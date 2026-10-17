@@ -586,7 +586,6 @@ select.has-value {
   border-color: #1668dc !important;
   outline: 0 !important;
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
   transition: all .2s ease;
 }
 select:focus,
@@ -594,7 +593,6 @@ select:focus-visible{
   border-color: #1668dc !important;
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
   transition: all .2s ease;
 }
   
@@ -965,6 +963,74 @@ select:focus-visible{
 .mg-panel .form-row-middle .new-ui-input-wrap {
   min-width: 0;
   width: 100%;
+}
+  /* ==========================================
+   MEGA888 - NEWUI INPUT CLEAR BUTTON FIX
+   ========================================== */
+
+/* Wrapper input kekal sebagai satu komponen */
+.mg-panel .new-ui-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Input tidak ditutup oleh button clear */
+.mg-panel .new-ui-input-wrap > input {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Button clear kecil di sebelah kanan */
+.mg-panel .new-ui-input-wrap > button {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--blur) !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Hover clear tidak menutup input */
+.mg-panel .new-ui-input-wrap > button:hover,
+.mg-panel .new-ui-input-wrap > button:active,
+.mg-panel .new-ui-input-wrap > button:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--page-text) !important;
+}
+
+/* SVG kekal di tengah button kecil */
+.mg-panel .new-ui-input-wrap > button svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  pointer-events: none;
 }
 /* ==========================================
    MEGA888 - CUSTOM SWITCH RESPONSIVE FIX
