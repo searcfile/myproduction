@@ -1800,9 +1800,29 @@ function applyFreeGame({ randomizePosition = false } = {}) {
 }
 
 
-// tombol SET Free Game
+
 document.getElementById('setFreeGameBtn').addEventListener('click', function () {
+  const input = document.getElementById("freeGameInput");
+  const count = Number(input?.value);
+
+  if (!input?.value.trim() || !Number.isInteger(count) || count < 0) {
+    showToast("Please enter valid Free Game rows!", "info");
+    return;
+  }
+
+  const availableRows = document.querySelectorAll("#gameLog tbody tr.log-row").length;
+
+  if (!availableRows) {
+    showToast("Please generate Game Log first!", "info");
+    return;
+  }
+
   applyFreeGame();
+
+  showToast(
+    count === 0 ? "Free Game cleared successfully!" : "Free Game updated successfully!",
+    "success"
+  );
 });
 
 // tombol AUTO Free Game
@@ -1957,9 +1977,10 @@ function addJackpot() {
   const currentGame = document.getElementById("gameSelect").value;
   const jackpotAmount = parseFloat(document.getElementById("manualJackpot").value);
 
-  if (isNaN(jackpotAmount) || jackpotAmount < 0) {
-    return;
-  }
+if (isNaN(jackpotAmount) || jackpotAmount < 0) {
+  showToast("Please enter valid Jackpot Amount!", "info");
+  return;
+}
 
   const tbody = document.querySelector("#gameLog tbody");
   if (!tbody) return;
@@ -2100,10 +2121,18 @@ if (typeof hiddenRow !== "undefined" && hiddenRow) {
 
   // Re-apply Free game selepas struktur row berubah
   applyFreeGame();
+
+  showToast(
+  `Jackpot ${jackpotAmount.toFixed(2)} added successfully!`,
+  "success"
+);
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
-  if (isNaN(inputScore)) return alert("❌ Nilai tidak sah");
+  if (!Number.isFinite(inputScore)) {
+  showToast("Please enter valid Support Amount!", "info");
+  return;
+}
 
   const tbody = document.querySelector("#gameLog tbody");
 
@@ -2114,12 +2143,18 @@ function addManualSetScore() {
   const setScoreNegatifRow = Array.from(tbody.querySelectorAll("tr.set-score-row:not(.jackpot)"))
     .find(row => row.children[1].textContent.includes("-"));
 
-  if (!setScoreNegatifRow) return alert("❌ Baris set score negatif tidak ditemukan!");
+  if (!setScoreNegatifRow) {
+  showToast("Please generate Game Log first!", "info");
+  return;
+}
 
   // Ambil waktu dari baris negatif dan parse manual
   const belowTimeText = setScoreNegatifRow.children[6].textContent.trim();
   const match = belowTimeText.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2}) (AM|PM)$/);
-  if (!match) return alert("❌ Format waktu di baris negatif tidak valid!");
+  if (!match) {
+  showToast("Invalid Game Log time format!", "error");
+  return;
+}
 
   let [, month, day, year, hh, mm, ss, ampm] = match;
   month = parseInt(month, 10);
@@ -2165,6 +2200,11 @@ function addManualSetScore() {
   }
 
   document.getElementById("manualScoreInput").value = "";
+  
+  showToast(
+  `Support Back ${inputScore.toFixed(2)} added successfully!`,
+  "success"
+);
 }
 function updateSelectPlaceholderColor(select) {
   if (!select) return;
