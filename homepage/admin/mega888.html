@@ -1844,11 +1844,32 @@ function generateLog() {
   tbody.innerHTML = rows;
 
   // AUTO Free Game: kalau ON, random berapa baris free game
-  if (autoFreeGameOn) {
-    const allowed=gameData[game]?.freeGameOptions || [];
-    const valid=allowed.filter(n=>Number.isInteger(n)&&n>0&&n<=MAX_FREE_GAME_ROWS);
-    document.getElementById('freeGameInput').value=valid.length?valid[Math.floor(Math.random()*valid.length)]:0;
-  }
+
+if (autoFreeGameOn) {
+  const allowed = gameData[game]?.freeGameOptions || [];
+
+  const availableRows =
+    tbody.querySelectorAll("tr.log-row").length;
+
+  const valid = [...new Set(
+    allowed
+      .map(Number)
+      .filter(n =>
+        Number.isInteger(n) &&
+        n >= 1 &&
+        n <= MAX_FREE_GAME_ROWS &&
+        n <= availableRows
+      )
+  )];
+
+  const selectedCount = valid.length
+    ? valid[Math.floor(Math.random() * valid.length)]
+    : 0;
+
+  document.getElementById("freeGameInput").value =
+    selectedCount || "";
+}
+
 
   // apply Free Game (akan recalc balance sekali)
   applyFreeGame({randomizePosition:true});
@@ -2544,7 +2565,27 @@ function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
 function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
-function mgOptions(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10))].sort((a,b)=>a-b);}
+
+function mgOptions(raw) {
+  const text = String(raw).trim();
+
+  if (!text) return [];
+
+  const parts = text.split(/[,\s]+/).filter(Boolean);
+
+  const numbers = parts.map(Number);
+
+  if (numbers.some(n =>
+    !Number.isInteger(n) ||
+    n < 1 ||
+    n > MAX_FREE_GAME_ROWS
+  )) {
+    return null;
+  }
+
+  return [...new Set(numbers)].sort((a, b) => a - b);
+}
+
 function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
 function mgField(label,value='',type='text',hint=''){
  const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
@@ -2598,7 +2639,15 @@ function mgEditor(oldName=''){
  form.addEventListener('submit',async e=>{
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
  if(!gameName){mgToast('Enter game name','error');return;}
- if(free.input.value.trim()&&!freeOptions.length){mgToast('Free Game options must be between 1 and 10','error');return;}
+
+if (freeOptions === null) {
+  mgToast(
+    `Free Game Options must contain numbers from 1 to ${MAX_FREE_GAME_ROWS} only!`,
+    "error"
+  );
+  return;
+}
+
  if(mgGameIds[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
  const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
  if(!bets.length){mgToast('Add at least one Bet','error');return;}
