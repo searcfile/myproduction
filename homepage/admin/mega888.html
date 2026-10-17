@@ -1717,10 +1717,12 @@ document.getElementById("setFreeGameBtn").addEventListener("click", function () 
     return;
   }
 
-  applyFreeGame();
 
-  showToast("Free Game successfully updated!", "success");
+  applyFreeGame({ randomizePosition: true });
+
+  showToast("Free Game position updated!", "success");
 });
+
 
 // tombol AUTO Free Game
 const autoBtn = document.getElementById("autoFreeGameBtn");
