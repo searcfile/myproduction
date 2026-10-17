@@ -1980,7 +1980,10 @@ function addJackpot() {
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
-  if (isNaN(inputScore)) return alert("❌ Nilai tidak sah");
+  if (!Number.isFinite(inputScore)) {
+  showToast("Please enter a valid Support Amount!", "warning");
+  return;
+}
 
   const tbody = document.querySelector("#gameLog tbody");
 
@@ -1991,7 +1994,10 @@ function addManualSetScore() {
   const setScoreNegatifRow = Array.from(tbody.querySelectorAll("tr.set-score-row:not(.jackpot)"))
     .find(row => row.children[1].textContent.includes("-"));
 
-  if (!setScoreNegatifRow) return alert("❌ Baris set score negatif tidak ditemukan!");
+  if (!setScoreNegatifRow) {
+  showToast("Negative score row not found!", "error");
+  return;
+}
 
   const belowTimeText = setScoreNegatifRow.children[6].textContent.trim();
   const belowDate = new Date(belowTimeText.replace(" ", "T"));
