@@ -2676,23 +2676,24 @@ function mgToast(msg, type = "success") {
 }
 function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
 
+
 function mgOptions(raw) {
   const text = String(raw).trim();
-
   if (!text) return [];
 
-  const numbers = text.split(/[,\s]+/).map(Number);
+  const numbers = text
+    .split(/[,\s]+/)
+    .map(Number);
 
   if (numbers.some(n =>
-    !Number.isInteger(n) ||
-    n < 1 ||
-    n > MAX_FREE_GAME_ROWS
+    !Number.isSafeInteger(n) || n < 1
   )) {
     return null;
   }
 
   return [...new Set(numbers)].sort((a, b) => a - b);
 }
+
 
 function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
 function mgField(label,value='',type='text',hint=''){
@@ -2753,9 +2754,10 @@ function mgEditor(oldName=''){
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
  if(!gameName){mgToast('Enter game name','error');return;}
 
+
 if (freeOptions === null) {
   mgToast(
-    "Free Game Options must be whole numbers between 1 and 10",
+    "Free Game Options must contain positive whole numbers only!",
     "error"
   );
   return;
