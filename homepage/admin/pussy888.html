@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <title>PUSSY888 Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
@@ -654,66 +655,651 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
-  </style>
+  
+/* PUSSY888 settings UI matching 918KISS; original Game Log CSS retained */
+/* PUSSY888 management / responsive design; original screenshot table untouched */
+*{box-sizing:border-box}body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
+.mg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px}
+.mg-head h1{font-size:21px;font-weight:650;margin:0}.mg-head p{margin:3px 0 0;color:var(--muted,#999)}
+.mg-head-actions{display:flex;flex-wrap:wrap;gap:8px}.mg-head-actions button{min-height:32px}
+.mg-panel{min-width:0;max-width:100%;border:1px solid var(--border-input);border-radius:12px;padding:12px;margin: 0 12px 12px;background:var(--page-input)}
+.mg-panel-title{font-size:14px;font-weight:700;margin:0 0 13px;opacity:.9}
+.mg-panel .form-row{margin:0;gap:10px;align-items:center;display:flex;flex-wrap:wrap}
+
+/* ==========================================
+   PUSSY888 - GAME SETTINGS RESPONSIVE FINAL
+   ========================================== */
+
+/* Responsive ikut lebar card / iframe */
+.mg-panel .form-row-top {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 165px), 1fr)
+  ) !important;
+  gap: 10px !important;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Semua item ikut saiz kolum */
+.mg-panel .form-row-top > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  grid-area: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Input, select, custom dropdown */
+.mg-panel .form-row-top input,
+.mg-panel .form-row-top select,
+.mg-panel .form-row-top .cs-wrap,
+.mg-panel .form-row-top .shared-dropdown,
+.mg-panel .form-row-top .cs-display {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Semua button termasuk Set Free Game */
+.mg-panel .form-row-top button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box !important;
+}
+
+/* Buang fixed width lama pada toggle */
+.mg-panel .form-row-top #autoFreeGameBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Pastikan text dropdown tidak bertindih */
+.mg-panel .form-row-top .cs-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Input tarikh */
+.mg-panel .form-row-top #manualTime {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Panel sangat sempit: satu kolum */
+@container (max-width: 240px) {
+  .mg-panel .form-row-top {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+.mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
+.mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
+/* ===== PUSSY888 GAME LOG FIX ===== */
+
+.mg-log-panel {
+  overflow: visible;
+  min-width: 0;
+  height: auto;
+}
+
+.mg-log-panel .table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mg-log-panel #gameLog {
+  display: table;
+  min-width: 1300px;
+  width: max-content;
+  table-layout: auto;
+}
+
+.mg-log-panel #gameLog thead {
+  display: table-header-group;
+}
+
+.mg-log-panel #gameLog tbody {
+  display: table-row-group;
+}
+.mg-modal-form{display:flex;flex-direction:column;gap:12px}.mg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
+.mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
+.mg-betrow{border:1px solid var(--input-line);border-radius:9px;padding:10px;display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,2fr) auto;gap:10px;align-items:end}
+.mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
+.mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
+@media(max-width:600px){.mg-head h1{font-size:18px}.mg-betrow{grid-template-columns:minmax(0,1fr)}.mg-betrow button{justify-self:end}}
+
+/* ==========================================
+   PUSSY888 - SCORE & WINNER RESPONSIVE GRID
+   ========================================== */
+
+/* Desktop: 8 kolum dalam satu baris */
+.mg-panel .form-row-middle {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr) 100px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+/* Buka wrapper supaya input dan button
+   menjadi item grid berasingan */
+.mg-panel .form-row-middle .inline-group {
+  display: contents !important;
+}
+
+/* Semua input dan button ikut saiz grid */
+.mg-panel .form-row-middle input,
+.mg-panel .form-row-middle button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Toggle Add Score */
+.mg-panel .form-row-middle #autoAddScoreBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Tablet / panel admin yang sempit */
+@media (max-width: 1100px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: kekalkan 2 kolum */
+@media (max-width: 640px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-middle input,
+  .mg-panel .form-row-middle button {
+    height: 32px;
+    font-size: 13px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* ==========================================
+   PUSSY888 - GENERATOR ACTIONS INLINE
+   ========================================== */
+
+/* Jarak antara Score Controls dan Actions */
+.mg-panel .mg-actions-divider {
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Tombol Actions dalam satu baris */
+.mg-panel .form-row-bottom {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+/* Tombol ikut panjang tulisan */
+.mg-panel .form-row-bottom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+
+  flex: 0 0 auto !important;
+
+  height: 32px;
+  min-height: 32px;
+
+  padding: 0 15px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Phone: tetap ikut panjang tulisan,
+   turun baris apabila ruang tidak cukup */
+@media (max-width: 768px) {
+  .mg-panel .form-row-bottom {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    grid-template-columns: none !important;
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-bottom button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+/* Card boleh mengukur lebar sendiri */
+.mg-panel {
+  container-type: inline-size;
+}
+
+/* Dropdown NewUI juga tidak boleh melebihi card */
+.mg-panel .form-row-top .new-ui-dropdown,
+.mg-panel .form-row-top [data-new-ui-dropdown] {
+  max-width: 100%;
+  min-width: 0;
+}
+/* ==========================================
+   PUSSY888 - GAME SETTINGS + SCORE ONE CARD
+   ========================================== */
+
+/* Divider antara Game Settings dan Score */
+.mg-panel .mg-section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Pastikan baris Game Settings kemas */
+.mg-panel .form-row-top {
+  margin: 0;
+}
+
+/* Tajuk Score selepas divider */
+.mg-panel .mg-section-divider + .mg-panel-title {
+  margin-bottom: 13px;
+}
+
+/* PUSSY888 HEADER BUTTONS - RIGHT ALIGN */
+
+.mg-head {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.mg-head-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.mg-head-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   PUSSY888 - SHARED NEW UI INPUT & DROPDOWN
+   ========================================== */
+
+/* Shared dropdown */
+.mg-panel .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mg-panel .shared-dropdown-trigger {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .shared-dropdown-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+/* Shared input */
+.mg-panel .new-ui-input-wrap {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .new-ui-input-wrap > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Dropdown list mesti muncul atas elemen lain */
+.mg-panel .shared-dropdown.open {
+  z-index: 1000;
+}
+
+/* Pastikan wrapper custom ikut kolum grid */
+.mg-panel .form-row-top > .shared-dropdown,
+.mg-panel .form-row-top > .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score row */
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  min-width: 0;
+  width: 100%;
+}
+  /* ==========================================
+   PUSSY888 - NEWUI INPUT CLEAR BUTTON FIX
+   ========================================== */
+
+/* Wrapper input kekal sebagai satu komponen */
+.mg-panel .new-ui-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Input tidak ditutup oleh button clear */
+.mg-panel .new-ui-input-wrap > input {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Button clear kecil di sebelah kanan */
+.mg-panel .new-ui-input-wrap > button {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--blur) !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Hover clear tidak menutup input */
+.mg-panel .new-ui-input-wrap > button:hover,
+.mg-panel .new-ui-input-wrap > button:active,
+.mg-panel .new-ui-input-wrap > button:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--page-text) !important;
+}
+
+/* SVG kekal di tengah button kecil */
+.mg-panel .new-ui-input-wrap > button svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  pointer-events: none;
+}
+/* ==========================================
+   PUSSY888 - CUSTOM SWITCH RESPONSIVE FIX
+   ========================================== */
+
+/* Jangan biarkan checkbox ikut CSS input biasa */
+.mg-panel .shared-active-switch > input[type="checkbox"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Switch ikut ruang tersedia */
+.mg-panel .shared-active-switch {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Track tidak boleh melebihi kolum */
+.mg-panel .shared-active-switch .shared-active-track {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-shrink: 1;
+}
+
+/* Game Settings */
+.mg-panel .form-row-top > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score & Winner - label mesti menjadi grid item */
+.mg-panel .form-row-middle .inline-group > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Pastikan semua grid item boleh mengecil */
+.mg-panel .form-row-middle > *,
+.mg-panel .form-row-top > * {
+  min-width: 0 !important;
+}
+
+/* Grid 2 kolum untuk panel sempit */
+@container (max-width: 500px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* =========================================================
+   PUSSY888 UI UPGRADE — Settings & Controls ONLY
+   Game Log layout, table and calculation logic are untouched.
+   ========================================================= */
+.mg-head-actions button,
+.form-row-top button,
+.form-row-middle button,
+.form-row-bottom button {
+  transition: background-color .18s ease, border-color .18s ease,
+              box-shadow .18s ease, opacity .18s ease;
+}
+.mg-head-actions button:focus-visible,
+.form-row-top button:focus-visible,
+.form-row-middle button:focus-visible,
+.form-row-bottom button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+.form-row-top .shared-dropdown,
+.form-row-top .shared-input,
+.form-row-middle .shared-input {
+  min-width: 0;
+  max-width: 100%;
+}
+.form-row-top .shared-dropdown:focus-within {
+  z-index: 30;
+}
+.mg-panel button:disabled,
+.mg-head-actions button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+@media (max-width: 640px) {
+  .mg-head-actions { flex-wrap: wrap; }
+  .mg-head-actions button { max-width: 100%; }
+  .form-row-top .shared-dropdown,
+  .form-row-top .shared-input,
+  .form-row-middle .shared-input { width: 100%; }
+}
+
+
+/* PUSSY888 table original header color */
+#gameLog th { background:#3c8dbc; }
+</style>
 <body>
+<header class="mg-head">
+  <div class="mg-head-actions">
+    <button id="mgManage" type="button" class="btn-primary-new">
+      Manage Games
+    </button>
+
+    <button id="mgCreate" type="button" class="btn-primary-new">
+      + Create Game
+    </button>
+  </div>
+</header>
+<section class="mg-panel"><div class="mg-panel-title">Game Settings</div>
   <div class="form-row form-row-top">
-    <select id="gameSelect" class="select2 select-main">
-    <option value="" disabled selected hidden>Select Game</option>
-    <option value="BananaMonkey">BananaMonkey</option><option value="BeachLife">BeachLife</option><option value="India">India</option><option value="FORTUNE">FORTUNE</option><option value="LandofGold">LandofGold</option><option value="BaBaoYiHou">BaBaoYiHou</option><option value="ThaiTemple">ThaiTemple</option><option value="Hologram Wilds">Hologram Wilds</option><option value="HalloweenParty">HalloweenParty</option><option value="Neptune Treasure">Neptune Treasure</option><option value="BuffaloBlitz">BuffaloBlitz</option><option value="Desert Treasure">Desert Treasure</option><option value="GaelicLuck">GaelicLuck</option><option value="Tigerclaw">Tigerclaw</option><option value="Berry">Berry</option><option value="Aztec">Aztec</option><option value="Geisha">Geisha</option><option value="GoldenSlut">GoldenSlut</option><option value="Dolphin">Dolphin</option><option value="FortunePanda">FortunePanda</option><option value="StoneAge">StoneAge</option><option value="FORTUNE">FORTUNE</option><option value="Sherlock">Sherlock</option><option value="T-REX">T-REX</option><option value="HighwayPro">HighwayPro</option><option value="WarriorsGold">WarriorsGold</option><option value="White Lion">White Lion</option><option value="GoldenTree">GoldenTree</option><option value="MoneyFever">MoneyFever</option><option value="ICELAND">ICELAND</option><option value="Boxing">Boxing</option><option value="GoldenSlut">GoldenSlut</option><option value="EmperorGate">EmperorGate</option><option value="DolphinReef">DolphinReef</option><option value="Twister">Twister</option><option value="PayDirt">PayDirt</option><option value="WildFox">WildFox</option><option value="PirateShip">PirateShip</option><option value="JinQianWa">JinQianWa</option><option value="Cleopatra">Cleopatra</option><option value="Garden">Garden</option><option value="FiveDragons">FiveDragons</option><option value="Alice">Alice</option><option value="GreatStars">GreatStars</option><option value="SAFARI Heat">SAFARI Heat</option><option value="PatherMoon">PatherMoon</option><option value="Rally">Rally</option><option value="BigShot">BigShot</option><option value="Thai">Thai</option><option value="SeaCaptain">SeaCaptain</option><option value="TreasureIsland">TreasureIsland</option><option value="Magician">Magician</option><option value="SeaWorld">SeaWorld</option><option value="Samurai">Samurai</option><option value="circus">circus</option><option value="TopGun">TopGun</option><option value="BonusBears">BonusBears</option><option value="JAPAN">JAPAN</option><option value="Boyking">Boyking</option><option value="ShiningStars">ShiningStars</option><option value="IrishLuck">IrishLuck</option><option value="Wealth">Wealth</option><option value="CoyoteCash">CoyoteCash</option><option value="Prosperity">Prosperity</option><option value="FairyGarden">FairyGarden</option><option value="GoldenLotus">GoldenLotus</option><option value="Tally Ho">Tally Ho</option><option value="Girls">Girls</option><option value="Dragon Gold">Dragon Gold</option><option value="CatQueen">CatQueen</option><option value="Roaring">Roaring</option><option value="Pyramid">Pyramid</option><option value="Pharaoh Secrets">Pharaoh Secrets</option><option value="FortuneLions">FortuneLions</option><option value="Panda">Panda</option><option value="GreatBlue">GreatBlue</option><option value="Epicape">Epicape</option><option value="Archer">Archer</option><option value="Easter">Easter</option><option value="Queen of Wand">Queen of Wand</option><option value="Arctic">Arctic</option><option value="玄圃联欢">玄圃联欢</option><option value="ShuiHu">ShuiHu</option><option value="Laura">Laura</option><option value="HighWay">HighWay</option><option value="Silver">Silver</option><option value="ZhaoCaiJinBao">ZhaoCaiJinBao</option><option value="FootBall">FootBall</option><option value="Halloween">Halloween</option><option value="GodofWealth">GodofWealth</option><option value="GoldenTour">GoldenTour</option>
-  </select>
-    <select id="betSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Bet</option>
-    </select>
-    <select id="pecahanSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Win</option>
-    </select>
-   <input type="text" id="manualTime" placeholder="Set Time" class="input-time" />
+
+<select
+  id="gameSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Game"
+>
+  <option value="" disabled selected hidden>Select Game</option>
+</select>
+
+<select
+  id="betSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Bet"
+>
+  <option value="" disabled selected hidden>Select Bet</option>
+</select>
+
+<select
+  id="pecahanSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Win"
+>
+  <option value="" disabled selected hidden>Select Win</option>
+</select>
+
+   <input data-new-ui-input  type="text" id="manualTime" placeholder="Set Time" class="input-time" />
    <button onclick="setNow()" class="btn-main h38 px12 fs16">Click Now</button>
     
-   <input type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
+   <input data-new-ui-input  type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
 
     <button id="setFreeGameBtn" class="btn-main h38">Set Free Game</button>
 
-<button id="autoFreeGameBtn" type="button" class="switch-btn inactive">
-  <span class="switch-text">Inactive</span>
-  <span class="switch-circle"></span>
-</button>
+<label class="shared-active-switch mg-toggle">
+  <input type="checkbox" id="autoFreeGameBtn">
+  <span class="shared-active-track">
+    <span class="shared-active-text">Inactive</span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
   </div>
 
- <div class="form-row form-row-middle bottom-gap">
+<div class="mg-section-divider"></div>
+
+<div class="mg-panel-title">Score & Winner Controls</div><div class="form-row form-row-middle bottom-gap">
     <div class="inline-group">
-      <input type="number" id="manualScore" placeholder="Add Score" class="input-score" />
-<button id="autoAddScoreBtn" type="button" class="switch-btn active">
-  <span class="switch-text">Active</span>
-  <span class="switch-circle"></span>
-</button>
+      <input data-new-ui-input  type="number" id="manualScore" placeholder="Add Score" class="input-score" />
+<label class="shared-active-switch mg-toggle">
+  <input type="checkbox" id="autoAddScoreBtn">
+  <span class="shared-active-track">
+    <span class="shared-active-text">Inactive</span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
     </div>
 
     <div class="inline-group">
-      <input type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
+      <input data-new-ui-input  type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
     </div>
 
     <button onclick="addJackpot()" class="btn-main h38">Set Jackpot</button>
 
     <div class="inline-group">
-      <input type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
+      <input data-new-ui-input  type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
     </div>
 
     <button onclick="addManualSetScore()" class="btn-main h38">Support Back</button>
 
     <div class="inline-group">
-      <input type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
+      <input data-new-ui-input  type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
     </div>
 
     <button onclick="setRandomWin()" class="btn-main h38">Set Winner</button>
   </div>
 
-  <div class="form-row form-row-bottom bottom-gap">
+  <div class="mg-actions-divider"></div>
+    <div class="form-row form-row-bottom bottom-gap">
     <button onclick="generateLog()" class="btn-main h38">Change</button>
     <button onclick="deleteCents()" class="btn-main h38">Delete Cents</button>
     <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
     <button onclick="resetLog()" class="reset-button">Reset Log</button>
   </div>
+</section>
+<section class="mg-panel mg-log-panel" id="gameLogCard">
+<div class="mg-panel-title">Game Log</div>
 <div class="table-wrap">
   <table id="gameLog">
     <thead>
@@ -731,6 +1317,8 @@ select:focus-visible{
     </tbody>
   </table>
 </div>
+</section>
+<section class="mg-panel" id="gameLogEmptyCard" style="display:none"><div id="gameLogEmpty"></div></section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -745,206 +1333,12 @@ const MAX_FREE_GAME_ROWS = 10;   // maksimum 10 baris free game
 let autoFreeGameOn = false;   // ✅ status AUTO (off default)
 let autoAddScoreOn = false;
 let isRestoringSelection = false;
-const gameData = {
-"LandofGold": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 2.80, 3.20, 3.60, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],2.80: [130.00, 150.00, 180.00, 220.00],3.20: [150.00, 180.00, 200.00, 240.00],3.60: [180.00, 200.00, 220.00, 260.00],4.00: [200.00, 240.00, 280.00, 320.00],8.00: [350.00, 400.00, 450.00, 500.00],12.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"BaBaoYiHou": 
-{ bets: [1.00, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50, 5.00, 12.50, 25.00],pecahan: {1.00: [25.00, 50.00, 75.00, 100.00],2.00: [25.00, 50.00, 100.00, 150.00],2.50: [50.00, 100.00, 150.00, 200.00],3.00: [25.00, 50.00, 100.00, 300.00],3.50: [50.00, 90.00, 150.00, 350.00],4.00: [90.00, 150.00, 300.00, 450.00],4.50: [100.00, 250.00, 400.00, 500.00],5.00: [150.00, 300.00, 450.00, 600.00],12.50: [200.00, 400.00, 600.00, 800.00],25.00: [400.00, 600.00, 800.00, 1000.00]}},
-"HalloweenParty": 
-{ bets: [1.20, 1.50, 2.10, 3.00, 3.60, 4.50, 6.00, 9.00, 15.00, 18.00, 30.00],pecahan: {1.20: [15.00, 30.00, 45.00, 60.00],1.50: [30.00, 45.00, 60.00, 75.00],2.10: [45.00, 60.00, 75.00, 90.00],3.00: [60.00, 75.00, 90.00, 105.00],3.60: [75.00, 90.00, 105.00, 120.00],4.50: [90.00, 105.00, 120.00, 135.00],6.00: [105.00, 120.00, 135.00, 150.00],9.00: [120.00, 135.00, 150.00, 165.00],15.00: [135.00, 150.00, 165.00, 180.00],18.00: [150.00, 165.00, 180.00, 195.00],30.00: [165.00, 180.00, 195.00, 205.00]}},
-"PirateShip": 
-{ bets: [1.20, 1.50, 2.10, 3.00, 3.60, 4.50, 6.00, 9.00, 15.00, 18.00, 30.00],pecahan: {1.20: [15.00, 30.00, 45.00, 60.00],1.50: [30.00, 45.00, 60.00, 75.00],2.10: [45.00, 60.00, 75.00, 90.00],3.00: [60.00, 75.00, 90.00, 105.00],3.60: [75.00, 90.00, 105.00, 120.00],4.50: [90.00, 105.00, 120.00, 135.00],6.00: [105.00, 120.00, 135.00, 150.00],9.00: [120.00, 135.00, 150.00, 165.00],15.00: [135.00, 150.00, 165.00, 180.00],18.00: [150.00, 165.00, 180.00, 195.00],30.00: [165.00, 180.00, 195.00, 205.00]}},
-"FortunePanda": 
-{ bets: [1.00, 2.50, 5.00, 10.00, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],10.00: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Archer": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 7.50, 12.50, 25.00],pecahan: {1.00: [30.00, 45.00, 60.00, 75.00],1.25: [45.00, 60.00, 75.00, 90.00],1.50: [60.00, 75.00, 90.00, 105.00],1.75: [75.00, 90.00, 105.00, 120.00],2.00: [90.00, 105.00, 120.00, 135.00],2.25: [105.00, 120.00, 135.00, 150.00],2.50: [120.00, 135.00, 150.00, 165.00],7.50: [135.00, 150.00, 165.00, 180.00],12.50: [150.00, 165.00, 180.00, 195.00],25.00: [165.00, 180.00, 195.00, 205.00]}},
-"FiveDragons": 
-{ bets: [1.20, 1.50, 1.80, 2.10, 2.40, 2.70, 3.00, 7.50, 15.00, 30.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.50: [50.00, 80.00, 100.00, 150.00],1.80: [60.00, 80.00, 100.00, 150.00],2.10: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],2.70: [130.00, 150.00, 180.00, 220.00],3.00: [150.00, 180.00, 200.00, 240.00],7.50: [180.00, 200.00, 220.00, 260.00],15.00: [200.00, 240.00, 280.00, 320.00],30.00: [350.00, 400.00, 450.00, 500.00]}},
-"Dolphin": 
-{ bets: [1.80, 2.70, 4.50, 9.00, 18.00, 27.00, 36.00],pecahan: {1.80: [30.00, 50.00, 100.00, 130.00],2.70: [50.00, 80.00, 100.00, 150.00],4.50: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],9.00: [130.00, 150.00, 180.00, 220.00],18.00: [150.00, 180.00, 200.00, 200.00],27.00: [180.00, 200.00, 220.00, 300.00],36.00: [200.00, 240.00, 280.00, 500.00]}},
-"GoldenTour": 
-{ bets: [1.25, 2.50, 5.00, 25.00],pecahan: {1.25: [30.00, 60.00, 100.00, 130.00],2.50: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],25.00: [100.00, 150.00, 200.00, 500.00]}},
-"FootBall": 
-{ bets: [1.00, 1.50, 3.00, 5.00, 15.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],1.50: [60.00, 90.00, 110.00, 150.00],3.00: [90.00, 120.00, 150.00, 180.00],5.00: [120.00, 150.00, 180.00, 210.00],15.00: [100.00, 150.00, 200.00, 500.00]}},
-"Laura": 
-{bets: [1.50, 3.00, 7.50, 15.00, 30.00],pecahan: {1.50: [30.00, 50.00, 100.00, 130.00],3.00: [50.00, 80.00, 100.00, 150.00],7.50: [80.00, 100.00, 130.00, 180.00],15.00: [130.00, 150.00, 180.00, 300.00],30.00: [150.00, 180.00, 200.00, 500.00]}},
-"Samurai": 
-{ bets: [2.25, 4.50, 9.00, 18.00, 27.00],pecahan: {2.25: [20.00, 40.00, 60.00, 80.00],4.50: [30.00, 50.00, 100.00, 150.00],9.00: [50.00, 80.00, 100.00, 200.00],18.00: [80.00, 100.00, 130.00, 300.00],27.00: [100.00, 150.00, 200.00, 500.00]}},
-"Alice": 
-{ bets: [1.50, 3.00, 4.50, 9.00, 15.00, 30.00],pecahan: {1.50: [30.00, 50.00, 100.00, 130.00],3.00: [50.00, 80.00, 100.00, 150.00],4.50: [80.00, 100.00, 130.00, 180.00],9.00: [100.00, 130.00, 150.00, 200.00],15.00: [130.00, 150.00, 180.00, 300.00],30.00: [150.00, 180.00, 200.00, 500.00]}},
-"IrishLuck": 
-{ bets: [1.20, 1.50, 1.80, 2.10, 2.40, 2.70, 3.00, 7.50, 15.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],1.50: [80.00, 100.00, 130.00, 180.00],1.80: [50.00, 100.00, 200.00, 300.00],2.10: [50.00, 100.00, 200.00, 300.00],2.40: [50.00, 100.00, 200.00, 300.00],2.70: [50.00, 100.00, 200.00, 300.00],3.00: [50.00, 100.00, 200.00, 300.00],6.00: [50.00, 100.00, 200.00, 300.00],7.50: [80.00, 100.00, 200.00, 400.00],15.00: [100.00, 300.00, 500.00, 750.00]}},
-"Berry": 
-{ bets: [2.25, 4.50, 9.00, 45.00],pecahan: {2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"HighwayPro": 
-{ bets: [2.25, 4.50, 9.00, 45.00],pecahan: {2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"GodofWealth": 
-{ bets: [1.80, 4.50, 9.00, 18.00, 27.00],pecahan: {1.80: [30.00, 50.00, 70.00, 90.00],4.50: [40.00, 60.00, 110.00, 160.00],9.00: [60.00, 90.00, 110.00, 210.00],18.00: [90.00, 110.00, 140.00, 310.00],27.00: [110.00, 160.00, 210.00, 550.00]}},
-"ShuiHu": 
-{ bets: [1.80, 4.50, 9.00, 18.00, 27.00],pecahan: {1.80: [30.00, 50.00, 70.00, 90.00],4.50: [40.00, 60.00, 110.00, 160.00],9.00: [60.00, 90.00, 110.00, 210.00],18.00: [90.00, 110.00, 140.00, 310.00],27.00: [110.00, 160.00, 210.00, 550.00]}},
-"BeachLife": 
-{ bets: [1.00, 2.00, 4.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],4.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"FortuneLions": 
-{ bets: [1.00, 2.00, 4.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],4.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Desert Treasure": 
-{ bets: [1.00, 2.00, 4.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],4.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Easter": 
-{ bets: [1.00, 2.00, 4.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],4.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Prosperity": 
-{ bets: [1.00, 1.20, 1.60, 2.00, 4.00, 5.00, 6.00, 8.00, 10.00, 15.00, 20.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.20: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.60: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],4.00: [120.00, 140.00, 160.00, 180.00],6.00: [140.00, 160.00, 180.00, 200.00],8.00: [220.00, 240.00, 260.00, 280.00],10.00: [240.00, 260.00, 280.00, 300.00],15.00: [260.00, 280.00, 300.00, 500.00],20.00: [270.00, 300.00, 320.00, 550.00]}},
-"Arctic": 
-{ bets: [1.00, 1.20, 1.60, 2.00, 4.00, 5.00, 6.00, 8.00, 10.00, 15.00, 20.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.20: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.60: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],4.00: [120.00, 140.00, 160.00, 180.00],6.00: [140.00, 160.00, 180.00, 200.00],8.00: [220.00, 240.00, 260.00, 280.00],10.00: [240.00, 260.00, 280.00, 300.00],15.00: [260.00, 280.00, 300.00, 500.00],20.00: [270.00, 300.00, 320.00, 550.00]}},
-"Silver": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"GreatStars": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"ZhaoCaiJinBao": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"HighWay": 
-{ bets: [0.90,2.25, 4.50, 9.00, 45.00],pecahan: {0.90: [20.00, 40.00, 60.00, 80.00],2.25: [30.00, 50.00, 100.00, 150.00],4.50: [50.00, 80.00, 100.00, 200.00],9.00: [80.00, 100.00, 130.00, 300.00],45.00: [100.00, 150.00, 200.00, 500.00]}},
-"CatQueen": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 3.20, 4.00, 8.00, 10.00, 12.00, 16.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],3.20: [130.00, 150.00, 180.00, 220.00],4.00: [150.00, 180.00, 200.00, 240.00],8.00: [180.00, 200.00, 220.00, 260.00],10.00: [200.00, 240.00, 280.00, 320.00],12.00: [350.00, 400.00, 450.00, 500.00],16.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Tigerclaw": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 3.20, 4.00, 8.00, 10.00, 12.00, 16.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],3.20: [130.00, 150.00, 180.00, 220.00],4.00: [150.00, 180.00, 200.00, 240.00],8.00: [180.00, 200.00, 220.00, 260.00],10.00: [200.00, 240.00, 280.00, 320.00],12.00: [350.00, 400.00, 450.00, 500.00],16.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Roaring": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 3.20, 4.00, 8.00, 10.00, 12.00, 16.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],3.20: [130.00, 150.00, 180.00, 220.00],4.00: [150.00, 180.00, 200.00, 240.00],8.00: [180.00, 200.00, 220.00, 260.00],10.00: [200.00, 240.00, 280.00, 320.00],12.00: [350.00, 400.00, 450.00, 500.00],16.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Epicape": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 3.20, 4.00, 8.00, 10.00, 12.00, 16.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],3.20: [130.00, 150.00, 180.00, 220.00],4.00: [150.00, 180.00, 200.00, 240.00],8.00: [180.00, 200.00, 220.00, 260.00],10.00: [200.00, 240.00, 280.00, 320.00],12.00: [350.00, 400.00, 450.00, 500.00],16.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"BuffaloBlitz": 
-{ bets: [1.20, 1.60, 2.00, 2.40, 3.20, 4.00, 8.00, 10.00, 12.00, 16.00, 20.00],pecahan: {1.20: [30.00, 50.00, 100.00, 130.00],1.60: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],2.40: [100.00, 130.00, 150.00, 200.00],3.20: [130.00, 150.00, 180.00, 220.00],4.00: [150.00, 180.00, 200.00, 240.00],8.00: [180.00, 200.00, 220.00, 260.00],10.00: [200.00, 240.00, 280.00, 320.00],12.00: [350.00, 400.00, 450.00, 500.00],16.00: [500.00, 550.00, 600.00, 650.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"SAFARI Heat": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"ThaiTemple": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"Neptune Treasure": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"Thai": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"PatherMoon": 
-{ bets: [1.05, 1.20, 1.35, 1.50, 3.75, 7.50, 15.00],pecahan: {1.05: [30.00, 50.00, 100.00, 130.00],1.20: [50.00, 80.00, 100.00, 150.00],1.35: [80.00, 100.00, 130.00, 180.00],1.50: [100.00, 130.00, 150.00, 200.00],3.75: [130.00, 150.00, 180.00, 220.00],7.50: [150.00, 180.00, 200.00, 250.00],15.00: [180.00, 200.00, 220.00, 300.00]}},
-"MoneyFever": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"TreasureIsland": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"Magician": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"SeaWorld": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"GoldenTree": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"ShiningStars": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"TopGun": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"StoneAge": 
-{ bets: [1.00, 1.25, 1.75, 2.50, 3.00, 3.75, 5.00, 7.50, 12.50, 15.00, 25.00],pecahan: {1.00: [30.00, 50.00, 100.00, 130.00],1.25: [50.00, 80.00, 100.00, 150.00],1.75: [80.00, 100.00, 130.00, 180.00],2.50: [100.00, 130.00, 150.00, 200.00],3.00: [130.00, 150.00, 180.00, 220.00],3.75: [150.00, 180.00, 200.00, 240.00],5.00: [180.00, 200.00, 220.00, 260.00],7.50: [200.00, 240.00, 280.00, 320.00],12.50: [350.00, 400.00, 450.00, 500.00],15.00: [500.00, 550.00, 600.00, 650.00],25.00: [650.00, 700.00, 750.00, 800.00]}},
-"PayDirt": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"Prosperity": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"BonusBears": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"WarriorsGold": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"GreatBlue":
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"SeaCaptain":
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"T-REX": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"CoyoteCash": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"FairyGarden": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"GoldenLotus": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"玄圃联欢": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"BananaMonkey": 
-{ bets: [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 6.25, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],1.25: [40.00, 60.00, 80.00, 100.00],1.50: [60.00, 80.00, 100.00, 120.00],1.75: [80.00, 100.00, 120.00, 140.00],2.00: [100.00, 120.00, 140.00, 160.00],2.25: [120.00, 140.00, 160.00, 180.00],2.50: [140.00, 160.00, 180.00, 200.00],6.25: [220.00, 240.00, 260.00, 280.00],12.50: [240.00, 260.00, 280.00, 300.00],25.00: [260.00, 280.00, 300.00, 500.00]}},
-"India": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"GoldenSlut": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Girls": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"ICELAND": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Twister": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Twister": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Boxing":
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"JAPAN": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"Panda": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"EmperorGate": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"WildFox": 
-{ bets: [1.00, 2.50, 5.00, 12.50, 25.00],pecahan: {1.00: [20.00, 40.00, 60.00, 80.00],2.50: [40.00, 60.00, 80.00, 100.00],5.00: [60.00, 80.00, 100.00, 120.00],12.50: [50.00, 100.00, 200.00, 500.00],25.00: [50.00, 100.00, 200.00, 500.00]}},
-"JinQianWa": 
-{ bets: [1.20, 2.00, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],4.00: [100.00, 130.00, 150.00, 200.00],8.00: [180.00, 200.00, 220.00, 260.00],12.00: [350.00, 400.00, 450.00, 500.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Queen of Wand": 
-{ bets: [1.20, 2.00, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],4.00: [100.00, 130.00, 150.00, 200.00],8.00: [180.00, 200.00, 220.00, 260.00],12.00: [350.00, 400.00, 450.00, 500.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Hologram Wilds": 
-{ bets: [1.20, 2.00, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],4.00: [100.00, 130.00, 150.00, 200.00],8.00: [180.00, 200.00, 220.00, 260.00],12.00: [350.00, 400.00, 450.00, 500.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Lion Dance": 
-{ bets: [1.20, 2.00, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],4.00: [100.00, 130.00, 150.00, 200.00],8.00: [180.00, 200.00, 220.00, 260.00],12.00: [350.00, 400.00, 450.00, 500.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"White Lion": 
-{ bets: [1.20, 2.00, 4.00, 8.00, 12.00, 20.00],pecahan: {1.20: [50.00, 80.00, 100.00, 150.00],2.00: [80.00, 100.00, 130.00, 180.00],4.00: [100.00, 130.00, 150.00, 200.00],8.00: [180.00, 200.00, 220.00, 260.00],12.00: [350.00, 400.00, 450.00, 500.00],20.00: [650.00, 700.00, 750.00, 800.00]}},
-"Cleopatra": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"FORTUNE": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"PenguinCity": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Wealth": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"DolphinReef": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Boyking": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Sherlock": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Dragon Gold": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Tally Ho": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"circus": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Halloween": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"BigShot": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"FORTUNE": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Pharaoh Secrets": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Pyramid": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Rally": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Geisha": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Aztec": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"GaelicLuck": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}},
-"Garden": 
-{ bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}}
-};
+const gameData = {};
 function updateAutoAddScoreButtonUI() {
-  const btn = document.getElementById("autoAddScoreBtn");
-  if (!btn) return;
-
-  const text = btn.querySelector(".switch-text");
-
-  btn.classList.toggle("active", autoAddScoreOn);
-  btn.classList.toggle("inactive", !autoAddScoreOn);
-
-  if (text) text.textContent = autoAddScoreOn ? "Active" : "Inactive";
+  const input=document.getElementById('autoAddScoreBtn');
+  if(!input)return;
+  input.checked=autoAddScoreOn;
+  window.SharedActiveSwitch?.sync(input);
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
 function saveCurrentSelectionOnly() {
@@ -1154,9 +1548,9 @@ function initCustomSelect(selectId, withSearch = false, searchPlaceholder = "Sea
   native._csApi = api;
   return api;
 }
-const gameCS = initCustomSelect("gameSelect", true, "Search game...");
-const betCS = initCustomSelect("betSelect", false);
-const winCS = initCustomSelect("pecahanSelect", false);
+const gameCS = NewUI.dropdown("#gameSelect", {placeholder:"Select Game"});
+const betCS = NewUI.dropdown("#betSelect", {placeholder:"Select Bet"});
+const winCS = NewUI.dropdown("#pecahanSelect", {placeholder:"Select Win"});
 
 document.getElementById("gameSelect").addEventListener("change", function () {
   const game = this.value;
@@ -1247,9 +1641,6 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
   const globalTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   document.getElementById("manualTime").value = globalTime;
 }
-  function rnd(min, max, dec = 2){
-    return parseFloat((Math.random() * (max - min) + min).toFixed(dec));
-  }
 
   let globalTime = null;
 
@@ -1302,15 +1693,10 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
 }
 // update rupa button AUTO ikut status autoFreeGameOn
 function updateAutoFreeGameButtonUI() {
-  const btn = document.getElementById("autoFreeGameBtn");
-  if (!btn) return;
-
-  const text = btn.querySelector(".switch-text");
-
-  btn.classList.toggle("active", autoFreeGameOn);
-  btn.classList.toggle("inactive", !autoFreeGameOn);
-
-  if (text) text.textContent = autoFreeGameOn ? "Active" : "Inactive";
+  const input=document.getElementById('autoFreeGameBtn');
+  if(!input)return;
+  input.checked=autoFreeGameOn;
+  window.SharedActiveSwitch?.sync(input);
 }
  //  FREE GAME HELPERS
 // =====================
@@ -1424,15 +1810,15 @@ document.getElementById('setFreeGameBtn').addEventListener('click', function(){
 
 // tombol AUTO Free Game
 const autoBtn = document.getElementById('autoFreeGameBtn');
-autoBtn.addEventListener('click', () => {
-  autoFreeGameOn = !autoFreeGameOn;   // toggle ON/OFF
-  localStorage.setItem('autoFreeGameOnPussy888', autoFreeGameOn ? '1' : '0');
+autoBtn.addEventListener('change', () => {
+  autoFreeGameOn=autoBtn.checked;
+  localStorage.setItem('autoFreeGameOnPussy888',autoFreeGameOn?'1':'0');
   updateAutoFreeGameButtonUI();
 });
 // ✅ tombol AUTO AddScore
-document.getElementById("autoAddScoreBtn")?.addEventListener("click", () => {
-  autoAddScoreOn = !autoAddScoreOn;
-  localStorage.setItem("autoAddScoreOnPussy888", autoAddScoreOn ? "1" : "0");
+document.getElementById("autoAddScoreBtn")?.addEventListener("change", (e) => {
+  autoAddScoreOn=e.target.checked;
+  localStorage.setItem('autoAddScoreOnPussy888',autoAddScoreOn?'1':'0');
   updateAutoAddScoreButtonUI();
 });
 
@@ -2260,6 +2646,146 @@ document.addEventListener("copy", function() {
     method: "copy-event"
   });
 }, true);
+
+/* ================= PUSSY888 FIREBASE GAME CATALOG ================= */
+const MG_PATH='pussy888/games';
+let mgRef=null, mgCatalogLoaded=false, mgGameIds={};
+function mgToast(msg, type = "success") {
+  return showToast(msg, type);
+}
+function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
+function mgOptions(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10))].sort((a,b)=>a-b);}
+function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
+function mgField(label,value='',type='text',hint=''){
+ const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
+}
+function mgApplyCatalog(snapshot){
+ const previous=document.getElementById('gameSelect').value;
+ const data=snapshot||{};
+
+for (const key of Object.keys(gameData)) {
+  delete gameData[key];
+}
+
+mgGameIds = {};
+
+ Object.entries(data).forEach(([id,v])=>{
+   if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
+   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
+   mgGameIds[v.name]=id;
+ });
+ const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
+ Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
+ const saved=(()=>{try{return JSON.parse(localStorage.getItem('gameLogDataPussy888')||'{}')}catch{return {}}})();
+ const selected=gameData[previous]?previous:gameData[saved.game]?saved.game:'';
+ if(selected){select.value=selected;isRestoringSelection=true;select.dispatchEvent(new Event('change',{bubbles:true}));
+ if(saved.game===selected&&saved.bet!==undefined){document.getElementById('betSelect').value=String(saved.bet);document.getElementById('betSelect').dispatchEvent(new Event('change',{bubbles:true}));if(saved.pecahan!==undefined)document.getElementById('pecahanSelect').value=String(saved.pecahan);}
+ isRestoringSelection=false;}
+ gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
+ mgCatalogLoaded=true;
+}
+function mgStart(){
+ const create=document.getElementById('mgCreate'),manage=document.getElementById('mgManage');
+ create.addEventListener('click',()=>mgEditor());manage.addEventListener('click',mgManager);
+ if(!window.firebase?.apps?.length){mgToast('Firebase is not initialized. Check firebase.js','error');return;}
+ try{mgRef=firebase.database().ref(MG_PATH);mgRef.on('value',s=>mgApplyCatalog(s.val()),e=>mgToast('Game loading failed: '+e.message,'error'));}
+ catch(e){mgToast('Firebase connection error: '+e.message,'error');}
+}
+function mgEditor(oldName=''){
+ if(!mgRef){mgToast('Firebase not ready','error');return;}
+ const old=gameData[oldName]||{};
+ const form=mgElement('form','mg-modal-form');
+ const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
+ const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10 — AUTO picks only these counts.');free.input.placeholder='5, 10';form.append(free.host);
+ const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
+ const rows=mgElement('div','mg-modal-form');form.append(rows);
+ function addBet(bet='',wins=''){
+   const row=mgElement('div','mg-betrow');const a=mgField('Bet',String(bet),'number');a.input.step='any';a.input.min='0';const b=mgField('Win Options',String(wins),'text');b.input.placeholder='30, 60, 100';const del=mgElement('button','btn-delete-new','Remove');del.type='button';del.onclick=()=>row.remove();row.append(a.host,b.host,del);rows.append(row);
+   row._get=()=>({bet:Number(a.input.value),betText:a.input.value.trim(),wins:mgNumberList(b.input.value)});
+   window.NewUI?.input?.(a.input);window.NewUI?.input?.(b.input);
+ }
+ (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
+ if(!old.bets?.length)addBet();
+ const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
+ const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+ const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+ form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
+ form.addEventListener('submit',async e=>{
+ e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
+ if(!gameName){mgToast('Enter game name','error');return;}
+ if(free.input.value.trim()&&!freeOptions.length){mgToast('Free Game options must be between 1 and 10','error');return;}
+ if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
+ const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
+ if(!bets.length){mgToast('Add at least one Bet','error');return;}
+// Custom NewUI loading spinner
+await NewUI.setButtonLoading(save, true, {
+  text: "Saving..."
+});
+
+try {
+  const id = (oldName && mgGameIds[oldName])
+    ? mgGameIds[oldName]
+    : mgRef.push().key;
+
+  await mgRef.child(id).set({
+    name: gameName,
+    bets,
+    pecahan,
+    freeGameOptions: freeOptions,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // Pastikan spinner sempat kelihatan
+  await NewUI.setButtonLoading(save, false, {
+    minDuration: 700
+  });
+
+  modal.close();
+  mgToast("Game saved", "success");
+
+} catch (err) {
+  mgToast("Save failed: " + err.message, "error");
+
+} finally {
+  await NewUI.setButtonLoading(save, false);
+}
+ });
+}
+
+
+
+function mgManager(){
+const host = mgElement('div', 'mg-manager');
+
+const names = Object.keys(gameData).sort((a, b) =>
+  a.localeCompare(b)
+); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
+ names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
+ const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
+ 
+del.disabled = !mgGameIds[name];
+del.title = "Delete Game";
+
+ del.onclick=async()=>{if(!mgGameIds[name])return;if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{await mgRef.child(mgGameIds[name]).remove();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
+ acts.append(edit,del);item.append(title,acts);host.append(item);});
+ const modal=NewUI.modal.open({title:'Manage PUSSY888 Games',content:host,width:650});
+}
+// Inline button handlers live in this module; expose only the existing UI entrypoints.
+Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
+window.addEventListener('DOMContentLoaded',mgStart);
+
+
+/* PUSSY888: empty card only; original game log table and calculations unchanged */
+(function(){
+ function refresh(){
+   const table=document.getElementById('gameLogCard'),empty=document.getElementById('gameLogEmptyCard'),host=document.getElementById('gameLogEmpty'),tbody=document.querySelector('#gameLog tbody');
+   if(!table||!empty||!host||!tbody)return;
+   const hasRows=!!tbody.querySelector('tr');
+   table.style.display=hasRows?'':'none';empty.style.display=hasRows?'none':'';
+   if(!hasRows&&!host.dataset.rendered){window.showEmptyState?.(host,'No data','large','center');host.dataset.rendered='1';}
+ }
+ window.addEventListener('DOMContentLoaded',()=>{const body=document.querySelector('#gameLog tbody');if(!body)return;new MutationObserver(refresh).observe(body,{childList:true,subtree:true,characterData:true});refresh();});
+})();
 </script>
 </body>
 </html>
