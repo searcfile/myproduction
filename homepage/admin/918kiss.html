@@ -36,73 +36,199 @@
     --list-bg:#ffffff;
     --list-hover:rgba(0,0,0,0.08);
     --list-active:#e6f4ff;
-
+    
     --blue: #1668dc;
     --blue-hover: #3c89e8;
     --blue-active: #1554ad;
   }
-body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background: var(--page-bg);margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
+  /* ==========================================
+   918KISS - FORCE SOURCE SANS 3 FONT
+   ========================================== */
+
+html body,
+html body *:not(svg):not(path) {
+  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
+}
+
+/* Khusus input dan komponen custom UI */
+html body input,
+html body select,
+html body textarea,
+html body button,
+html body .cs-display,
+html body .cs-item,
+html body .cs-search input,
+html body .mg-panel,
+html body .mg-head,
+html body #gameLog,
+html body #gameLog th,
+html body #gameLog td {
+  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
+}
+body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg) ;margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
   .screenshot-mode th {border: 1px solid #ddd !important;}
   html { scrollbar-width: none;-ms-overflow-style: none;}html.body::-webkit-scrollbar {display: none;}
-  table {width: 65%;border-collapse: collapse;margin-top: 10px;font-size: 26px;}
-  th {padding: 22px 26px;border: 2.5px solid #ddd;background: #605ca8;color: white;text-align: center;}td {padding: 22px 26px; border: 1px solid #ddd;border: 1px solid rgba(0, 0, 0, 0.05);text-align: center;}
-  #gameLog tbody td {padding-top: 10px;padding-bottom: 10px;line-height: 1.1;}
-  .log-row {color: rgb(51, 51, 51);font-size: 26px; white-space: nowrap;background-color: #fff;}
-  th:nth-child(2),td:nth-child(2) {width: 0px;}th:nth-child(7),td:nth-child(7) {width: 5px;}
-  #gameLog td:nth-child(5),#gameLog th:nth-child(5) {width: 5px;}
-  #gameLog th:first-child,#gameLog td:first-child {width: 5px; white-space: nowrap;}
-  #gameLog th:nth-child(6),#gameLog td:nth-child(6) {width: 5px;}
-  #gameLog th:nth-child(3),#gameLog td:nth-child(3) {width: 5px;}
-  #gameLog th:nth-child(4),#gameLog td:nth-child(4) {width: 5px;}
-  .table-id-highlight {width: 38px;height: 34px;background-color: #d2d6de; color: #000;font-weight:bold;font-size:23.5px;border-radius:45%;display:flex;justify-content:center;align-items:center;margin:10px auto;}
-  button {padding: 0px 15px;font-size: 14px;background: var(--blue);color: white;border: 1px solid transparent;border-radius: 6px;height:32px;outline: none;appearance: none; -webkit-appearance: none;cursor: pointer;position: relative;overflow: visible;transition:background .2s cubic-bezier(0.645,0.045,0.355,1),transform  .15s ease,box-shadow .6s ease;}button:hover {background:var(--blue-hover);}button:active {background:var(--blue-active);}button.clicked::after{content:"";position:absolute;inset: 0;border-radius: inherit;box-shadow: 0 0 2px 6px #15417e;animation: fadeOut .9s ease forwards;pointer-events:none;}@keyframes fadeOut { from {opacity:1} to {opacity:0} }
-  select, input {padding: 4px 11px !important;text-align: left;font-size: 14px;border-radius: 6px;height:32px;background: var(--page-input);border: 1px solid var(--border-input);color: var(--page-text);transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);}input:hover {border: 1px solid var(--blue-hover);}input:focus {border: 1px solid var(--blue);outline: none;}select:hover {border: 1px solid var(--blue-hover);}select:focus {border: 1px solid var(--blue);outline: none;}
-  #nowTime {font-weight: bold;margin-left: 10px;color: gold;}
-  .set-score-row td {color: rgb(51, 51, 51);font-size: 26px;padding-top: 22px !important;padding-bottom: 22px !important;line-height: 1.1 !important;white-space: nowrap;background-color: #fff;}.set-score-row td.negatif {color: #dd4b39;font-weight: bold;font-size: 26px;background-color: #fff;}.set-score-row td.setscore {color: #dd4b39;font-weight: 750;;font-size: 26px;white-space: nowrap;background-color: #fff;}
-  #gameSelect {max-height: 38px;overflow-y: auto;cursor: pointer;transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);scroll-behavior: smooth;}#gameSelect:hover {border: 1px solid #ffe34d;}#gameSelect:focus {border: 1px solid gold;outline: none;}
-  .reset-button {background:red;color:white;border: 1px solid transparent;padding:0px 15px;height:32px;font-size: 14px;}.reset-button:hover {background: #ff4d4d;}.reset-button:active {background: #bf0000;}
-.toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1e293b;
-  color: #cbd5e1;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-  opacity: 0;
-  transition: opacity .35s ease;
-  z-index: 9999;
-  min-width: auto;
-  max-width: 90%;
-}
-.toast.show { opacity: 1; }
+table {
+      width: 65%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 26px;
+      }
+    th {
+      padding: 22px 26px;
+      border: 2.5px solid #ddd;
+      background: #3c8dbc;
+      color: white;
+      text-align: center;
+     }
+    td {
+      padding: 22px 26px; 
+      border: 1px solid #ddd;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      text-align: center;
+     }
+    #gameLog tbody td {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      line-height: 1.1;
+     }
+    .log-row {
+      color: rgb(51, 51, 51);
+      font-size: 26px; 
+      white-space: nowrap;
+      background-color: #fff;
+     }
+     th:nth-child(2),
+     td:nth-child(2) {
+     width: 0px; 
+     }
+     th:nth-child(7),
+     td:nth-child(7) {
+     width: 5px; 
+     }
+  #gameLog td:nth-child(5),
+  #gameLog th:nth-child(5) {
+    width: 5px; 
+  }
+  #gameLog th:first-child,
+  #gameLog td:first-child {
+   width: 5px; 
+   white-space: nowrap;
+  }
+  #gameLog th:nth-child(6),
+  #gameLog td:nth-child(6) {
+   width: 5px; 
+  }
+  #gameLog th:nth-child(3),
+  #gameLog td:nth-child(3) {
+   width: 5px; 
+  }
+  #gameLog th:nth-child(4),
+  #gameLog td:nth-child(4) {
+   width: 5px; 
+  }
+ .table-id-highlight {
+   width: 38px;              
+   height: 34px;              
+   background-color: #d2d6de; 
+   color: #000;               
+   font-weight: bold;         
+   font-size: 23.5px;          
+   border-radius: 45%;        
+   display: flex;             
+   justify-content: center;   
+   align-items: center;      
+   margin: 10px auto;         
+    }
+button {padding: 5px 10px;font-size: 14px;height: 32px;background: var(--blue);color: white;border: 1px solid transparent;border-radius: 6px;outline: none;appearance: none; -webkit-appearance: none;cursor: pointer;position: relative;overflow: visible;transition:background .2s cubic-bezier(0.645,0.045,0.355,1),transform  .15s ease,box-shadow .6s ease;}button.clicked::after{content:"";position:absolute;inset: 0;border-radius: inherit;box-shadow: 0 0 2px 6px #15417e;animation: fadeOut .9s ease forwards;pointer-events:none;}@keyframes fadeOut { from {opacity:1} to {opacity:0} }
+    select, input {
+      padding: 4px 11px !important;
+      font-size: 14px;
+      border-radius: 6px;
+      background: var(--page-input);
+      border: 1px solid var(--border-input);
+      color: var(--page-text);
+      height: 32px;
+      transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+      text-align: left;
+    }
+    input:hover {
+      border: 1px solid var(--blue-hover);
+    }
+    input:focus {
+      border: 1px solid var(--blue);
+      outline: none;
+    }
+    select:hover {
+      border: 1px solid var(--blue-hover);
+    }
+    select:focus {
+      border: 1px solid var(--blue);
+      outline: none;
+    }
+    #nowTime {
+     font-weight: bold;
+     margin-left: 10px;
+     color: gold;
+    }
+    .set-score-row td {
+     color: rgb(51, 51, 51);
+     font-size: 26px;
+     padding-top: 22px !important;
+     padding-bottom: 22px !important;
+     line-height: 1.1 !important;
+     white-space: nowrap;
+     background-color: #fff;
+    }
+    .set-score-row td.negatif {
+     color: #dd4b39;
+     font-weight: bold;
+     font-size: 26px;
+     background-color: #fff;
+    }
+    .set-score-row td.setscore {
+     color: #dd4b39;
+     font-weight: 750;;
+     font-size: 26px;
+     white-space: nowrap;
+     background-color: #fff;
+    }
+    #gameSelect {
+     max-height: 32px;
+     overflow-y: auto;
+     cursor: pointer;
+     transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+      scroll-behavior: smooth;
+    }
+    #gameSelect:hover {
+    border: 1px solid var(--blue-hover);
+    }
+    #gameSelect:focus {
+    border: 1px solid var(--blue);
+    outline: none;
+    }
+    .reset-button {
+     background:red;
+     color:white;
+     border: 1px solid transparent;
+     padding:0px 15px;
+     height:32px;
+     font-size: 14px;
+    }
+    .reset-button:hover {
+     background: #ff4d4d;
+    }
+    .reset-button:active {
+     background: #bf0000;
+    }
 
-/* warna default hijau (success) */
-.toast.success .icon { color: #22c55e; }
-.toast.error   .icon { color: #F87171; }
-.toast.info    .icon { color: #60A5FA; }
-
-.toast .close { margin-left: 8px; cursor: pointer; color: #aaa;font-size: 16px; }
-.toast .close:hover { color: #fff; }
-
-.toast .icon svg {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
 .cs-wrap{position:relative;display:inline-block;min-width:150px;z-index:20;}
 .cs-display{
   height:32px;display:flex;align-items:center;justify-content:space-between;
-  padding:0px 11px;background:var( --page-input);color:var(--page-text);border:1px solid var(--border-input);border-radius:6px;font-size:14px;
+  padding:0px 11px;background:var(--page-input);color:var(--page-text);border:1px solid var(--border-input);border-radius:6px;font-size:14px;
   cursor:pointer;transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);user-select:none
 }
-.cs-display:hover {border: 1px solid var(--blue-hover);}.cs-display:active {border: 1px solid var(--blue-active);}
+.cs-display:hover {border: 1px solid var(--blue-hover);}
 .cs-arrow{
   font-size:12px;
   flex-shrink: 0;
@@ -120,8 +246,7 @@ body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;fon
   fill: currentColor;
 }
 .cs-wrap.open .cs-arrow{transform:rotate(180deg)}
-.cs-list{position:absolute; top:calc(100% + 3px); left:0; 
-right:0;
+.cs-list{position:absolute; top:calc(100% + 3px); left:0; right:0;
 background:var(--list-bg); 
 color:var(--page-text);border-radius:8px;overflow:hidden;
 padding:4px;
@@ -169,9 +294,10 @@ border-radius:4px;
 }
 
 .input-time {
-  padding: 0px 15px;
+  padding: 4px 11px;
   height: 32px;
   color: var(--page-text);
+  font-size:16px;
 }
 
 .input-small {
@@ -207,88 +333,7 @@ border-radius:4px;
   color: var(--page-text);
 }
 
-.switch-btn{
-  position:relative !important;
-  height:32px !important;
-  width:100% !important;
-  min-width:0 !important;
-  max-width:none !important;
-  padding:0 !important;
-  border-radius:18px !important;
-  border:1px solid #555 !important;
-  background:#3a3a3a !important;
-  color:#fff !important;
-  display:flex !important;
-  align-items:center;
-  cursor:pointer;
-  overflow:hidden !important;
-  transition: all 0.3s;
-}
 
-.switch-text{
-  position:absolute;
-  font-size:13px;
-  font-weight:700;
-  z-index:2;
-  text-align:center;
-  transition: all 0.3s;
-}
-
-.switch-circle{
-  position:absolute !important;
-  top:5px !important;
-  left:6px !important;
-  width:20px !important;
-  height:20px !important;
-  border-radius:50%;
-  background:#fff;
-  transition:left .28s cubic-bezier(.4,0,.2,1), transform .18s ease;
-  z-index:3;
-}
-.switch-btn:active .switch-circle{
-  transform:scale(.9);
-}
-.switch-btn.active .switch-circle{
-  left:72px !important;
-  right:auto !important;
-}
-
-.switch-btn.inactive .switch-circle{
-  left:6px !important;
-  right:auto !important;
-}
-
-.switch-btn.active{
-  background:#1668dc !important;
-  border-color:#1668dc !important;
-  transition: all 0.3s;
-}
-
-.switch-btn.inactive{
-  background:#3a3a3a !important;
-  border-color:#555 !important;
-  transition: all 0.3s;
-}
-
-.switch-btn.active .switch-text{
-  left:10px;
-  right:30px;
-  transition: all 0.3s;
-}
-
-.switch-btn.inactive .switch-text{
-  left:30px;
-  right:8px;
-  transition: all 0.3s;
-}
-
-.form-row-top #autoFreeGameBtn,
-.form-row-middle #autoAddScoreBtn{
-  width:98px !important;
-  min-width:98px !important;
-  max-width:98px !important;
-  padding:0 !important;
-}
 *{
   scrollbar-width:thin;
   scrollbar-color: rgba(255,255,255,.16) transparent;
@@ -327,7 +372,6 @@ body{
   -webkit-overflow-scrolling:touch;
   margin:10px 12px 10px;
   padding-bottom:4px;
-  scroll-behavior:smooth;
 }
 
 /* bagi table boleh scroll kiri kanan */
@@ -337,6 +381,10 @@ body{
   margin-top:0;
 }
 
+/* optional: bagi nampak smooth */
+.table-wrap{
+  scroll-behavior:smooth;
+}
 input::placeholder{
   color:rgba(255,255,255,0.4);
 }
@@ -358,107 +406,7 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
-/* ===== TOP CONTROL ROW ===== */
-.form-row-top{
-  display: grid;
-  grid-template-columns: 1.7fr 0.9fr 0.9fr 1.35fr auto 0.9fr auto auto;
-  gap: 8px;
-  align-items: center;
-  margin: 16px 12px 10px;
-}
 
-.form-row-top .cs-wrap,
-.form-row-top select,
-.form-row-top .input-time,
-.form-row-top .input-small{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  text-align: left;
-}
-
-.form-row-top button{
-  width: 100%;
-  min-width: 0;
-  padding: 0px 15px;
-  white-space: nowrap;
-}
-
-.form-row-top .cs-display{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* desktop kecil / laptop kecil */
-@media (max-width: 1180px){
-  .form-row-top{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      "game bet win"
-      "time time now"
-      "rows free auto";
-  }
-
-  .form-row-top .cs-wrap-gameSelect{
-    grid-area: game;
-  }
-
-  .form-row-top .cs-wrap-betSelect{
-    grid-area: bet;
-  }
-
-  .form-row-top .cs-wrap-pecahanSelect{
-    grid-area: win;
-  }
-
-  .form-row-top #manualTime{
-    grid-area: time;
-  }
-
-  .form-row-top button[onclick="setNow()"]{
-    grid-area: now;
-  }
-
-  .form-row-top #freeGameInput{
-    grid-area: rows;
-  }
-
-  .form-row-top #setFreeGameBtn{
-    grid-area: free;
-  }
-
-  .form-row-top #autoFreeGameBtn{
-    grid-area: auto;
-  }
-}
-
-/* phone */
-@media (max-width: 640px){
-  .form-row-top{
-    gap: 8px;
-  }
-
-  .form-row-top button,
-  .form-row-top .input-time,
-  .form-row-top .input-small,
-  .form-row-top select,
-  .form-row-top .cs-display{
-    font-size: 14px;
-  }
-}
-.form-row-top button,
-.form-row-top .cs-display,
-.form-row-top input,
-.form-row-top select{
-  overflow: hidden;
-}
-
-.form-row-top #setFreeGameBtn,
-.form-row-top #autoFreeGameBtn,
-.form-row-top .btn-main{
-  max-width: 100%;
-}
 
 /* ===== MIDDLE CONTROL ROW FINAL ===== */
 .form-row-middle{
@@ -471,8 +419,7 @@ input[type="number"] {
   gap: 8px;
   align-items: center;
   margin: 10px 12px 10px;
-}
-
+} 
 .form-row-middle .inline-group{
   display: contents;
 }
@@ -514,7 +461,9 @@ input[type="number"] {
   }
 
   .form-row-middle .score-group{ grid-area: score; }
-  .form-row-middle #autoAddScoreBtn{ grid-area: auto; }
+  .form-row-middle .shared-active-switch {
+  grid-area: auto;
+}
 
   .form-row-middle .jackpot-group{ grid-area: jackpot; }
   .form-row-middle .btn-jackpot{ grid-area: setjackpot; }
@@ -629,7 +578,7 @@ select.has-value {
   color: var(--blur);
   cursor: default;
 }
-:where(button, .table-wrap, a, .btn, [tabindex]):focus-visible{
+:where(button, a, .btn, [tabindex]):focus-visible{
   outline: 3px solid #15325b;
   outline-offset: 1px;
   transition: outline-offset 0s, outline 0s;
@@ -638,7 +587,6 @@ select.has-value {
   border-color: #1668dc !important;
   outline: 0 !important;
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
   transition: all .2s ease;
 }
 select:focus,
@@ -646,71 +594,610 @@ select:focus-visible{
   border-color: #1668dc !important;
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
   transition: all .2s ease;
 }
-  </style>
-<body>
-  <div class="form-row form-row-top">
-    <select id="gameSelect" class="select2 select-main">
-    <option value="" disabled selected hidden>Select Game</option>
-  <option value="FORTUNE">FORTUNE</option><option value="WolfHunters">WolfHunters</option><option value="DragonMaiden">DragonMaiden</option><option value="MoneyFever">MoneyFever</option><option value="T-REX">T-REX</option><option value="GoldenSlut">GoldenSlut</option><option value="Dolphin">Dolphin</option><option value="FortunePanda">FortunePanda</option><option value="StoneAge">StoneAge</option><option value="India">India</option><option value="IreLand">IreLand</option><option value="Victory">Victory</option><option value="Panda">Panda</option><option value="Twister">Twister</option><option value="PayDirt">PayDirt</option><option value="WildFox">WildFox</option><option value="PirateShip">PirateShip</option><option value="JinQianWa">JinQianWa</option><option value="Cleopatra">Cleopatra</option><option value="Garden">Garden</option><option value="FiveDragons">FiveDragons</option><option value="SteamTower">SteamTower</option><option value="Alice">Alice</option><option value="GreatStars">GreatStars</option><option value="SAFARI Heat">SAFARI Heat</option><option value="PatherMoon">PatherMoon</option><option value="Rally">Rally</option><option value="BigShot">BigShot</option><option value="Thai">Thai</option><option value="SeaCaptain">SeaCaptain</option><option value="TreasureIsland">TreasureIsland</option><option value="GoldenTree">GoldenTree</option><option value="Magician">Magician</option><option value="SeaWorld">SeaWorld</option><option value="Samurai">Samurai</option><option value="circus">circus</option><option value="TopGun">TopGun</option><option value="Boxing">Boxing</option><option value="BonusBears">BonusBears</option><option value="JAPAN">JAPAN</option><option value="Boyking">Boyking</option><option value="ShiningStars">ShiningStars</option><option value="DolphinReef">DolphinReef</option><option value="EmperorGate">EmperorGate</option><option value="IrishLuck">IrishLuck</option><option value="CookiePop">CookiePop</option><option value="Wealth">Wealth</option><option value="Celebration">Celebration</option><option value="Prosperity">Prosperity</option><option value="CoyoteCash">CoyoteCash</option><option value="FairyGarden">FairyGarden</option><option value="GoldenLotus">GoldenLotus</option><option value="Tally Ho">Tally Ho</option><option value="Girls">Girls</option><option value="Dragon Gold">Dragon Gold</option><option value="Fame">Fame</option><option value="Motorcycle">Motorcycle</option><option value="ICELAND">ICELAND</option><option value="GreatBlue">GreatBlue</option><option value="Easter">Easter</option><option value="RobinHood">RobinHood</option><option value="ShuiHu">ShuiHu</option><option value="Laura">Laura</option><option value="HighWay">HighWay</option><option value="Silver">Silver</option><option value="ZhaoCaiJinBao">ZhaoCaiJinBao</option><option value="FootBall">FootBall</option><option value="Halloween">Halloween</option><option value="GodofWealth">GodofWealth</option><option value="GoldenTour">GoldenTour</option><option value="Amazon">Amazon</option>
-    </select>
+  
+/* 918KISS management / responsive design; original screenshot table untouched */
+*{box-sizing:border-box}body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
+.mg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px}
+.mg-head h1{font-size:21px;font-weight:650;margin:0}.mg-head p{margin:3px 0 0;color:var(--muted,#999)}
+.mg-head-actions{display:flex;flex-wrap:wrap;gap:8px}.mg-head-actions button{min-height:32px}
+.mg-panel{min-width:0;max-width:100%;border:1px solid var(--border-input);border-radius:12px;padding:12px;margin: 0 12px 12px;background:var(--page-input)}
+.mg-panel-title{font-size:14px;font-weight:700;margin:0 0 13px;opacity:.9}
+.mg-panel .form-row{margin:0;gap:10px;align-items:center;display:flex;flex-wrap:wrap}
 
-    <select id="betSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Bet</option>
-    </select>
-    <select id="pecahanSelect" class="select-main">
-      <option value="" disabled selected hidden>Select Win</option>
-    </select>
-   <input type="text" id="manualTime" placeholder="Set Time" class="input-time" />
+/* ==========================================
+   918KISS - GAME SETTINGS RESPONSIVE FINAL
+   ========================================== */
+
+/* Responsive ikut lebar card / iframe */
+.mg-panel .form-row-top {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 165px), 1fr)
+  ) !important;
+  gap: 10px !important;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Semua item ikut saiz kolum */
+.mg-panel .form-row-top > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  grid-area: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Input, select, custom dropdown */
+.mg-panel .form-row-top input,
+.mg-panel .form-row-top select,
+.mg-panel .form-row-top .cs-wrap,
+.mg-panel .form-row-top .shared-dropdown,
+.mg-panel .form-row-top .cs-display {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Semua button termasuk Set Free Game */
+.mg-panel .form-row-top button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box !important;
+}
+
+/* Buang fixed width lama pada toggle */
+.mg-panel .form-row-top #autoFreeGameBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Pastikan text dropdown tidak bertindih */
+.mg-panel .form-row-top .cs-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Input tarikh */
+.mg-panel .form-row-top #manualTime {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Panel sangat sempit: satu kolum */
+@container (max-width: 240px) {
+  .mg-panel .form-row-top {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+.mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
+.mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
+/* ===== 918KISS GAME LOG FIX ===== */
+
+.mg-log-panel {
+  overflow: visible;
+  min-width: 0;
+  height: auto;
+}
+
+.mg-log-panel .table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mg-log-panel #gameLog {
+  display: table;
+  min-width: 1300px;
+  width: max-content;
+  table-layout: auto;
+}
+
+.mg-log-panel #gameLog thead {
+  display: table-header-group;
+}
+
+.mg-log-panel #gameLog tbody {
+  display: table-row-group;
+}
+.mg-modal-form{display:flex;flex-direction:column;gap:12px}.mg-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
+.mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
+.mg-betrow{border:1px solid var(--input-line);border-radius:9px;padding:10px;display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,2fr) auto;gap:10px;align-items:end}
+.mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
+.mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
+@media(max-width:600px){.mg-head h1{font-size:18px}.mg-betrow{grid-template-columns:minmax(0,1fr)}.mg-betrow button{justify-self:end}}
+
+/* ==========================================
+   918KISS - SCORE & WINNER RESPONSIVE GRID
+   ========================================== */
+
+/* Desktop: 8 kolum dalam satu baris */
+.mg-panel .form-row-middle {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr) 100px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px
+    minmax(0, 1fr) 110px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+/* Buka wrapper supaya input dan button
+   menjadi item grid berasingan */
+.mg-panel .form-row-middle .inline-group {
+  display: contents !important;
+}
+
+/* Semua input dan button ikut saiz grid */
+.mg-panel .form-row-middle input,
+.mg-panel .form-row-middle button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Toggle Add Score */
+.mg-panel .form-row-middle #autoAddScoreBtn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Tablet / panel admin yang sempit */
+@media (max-width: 1100px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: kekalkan 2 kolum */
+@media (max-width: 640px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-middle input,
+  .mg-panel .form-row-middle button {
+    height: 32px;
+    font-size: 13px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* ==========================================
+   918KISS - GENERATOR ACTIONS INLINE
+   ========================================== */
+
+/* Jarak antara Score Controls dan Actions */
+.mg-panel .mg-actions-divider {
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Tombol Actions dalam satu baris */
+.mg-panel .form-row-bottom {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+/* Tombol ikut panjang tulisan */
+.mg-panel .form-row-bottom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+
+  flex: 0 0 auto !important;
+
+  height: 32px;
+  min-height: 32px;
+
+  padding: 0 15px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Phone: tetap ikut panjang tulisan,
+   turun baris apabila ruang tidak cukup */
+@media (max-width: 768px) {
+  .mg-panel .form-row-bottom {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    grid-template-columns: none !important;
+    gap: 8px;
+  }
+
+  .mg-panel .form-row-bottom button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+/* Card boleh mengukur lebar sendiri */
+.mg-panel {
+  container-type: inline-size;
+}
+
+/* Dropdown NewUI juga tidak boleh melebihi card */
+.mg-panel .form-row-top .new-ui-dropdown,
+.mg-panel .form-row-top [data-new-ui-dropdown] {
+  max-width: 100%;
+  min-width: 0;
+}
+/* ==========================================
+   918KISS - GAME SETTINGS + SCORE ONE CARD
+   ========================================== */
+
+/* Divider antara Game Settings dan Score */
+.mg-panel .mg-section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-input);
+  margin: 14px 0;
+  opacity: .6;
+}
+
+/* Pastikan baris Game Settings kemas */
+.mg-panel .form-row-top {
+  margin: 0;
+}
+
+/* Tajuk Score selepas divider */
+.mg-panel .mg-section-divider + .mg-panel-title {
+  margin-bottom: 13px;
+}
+
+/* 918KISS HEADER BUTTONS - RIGHT ALIGN */
+
+.mg-head {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.mg-head-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.mg-head-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   918KISS - SHARED NEW UI INPUT & DROPDOWN
+   ========================================== */
+
+/* Shared dropdown */
+.mg-panel .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mg-panel .shared-dropdown-trigger {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .shared-dropdown-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+/* Shared input */
+.mg-panel .new-ui-input-wrap {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.mg-panel .new-ui-input-wrap > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Dropdown list mesti muncul atas elemen lain */
+.mg-panel .shared-dropdown.open {
+  z-index: 1000;
+}
+
+/* Pastikan wrapper custom ikut kolum grid */
+.mg-panel .form-row-top > .shared-dropdown,
+.mg-panel .form-row-top > .new-ui-input-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score row */
+.mg-panel .form-row-middle .new-ui-input-wrap {
+  min-width: 0;
+  width: 100%;
+}
+  /* ==========================================
+   918KISS - NEWUI INPUT CLEAR BUTTON FIX
+   ========================================== */
+
+/* Wrapper input kekal sebagai satu komponen */
+.mg-panel .new-ui-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Input tidak ditutup oleh button clear */
+.mg-panel .new-ui-input-wrap > input {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Button clear kecil di sebelah kanan */
+.mg-panel .new-ui-input-wrap > button {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--blur) !important;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Hover clear tidak menutup input */
+.mg-panel .new-ui-input-wrap > button:hover,
+.mg-panel .new-ui-input-wrap > button:active,
+.mg-panel .new-ui-input-wrap > button:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--page-text) !important;
+}
+
+/* SVG kekal di tengah button kecil */
+.mg-panel .new-ui-input-wrap > button svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  pointer-events: none;
+}
+/* ==========================================
+   918KISS - CUSTOM SWITCH RESPONSIVE FIX
+   ========================================== */
+
+/* Jangan biarkan checkbox ikut CSS input biasa */
+.mg-panel .shared-active-switch > input[type="checkbox"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Switch ikut ruang tersedia */
+.mg-panel .shared-active-switch {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Track tidak boleh melebihi kolum */
+.mg-panel .shared-active-switch .shared-active-track {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-shrink: 1;
+}
+
+/* Game Settings */
+.mg-panel .form-row-top > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Score & Winner - label mesti menjadi grid item */
+.mg-panel .form-row-middle .inline-group > .shared-active-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Pastikan semua grid item boleh mengecil */
+.mg-panel .form-row-middle > *,
+.mg-panel .form-row-top > * {
+  min-width: 0 !important;
+}
+
+/* Grid 2 kolum untuk panel sempit */
+@container (max-width: 500px) {
+  .mg-panel .form-row-middle {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+</style>
+<body>
+<header class="mg-head">
+  <div class="mg-head-actions">
+    <button id="mgManage" type="button" class="btn-primary-new">
+      Manage Games
+    </button>
+
+    <button id="mgCreate" type="button" class="btn-primary-new">
+      + Create Game
+    </button>
+  </div>
+</header>
+<section class="mg-panel"><div class="mg-panel-title">Game Settings</div>
+  <div class="form-row form-row-top">
+
+<select
+  id="gameSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Game"
+>
+  <option value="" disabled selected hidden>Select Game</option>
+</select>
+
+<select
+  id="betSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Bet"
+>
+  <option value="" disabled selected hidden>Select Bet</option>
+</select>
+
+<select
+  id="pecahanSelect"
+  class="select-main"
+  data-shared-dropdown
+  data-placeholder="Select Win"
+>
+  <option value="" disabled selected hidden>Select Win</option>
+</select>
+
+   <input data-new-ui-input  type="text" id="manualTime" placeholder="Set Time" class="input-time" />
    <button onclick="setNow()" class="btn-main h38 px12 fs16">Click Now</button>
     
-   <input type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
+   <input data-new-ui-input  type="number" id="freeGameInput" placeholder="Set Rows" class="input-small" />
 
     <button id="setFreeGameBtn" class="btn-main h38">Set Free Game</button>
 
-<button id="autoFreeGameBtn" type="button" class="switch-btn inactive">
-  <span class="switch-text">Inactive</span>
-  <span class="switch-circle"></span>
-</button>
+<label class="shared-active-switch mg-toggle">
+  <input type="checkbox" id="autoFreeGameBtn">
+  <span class="shared-active-track">
+    <span class="shared-active-text">Inactive</span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
   </div>
 
- <div class="form-row form-row-middle bottom-gap">
+<div class="mg-section-divider"></div>
+
+<div class="mg-panel-title">Score & Winner Controls</div><div class="form-row form-row-middle bottom-gap">
     <div class="inline-group">
-      <input type="number" id="manualScore" placeholder="Add Score" class="input-score" />
-<button id="autoAddScoreBtn" type="button" class="switch-btn active">
-  <span class="switch-text">Active</span>
-  <span class="switch-circle"></span>
-</button>
+      <input data-new-ui-input  type="number" id="manualScore" placeholder="Add Score" class="input-score" />
+<label class="shared-active-switch mg-toggle">
+  <input type="checkbox" id="autoAddScoreBtn">
+  <span class="shared-active-track">
+    <span class="shared-active-text">Inactive</span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
     </div>
 
     <div class="inline-group">
-      <input type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
+      <input data-new-ui-input  type="number" id="manualJackpot" placeholder="Jackpot Amount" class="input-jackpot" />
     </div>
 
     <button onclick="addJackpot()" class="btn-main h38">Set Jackpot</button>
 
     <div class="inline-group">
-      <input type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
+      <input data-new-ui-input  type="number" id="manualScoreInput" placeholder="Support Amount" class="input-support" />
     </div>
 
     <button onclick="addManualSetScore()" class="btn-main h38">Support Back</button>
 
     <div class="inline-group">
-      <input type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
+      <input data-new-ui-input  type="number" id="manualWinInput" placeholder="Win Amount" class="input-win" />
     </div>
 
     <button onclick="setRandomWin()" class="btn-main h38">Set Winner</button>
   </div>
 
-  <div class="form-row form-row-bottom bottom-gap">
+  <div class="mg-actions-divider"></div>
+    <div class="form-row form-row-bottom bottom-gap">
     <button onclick="generateLog()" class="btn-main h38">Change</button>
     <button onclick="deleteCents()" class="btn-main h38">Delete Cents</button>
     <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
     <button onclick="resetLog()" class="reset-button">Reset Log</button>
   </div>
-<div class="table-wrap">
+</section>
+<!-- CARD GAME LOG -->
+<section class="mg-panel mg-log-panel" id="gameLogCard">
+  <div class="mg-panel-title">Game Log</div>
+  <div class="table-wrap">
   <table id="gameLog">
     <thead>
       <tr>
@@ -726,8 +1213,18 @@ select:focus-visible{
     <tbody>
     </tbody>
   </table>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </div>
+</section>
+
+<!-- CARD NO DATA - BERASINGAN -->
+<section
+  class="mg-panel"
+  id="gameLogEmptyCard"
+  style="display:none;"
+>
+  <div id="gameLogEmpty"></div>
+</section>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -886,17 +1383,12 @@ const gameData = {
 { bets: [1.00, 2.00, 5.00, 10.00, 20.00],pecahan: {1.00: [30.00, 60.00, 100.00, 130.00],2.00: [60.00, 90.00, 110.00, 150.00],5.00: [90.00, 120.00, 150.00, 180.00],10.00: [120.00, 150.00, 180.00, 210.00],20.00: [100.00, 150.00, 200.00, 500.00]}}
 };
 function updateAutoAddScoreButtonUI() {
-  const btn = document.getElementById("autoAddScoreBtn");
-  if (!btn) return;
-
-  const text = btn.querySelector(".switch-text");
-
-  btn.classList.toggle("active", autoAddScoreOn);
-  btn.classList.toggle("inactive", !autoAddScoreOn);
-
-  if (text) text.textContent = autoAddScoreOn ? "Active" : "Inactive";
+  const input = document.getElementById("autoAddScoreBtn");
+  if (!input) return;
+  input.checked = autoAddScoreOn;
+  window.SharedActiveSwitch?.sync(input);
 }
-  let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
+  let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap918kiss")) || {};
 function saveCurrentSelectionOnly() {
   if (isRestoringSelection) return;
 
@@ -1104,9 +1596,9 @@ function initCustomSelect(selectId, withSearch = false, searchPlaceholder = "Sea
   native._csApi = api;
   return api;
 }
-const gameCS = initCustomSelect("gameSelect", true, "Search game...");
-const betCS = initCustomSelect("betSelect", false);
-const winCS = initCustomSelect("pecahanSelect", false);
+const gameCS = NewUI.dropdown("#gameSelect", { placeholder: "Select Game" });
+const betCS = NewUI.dropdown("#betSelect", { placeholder: "Select Bet" });
+const winCS = NewUI.dropdown("#pecahanSelect", { placeholder: "Select Win" });
 document.getElementById("gameSelect").addEventListener("change", function () {
   const game = this.value;
   const betSelect = document.getElementById("betSelect");
@@ -1195,10 +1687,7 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
   const globalTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   document.getElementById("manualTime").value = globalTime;
   }
-function rnd(min, max, dec = 2){
-  return parseFloat((Math.random() * (max - min) + min).toFixed(dec));
-  }
-  let globalTime = null;
+let globalTime = null;
 
 function rnd(min, max, dec = 2){
   return parseFloat((Math.random() * (max - min) + min).toFixed(dec));
@@ -1243,15 +1732,10 @@ if (!isNaN(beginMoney)) {
   });
 }
 function updateAutoFreeGameButtonUI() {
-  const btn = document.getElementById("autoFreeGameBtn");
-  if (!btn) return;
-
-  const text = btn.querySelector(".switch-text");
-
-  btn.classList.toggle("active", autoFreeGameOn);
-  btn.classList.toggle("inactive", !autoFreeGameOn);
-
-  if (text) text.textContent = autoFreeGameOn ? "Active" : "Inactive";
+  const input = document.getElementById("autoFreeGameBtn");
+  if (!input) return;
+  input.checked = autoFreeGameOn;
+  window.SharedActiveSwitch?.sync(input);
 }
 //  FREE GAME HELPERS
 // =====================
@@ -1366,14 +1850,14 @@ document.getElementById('setFreeGameBtn').addEventListener('click', function(){
 });
 // tombol AUTO Free Game
 const autoBtn = document.getElementById('autoFreeGameBtn');
-autoBtn.addEventListener('click', () => {
-  autoFreeGameOn = !autoFreeGameOn;
+autoBtn.addEventListener('change', () => {
+  autoFreeGameOn = autoBtn.checked;
   localStorage.setItem('autoFreeGameOn918kiss', autoFreeGameOn ? '1' : '0');
   updateAutoFreeGameButtonUI();
 });
 // ✅ tombol AUTO AddScore
-document.getElementById("autoAddScoreBtn")?.addEventListener("click", () => {
-  autoAddScoreOn = !autoAddScoreOn;
+document.getElementById("autoAddScoreBtn")?.addEventListener("change", (event) => {
+  autoAddScoreOn = event.target.checked;
   localStorage.setItem("autoAddScoreOn918kiss", autoAddScoreOn ? "1" : "0");
   updateAutoAddScoreButtonUI();
 });
@@ -1661,20 +2145,20 @@ function addJackpot() {
   }
 
   jackpotInsertedMap[currentGame] = true;
-  localStorage.setItem("jackpotInsertedMap", JSON.stringify(jackpotInsertedMap));
+  localStorage.setItem("jackpotInsertedMap918kiss", JSON.stringify(jackpotInsertedMap));
 
   // Re-apply Free game selepas struktur row berubah
   applyFreeGame();
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
-  if (isNaN(inputScore)) return alert("❌ Nilai tidak sah");
+  if (isNaN(inputScore)) return showToast("Nilai tidak sah", "error");
 
   const tbody = document.querySelector("#gameLog tbody");
 
   const setScoreNegatifRow = Array.from(tbody.querySelectorAll("tr.set-score-row:not(.jackpot)"))
     .find(row => row.children[1].textContent.includes("-"));
-  if (!setScoreNegatifRow) return alert("❌ Baris set score negatif tidak ditemukan!");
+  if (!setScoreNegatifRow) return showToast("Baris set score negatif tidak ditemukan!", "error");
 
   const existingSupportRow = Array.from(tbody.querySelectorAll("tr.set-score-row"))
     .find(row =>
@@ -1754,7 +2238,7 @@ function resetSelectToPlaceholder(selectId, placeholderText, disable = false) {
 function resetLog() {
   sendUserAction("Change");
   localStorage.removeItem("gameLogData918kiss");
-  localStorage.removeItem("jackpotInsertedMap");
+  localStorage.removeItem("jackpotInsertedMap918kiss");
   jackpotInsertedMap = {};
 
   const gameSelect = document.getElementById("gameSelect");
@@ -1879,48 +2363,8 @@ window.addEventListener("DOMContentLoaded", () => {
   applyFreeGame();
   saveCurrentSelectionOnly();
 });
-function showToast(message, type = "success") {
-  const icons = {
-    success: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M7 12l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>`,
-    error: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M9 9l6 6M15 9l-6 6" stroke-linecap="round"></path>
-      </svg>`,
-    info: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M12 8h.01M11 11h2v5h-2" stroke-linecap="round"></path>
-      </svg>`
-  };
-
-  const el = document.createElement("div");
-  el.className = `toast ${type}`;            // << Kelas tentukan warna ikon
-  el.setAttribute("role", "status");
-  el.setAttribute("aria-live", "polite");
-
-  el.innerHTML = `
-    <span class="icon">${icons[type] || icons.success}</span>
-    <span class="msg" style="margin-left:6px;">${message}</span>
-    <span class="close" aria-label="Close" title="Close">&times;</span>
-  `;
-
-  document.body.appendChild(el);
-  requestAnimationFrame(() => el.classList.add("show"));
-
-  el.querySelector(".close").addEventListener("click", () => {
-    el.classList.remove("show");
-    setTimeout(() => el.remove(), 350);
-  });
-
-  setTimeout(() => {
-    el.classList.remove("show");
-    setTimeout(() => el.remove(), 350);
-  }, 3500);
+function showToast(message, type = "success", duration = 3500) {
+  return window.NewUI?.showToast?.(message, type, duration);
 }
 
 function recalcBalancesForLogRowsOnly() {
@@ -2213,6 +2657,151 @@ document.addEventListener("copy", function() {
     method: "copy-event"
   });
 }, true);
+/* ================= 918KISS FIREBASE GAME CATALOG ================= */
+const MG_PATH='918kiss/games';
+let mgRef=null, mgCatalogLoaded=false, mgGameIds={};
+const mgBuiltInGames = Object.assign({}, gameData);
+function mgToast(msg, type = "success") {
+  return showToast(msg, type);
+}
+function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
+function mgOptions(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10))].sort((a,b)=>a-b);}
+function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
+function mgField(label,value='',type='text',hint=''){
+ const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
+}
+function mgApplyCatalog(snapshot){
+ const previous=document.getElementById('gameSelect').value;
+ const data=snapshot||{};
+ for(const key of Object.keys(gameData))delete gameData[key];
+ Object.assign(gameData, mgBuiltInGames);
+ mgGameIds={};
+ Object.entries(data).forEach(([id,v])=>{
+   if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
+   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
+   mgGameIds[v.name]=id;
+ });
+ const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
+ Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
+ const saved=(()=>{try{return JSON.parse(localStorage.getItem('gameLogData918kiss')||'{}')}catch{return {}}})();
+ const selected=gameData[previous]?previous:gameData[saved.game]?saved.game:'';
+ if(selected){select.value=selected;isRestoringSelection=true;select.dispatchEvent(new Event('change',{bubbles:true}));
+ if(saved.game===selected&&saved.bet!==undefined){document.getElementById('betSelect').value=String(saved.bet);document.getElementById('betSelect').dispatchEvent(new Event('change',{bubbles:true}));if(saved.pecahan!==undefined)document.getElementById('pecahanSelect').value=String(saved.pecahan);}
+ isRestoringSelection=false;}
+ gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
+ mgCatalogLoaded=true;
+}
+function mgStart(){
+ const create=document.getElementById('mgCreate'),manage=document.getElementById('mgManage');
+ create.addEventListener('click',()=>mgEditor());manage.addEventListener('click',mgManager);
+ if(!window.firebase?.apps?.length){mgToast('Firebase is not initialized. Check firebase.js','error');return;}
+ try{mgRef=firebase.database().ref(MG_PATH);mgRef.on('value',s=>mgApplyCatalog(s.val()),e=>mgToast('Game loading failed: '+e.message,'error'));}
+ catch(e){mgToast('Firebase connection error: '+e.message,'error');}
+}
+function mgEditor(oldName=''){
+ if(!mgRef){mgToast('Firebase not ready','error');return;}
+ const old=gameData[oldName]||{};
+ const form=mgElement('form','mg-modal-form');
+ const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
+ const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10 — AUTO picks only these counts.');free.input.placeholder='5, 10';form.append(free.host);
+ const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
+ const rows=mgElement('div','mg-modal-form');form.append(rows);
+ function addBet(bet='',wins=''){
+   const row=mgElement('div','mg-betrow');const a=mgField('Bet',String(bet),'number');a.input.step='any';a.input.min='0';const b=mgField('Win Options',String(wins),'text');b.input.placeholder='30, 60, 100';const del=mgElement('button','btn-delete-new','Remove');del.type='button';del.onclick=()=>row.remove();row.append(a.host,b.host,del);rows.append(row);
+   row._get=()=>({bet:Number(a.input.value),betText:a.input.value.trim(),wins:mgNumberList(b.input.value)});
+   window.NewUI?.input?.(a.input);window.NewUI?.input?.(b.input);
+ }
+ (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
+ if(!old.bets?.length)addBet();
+ const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
+ const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+ const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+ form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
+ form.addEventListener('submit',async e=>{
+ e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
+ if(!gameName){mgToast('Enter game name','error');return;}
+ if(free.input.value.trim()&&!freeOptions.length){mgToast('Free Game options must be between 1 and 10','error');return;}
+ if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
+ const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
+ if(!bets.length){mgToast('Add at least one Bet','error');return;}
+// Custom NewUI loading spinner
+await NewUI.setButtonLoading(save, true, {
+  text: "Saving..."
+});
+
+try {
+  const id = (oldName && mgGameIds[oldName])
+    ? mgGameIds[oldName]
+    : mgRef.push().key;
+
+  await mgRef.child(id).set({
+    name: gameName,
+    bets,
+    pecahan,
+    freeGameOptions: freeOptions,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // Pastikan spinner sempat kelihatan
+  await NewUI.setButtonLoading(save, false, {
+    minDuration: 700
+  });
+
+  modal.close();
+  mgToast("Game saved", "success");
+
+} catch (err) {
+  mgToast("Save failed: " + err.message, "error");
+
+} finally {
+  await NewUI.setButtonLoading(save, false);
+}
+ });
+}
+
+
+
+function mgManager(){
+const host = mgElement('div', 'mg-manager');
+
+const names = Object.keys(gameData).sort((a, b) =>
+  a.localeCompare(b)
+); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
+ names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
+ const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
+ del.disabled=!mgGameIds[name];del.title=del.disabled?'Built-in game: edit to save an override first':'Delete saved game';
+ del.onclick=async()=>{if(!mgGameIds[name])return;if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{await mgRef.child(mgGameIds[name]).remove();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
+ acts.append(edit,del);item.append(title,acts);host.append(item);});
+ const modal=NewUI.modal.open({title:'Manage 918KISS Games',content:host,width:650});
+}
+// Inline button handlers live in this module; expose only the existing UI entrypoints.
+Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
+window.addEventListener('DOMContentLoaded',mgStart);
+
+/* 918KISS Game Log — show separate No data card when empty */
+(function () {
+  function refreshEmptyCard() {
+    const tableCard = document.getElementById('gameLogCard');
+    const emptyCard = document.getElementById('gameLogEmptyCard');
+    const emptyHost = document.getElementById('gameLogEmpty');
+    const body = document.querySelector('#gameLog tbody');
+    if (!tableCard || !emptyCard || !emptyHost || !body) return;
+    const hasRows = !!body.querySelector('tr.log-row');
+    tableCard.style.display = hasRows ? '' : 'none';
+    emptyCard.style.display = hasRows ? 'none' : '';
+    if (!hasRows && !emptyHost.dataset.rendered) {
+      if (window.showEmptyState) window.showEmptyState(emptyHost, 'No data', 'large', 'center');
+      else emptyHost.textContent = 'No data';
+      emptyHost.dataset.rendered = '1';
+    }
+  }
+  window.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.querySelector('#gameLog tbody');
+    if (!tbody) return;
+    new MutationObserver(refreshEmptyCard).observe(tbody, { childList:true, subtree:true, characterData:true });
+    refreshEmptyCard();
+  });
+})();
 </script>
 </body>
 </html>
