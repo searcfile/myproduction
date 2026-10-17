@@ -1672,9 +1672,41 @@ function applyFreeGame({randomizePosition=false} = {}) {
   }
   recalcBalancesForLogRowsOnly();
 }
-// tombol Set Free Game
-document.getElementById('setFreeGameBtn').addEventListener('click', function(){
+/* ==========================================
+   MEGA888 - SET FREE GAME CUSTOM TOAST
+   ========================================== */
+
+document.getElementById("setFreeGameBtn").addEventListener("click", function () {
+
+  const input = document.getElementById("freeGameInput");
+
+  const value = input?.value.trim() ?? "";
+  const count = Number(value);
+
+  if (
+    value === "" ||
+    !Number.isInteger(count) ||
+    count <= 0
+  ) {
+    showToast("Please enter a valid Free Game amount!", "warning");
+    return;
+  }
+
+  const rows = document.querySelectorAll("#gameLog tbody tr.log-row");
+
+  if (rows.length === 0) {
+    showToast("Please generate Game Log first!", "info");
+    return;
+  }
+
+  if (count > rows.length) {
+    showToast("Free Game amount cannot exceed total log rows!", "warning");
+    return;
+  }
+
   applyFreeGame();
+
+  showToast("Free Game successfully updated!", "success");
 });
 
 // tombol AUTO Free Game
@@ -1834,9 +1866,10 @@ function addJackpot() {
   const currentGame = document.getElementById("gameSelect").value;
   const jackpotAmount = parseFloat(document.getElementById("manualJackpot").value);
 
-  if (isNaN(jackpotAmount) || jackpotAmount < 0) {
-    return;
-  }
+if (!Number.isFinite(jackpotAmount) || jackpotAmount < 0) {
+  showToast("Please enter a valid Jackpot Amount!", "warning");
+  return;
+}
 
   const tbody = document.querySelector("#gameLog tbody");
   if (!tbody) return;
@@ -1975,8 +2008,10 @@ function addJackpot() {
   jackpotInsertedMap[currentGame] = true;
   localStorage.setItem("jackpotInsertedMap", JSON.stringify(jackpotInsertedMap));
 
-  // Re-apply Free game selepas struktur row berubah
-  applyFreeGame();
+// Re-apply Free game selepas struktur row berubah
+applyFreeGame();
+
+showToast("Jackpot successfully updated!", "success");
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
