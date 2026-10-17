@@ -2624,22 +2624,14 @@ try {
  });
 }
 
-async function mgImportLegacy(){
- if(!mgRef){mgToast('Firebase not ready','error');return;}
- try{
- await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='./mega888-legacy-games.js';s.onload=resolve;s.onerror=reject;document.head.append(s)});
- const legacy=window.MEGA888_LEGACY_GAMES||{};const updates={};let count=0;
- for(const [name,entry] of Object.entries(legacy)){
-  if(mgGameIds[name])continue;
-  const id=mgRef.push().key;updates[id]={name,bets:entry.bets,pecahan:entry.pecahan,freeGameOptions:[],updatedAt:firebase.database.ServerValue.TIMESTAMP};count++;
- }
- if(count){await mgRef.update(updates);}mgToast(`${count} legacy games imported. Edit each game to set Free Game options.`);
- }catch(e){mgToast('Import failed: '+e.message,'error')}
-}
+
 
 function mgManager(){
- const host=mgElement('div','mg-manager');const imp=mgElement('button','btn-primary-new','Import Existing Games (once)');imp.type='button';imp.onclick=async()=>{imp.disabled=true;await mgImportLegacy();imp.disabled=false;};host.append(imp);const names=Object.keys(gameData).sort((a,b)=>a.localeCompare(b));
- if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
+const host = mgElement('div', 'mg-manager');
+
+const names = Object.keys(gameData).sort((a, b) =>
+  a.localeCompare(b)
+); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
  names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
  const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
  del.onclick=async()=>{if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{await mgRef.child(mgGameIds[name]).remove();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
