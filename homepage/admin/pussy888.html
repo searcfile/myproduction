@@ -1982,11 +1982,38 @@ function generateLog() {
   // masukkan ke table
   tbody.innerHTML = rows;
 
-  // ✅ kalau AUTO ON, random-kan jumlah Free game dulu
-  if (autoFreeGameOn) {
-    const randomCount = Math.floor(Math.random() * MAX_FREE_GAME_ROWS) + 1;
-    document.getElementById('freeGameInput').value = randomCount;
-  }
+
+// AUTO ON - random berdasarkan Free Game Options
+if (autoFreeGameOn) {
+  const allowed = gameData[game]?.freeGameOptions || [];
+
+  const availableRows =
+    tbody.querySelectorAll("tr.log-row").length;
+
+  const valid = [...new Set(
+    allowed
+      .map(Number)
+      .filter(n =>
+        Number.isSafeInteger(n) &&
+        n >= 1
+      )
+  )];
+
+  const selectedCount = valid.length
+    ? valid[Math.floor(Math.random() * valid.length)]
+    : 0;
+
+  // Maksimum 10 Free Game rows
+  const finalCount = Math.min(
+    selectedCount,
+    MAX_FREE_GAME_ROWS,
+    availableRows
+  );
+
+  document.getElementById("freeGameInput").value =
+    finalCount || "";
+}
+
   applyFreeGame({ randomizePosition: true });
   applyManualScoreAsTopEndMoneyIfOff();
   // ✅ SIMPAN KE LOCALSTORAGE SELEPAS SEMUA SIAP (POSISI DI BAWAH SINI)
@@ -2697,7 +2724,24 @@ function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
 function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
-function mgOptions(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10))].sort((a,b)=>a-b);}
+
+function mgOptions(raw) {
+  const text = String(raw).trim();
+  if (!text) return [];
+
+  const numbers = text
+    .split(/[,\s]+/)
+    .map(Number);
+
+  if (numbers.some(n =>
+    !Number.isSafeInteger(n) || n < 1
+  )) {
+    return null;
+  }
+
+  return [...new Set(numbers)].sort((a, b) => a - b);
+}
+
 function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
 function mgField(label,value='',type='text',hint=''){
  const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
@@ -2739,7 +2783,17 @@ function mgEditor(oldName=''){
  const old=gameData[oldName]||{};
  const form=mgElement('form','mg-modal-form');
  const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
- const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10 — AUTO picks only these counts.');free.input.placeholder='5, 10';form.append(free.host);
+
+const free = mgField(
+  'Free Game Options',
+  (old.freeGameOptions || []).join(', '),
+  'text',
+  'Example: 5, 10, 20, 50, 100 — maximum 10 Free Game rows.'
+);
+
+free.input.placeholder = '5, 10, 20, 50, 100';
+form.append(free.host);
+
  const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
  const rows=mgElement('div','mg-modal-form');form.append(rows);
  function addBet(bet='',wins=''){
@@ -2756,7 +2810,15 @@ function mgEditor(oldName=''){
  form.addEventListener('submit',async e=>{
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
  if(!gameName){mgToast('Enter game name','error');return;}
- if(free.input.value.trim()&&!freeOptions.length){mgToast('Free Game options must be between 1 and 10','error');return;}
+
+if (freeOptions === null) {
+  mgToast(
+    "Free Game Options must contain positive whole numbers only!",
+    "error"
+  );
+  return;
+}
+
  if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
  const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
  if(!bets.length){mgToast('Add at least one Bet','error');return;}
