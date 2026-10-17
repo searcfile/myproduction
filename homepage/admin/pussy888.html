@@ -1791,42 +1791,69 @@ function recalcBalancesAfterFreeGame() {
     setScoreRowTop.children[5].textContent = "0.00";                            // EndMoney
   }
 }
-// apply free game berdasarkan input
-function applyFreeGame() {
-  const input = document.getElementById('freeGameInput');
+
+/* ==========================================
+   PUSSY888 - RANDOM FREE GAME POSITION
+   ========================================== */
+
+let freeGameBlockStart = null;
+
+function applyFreeGame({ randomizePosition = false } = {}) {
+  const input = document.getElementById("freeGameInput");
   if (!input) return;
 
   let count = parseInt(input.value, 10);
-  if (isNaN(count) || count < 0) count = 0;
-  if (count > MAX_FREE_GAME_ROWS) count = MAX_FREE_GAME_ROWS;
+  if (!Number.isFinite(count) || count < 0) count = 0;
 
-  // pulihkan semua dulu
+  count = Math.min(count, MAX_FREE_GAME_ROWS);
+
+  // Pulihkan Bet asal dahulu
   resetAllFreeGameMarks();
 
-  const rows = Array.from(document.querySelectorAll('#gameLog tbody tr.log-row'));
-  const fromBottom = rows.slice().reverse(); // mula dari bawah
+  const rows = Array.from(
+    document.querySelectorAll("#gameLog tbody tr.log-row")
+  );
 
-  let marked = 0;
-  for (const row of fromBottom) {
-    if (marked >= count) break;
+  count = Math.min(count, rows.length);
 
-    const betCell = row.querySelector('td.bet-cell');
-    if (!betCell) continue;
-
-    // UI Free game
-    betCell.textContent = 'Free game';
-    betCell.style.fontWeight = '700';
-    betCell.style.color = '#dd4b39';
-
-    // bet untuk kira-kira = 0
-    betCell.dataset.bet = '0';
-
-    marked++;
+  if (count === 0) {
+    freeGameBlockStart = null;
+    recalcBalancesForLogRowsOnly();
+    return;
   }
 
-  // lepas tanda Free game → kira semula BeginMoney & EndMoney
+  const maxStart = rows.length - count;
+
+  // Random posisi bila generate log baru,
+  // atau posisi lama sudah tidak sesuai
+  if (
+    randomizePosition ||
+    freeGameBlockStart === null ||
+    freeGameBlockStart > maxStart
+  ) {
+    freeGameBlockStart =
+      Math.floor(Math.random() * (maxStart + 1));
+  }
+
+  // Tandakan satu blok Free Game berturutan
+  for (
+    let i = freeGameBlockStart;
+    i < freeGameBlockStart + count;
+    i++
+  ) {
+    const betCell = rows[i].querySelector("td.bet-cell");
+    if (!betCell) continue;
+
+    betCell.textContent = "Free game";
+    betCell.style.fontWeight = "700";
+    betCell.style.color = "#dd4b39";
+    betCell.dataset.bet = "0";
+  }
+
+  // Kekalkan formula pengiraan asal PUSSY888
   recalcBalancesForLogRowsOnly();
 }
+
 // tombol Set Free Game
 document.getElementById('setFreeGameBtn').addEventListener('click', function(){
   applyFreeGame();
@@ -1964,9 +1991,7 @@ function generateLog() {
     const randomCount = Math.floor(Math.random() * MAX_FREE_GAME_ROWS) + 1;
     document.getElementById('freeGameInput').value = randomCount;
   }
-
-  // ✅ apply Free Game selepas table siap (ini akan recalc balance & endMoney)
-  applyFreeGame();
+  applyFreeGame({ randomizePosition: true });
   applyManualScoreAsTopEndMoneyIfOff();
   // ✅ SIMPAN KE LOCALSTORAGE SELEPAS SEMUA SIAP (POSISI DI BAWAH SINI)
   setTimeout(() => {
@@ -2134,13 +2159,19 @@ function addJackpot() {
 }
 function addManualSetScore() {
   const inputScore = parseFloat(document.getElementById("manualScoreInput").value);
-  if (isNaN(inputScore)) return alert("❌ Nilai tidak sah");
+  if (isNaN(inputScore)) {
+  showToast("Please enter a valid support amount", "error");
+  return;
+}
 
   const tbody = document.querySelector("#gameLog tbody");
 
   const setScoreNegatifRow = Array.from(tbody.querySelectorAll("tr.set-score-row:not(.jackpot)"))
     .find(row => row.children[1].textContent.includes("-"));
-  if (!setScoreNegatifRow) return alert("❌ Baris set score negatif tidak ditemukan!");
+ if (!setScoreNegatifRow) {
+  showToast("Negative Set Score row not found", "error");
+  return;
+}
 
   const existingSupportRow = Array.from(tbody.querySelectorAll("tr.set-score-row"))
     .find(row =>
@@ -2218,6 +2249,7 @@ function resetSelectToPlaceholder(selectId, placeholderText, disable = false) {
   select.disabled = disable;
 }
 function resetLog() {
+  freeGameBlockStart = null;
   localStorage.removeItem("gameLogDataPussy888");
   localStorage.removeItem("jackpotInsertedMap");
   jackpotInsertedMap = {};
