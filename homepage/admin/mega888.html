@@ -1845,6 +1845,7 @@ function generateLog() {
 
   // AUTO Free Game: kalau ON, random berapa baris free game
 
+
 if (autoFreeGameOn) {
   const allowed = gameData[game]?.freeGameOptions || [];
 
@@ -1855,20 +1856,27 @@ if (autoFreeGameOn) {
     allowed
       .map(Number)
       .filter(n =>
-        Number.isInteger(n) &&
-        n >= 1 &&
-        n <= MAX_FREE_GAME_ROWS &&
-        n <= availableRows
+        Number.isSafeInteger(n) &&
+        n >= 1
       )
   )];
 
+  // Random daripada pilihan asal game
   const selectedCount = valid.length
     ? valid[Math.floor(Math.random() * valid.length)]
     : 0;
 
+  // Hadkan Free Game maksimum 10 rows
+  const finalCount = Math.min(
+    selectedCount,
+    MAX_FREE_GAME_ROWS,
+    availableRows
+  );
+
   document.getElementById("freeGameInput").value =
-    selectedCount || "";
+    finalCount || "";
 }
+
 
 
   // apply Free Game (akan recalc balance sekali)
@@ -2566,25 +2574,25 @@ function mgToast(msg, type = "success") {
 }
 function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
 
+
 function mgOptions(raw) {
   const text = String(raw).trim();
 
   if (!text) return [];
 
   const parts = text.split(/[,\s]+/).filter(Boolean);
-
   const numbers = parts.map(Number);
 
   if (numbers.some(n =>
-    !Number.isInteger(n) ||
-    n < 1 ||
-    n > MAX_FREE_GAME_ROWS
+    !Number.isSafeInteger(n) ||
+    n < 1
   )) {
     return null;
   }
 
   return [...new Set(numbers)].sort((a, b) => a - b);
 }
+
 
 function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;}
 function mgField(label,value='',type='text',hint=''){
@@ -2640,13 +2648,15 @@ function mgEditor(oldName=''){
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
  if(!gameName){mgToast('Enter game name','error');return;}
 
+
 if (freeOptions === null) {
   mgToast(
-    `Free Game Options must contain numbers from 1 to ${MAX_FREE_GAME_ROWS} only!`,
+    "Free Game Options must contain positive whole numbers only!",
     "error"
   );
   return;
 }
+
 
  if(mgGameIds[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
  const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
