@@ -1028,7 +1028,7 @@ function createShell() {
             class="header-tab-search-input"
             type="text"
             name="header_tab_search_no_autofill_923"
-            placeholder="Select Tab"
+            placeholder="🏢 🔍 Search"
             autocomplete="new-password"
             autocorrect="off"
             autocapitalize="off"
