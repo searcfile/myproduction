@@ -1946,23 +1946,36 @@ logs.forEach(log => {
   tbody.innerHTML = rows;
 
 
+
 if (autoFreeGameOn) {
   const allowed = gameData[game]?.freeGameOptions || [];
 
-  const valid = allowed
-    .map(Number)
-    .filter(n =>
-      Number.isInteger(n) &&
-      n >= 1 &&
-      n <= MAX_FREE_GAME_ROWS
-    );
+  const availableRows =
+    tbody.querySelectorAll("tr.log-row").length;
 
-  const randomCount = valid.length
+  const valid = [...new Set(
+    allowed
+      .map(Number)
+      .filter(n =>
+        Number.isSafeInteger(n) &&
+        n > 0
+      )
+  )];
+
+  const selectedCount = valid.length
     ? valid[Math.floor(Math.random() * valid.length)]
     : 0;
 
-  document.getElementById("freeGameInput").value = randomCount;
+  const finalCount = Math.min(
+    selectedCount,
+    MAX_FREE_GAME_ROWS,
+    availableRows
+  );
+
+  document.getElementById("freeGameInput").value =
+    finalCount || "";
 }
+
 
 // Random posisi Free Game setiap kali Generate Log
 applyFreeGame({ randomizePosition: true });
