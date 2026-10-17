@@ -1211,6 +1211,7 @@ select:focus-visible{
     </tbody>
   </table>
 </div>
+<div id="gameLogEmpty" style="display:none;"></div>
 </section>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -2641,6 +2642,64 @@ const names = Object.keys(gameData).sort((a, b) =>
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',mgStart);
+/* =========================================================
+   MEGA888 - GAME LOG SHARED EMPTY STATE
+   ========================================================= */
+
+(function () {
+  function updateGameLogEmpty() {
+    const table = document.getElementById("gameLog");
+    const tbody = table?.querySelector("tbody");
+    const empty = document.getElementById("gameLogEmpty");
+
+    if (!table || !tbody || !empty) return;
+
+    const hasData = !!tbody.querySelector("tr.log-row");
+
+    // Ada data = show table
+    table.style.display = hasData ? "table" : "none";
+
+    // Tiada data = show shared empty card
+    empty.style.display = hasData ? "none" : "block";
+
+    if (!hasData) {
+      if (typeof window.showEmptyState === "function") {
+        window.showEmptyState(
+          empty,
+          "No data",
+          "large",
+          "center",
+          true
+        );
+      } else {
+        empty.textContent = "No data";
+      }
+    } else {
+      empty.innerHTML = "";
+    }
+  }
+
+  function initGameLogEmpty() {
+    const tbody = document.querySelector("#gameLog tbody");
+
+    if (!tbody) return;
+
+    const observer = new MutationObserver(updateGameLogEmpty);
+
+    observer.observe(tbody, {
+      childList: true,
+      subtree: true
+    });
+
+    updateGameLogEmpty();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGameLogEmpty);
+  } else {
+    initGameLogEmpty();
+  }
+})();
 </script>
 </body>
 </html>
