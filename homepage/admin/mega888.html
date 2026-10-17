@@ -2579,8 +2579,8 @@ function mgEditor(oldName=''){
  (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
  if(!old.bets?.length)addBet();
  const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
- const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
- const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:680});cancel.onclick=()=>modal.close();
+ const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+ const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
  form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
  form.addEventListener('submit',async e=>{
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
