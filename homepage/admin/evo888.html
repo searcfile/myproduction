@@ -1258,19 +1258,44 @@ select:focus-visible{
   font-weight: bold;
 }
 
+
+/* ==========================================
+   EVO888 - ORIGINAL SET SCORE BADGE
+   ========================================== */
+
 #gameLog .set-score-row td.setscore {
+  color: #000;
   font-weight: 750;
+  font-size: 26px;
+  background-color: #fff !important;
 }
 
+#gameLog .set-score-row td.setscore .badge {
+  background-color: #d2d6de !important;
+  padding: 7px 13px !important;
+  border-radius: 50px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1 !important;
+  font-size: 21px !important;
+  font-weight: 750;
+  color: #000 !important;
+  white-space: nowrap;
+}
+
+/* Set Score biasa berwarna hitam */
 #gameLog .set-score-row:not(.jackpot) td.setscore,
 #gameLog .set-score-row:not(.jackpot) td.setscore * {
   color: #000 !important;
 }
 
+/* Jackpot berwarna merah */
 #gameLog .set-score-row.jackpot td.setscore,
 #gameLog .set-score-row.jackpot td.setscore * {
   color: #dd4b39 !important;
 }
+
 
 .mg-log-panel .table-wrap {
   width: 100%;
