@@ -245,7 +245,7 @@ body {
   gap: 10px;
 }
 
-.builder-field input{
+.builder-field input:not(.shared-input){
   width: 100%;
   height: 32px;
   border: 1px solid var(--border-input);
@@ -576,25 +576,33 @@ html {
 </div>
 <div class="builder-field">
   <div class="input-row">
-    <input type="text" id="input-recipient" placeholder="Recipient Name" />
+    <input type="text" id="input-recipient" 
+      data-new-ui-input
+      placeholder="Recipient Name" />
     <button class="btn-now" id="btn-auto-name" type="button" aria-pressed="true">AUTO: ON</button>
   </div>
 </div>
           
 <div class="builder-field">
   <div class="input-row">
-    <input type="text" id="input-date" placeholder="Date & Time" />
+    <input type="text" id="input-date"
+      data-new-ui-input
+      placeholder="Date & Time" />
     <button class="btn-now" id="btn-date" type="button">Now</button>
   </div>
 </div>
 
 <div class="builder-row-2">
   <div class="builder-field">
-    <input type="text" id="input-ref4" placeholder="Reference Number 4 Digit Awal." maxlength="4" inputmode="numeric" />
+    <input type="text" id="input-ref4" 
+      data-new-ui-input
+      placeholder="Reference Number 4 Digit Awal." maxlength="4" inputmode="numeric" />
   </div>
 
   <div class="builder-field">
-    <input type="text" id="input-amount" placeholder="Fill Amount" />
+    <input type="text" id="input-amount" 
+      data-new-ui-input
+      placeholder="Fill Amount" />
   </div>
 </div>
 <div class="btn-row">
@@ -665,6 +673,11 @@ html {
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.NewUI?.init?.(document);
+  });
+</script>
 <script type="module">
  const BANK_CONFIG = {
   "CIMB BANK BERHAD": { len: 10, prefix: "7" },
