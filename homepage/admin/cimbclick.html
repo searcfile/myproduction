@@ -504,79 +504,56 @@ html {
   scrollbar-color: #555 transparent;
 }
   
-/* UI-only layout upgrade: settings above preview, left aligned */
-.app-layout{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-start !important;
-  width:calc(100% - 24px) !important;
-  max-width:1680px !important;
-  margin:16px 12px !important;
-  gap:12px !important;
+/* =====================================================
+   SETTINGS UI ONLY — preview markup/styles untouched
+   ===================================================== */
+.app-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  width: calc(100% - 24px) !important;
+  max-width: 1680px !important;
+  margin: 16px 12px !important;
 }
-.builder-panel{
-  width:100% !important;
-  max-width:1680px !important;
-  flex:none !important;
-  position:static !important;
-  top:auto !important;
-  background:var(--page-input);
-  border:1px solid var(--border-input);
-  border-radius:12px;
-  padding:14px;
+.app-layout > .builder-panel {
+  position: static !important;
+  top: auto !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 14px;
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  background: var(--page-input);
 }
-.builder-row{gap:12px !important;}
-.builder-panel .top-inputs{width:100%}
-.builder-panel .builder-row{
-  display:grid !important;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  align-items:end;
+.builder-panel .builder-row {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: end;
 }
-.builder-panel .builder-row > .builder-field,
-.builder-panel .builder-row > .builder-row-2,
-.builder-panel .builder-row > .btn-row{min-width:0}
-.builder-panel .builder-row > .btn-row{grid-column:1 / -1;justify-content:flex-start}
-.builder-panel .btn-row > button{flex:0 1 145px}
-.preview-panel{
-  width:min(100%, 700px) !important;
-  max-width:700px !important;
-  flex:none !important;
-  min-width:0 !important;
-  position:relative;
-  border:1px solid var(--border-input);
-  border-radius:12px;
-  overflow:hidden;
+.builder-panel .builder-row > * { min-width: 0; }
+.builder-panel .builder-row > .btn-row {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
 }
-.preview-panel .container{width:100%}
-.preview-panel::after{
-  content:"SAMPLE — NOT PROOF OF PAYMENT";
-  position:absolute;
-  top:50%;left:50%;
-  width:92%;
-  transform:translate(-50%,-50%) rotate(-24deg);
-  text-align:center;
-  font-weight:800;
-  font-size:clamp(18px,3vw,30px);
-  color:rgba(185,35,35,.38);
-  pointer-events:none;
-  z-index:5;
+.builder-panel .btn-row > button { flex: 0 1 150px; }
+.app-layout > .preview-panel {
+  flex: 0 0 auto !important;
+  align-self: flex-start !important;
 }
-@media(max-width:1000px){
-  .builder-panel .builder-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width: 1000px) {
+  .builder-panel .builder-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
-@media(max-width:600px){
-  .builder-panel .builder-row{grid-template-columns:1fr}
-  .builder-panel .builder-row > .btn-row{flex-wrap:wrap}
-  .builder-panel .btn-row > button{flex:1 1 calc(50% - 8px)}
-}
-
-.preview-panel .container{position:relative}
-.preview-panel .container::after{
-  content:"SAMPLE — NOT PROOF OF PAYMENT";
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%) rotate(-24deg);
-  width:92%;text-align:center;font-size:24px;font-weight:800;
-  color:rgba(185,35,35,.38);pointer-events:none;z-index:5;
+@media (max-width: 600px) {
+  .builder-panel .builder-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .builder-panel .btn-row { flex-wrap: wrap; }
+  .builder-panel .btn-row > button { flex: 1 1 calc(50% - 8px); }
 }
 
 </style>
