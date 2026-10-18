@@ -3752,8 +3752,8 @@ function setupHeaderSearch() {
 
   // Tukar label sahaja, bukan struktur input.
   input.placeholder = "🏢 🔍 Search";
-  mobileInput.placeholder = "Select Site";
-  mobileBtn?.setAttribute("aria-label", "Select Site");
+  mobileInput.placeholder = "🏢 🔍 Search";
+  mobileBtn?.setAttribute("aria-label", "🏢 🔍 Search");
   mobileBtn?.setAttribute("title", "Select Site");
 
   function normalizeSites(data) {
