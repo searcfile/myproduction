@@ -898,8 +898,7 @@ a.tab-open .check-icon{
     visibility .3s ease;
 }
 
-.user-dropdown:has(> .user-button:hover) > .dropdown-content,
-.user-dropdown:has(> .dropdown-content:hover) > .dropdown-content{
+.user-dropdown:hover .dropdown-content{
   display:block;
   opacity:1;
   visibility:visible;
