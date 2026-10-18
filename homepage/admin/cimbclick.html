@@ -699,6 +699,57 @@ function buildZeroAccount(bankName){
   const len = cfg?.len || 10;
   return "0".repeat(len);
 }
+
+let directoryBanks = [];
+
+window.addEventListener("bank-directory-updated", event => {
+  directoryBanks = event.detail.banks || [];
+
+  const selected = directoryBanks.find(
+    bank => bank.id === selectedDirectoryBankId
+  );
+
+  if (!selected) {
+    selectedDirectoryBankId = "";
+  }
+
+  renderDirectoryDropdown();
+});
+
+let selectedDirectoryBankId = "";
+
+function renderDirectoryDropdown() {
+  const menu = document.getElementById("bankMenu");
+  const label = document.getElementById("bankBtnText");
+
+  if (!menu || !label) return;
+
+  menu.replaceChildren();
+
+  if (!directoryBanks.length) {
+    label.textContent = "No Banks Available";
+    return;
+  }
+
+  for (const bank of directoryBanks) {
+    const item = document.createElement("div");
+    item.className = "bank-item";
+    item.textContent = bank.name;
+
+    item.addEventListener("click", () => {
+      selectedDirectoryBankId = bank.id;
+      label.textContent = bank.name;
+      menu.classList.remove("open");
+    });
+
+    menu.appendChild(item);
+  }
+
+  label.textContent =
+    directoryBanks.find(b => b.id === selectedDirectoryBankId)?.name
+    || "Select Bank";
+}
+
 // ===== init custom dropdown =====
 const bankSelectEl = document.getElementById("bankSelect");
 const bankBtn      = document.getElementById("bankBtn");
@@ -1462,11 +1513,28 @@ document.addEventListener("keydown", function(e) {
   function startListener() {
     if (!db()) { error = "Firebase Realtime Database is not initialized."; return; }
     const ref = db().ref(PATH);
-    const callback = snap => {
-      banks = snap.val() || {};
-      ready = true; error = null;
-      if (activeModal?.element?.isConnected) renderManage();
-    };
+
+const callback = snap => {
+  banks = snap.val() || {};
+  ready = true;
+  error = null;
+
+  renderManage();
+
+  window.dispatchEvent(new CustomEvent("bank-directory-updated", {
+    detail: {
+      banks: Object.entries(banks)
+        .filter(([id, bank]) => bank && typeof bank.name === "string")
+        .map(([id, bank]) => ({
+          id,
+          name: bank.name,
+          accountLength: bank.accountLength,
+          prefix: bank.prefix || ""
+        }))
+    }
+  }));
+};
+
     ref.on("value", callback, err => {
       error = err.message || "Unable to read bank directory";
       ready = false;
