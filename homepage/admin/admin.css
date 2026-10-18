@@ -2213,6 +2213,7 @@ body.tab-dragging-active *{
 
 .header-tab-search-input:hover{
   border-color:var(--gold-hover);
+  background:#ffffff29;
 }
 
 .header-tab-search-input:focus{
