@@ -1817,8 +1817,8 @@ document.getElementById('setFreeGameBtn').addEventListener('click', function () 
     return;
   }
 
-  applyFreeGame();
-
+ 
+applyFreeGame({ randomizePosition: true });
   showToast(
     count === 0 ? "Free Game cleared successfully!" : "Free Game updated successfully!",
     "success"
