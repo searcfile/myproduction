@@ -1945,10 +1945,7 @@ body.tab-dragging-active *{
   z-index:99999;
   border-radius:8px;
 }
-.header-tab-search:hover{
-  background:#ffffff1f;
-  color:#fff;
-}
+
 .header-tab-search form{
   width:100%;
 }
