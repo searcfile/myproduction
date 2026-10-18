@@ -820,7 +820,7 @@ a.tab-open .check-icon{
   position:relative;
   display:flex;
   align-items:center;
-  height:32px;
+  height:100%;
 }
 .user-button{
   display:flex;
