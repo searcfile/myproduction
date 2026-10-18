@@ -818,13 +818,10 @@ a.tab-open .check-icon{
 
 .user-dropdown{
   position:relative;
-
   display:flex;
   align-items:center;
-
-  height:100%;
+  height:32px;
 }
-
 .user-button{
   display:flex;
   align-items:center;
