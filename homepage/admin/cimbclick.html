@@ -9,12 +9,6 @@
   <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
   <link rel="stylesheet" href="./new-ui.css">
-<style id="bank-admin-style">
-.bank-admin-shell{width:calc(100% - 24px);max-width:1100px;margin:16px 12px 0;color:var(--page-text)}
-.bank-admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.bank-admin-toolbar h2{font-size:18px;margin:0 0 4px}.bank-admin-toolbar p{margin:0;color:var(--muted,var(--page-text));font-size:13px}.bank-admin-actions{display:flex;gap:8px;flex-wrap:wrap}
-.bank-admin-btn{min-height:34px;border:1px solid transparent;border-radius:6px;background:var(--blue,#1668dc);color:#fff;padding:6px 14px;font:inherit;font-size:13px;cursor:pointer}.bank-admin-btn.secondary{background:var(--page-input);color:var(--page-text);border-color:var(--border-input)}
-.bank-admin-card{margin-top:12px;padding:16px;border:1px solid var(--border-input);border-radius:10px;background:var(--page-bg2)}.bank-admin-search{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.bank-admin-search input,.bank-admin-dialog input,.bank-admin-dialog select{min-width:0;width:100%;height:34px;padding:0 10px;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text)}.bank-admin-search input{max-width:400px}.bank-admin-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}.bank-admin-item{border:1px solid var(--border-input);padding:12px;border-radius:8px;display:flex;justify-content:space-between;gap:8px;align-items:center;min-width:0}.bank-admin-item strong{overflow-wrap:anywhere;font-size:13px}.bank-admin-item small{display:block;opacity:.7}.bank-admin-item-actions{display:flex;gap:6px;flex-shrink:0}.bank-admin-item-actions button{font-size:12px;padding:5px 8px}.bank-admin-dialog{width:min(440px,calc(100vw - 28px));border:1px solid var(--border-input);border-radius:12px;background:var(--page-bg2);color:var(--page-text);padding:22px;box-shadow:0 18px 70px #0006}.bank-admin-dialog::backdrop{background:#0009}.bank-admin-dialog h3{margin:0 0 18px}.bank-admin-dialog label{display:block;font-size:13px;margin:12px 0}.bank-admin-dialog label>input,.bank-admin-dialog label>select,.bank-admin-dialog label>.shared-dropdown{margin-top:6px}.bank-admin-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}#bankAdminError{color:#f66;font-size:12px;min-height:1em}@media(max-width:640px){.bank-admin-toolbar{align-items:stretch}.bank-admin-actions{width:100%}.bank-admin-actions button{flex:1}.bank-admin-card{padding:12px}.bank-admin-list{grid-template-columns:1fr}}
-</style>
 </head>
   <style>
     :root{
@@ -509,22 +503,46 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
+
+/* Layout-only upgrade: preview-panel internals intentionally unchanged */
+.app-layout{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:calc(100% - 32px)!important;max-width:none!important;margin:12px 16px!important;gap:12px!important}
+.builder-panel{position:static!important;width:100%!important;max-width:none!important;flex:initial!important;background:#141414;border:1px solid #424242;border-radius:12px;padding:14px!important}
+.builder-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px!important}
+.builder-row>.builder-row-2{display:contents!important}
+.builder-field{min-width:0!important}
+.builder-row>.btn-row{grid-column:1/-1;border-top:1px solid #363636;padding-top:12px;justify-content:flex-start;flex-wrap:wrap}
+.builder-row>.btn-row>button{flex:0 0 auto;width:auto;min-width:100px}
+.builder-field .input-row{min-width:0}
+.builder-field .input-row input{min-width:0}
+.settings-title,.preview-title{color:var(--page-text);font-size:14px;font-weight:700;margin:0 0 14px}
+.preview-title{margin:2px 0 0}
+.receipt-toolbar{display:flex;justify-content:flex-end;gap:8px;margin:16px 16px 0;flex-wrap:wrap}
+.receipt-toolbar .btn-update{width:auto;min-width:120px}
+.preview-panel{flex:initial!important;width:100%!important;max-width:none!important;min-width:0!important}
+.preview-panel>.container{max-width:700px!important;width:100%!important;margin:0!important}
+@media(max-width:900px){.builder-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:570px){.builder-row{grid-template-columns:minmax(0,1fr)!important}.app-layout{margin:12px!important;width:calc(100% - 24px)!important}.receipt-toolbar{margin:12px 12px 0}.receipt-toolbar .btn-update{flex:1;min-width:0}.builder-row>.btn-row>button{flex:1 1 calc(50% - 8px)}}
+.bank-manager-dialog{border:1px solid #444;border-radius:12px;background:#161616;color:#eee;width:min(650px,calc(100vw - 24px));max-height:85vh;overflow:auto;padding:20px}
+.bank-manager-dialog::backdrop{background:rgba(0,0,0,.75)}
+.bank-manager-dialog header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.bank-manager-dialog h3{margin:0;font-size:16px}
+.bank-manager-dialog input{width:100%;height:34px;background:#141414;border:1px solid #424242;border-radius:6px;padding:0 10px;color:#eee;margin:4px 0 12px}
+.bank-manager-dialog label{font-size:12px;display:block}
+.bank-manager-dialog button{background:#1668dc;border:0;border-radius:6px;color:white;padding:8px 12px;cursor:pointer}
+.bank-manager-dialog .bank-close{background:#333}
+.bank-manager-dialog .bank-list{display:grid;gap:8px;margin-top:14px}
+.bank-manager-dialog .bank-entry{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid #333;border-radius:8px;padding:10px;overflow-wrap:anywhere}
+.bank-manager-dialog .bank-entry button{background:#333;margin-left:4px}
+.bank-manager-dialog .bank-entry button.delete{background:#b4232f}
+
   </style>
 <body>
   
-<section class="bank-admin-shell" aria-label="Bank directory management">
-  <div class="bank-admin-toolbar"><div><h2>Bank Management</h2><p>Manage your bank directory without editing GitHub.</p></div><div class="bank-admin-actions"><button type="button" id="manageBanksBtn" class="bank-admin-btn secondary">Manage Banks</button><button type="button" id="createBankBtn" class="bank-admin-btn">+ Create Bank</button></div></div>
-  <div id="bankAdminContent" class="bank-admin-card" hidden>
-    <div class="bank-admin-search"><input type="search" id="bankAdminSearch" placeholder="Search banks..." aria-label="Search banks"><span id="bankAdminCount"></span></div>
-    <div id="bankAdminList" class="bank-admin-list"></div>
-  </div>
-</section>
-<dialog id="bankAdminDialog" class="bank-admin-dialog"><form method="dialog" id="bankAdminForm"><h3 id="bankAdminDialogTitle">Create Bank</h3><label>Bank Name<input id="bankAdminName" maxlength="100" required placeholder="Bank name"></label><label>Category<select id="bankAdminCategory" data-shared-dropdown><option value="bank">Bank</option><option value="ewallet">E-wallet</option><option value="other">Other</option></select></label><p id="bankAdminError" role="alert"></p><div class="bank-admin-dialog-actions"><button value="cancel" type="button" id="bankAdminCancel" class="bank-admin-btn secondary">Cancel</button><button type="submit" class="bank-admin-btn">Save Bank</button></div></form></dialog>
-
+  <div class="receipt-toolbar"><button type="button" class="btn-update" id="manage-banks">Manage Banks</button><button type="button" class="btn-update" id="create-bank">+ Create Bank</button></div>
   <div class="app-layout">
     <!-- ✅ PANEL KIRI: input + buttons -->
     <aside class="builder-panel">
-      <div class="top-inputs">
+      <div class="top-inputs"><h3 class="settings-title">Receipt Settings</h3>
         <div class="builder-row">
           <!-- ===== Custom Bank Dropdown ===== -->
 <div class="builder-field">
@@ -569,6 +587,7 @@ html {
       </div>
     </aside>
 
+    <h3 class="preview-title">Receipt Preview</h3>
     <!-- ✅ PANEL KANAN: receipt preview -->
     <main class="preview-panel">
       <div class="container">
@@ -627,7 +646,6 @@ html {
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js"></script>
-<script defer src="./bank-directory.js"></script>
 <script type="module">
  const BANK_CONFIG = {
   "CIMB BANK BERHAD": { len: 10, prefix: "7" },
@@ -1405,5 +1423,14 @@ document.addEventListener("keydown", function(e) {
   }
 }, true);
 </script>
+
+<dialog class="bank-manager-dialog" id="bank-directory-dialog" aria-labelledby="bank-directory-title">
+<header><h3 id="bank-directory-title">Manage Banks</h3><button type="button" class="bank-close" id="bank-directory-close">Close</button></header>
+<p style="color:#aaa;font-size:12px">Bank directory disimpan dalam browser ini sahaja. Ia tidak mengubah data atau pilihan dalam resit.</p>
+<label for="directory-search">Search Bank</label><input id="directory-search" type="search" placeholder="Search bank...">
+<form id="bank-directory-form"><label for="directory-name">Bank Name</label><input id="directory-name" maxlength="100" required placeholder="Bank name"><button type="submit" id="directory-save">Save Bank</button><button type="button" class="bank-close" id="directory-cancel" hidden>Cancel Edit</button></form>
+<div class="bank-list" id="bank-directory-list"></div>
+</dialog>
+<script src="./bank-directory.js" defer></script>
 </body>
 </html>
