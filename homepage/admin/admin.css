@@ -1650,3 +1650,726 @@ html {
   scrollbar-color: #555 transparent;
 }
 
+/* ==========================================================
+   TAB BAR
+   ========================================================== */
+
+.tab-bar{
+  position:relative;
+
+  width:100%;
+  height:var(--admin-tabs-height);
+
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+
+  gap:0;
+
+  margin-top:var(--admin-header-height);
+
+  padding:0 12px;
+
+  overflow:visible;
+  min-width:0;
+
+  white-space:nowrap;
+
+  background:var(--bg-main);
+
+  box-sizing:border-box;
+
+  scrollbar-width:none;
+
+  z-index:1;
+
+  transition:
+    margin-left .2s ease,
+    width .2s ease;
+}
+
+.tab-bar::-webkit-scrollbar{
+  display:none;
+}
+
+.tab-bar::before{
+  content:"";
+
+  position:absolute;
+
+  left:12px;
+  right:12px;
+  bottom:0;
+
+  border-bottom:1px solid var(--border4);
+
+  pointer-events:none;
+
+  z-index:0;
+}
+
+.tab-bar.shrink{
+  margin-left:0 !important;
+  width:100% !important;
+}
+
+
+/* ==========================================================
+   TAB
+   ========================================================== */
+
+.tab{
+  position:relative;
+
+  display:inline-flex;
+  align-items:center;
+
+  flex-shrink:0;
+
+  gap:2px;
+
+  padding:11px 16px;
+
+  margin-bottom:-1px;
+
+  border:1px solid var(--border3);
+  border-bottom:1px solid var(--border3);
+
+  border-radius:8px 8px 0 0;
+
+  background:var(--tab-bg);
+
+  color:var(--text-soft) !important;
+
+  font-size:14px;
+  line-height:1.2;
+
+  white-space:nowrap;
+
+  user-select:none;
+
+  cursor:pointer;
+
+  z-index:2;
+
+  transition:
+    transform .18s ease,
+    color .18s ease,
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    opacity .18s ease;
+}
+
+.tab:not(.active-tab):hover{
+  color:var(--gold-hover) !important;
+}
+
+.tab:not(.active-tab):active{
+  color:var(--gold-active) !important;
+}
+
+
+/* ==========================================================
+   ACTIVE TAB
+   ========================================================== */
+
+.active-tab{
+  color:var(--gold) !important;
+
+  background:var(--tab2);
+
+  border-bottom-color:var(--bg-main);
+
+  z-index:3;
+}
+
+
+/* ==========================================================
+   CLOSE TAB
+   ========================================================== */
+
+.tab .close-tab{
+  width:1em;
+  height:1em;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  margin-left:4px;
+
+  padding:0;
+
+  border:none;
+  border-radius:0;
+
+  background:transparent;
+
+  color:var(--close);
+
+  font-size:12px;
+
+  cursor:pointer;
+
+  pointer-events:auto;
+
+  transition:
+    color .3s ease,
+    transform .2s ease;
+}
+
+.tab .close-tab svg{
+  width:1em;
+  height:1em;
+
+  display:block;
+
+  fill:currentColor;
+}
+
+.tab .close-tab:hover{
+  color:var(--text-main) !important;
+}
+
+.tab .close-tab:active{
+  color:var(--gold-active) !important;
+}
+
+
+/* ==========================================================
+   TAB SORT
+   ========================================================== */
+
+.tab-sort-drag,
+.tab-sort-fallback,
+.sortable-fallback{
+  display:inline-flex !important;
+
+  align-items:center !important;
+
+  visibility:visible !important;
+
+  opacity:1 !important;
+
+  background:var(--tab2) !important;
+
+  color:var(--gold) !important;
+
+  border:1px solid var(--border3) !important;
+
+  box-shadow:0 12px 28px rgba(0,0,0,.35) !important;
+
+  z-index:99999 !important;
+
+  pointer-events:none !important;
+
+  white-space:nowrap !important;
+}
+
+.tab-sort-chosen,
+.sortable-chosen{
+  opacity:.08 !important;
+}
+
+.tab-sort-ghost,
+.sortable-ghost{
+  opacity:.18 !important;
+
+  background:rgba(255,255,255,.04) !important;
+
+  border:1px dashed var(--border2) !important;
+
+  box-shadow:none !important;
+}
+
+body.tab-dragging-active,
+body.tab-dragging-active *{
+  user-select:none !important;
+
+  cursor:grabbing !important;
+}
+
+/* ==========================================================
+   SHARED TAB MODULE SEARCH
+   ========================================================== */
+
+.tab-module-search{
+  position:relative;
+  width:32px;
+  height:32px;
+  flex:0 0 32px;
+  margin-bottom:4px;
+  white-space:nowrap;
+  z-index:4;
+  transition:
+    width .18s ease,
+    flex-basis .18s ease;
+}
+
+
+/* OPEN */
+
+.tab-module-search.open{
+  width:188px;
+  flex-basis:188px;
+}
+
+
+/* ==========================================================
+   ONE SEARCH CONTROL
+   ========================================================== */
+
+.tab-search-control{
+  position:relative;
+  width:100%;
+  height:32px;
+  display:flex;
+  align-items:center;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  background:var(--tab2);
+  overflow:hidden;
+  transition:
+    border-color .2s ease;
+}
+
+.tab-search-control:hover{
+  border-color:var(--gold-hover);
+}
+
+.tab-module-search.open
+.tab-search-control:focus-within{
+  border-color:var(--gold);
+}
+
+
+/* ==========================================================
+   CLOSED SEARCH BUTTON
+   ========================================================== */
+
+.tab-search-toggle{
+  width:32px;
+  height:32px;
+
+  flex:0 0 32px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+  margin:0;
+
+  border:0 !important;
+  outline:0;
+
+  background:transparent !important;
+
+  color:var(--text-soft);
+
+  cursor:pointer;
+}
+
+.tab-search-toggle svg{
+  width:14px;
+  height:14px;
+
+  display:block;
+
+  fill:currentColor;
+}
+
+.tab-search-toggle:hover{
+  color:var(--gold-hover);
+}
+
+.tab-search-toggle:active{
+  color:var(--gold-active);
+}
+
+
+/* ==========================================================
+   INPUT
+   CLOSED = tidak wujud dalam layout
+   ========================================================== */
+
+.tab-search-input{
+  display:none;
+
+  width:100%;
+  min-width:0;
+  height:32px;
+
+  flex:1 1 auto;
+
+  padding:0 30px 0 10px;
+  margin:0;
+
+  border:0 !important;
+  outline:0 !important;
+
+  background:transparent !important;
+
+  color:var(--text-soft);
+
+  font-family:inherit;
+  font-size:14px;
+  line-height:32px;
+
+  box-shadow:none !important;
+}
+
+.tab-search-input::placeholder{
+  color:var(--blur);
+}
+
+
+/* ==========================================================
+   CLOSE
+   CLOSED = tidak wujud
+   ========================================================== */
+
+.tab-search-action{
+  display:none;
+
+  position:absolute;
+
+  top:0;
+  right:0;
+
+  width:30px;
+  height:30px;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+  margin:0;
+
+  border:0 !important;
+  outline:0;
+
+  background:transparent !important;
+
+  color:var(--close);
+
+  cursor:pointer;
+}
+
+.tab-search-action svg{
+  width:12px;
+  height:12px;
+  display:block;
+  fill:var(--blur);
+}
+
+.tab-search-action:hover{
+  color:var(--text-main);
+}
+
+.tab-search-action:active{
+  color:var(--gold-active);
+}
+
+
+.tab-module-search.open
+.tab-search-toggle{
+  display:none !important;
+}
+
+.tab-module-search.open
+.tab-search-input{
+  display:block !important;
+}
+
+.tab-module-search.open
+.tab-search-action{
+  display:flex !important;
+}
+
+
+/* ==========================================================
+   RESULT LIST
+   ========================================================== */
+
+.tab-search-list{
+  position:fixed;
+
+  display:none;
+
+  width:188px;
+  max-height:260px;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding:4px;
+
+  border:1px solid var(--border2);
+  border-radius:6px;
+
+  background:var(--backgrounddrop);
+
+  box-shadow:
+    0 8px 20px
+    rgba(0,0,0,.35);
+
+  z-index:999999;
+}
+
+.tab-module-search.list-open
+.tab-search-list{
+  display:block;
+}
+
+
+/* ==========================================================
+   RESULT ITEM
+   ========================================================== */
+
+.tab-search-item{
+  width:100%;
+
+  display:block;
+
+  padding:6px 8px;
+  margin:0;
+
+  border:0 !important;
+  border-radius:4px;
+
+  background:transparent !important;
+
+  color:var(--text-soft);
+
+  font-family:inherit;
+  font-size:12px;
+  line-height:1.4;
+
+  text-align:left;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  cursor:pointer;
+}
+
+.tab-search-item:hover{
+  background:
+    var(--close-hover2) !important;
+
+  color:var(--text-main);
+}
+
+.tab-search-item:active{
+  color:var(--gold-active);
+}
+/* ACTIVE MODULE */
+
+.tab-search-item.active{
+  background:var(--dropdown-bg-active) !important;
+  color:var(--text-main) !important;
+  font-weight:600;
+}
+
+/* ==========================================================
+   HEADER TAB SEARCH
+   ========================================================== */
+
+.header-tab-search{
+  position:relative;
+  width:100%;
+  max-width:150px;
+  flex:0 0 150px;
+  padding-inline:12px;
+  z-index:99999;
+  border-radius:8px;
+}
+.header-tab-search:hover{
+  background:#ffffff1f;
+  color:#fff;
+}
+.header-tab-search form{
+  width:100%;
+}
+
+.header-tab-search-input-wrap{
+  position:relative;
+  width:100%;
+}
+
+.header-tab-search-input{
+  width:100%;
+  height:36px;
+  padding:4px 34px 4px 11px;
+  border:1px solid #ffffff29;
+  border-radius:8px;
+  background:#ffffff1a;
+  color:#fff;
+  font-size:14px;
+  outline:none;
+  transition:.2s;
+}
+
+.header-tab-search-input:hover{
+  border-color:var(--gold-hover);
+}
+
+.header-tab-search-input:focus{
+  border-color:var(--gold);
+  background:#ffffff1a;
+}
+.header-tab-search-input::placeholder{
+  color:#ffffffd1;
+}
+.header-tab-search-arrow{
+  position:absolute;
+  right:10px;
+  top:50%;
+  width:14px;
+  height:14px;
+  transform:translateY(-50%);
+  fill:#ffffffd1;
+  pointer-events:none;
+}
+
+.header-tab-search.has-selected .header-tab-search-arrow{
+  pointer-events:auto;
+
+  cursor:pointer;
+}
+
+.header-tab-search.has-selected .header-tab-search-arrow:hover{
+  fill:var(--colorbtn-close);
+}
+
+.header-tab-search.search-mode .header-tab-search-arrow{
+  pointer-events:none;
+}
+
+
+/* ==========================================================
+   HEADER SEARCH RESULTS
+   ========================================================== */
+
+.header-tab-search-list{
+  position:fixed;
+  display:none;
+
+  box-sizing:border-box;
+
+  width:150px;
+  max-height:260px;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding:4px;
+  margin:0;
+
+  background:var(--backgrounddrop);
+  border:1px solid var(--border2);
+  border-radius:8px;
+
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+  z-index:999999;
+}
+
+.header-tab-search-list a{
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:left;
+  width:100%;
+  height:34px;
+  min-height:34px;
+  padding:0 10px;
+  margin:0;
+  border-radius:4px;
+  color:var(--text-soft);
+  font-size:13px;
+  font-weight:400;
+  line-height:18px;
+  text-decoration:none;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  flex-shrink:0;
+}
+
+
+
+.header-tab-search-list a:hover{
+  background:var(--close-hover2);
+}
+
+/* ==========================================================
+   SELECT TAB - MOBILE ICON
+   ========================================================== */
+
+/* Desktop: icon mobile tidak dipaparkan */
+.header-tab-search-mobile-btn{
+  display:none;
+}
+
+/* Mobile: tukar input kepada icon */
+@media (max-width:815px){
+
+  .header-tab-search{
+    display:flex !important;
+    align-items:center;
+
+    width:32px !important;
+    min-width:32px;
+    max-width:32px !important;
+    flex:0 0 32px !important;
+    margin-right:14px;
+  }
+
+  .header-tab-search-mobile-btn{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
+    padding:0;
+    border:0;
+    border-radius:8px;
+    background:#ffffff1f;
+    color:#fff;
+    cursor:pointer;
+    transition: background-color .18s ease, color .18s ease;
+  }
+.header-tab-search-mobile-btn:hover{
+    background:#ffffff1f;
+    color:#fff;
+}
+
+.header-tab-search-mobile-btn svg{
+  display:block;
+  width:19.2px;
+  height:19.2px;
+  flex:none;
+
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linecap:round;
+}
+
+  /* Input desktop disembunyikan,
+     tetapi wrapper dan dropdown kekal */
+  .header-tab-search form{
+    display:none;
+  }
+
+  .header-tab-search-list{
+    width:200px;
+    max-width:calc(100vw - 24px);
+  }
+}
