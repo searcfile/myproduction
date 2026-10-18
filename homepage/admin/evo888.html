@@ -1307,7 +1307,7 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   white-space: nowrap;
   box-sizing: content-box;
 }
-}
+
 
 /* Set Score biasa berwarna hitam */
 #gameLog .set-score-row:not(.jackpot) td.setscore,
@@ -2561,82 +2561,98 @@ function setRandomWin() {
   "success"
 );
 }
-function copyGameLogImage() {
+
+async function copyGameLogImage() {
   const gameLogTable = document.getElementById("gameLog");
+
   if (!gameLogTable) {
     showToast("Table #gameLog tidak ditemui", "error");
     return;
   }
 
-  gameLogTable.classList.add("screenshot-mode");
-
-html2canvas(gameLogTable, {
-  scale: 2,
-  useCORS: true,
-  backgroundColor: "#ffffff",
-  width: Math.ceil(gameLogTable.scrollWidth),
-  windowWidth: Math.max(
-    window.innerWidth,
-    Math.ceil(gameLogTable.scrollWidth) + 100
-  ),
-  onclone: function (clonedDocument) {
-    const clonedTable = clonedDocument.getElementById("gameLog");
-
-    if (!clonedTable) return;
-
-    clonedTable.style.width = "max-content";
-    clonedTable.style.minWidth = "max-content";
-    clonedTable.style.maxWidth = "none";
-
-    const wrap = clonedTable.closest(".table-wrap");
-
-    if (wrap) {
-      wrap.style.width = "max-content";
-      wrap.style.maxWidth = "none";
-      wrap.style.overflow = "visible";
+  try {
+    // Pastikan font sudah siap sebelum capture
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
     }
 
-    const panel = clonedTable.closest(".mg-log-panel");
+    const canvas = await html2canvas(gameLogTable, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
 
-    if (panel) {
-      panel.style.width = "max-content";
-      panel.style.maxWidth = "none";
-      panel.style.overflow = "visible";
-    }
-  }
-})
-  .then(async (canvas) => {
-    gameLogTable.classList.remove("screenshot-mode");
+      // Ubah hanya salinan screenshot, bukan table asal
+      onclone: (clonedDocument) => {
+        const table = clonedDocument.getElementById("gameLog");
+        if (!table) return;
+
+        table.classList.add("screenshot-mode");
+
+        const style = clonedDocument.createElement("style");
+
+        style.textContent = `
+          #gameLog.screenshot-mode th {
+            border: 1px solid #ddd !important;
+          }
+
+          #gameLog.screenshot-mode
+          .set-score-row td.setscore .badge {
+            display: inline-block !important;
+            box-sizing: content-box !important;
+            padding: 7px 13px !important;
+            font-family: 'Source Sans 3', Arial, sans-serif !important;
+            font-size: 21px !important;
+            font-weight: 750 !important;
+            line-height: normal !important;
+            vertical-align: middle !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            transform: none !important;
+          }
+        `;
+
+        clonedDocument.head.appendChild(style);
+      }
+    });
 
     try {
-      // Cuba copy PNG terus ke clipboard
-      if (!navigator.clipboard || !window.ClipboardItem) throw new Error("Clipboard API tidak tersedia");
+      if (!navigator.clipboard || !window.ClipboardItem) {
+        throw new Error("Clipboard API tidak tersedia");
+      }
 
-      await new Promise((resolve, reject) => {
-        canvas.toBlob(async (blob) => {
-          if (!blob) return reject(new Error("Gagal buat blob"));
-          try {
-            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-            resolve();
-          } catch (err) { reject(err); }
+      const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((result) => {
+          if (result) resolve(result);
+          else reject(new Error("Gagal buat blob"));
         }, "image/png");
       });
 
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob })
+      ]);
+
       showToast("Image copied to clipboard", "success");
-      return;
 
     } catch (err) {
-      // Fallback: hantar base64 ke parent
       const dataURL = canvas.toDataURL("image/png");
+
       window.parent.postMessage(
-        { action: "copy-image-base64", base64: dataURL },
+        {
+          action: "copy-image-base64",
+          base64: dataURL
+        },
         "https://5g88-main.vercel.app/"
       );
+
       showToast("Image sent to parent (fallback)", "info");
-      // (Opsional) console.error(err);
     }
-  });
+
+  } catch (err) {
+    console.error("Copy Image Error:", err);
+    showToast("Failed to copy Game Log image", "error");
+  }
 }
+
 document.addEventListener("keydown", function(e) {
   if (e.ctrlKey && e.key.toLowerCase() === "c") {
     e.preventDefault();
