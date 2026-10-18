@@ -556,7 +556,24 @@ html {
   #floatingFabWrap{
     display: none !important;
   }
-
+.admin-workspace-tabs-list {
+    perspective: 1000px;
+}
+.admin-workspace-tabs-list {
+    position: relative;
+    order: 1;
+    display: flex;
+    align-items: flex-end;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: none;
+    scroll-behavior: auto;
+    z-index: 1;
+}
   .tab,
   .tab.active-tab{
     display: inline-flex !important;
