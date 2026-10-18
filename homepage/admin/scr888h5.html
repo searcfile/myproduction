@@ -77,7 +77,24 @@ html body #gameLog td {
 
 
 body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg);margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
-  .screenshot-mode th {border: 1px solid #ddd !important;}
+
+/* SCR888H5 - COPY IMAGE STYLING */
+#gameLog.screenshot-mode th {
+  border: 1px solid #ddd !important;
+}
+
+/* Badge SetScore semasa screenshot */
+#gameLog.screenshot-mode .set-score-row td.setscore .badge {
+  box-sizing: content-box !important;
+  padding: 7px 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  transform: none !important;
+}
+
   html { scrollbar-width: none;-ms-overflow-style: none;}html.body::-webkit-scrollbar {display: none;}
   table {width: 65%;border-collapse: collapse;margin-top: 10px;font-size: 26px;}
   th {padding: 22px 26px;border: 2.5px solid #ddd;background: #3c8dbc;color: white;text-align: center;}
@@ -771,18 +788,7 @@ select:focus-visible{
   width: max-content;
   table-layout: auto;
 }
-/* Screenshot Game Log sahaja */
-#gameLog.screenshot-mode {
-  width: max-content !important;
-  min-width: max-content !important;
-  max-width: none !important;
-  table-layout: auto !important;
-}
 
-#gameLog.screenshot-mode th,
-#gameLog.screenshot-mode td {
-  box-sizing: content-box;
-}
 .mg-log-panel #gameLog thead {
   display: table-header-group;
 }
@@ -1305,7 +1311,7 @@ select:focus-visible{
   font-weight: 750;
   color: #000;
   white-space: nowrap;
-  box-sizing: none;
+  box-sizing: content-box;
 }
 /* Set Score biasa berwarna hitam */
 #gameLog .set-score-row:not(.jackpot) td.setscore,
@@ -2571,42 +2577,7 @@ function copyGameLogImage() {
 
   gameLogTable.classList.add("screenshot-mode");
 
- html2canvas(gameLogTable, {
-  scale: 2,
-  useCORS: true,
-  backgroundColor: "#ffffff",
-  width: Math.ceil(gameLogTable.scrollWidth),
-  windowWidth: Math.max(
-    window.innerWidth,
-    Math.ceil(gameLogTable.scrollWidth) + 100
-  ),
-  onclone: function (clonedDocument) {
-    const clonedTable = clonedDocument.getElementById("gameLog");
-
-    if (!clonedTable) return;
-
-    clonedTable.style.width = "max-content";
-    clonedTable.style.minWidth = "max-content";
-    clonedTable.style.maxWidth = "none";
-
-    const wrap = clonedTable.closest(".table-wrap");
-
-    if (wrap) {
-      wrap.style.width = "max-content";
-      wrap.style.maxWidth = "none";
-      wrap.style.overflow = "visible";
-    }
-
-    const panel = clonedTable.closest(".mg-log-panel");
-
-    if (panel) {
-      panel.style.width = "max-content";
-      panel.style.maxWidth = "none";
-      panel.style.overflow = "visible";
-    }
-  }
-})
-  .then(async (canvas) => {
+  html2canvas(gameLogTable, { scale: 2, useCORS: true }).then(async (canvas) => {
     gameLogTable.classList.remove("screenshot-mode");
 
     try {
