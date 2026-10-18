@@ -1842,9 +1842,11 @@ document.getElementById("setFreeGameBtn").addEventListener("click", function () 
     return;
   }
 
-  applyFreeGame();
+
+  applyFreeGame({ randomizePosition: true });
 
   const applied = Math.min(value, MAX_FREE_GAME_ROWS, rows.length);
+
 
   showToast(
     applied === 0
