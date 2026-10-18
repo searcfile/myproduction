@@ -503,46 +503,13 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
-
-/* Layout-only upgrade: preview-panel internals intentionally unchanged */
-.app-layout{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:calc(100% - 32px)!important;max-width:none!important;margin:12px 16px!important;gap:12px!important}
-.builder-panel{position:static!important;width:100%!important;max-width:none!important;flex:initial!important;background:#141414;border:1px solid #424242;border-radius:12px;padding:14px!important}
-.builder-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px!important}
-.builder-row>.builder-row-2{display:contents!important}
-.builder-field{min-width:0!important}
-.builder-row>.btn-row{grid-column:1/-1;border-top:1px solid #363636;padding-top:12px;justify-content:flex-start;flex-wrap:wrap}
-.builder-row>.btn-row>button{flex:0 0 auto;width:auto;min-width:100px}
-.builder-field .input-row{min-width:0}
-.builder-field .input-row input{min-width:0}
-.settings-title,.preview-title{color:var(--page-text);font-size:14px;font-weight:700;margin:0 0 14px}
-.preview-title{margin:2px 0 0}
-.receipt-toolbar{display:flex;justify-content:flex-end;gap:8px;margin:16px 16px 0;flex-wrap:wrap}
-.receipt-toolbar .btn-update{width:auto;min-width:120px}
-.preview-panel{flex:initial!important;width:100%!important;max-width:none!important;min-width:0!important}
-.preview-panel>.container{max-width:700px!important;width:100%!important;margin:0!important}
-@media(max-width:900px){.builder-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:570px){.builder-row{grid-template-columns:minmax(0,1fr)!important}.app-layout{margin:12px!important;width:calc(100% - 24px)!important}.receipt-toolbar{margin:12px 12px 0}.receipt-toolbar .btn-update{flex:1;min-width:0}.builder-row>.btn-row>button{flex:1 1 calc(50% - 8px)}}
-.bank-manager-dialog{border:1px solid #444;border-radius:12px;background:#161616;color:#eee;width:min(650px,calc(100vw - 24px));max-height:85vh;overflow:auto;padding:20px}
-.bank-manager-dialog::backdrop{background:rgba(0,0,0,.75)}
-.bank-manager-dialog header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.bank-manager-dialog h3{margin:0;font-size:16px}
-.bank-manager-dialog input{width:100%;height:34px;background:#141414;border:1px solid #424242;border-radius:6px;padding:0 10px;color:#eee;margin:4px 0 12px}
-.bank-manager-dialog label{font-size:12px;display:block}
-.bank-manager-dialog button{background:#1668dc;border:0;border-radius:6px;color:white;padding:8px 12px;cursor:pointer}
-.bank-manager-dialog .bank-close{background:#333}
-.bank-manager-dialog .bank-list{display:grid;gap:8px;margin-top:14px}
-.bank-manager-dialog .bank-entry{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid #333;border-radius:8px;padding:10px;overflow-wrap:anywhere}
-.bank-manager-dialog .bank-entry button{background:#333;margin-left:4px}
-.bank-manager-dialog .bank-entry button.delete{background:#b4232f}
-
   </style>
 <body>
   
-  <div class="receipt-toolbar"><button type="button" class="btn-update" id="manage-banks">Manage Banks</button><button type="button" class="btn-update" id="create-bank">+ Create Bank</button></div>
   <div class="app-layout">
     <!-- ✅ PANEL KIRI: input + buttons -->
     <aside class="builder-panel">
-      <div class="top-inputs"><h3 class="settings-title">Receipt Settings</h3>
+      <div class="top-inputs">
         <div class="builder-row">
           <!-- ===== Custom Bank Dropdown ===== -->
 <div class="builder-field">
@@ -587,7 +554,6 @@ html {
       </div>
     </aside>
 
-    <h3 class="preview-title">Receipt Preview</h3>
     <!-- ✅ PANEL KANAN: receipt preview -->
     <main class="preview-panel">
       <div class="container">
@@ -699,57 +665,6 @@ function buildZeroAccount(bankName){
   const len = cfg?.len || 10;
   return "0".repeat(len);
 }
-
-let directoryBanks = [];
-
-window.addEventListener("bank-directory-updated", event => {
-  directoryBanks = event.detail.banks || [];
-
-  const selected = directoryBanks.find(
-    bank => bank.id === selectedDirectoryBankId
-  );
-
-  if (!selected) {
-    selectedDirectoryBankId = "";
-  }
-
-  renderDirectoryDropdown();
-});
-
-let selectedDirectoryBankId = "";
-
-function renderDirectoryDropdown() {
-  const menu = document.getElementById("bankMenu");
-  const label = document.getElementById("bankBtnText");
-
-  if (!menu || !label) return;
-
-  menu.replaceChildren();
-
-  if (!directoryBanks.length) {
-    label.textContent = "No Banks Available";
-    return;
-  }
-
-  for (const bank of directoryBanks) {
-    const item = document.createElement("div");
-    item.className = "bank-item";
-    item.textContent = bank.name;
-
-    item.addEventListener("click", () => {
-      selectedDirectoryBankId = bank.id;
-      label.textContent = bank.name;
-      menu.classList.remove("open");
-    });
-
-    menu.appendChild(item);
-  }
-
-  label.textContent =
-    directoryBanks.find(b => b.id === selectedDirectoryBankId)?.name
-    || "Select Bank";
-}
-
 // ===== init custom dropdown =====
 const bankSelectEl = document.getElementById("bankSelect");
 const bankBtn      = document.getElementById("bankBtn");
@@ -1473,159 +1388,6 @@ document.addEventListener("keydown", function(e) {
     copyReceiptImage();
   }
 }, true);
-</script>
-
-
-<style>
-.bank-directory-ui{color:var(--text,#eee);font-size:14px}
-.bank-directory-ui label{display:block;font-size:12px;margin:10px 0 5px}
-.bank-directory-ui input{width:100%;height:34px;border:1px solid var(--input-line,#424242);border-radius:6px;padding:0 10px;background:var(--input,#141414);color:var(--text,#eee)}
-.bank-directory-ui .bd-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
-.bank-directory-ui button{border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);color:var(--text,#eee);padding:7px 12px;cursor:pointer}
-.bank-directory-ui button.bd-primary{background:var(--blue,#1668dc);color:#fff;border-color:transparent}
-.bank-directory-ui button.bd-danger{color:#ff6262}
-.bank-directory-ui .bd-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--input-line,#424242);padding:10px 0}
-.bank-directory-ui .bd-item small{display:block;color:var(--muted,#999);margin-top:4px}
-.bank-directory-ui .bd-item .bd-controls{display:flex;gap:6px;flex-shrink:0}
-</style>
-<script>
-(() => {
-  "use strict";
-  const PATH = "bankConfigs";
-  const $ = id => document.getElementById(id);
-  let banks = {}, ready = false, error = null, unsubscribe = null, activeModal = null;
-  const toast = (message,type="info") => {
-    if (window.NewUI?.showToast) window.NewUI.showToast(message,type);
-    else console[type === "error" ? "error" : "log"](message);
-  };
-  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[ch]);
-  const auth = () => window.firebase?.auth?.();
-  const db = () => window.firebase?.database?.();
-  async function verifiedUser() {
-    const user = auth()?.currentUser;
-    if (!user) throw new Error("Please sign in to your admin account.");
-    const token = await user.getIdTokenResult();
-    if (token.claims.secondVerified !== true) throw new Error("Admin second password verification required.");
-    return user;
-  }
-  function startListener() {
-    if (!db()) { error = "Firebase Realtime Database is not initialized."; return; }
-    const ref = db().ref(PATH);
-
-const callback = snap => {
-  banks = snap.val() || {};
-  ready = true;
-  error = null;
-
-  renderManage();
-
-  window.dispatchEvent(new CustomEvent("bank-directory-updated", {
-    detail: {
-      banks: Object.entries(banks)
-        .filter(([id, bank]) => bank && typeof bank.name === "string")
-        .map(([id, bank]) => ({
-          id,
-          name: bank.name,
-          accountLength: bank.accountLength,
-          prefix: bank.prefix || ""
-        }))
-    }
-  }));
-};
-
-    ref.on("value", callback, err => {
-      error = err.message || "Unable to read bank directory";
-      ready = false;
-      if (activeModal?.element?.isConnected) renderManage();
-      toast(error,"error");
-    });
-    unsubscribe = () => ref.off("value", callback);
-  }
-  const entries = () => Object.entries(banks).filter(([id,b]) => b && typeof b === "object" && typeof b.name === "string").sort((a,b)=>a[1].name.localeCompare(b[1].name));
-  function modal(title,content) {
-    if (!window.NewUI?.modal) { toast("NewUI module is unavailable.","error"); return null; }
-    activeModal = NewUI.modal.open({title,content,width:580,onClose:()=>{activeModal=null;}});
-    return activeModal;
-  }
-  function openEditor(id=null) {
-    const bank = id ? banks[id] : null;
-    const box = modal(bank ? "Edit Bank" : "Create Bank", `
-      <form id="bd-form" class="bank-directory-ui">
-        <label for="bd-name">Bank Name</label><input id="bd-name" required maxlength="100" value="${esc(bank?.name || "")}" placeholder="Example: Maybank">
-        <label for="bd-length">Account Number Length</label><input id="bd-length" required type="number" min="4" max="24" value="${esc(bank?.accountLength || "")}" placeholder="Example: 12">
-        <label for="bd-prefix">Starting Digits / Prefix (optional)</label><input id="bd-prefix" inputmode="numeric" maxlength="12" pattern="[0-9]*" value="${esc(bank?.prefix || "")}" placeholder="Example: 1">
-        <p style="font-size:12px;color:var(--muted,#999)">Directory settings only. No actual payment is made or verified.</p>
-        <div class="bd-actions"><button type="button" id="bd-cancel">Cancel</button><button class="bd-primary" id="bd-save" type="submit">${bank ? "Update Bank" : "Save Bank"}</button></div>
-      </form>`);
-    if (!box) return;
-    $("bd-cancel").onclick=()=>box.close();
-    $("bd-form").onsubmit=async ev=>{
-      ev.preventDefault();
-      const name=$("bd-name").value.trim(), accountLength=Number($("bd-length").value), prefix=$("bd-prefix").value.trim();
-      if (!name || !Number.isInteger(accountLength) || accountLength<4 || accountLength>24 || !/^\d*$/.test(prefix) || prefix.length>accountLength) { toast("Check bank name, length and prefix.","error"); return; }
-      if(entries().some(([otherId,b])=>otherId!==id && b.name.toLowerCase()===name.toLowerCase())) { toast("Bank already exists.","error"); return; }
-      const btn=$("bd-save");
-      await NewUI.setButtonLoading(btn,true,{text:"Saving..."});
-      try {
-        await verifiedUser();
-        const ref=id ? db().ref(PATH).child(id) : db().ref(PATH).push();
-        await ref.set({name,accountLength,prefix,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-        toast(bank ? "Bank updated successfully." : "Bank created successfully.","success");
-        box.close();
-      } catch(e) { toast(e.message || "Save failed.","error"); }
-      finally { await NewUI.setButtonLoading(btn,false); }
-    };
-  }
-  function renderManage() {
-    const host=$("bd-list"); if (!host) return;
-    if (error) {host.textContent=error;return;}
-    if (!ready) {host.textContent="Loading banks from Firebase...";return;}
-    const q=$("bd-search").value.trim().toLowerCase();
-    const found=entries().filter(([,b])=>b.name.toLowerCase().includes(q));
-    host.replaceChildren();
-    if (!found.length) {
-      if (window.NewUI?.showEmptyState) NewUI.showEmptyState(host,"No banks found");
-      else host.textContent="No banks found";
-      return;
-    }
-    found.forEach(([id,b])=>{
-      const row=document.createElement("div");row.className="bd-item";
-      const info=document.createElement("div"), strong=document.createElement("strong"),small=document.createElement("small");
-      strong.textContent=b.name;small.textContent=`Length: ${b.accountLength ?? "-"} | Prefix: ${b.prefix || "None"}`;
-      info.append(strong,small);
-      const controls=document.createElement("div");controls.className="bd-controls";
-      const edit=document.createElement("button");edit.textContent="Edit";
-      edit.onclick=()=>openEditor(id);
-      const del=document.createElement("button");del.textContent="Delete";del.className="bd-danger";
-      del.onclick=async()=>{
-        const proceed=window.NewUI?.confirm ? await NewUI.confirm({title:"Delete Bank",message:`Delete ${b.name}?`,confirmText:"Delete"}) : confirm(`Delete ${b.name}?`);
-        if (!proceed) return;
-        del.disabled=true;
-        try { await verifiedUser();await db().ref(PATH).child(id).remove();toast("Bank deleted.","success"); }
-        catch(e){toast(e.message || "Delete failed.","error");}
-        finally{del.disabled=false;}
-      };
-      controls.append(edit,del);row.append(info,controls);host.append(row);
-    });
-  }
-  function openManage(){
-    const box=modal("Manage Banks",`<div class="bank-directory-ui"><label for="bd-search">Search Bank</label><input id="bd-search" type="search" placeholder="Search bank..."><div id="bd-list"></div><div class="bd-actions"><button class="bd-primary" type="button" id="bd-create">+ Create Bank</button></div></div>`);
-    if(!box)return;
-    $("bd-search").addEventListener("input",renderManage);
-    $("bd-create").onclick=()=>openEditor();
-    renderManage();
-  }
-  $("manage-banks")?.addEventListener("click",openManage);
-  $("create-bank")?.addEventListener("click",()=>openEditor());
-  if(auth()) auth().onAuthStateChanged(user=>{
-    unsubscribe?.();unsubscribe=null;banks={};ready=false;
-    if(user) startListener();
-    else {error="Sign in to load bank directory.";if(activeModal)renderManage();}
-  });
-  else {error="Firebase Auth is not initialized.";}
-})();
 </script>
 </body>
 </html>
