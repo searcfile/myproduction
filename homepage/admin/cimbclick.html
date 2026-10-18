@@ -1431,6 +1431,89 @@ document.addEventListener("keydown", function(e) {
 <form id="bank-directory-form"><label for="directory-name">Bank Name</label><input id="directory-name" maxlength="100" required placeholder="Bank name"><button type="submit" id="directory-save">Save Bank</button><button type="button" class="bank-close" id="directory-cancel" hidden>Cancel Edit</button></form>
 <div class="bank-list" id="bank-directory-list"></div>
 </dialog>
-<script src="./bank-directory.js" defer></script>
+<script>
+(() => {
+  'use strict';
+  const key = 'cimb-bank-directory-v1';
+  const $ = id => document.getElementById(id);
+  const dlg = $('bank-directory-dialog');
+  if (!dlg) return;
+  let edit = -1;
+  const load = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(v) ? v.filter(x => typeof x === 'string').map(x => x.trim()).filter(Boolean) : [];
+    } catch { return []; }
+  };
+  let names = load();
+  const save = () => {
+    try { localStorage.setItem(key, JSON.stringify(names)); return true; }
+    catch { alert('Storage unavailable'); return false; }
+  };
+  const render = () => {
+    const host = $('bank-directory-list');
+    host.replaceChildren();
+    const q = $('directory-search').value.trim().toLowerCase();
+    const matches = names.map((name, i) => ({name, i})).filter(x => x.name.toLowerCase().includes(q));
+    if (!matches.length) {
+      const p = document.createElement('p');
+      p.textContent = 'No banks found';
+      host.append(p);
+    }
+    matches.forEach(({name, i}) => {
+      const row = document.createElement('div');
+      row.className = 'bank-entry';
+      const label = document.createElement('span');
+      label.textContent = name;
+      const actions = document.createElement('span');
+      const e = document.createElement('button');
+      e.textContent = 'Edit'; e.type = 'button';
+      e.onclick = () => {
+        edit = i;
+        $('directory-name').value = name;
+        $('directory-save').textContent = 'Update Bank';
+        $('directory-cancel').hidden = false;
+        $('directory-name').focus();
+      };
+      const d = document.createElement('button');
+      d.textContent = 'Delete'; d.className = 'delete'; d.type = 'button';
+      d.onclick = () => {
+        if (!confirm('Delete ' + name + '?')) return;
+        const previous = [...names];
+        names.splice(i, 1);
+        if (!save()) names = previous;
+        render();
+      };
+      actions.append(e, d);
+      row.append(label, actions);
+      host.append(row);
+    });
+  };
+  const reset = () => {
+    edit = -1;
+    $('bank-directory-form').reset();
+    $('directory-save').textContent = 'Save Bank';
+    $('directory-cancel').hidden = true;
+  };
+  $('manage-banks').onclick = () => { reset(); render(); dlg.showModal(); };
+  $('create-bank').onclick = () => { reset(); render(); dlg.showModal(); $('directory-name').focus(); };
+  $('bank-directory-close').onclick = () => dlg.close();
+  $('directory-cancel').onclick = reset;
+  $('directory-search').oninput = render;
+  $('bank-directory-form').onsubmit = e => {
+    e.preventDefault();
+    const name = $('directory-name').value.trim();
+    if (!name) return;
+    if (names.some((n, i) => i !== edit && n.toLowerCase() === name.toLowerCase())) {
+      alert('Bank already exists'); return;
+    }
+    const previous = [...names];
+    if (edit >= 0) names[edit] = name;
+    else names.push(name);
+    if (save()) { reset(); render(); }
+    else names = previous;
+  };
+})();
+</script>
 </body>
 </html>
