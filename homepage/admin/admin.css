@@ -421,7 +421,7 @@ html {
   position: relative;
   display: flex;
   align-items: center;
-  height: 100%;
+  height: 32px;
 }
 .user-dropdown:hover .dropdown-content {opacity: 1;visibility: visible;display: block;}
 .user-button {
