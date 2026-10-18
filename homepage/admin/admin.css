@@ -2196,7 +2196,6 @@ body.tab-dragging-active *{
 .header-tab-search-input-wrap{
   position:relative;
   width:100%;
-  margin:0 2px;
 }
 
 .header-tab-search-input{
