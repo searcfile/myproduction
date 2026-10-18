@@ -2186,6 +2186,7 @@ body.tab-dragging-active *{
   flex:0 0 150px;
   z-index:99999;
   border-radius:8px;
+  padding-inline:4px;
 }
 
 .header-tab-search form{
