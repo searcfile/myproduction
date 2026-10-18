@@ -3751,10 +3751,10 @@ function setupHeaderSearch() {
   form?.addEventListener("submit", e => e.preventDefault());
 
   // Tukar label sahaja, bukan struktur input.
-  input.placeholder = "Select Site";
-  mobileInput.placeholder = "Select Site";
-  mobileBtn?.setAttribute("aria-label", "Select Site");
-  mobileBtn?.setAttribute("title", "Select Site");
+input.placeholder = "🏢 🔍 Search";
+mobileInput.placeholder = "🏢 🔍 Search";
+mobileBtn?.setAttribute("aria-label", "Select Site");
+mobileBtn?.setAttribute("title", "Select Site");
 
   function normalizeSites(data) {
     const raw = Array.isArray(data)
@@ -3791,9 +3791,9 @@ function setupHeaderSearch() {
 
 if (!selected.length) {
   input.value = "";
-  input.placeholder = "Select Site";
+  input.placeholder = "🏢 🔍 Search";
   input.title = "";
-  mobileInput.placeholder = "Select Site";
+  mobileInput.placeholder = "🏢 🔍 Search";
 
   const more = document.getElementById("headerSelectedSiteMore");
   if (more) {
@@ -3841,7 +3841,7 @@ if (!selected.length) {
 
     mobileInput.placeholder = selected.length
       ? selected.map(s => s.name).join(", ")
-      : "Select Site";
+      : "🏢 🔍 Search";
   }
 
   function closeDropdown() {
