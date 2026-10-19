@@ -542,7 +542,7 @@ body{overflow-x:hidden!important;}
 </div>
 
 <div class="ctl">
-  <button type="button" class="btn" onclick="resetLocal()">Reset</button>
+  <button type="button" class="btn" id="btnReset">Reset</button>
   <button type="button" class="btn primary" id="apply">Create</button>
   <button type="button" class="btn primary" id="btnBlur">Blur</button>
   <button type="button" class="btn primary" id="copyImg">Copy Image</button>
@@ -930,6 +930,10 @@ function resetLocal(){
 
   location.reload();
 }
+  document.getElementById("btnReset")?.addEventListener(
+  "click",
+  resetLocal
+);
   function setNowToInput(){
     inDate.value = formatNowDDMMYYYY_12(new Date());
     inDate.focus();
