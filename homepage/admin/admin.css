@@ -146,6 +146,8 @@ html {
   height: calc(100vh - 64px);
   z-index: 1001;
   display: none;
+  background: #0208176b;
+  backdrop-filter: blur(1px);
 }
 
 .sidebar-overlay.active {
