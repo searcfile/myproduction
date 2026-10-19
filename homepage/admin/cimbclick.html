@@ -558,6 +558,47 @@ html {
   .builder-panel .btn-row > button { flex: 1 1 calc(50% - 8px); }
 }
 
+/* ==========================================
+   CIMB CLICKS - PREVIEW OUTER PANEL
+   STYLE SEPERTI MEGA888
+   ========================================== */
+
+.cimb-preview-outer {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+/* Wrapper preview memenuhi lebar panel */
+.app-layout > .preview-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+}
+
+/* Receipt kekal saiz asal */
+.cimb-preview-outer > .container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0;
+}
+
+/* Mobile */
+@media (max-width: 650px) {
+  .cimb-preview-outer {
+    padding: 10px;
+  }
+
+  .cimb-preview-outer > .container {
+    max-width: 100%;
+  }
+}
+
 </style>
 <body>
   
@@ -618,8 +659,10 @@ html {
     </aside>
 
     <!-- ✅ PANEL KANAN: receipt preview -->
-    <main class="preview-panel">
-      <div class="container">
+
+<main class="preview-panel cimb-preview-outer">
+  <div class="container">
+
         
         <div class="status-bar">
           <div class="left">
