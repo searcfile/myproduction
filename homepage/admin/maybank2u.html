@@ -524,7 +524,69 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
-  </style>
+  
+/* =========================================================
+   BUILDER SETTINGS UI — preview/receipt styles unchanged
+   ========================================================= */
+.wrap{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  max-width:none !important;
+  margin:20px 12px !important;
+  gap:14px !important;
+}
+.wrap > .panel{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  border:1px solid var(--border-input);
+  border-radius:12px;
+  background:var(--page-input);
+  padding:16px 18px;
+}
+.panel .ph{display:none}
+.panel .pb{
+  display:grid;
+  grid-template-columns:minmax(180px,2fr) minmax(180px,2fr) minmax(120px,1.4fr) minmax(180px,2fr);
+  gap:12px;
+  align-items:center;
+  padding:0;
+}
+.panel .field{margin:0;min-width:0}
+.panel .row2{display:contents}
+.panel .nameRow,.panel .dateRow{width:100%;min-width:0}
+.panel .nameRow > .new-ui-input-wrap,
+.panel .dateRow > .new-ui-input-wrap{flex:1;min-width:0}
+.panel .btns{grid-column:1 / -1;display:flex;gap:10px;flex-wrap:wrap}
+.panel .btns > button{flex:0 1 190px;width:auto;min-width:120px}
+.panel :is(input,.shared-dropdown-trigger,.autoBtn,.dateBtn,.btns button){
+  min-height:40px;
+}
+.panel input[data-new-ui-input],.panel input.shared-input{
+  width:100%;
+  background:var(--input);
+  border-color:var(--input-line);
+  color:var(--text);
+}
+.panel .shared-dropdown{min-width:0}
+.panel .shared-dropdown-trigger{height:40px}
+.panel .shared-dropdown-input{height:100%;border:0 !important;box-shadow:none !important;background:transparent !important}
+.panel .new-ui-input-wrap{width:100%;min-width:0}
+.panel .new-ui-input-wrap input{height:40px}
+.panel .autoBtn,.panel .dateBtn{height:40px}
+.panel .autoBtn.on{background:var(--blue);border-color:var(--blue)}
+@media(max-width:1100px){
+  .panel .pb{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .wrap{margin:12px 8px !important}
+  .wrap > .panel{padding:12px}
+  .panel .pb{grid-template-columns:minmax(0,1fr)}
+  .panel .btns > button{flex:1 1 calc(50% - 10px)}
+}
+
+</style>
 <body>
  <div class="wrap">
     <!-- LEFT BUILDER -->
@@ -535,23 +597,14 @@ select:focus-visible{
 <div class="field">
 
 
-  <!-- hidden select untuk simpan value + guna event change yg kau sudah ada -->
-  <select id="bankSelect" class="nativeSelectHidden" aria-hidden="true" tabindex="-1"></select>
-
-  <!-- custom dropdown -->
-  <div class="cselect" id="bankCSelect">
-    <button type="button" class="cselect-btn" id="bankCBtn" aria-haspopup="listbox" aria-expanded="false">
-      <span id="bankCLabel">Select bank</span>
-      <span class="cselect-caret">▾</span>
-    </button>
-    <div class="cselect-menu" id="bankCMenu" role="listbox"></div>
+  <select id="bankSelect" data-shared-dropdown data-placeholder="Select bank" aria-label="Select bank"></select>
   </div>
 </div>
         
 <div class="field">
 
   <div class="nameRow">
-    <input id="holderInput" type="text" placeholder="tien ci cun" />
+    <input id="holderInput" data-new-ui-input type="text" placeholder="tien ci cun" />
     <button type="button" class="autoBtn" id="autoNameBtn" aria-pressed="false">
       Auto: OFF
     </button>
@@ -561,23 +614,23 @@ select:focus-visible{
 <div class="field">
 
   <div class="dateRow">
-    <input id="dateInput" type="text" placeholder="Today 06 Jan 2026" />
+    <input id="dateInput" data-new-ui-input type="text" placeholder="Today 06 Jan 2026" />
   </div>
 </div>
       <div class="field">
 <div class="dateRow">
-  <input id="completedInput" type="text" placeholder="Tuesday 06 January 2026 at 16:16:36" />
+  <input id="completedInput" data-new-ui-input type="text" placeholder="Tuesday 06 January 2026 at 16:16:36" />
   <button type="button" class="dateBtn" id="nowBtn">Now</button>
 </div>
 </div>
 
         <div class="row2">
           <div class="field">
-            <input id="refPrefix" type="text" inputmode="numeric" maxlength="4" placeholder="8292" />
+            <input id="refPrefix" data-new-ui-input type="text" inputmode="numeric" maxlength="4" placeholder="8292" />
           </div>
 
           <div class="field">
-            <input id="amountInput" type="text" inputmode="decimal" placeholder="100.00" autocomplete="off" />
+            <input id="amountInput" data-new-ui-input type="text" inputmode="decimal" placeholder="100.00" autocomplete="off" />
           </div>
         </div>
 
@@ -1024,60 +1077,13 @@ function ensureAccountsForBank(state, bank){
 
 function initBanks(){
   const banks = Object.keys(BANK_CONFIG);
-
-  // hidden select options
-  bankSelect.innerHTML = banks
-    .map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`)
-    .join("");
-
-  // custom UI elements
-  const wrapEl  = document.getElementById("bankCSelect");
-  const btnEl   = document.getElementById("bankCBtn");
-  const labelEl = document.getElementById("bankCLabel");
-  const menuEl  = document.getElementById("bankCMenu");
-
-  function renderMenu(active){
-    menuEl.innerHTML = "";
-    banks.forEach(b => {
-      const item = document.createElement("div");
-      item.className = "cselect-item" + (b === active ? " active" : "");
-      item.textContent = b;
-      item.addEventListener("click", () => {
-        bankSelect.value = b;
-        bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
-        closeMenu();
-      });
-      menuEl.appendChild(item);
-    });
+  bankSelect.replaceChildren();
+  for (const name of banks) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    bankSelect.appendChild(option);
   }
-
-  function openMenu(){
-    wrapEl.classList.add("open");
-    btnEl.setAttribute("aria-expanded","true");
-  }
-  function closeMenu(){
-    wrapEl.classList.remove("open");
-    btnEl.setAttribute("aria-expanded","false");
-  }
-
-  btnEl.addEventListener("click", (e) => {
-    e.preventDefault();
-    wrapEl.classList.contains("open") ? closeMenu() : openMenu();
-  });
-
-  document.addEventListener("click", (e) => {
-    if(!wrapEl.contains(e.target)) closeMenu();
-  });
-
-  // sync label bila select berubah (render() akan set bankSelect.value)
-  bankSelect.addEventListener("change", () => {
-    labelEl.textContent = bankSelect.value || banks[0] || "Select bank";
-    renderMenu(bankSelect.value);
-  });
-
-  // init label/menu
-  labelEl.textContent = bankSelect.value || banks[0] || "Select bank";
-  renderMenu(bankSelect.value || banks[0] || "");
 }
 
 // Live update amount/date/bank (but "mask name" only after Create)
@@ -1210,6 +1216,7 @@ bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
 state = ensureAccountsForBank(state, state.bank);
 state = render(state);
 attachLiveHandlers();
+window.NewUI?.init?.(document);
 (function () {
   const THEME_KEY = "siteTheme";
 
