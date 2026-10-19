@@ -391,6 +391,56 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
+
+/* ===== BANK ISLAM: SETTINGS UI ONLY (card is not styled) ===== */
+html,body{min-height:100%;height:auto!important;overflow-y:auto!important;}
+body{overflow-x:hidden!important;}
+.layout{
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+  justify-content:flex-start!important;gap:14px!important;
+  width:calc(100% - 22px)!important;max-width:none!important;
+  margin:16px 11px 56px!important;padding:0!important;
+}
+#back{
+  display:block!important;position:static!important;inset:auto!important;
+  width:100%!important;max-width:none!important;flex:none!important;
+  margin:0!important;padding:0!important;background:transparent!important;
+}
+#back .modal{
+  position:static!important;width:100%!important;max-width:none!important;
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:end!important;gap:12px!important;
+  padding:16px 18px!important;margin:0!important;
+  border:1px solid var(--border-input)!important;border-radius:12px!important;
+  background:var(--page-input)!important;box-shadow:none!important;
+  overflow:visible!important;
+}
+#back .modal>.row{display:contents!important;}
+#back .modal>.fld,#back .modal>.row>.fld{min-width:0!important;margin:0!important;}
+#back .modal .fld>label{display:none!important;}
+#back .modal .name-wrap,#back .modal .dt-wrap{display:flex!important;gap:8px!important;align-items:center!important;min-width:0!important;}
+#back .modal .name-wrap>.new-ui-input-wrap,#back .modal .dt-wrap>.new-ui-input-wrap{flex:1 1 0;min-width:0;}
+#back .modal .name-wrap>.shared-dropdown{flex:0 0 75px;min-width:0;}
+#back .modal .name-wrap .btn-mini{flex:0 0 auto;}
+#back .modal .dt-wrap .btn-now{flex:0 0 auto;order:2;}
+#back .modal .dt-wrap .new-ui-input-wrap{order:1;}
+#back .modal .fld :is(input,select,.shared-dropdown-trigger,.btn-now,.btn-mini){height:40px!important;min-height:40px!important;}
+#back .modal .fld input{min-width:0!important;width:100%!important;}
+#back .modal .fld .shared-dropdown-input{border:0!important;background:transparent!important;box-shadow:none!important;}
+#back .modal .fld .shared-dropdown{min-width:0!important;}
+#back .modal .ctl{
+  grid-column:1/-1!important;display:flex!important;justify-content:flex-start!important;
+  gap:10px!important;margin:0!important;flex-wrap:wrap!important;
+}
+#back .modal .ctl>.btn{flex:0 1 190px!important;min-width:115px!important;height:40px!important;}
+#back .modal .new-ui-input-wrap{min-width:0!important;}
+#back .modal .new-ui-input-wrap input{color:var(--text)!important;}
+/* Preview card dimensions, fonts, colors, markup and styles are not overridden. */
+@media(max-width:1150px){#back .modal{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:850px){#back .modal{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:550px){#back .modal{grid-template-columns:minmax(0,1fr);padding:12px!important;}
+#back .modal .ctl>.btn{flex:1 1 calc(50% - 10px)!important;}}
+
 </style>
 </head>
 <body>
@@ -402,7 +452,7 @@ select:focus-visible{
 
           <div class="fld">
             <label>Amount (RM)</label>
-            <input id="inAmount" type="text" inputmode="decimal" autocomplete="off" value="1,000.00">
+            <input id="inAmount" data-new-ui-input type="text" inputmode="decimal" autocomplete="off" value="1,000.00">
           </div>
 
           <div class="row">
@@ -410,25 +460,25 @@ select:focus-visible{
   <label>Date &amp; Time</label>
   <div class="dt-wrap">
     <button type="button" class="btn-now" id="btnNow">Now</button>
-    <input id="inDate" class="dt-input" type="text" placeholder="Date & time">
+    <input id="inDate" data-new-ui-input class="dt-input" type="text" placeholder="Date & time">
   </div>
 </div>
             <div class="col fld">
               <label>Reference Number</label>
-                <input id="inPrefix" type="text" placeholder="Auto" class="col">
+                <input id="inPrefix" data-new-ui-input type="text" placeholder="Auto" class="col">
             </div>
           </div>
 
           <div class="row">
             <div class="col fld">
               <label>Total ref length</label>
-              <select id="inLen">
+              <select id="inLen" data-shared-dropdown>
                 <option>20</option><option selected>24</option>
               </select>
             </div>
             <div class="col fld">
               <label>Force Bank (optional)</label>
-              <select id="inBank">
+              <select id="inBank" data-shared-dropdown>
                 <option value="">Random Bank</option>
                 <option>Maybank</option>
                 <option>CIMB Bank</option>
@@ -442,10 +492,10 @@ select:focus-visible{
   <label>Recipient Full Name</label>
   <div class="name-wrap">
     <button type="button" class="btn-mini" id="btnGenName">Auto</button>
-    <select id="nmAlpha" class="nm-alpha" aria-label="First letter">
+    <select id="nmAlpha" data-shared-dropdown class="nm-alpha" aria-label="First letter">
       <option value="">A–Z</option>
     </select>
-    <input id="inName" type="text" placeholder="Holde Name" class="col">
+    <input id="inName" data-new-ui-input type="text" placeholder="Holde Name" class="col">
   </div>
   <label>Saat Update, data sensitif akan otomatis di-blur, hanya huruf awal nama yang tampak.</label>
 </div>
