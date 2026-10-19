@@ -608,18 +608,7 @@ html {
     max-width: 100%;
   }
 }
-/* EMPTY STATE - CIMB PREVIEW */
-.cimb-preview-empty {
-  width: 100%;
-  min-height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.cimb-preview-outer .shared-empty {
-  min-height: 160px;
-}
 </style>
 <body>
   
@@ -682,7 +671,6 @@ html {
     <!-- ✅ PANEL KANAN: receipt preview -->
 
 <main class="preview-panel cimb-preview-outer">
-  <div id="cimbEmptyState" class="cimb-preview-empty" hidden></div>
   <div class="container">
 
         
@@ -746,31 +734,6 @@ html {
   });
 </script>
 <script type="module">
-  function showCimbEmpty() {
-  const empty = document.getElementById("cimbEmptyState");
-  const preview = document.querySelector(".cimb-preview-outer > .container");
-
-  if (!empty || !preview) return;
-
-  preview.hidden = true;
-  empty.hidden = false;
-
-  if (typeof window.showEmptyState === "function") {
-    window.showEmptyState(empty, "No data", "large", "center");
-  } else {
-    empty.textContent = "No data";
-  }
-}
-
-function showCimbPreview() {
-  const empty = document.getElementById("cimbEmptyState");
-  const preview = document.querySelector(".cimb-preview-outer > .container");
-
-  if (!empty || !preview) return;
-
-  empty.hidden = true;
-  preview.hidden = false;
-}
  const BANK_CONFIG = {
   "CIMB BANK BERHAD": { len: 10, prefix: "7" },
   "Maybank / Maybank Islamic": { len: 12, prefix: "1" },
