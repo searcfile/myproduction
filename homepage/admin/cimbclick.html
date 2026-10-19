@@ -563,15 +563,25 @@ html {
    STYLE SEPERTI MEGA888
    ========================================== */
 
+
+/* CIMB - OUTER PREVIEW PANEL SCROLL */
 .cimb-preview-outer {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
+
   padding: 12px;
   background: var(--page-input);
   border: 1px solid var(--border-input);
   border-radius: 12px;
   box-sizing: border-box;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
+
 
 /* Wrapper preview memenuhi lebar panel */
 .app-layout > .preview-panel {
