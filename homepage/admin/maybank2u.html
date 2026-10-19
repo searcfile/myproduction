@@ -586,6 +586,43 @@ select:focus-visible{
   .panel .btns > button{flex:1 1 calc(50% - 10px)}
 }
 
+
+/* =====================================================
+   SETTINGS FIX: 150% zoom, custom controls, scroll
+   Only targets page shell and settings; receipt untouched.
+   ===================================================== */
+html { min-height:100%; overflow-y:auto !important; overflow-x:auto; }
+body { min-height:100vh !important; height:auto !important; max-height:none !important;
+       overflow-y:auto !important; overflow-x:auto; }
+.wrap { width:calc(100% - 24px) !important; min-width:0; padding-bottom:32px; }
+.wrap > .panel { min-width:0; height:auto !important; max-height:none !important; }
+.panel .pb { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:center; }
+.panel .pb > .field, .panel .pb > .row2 { min-width:0; }
+.panel .pb > .row2 { display:contents; }
+.panel .nameRow, .panel .dateRow { display:flex; min-width:0; width:100%; }
+.panel .nameRow input, .panel .dateRow input { min-width:0; flex:1 1 0; }
+.panel .nameRow > .shared-input-wrap, .panel .dateRow > .shared-input-wrap,
+.panel .nameRow > .new-ui-input-wrap, .panel .dateRow > .new-ui-input-wrap {
+  flex:1 1 0; min-width:0;
+}
+.panel .shared-dropdown-trigger { background:var(--page-input) !important; border-color:var(--border-input); }
+.panel .shared-dropdown-input, .panel input[data-new-ui-input], .panel input.shared-input {
+  color:var(--page-text) !important;
+  -webkit-text-fill-color:var(--page-text);
+}
+.panel .shared-dropdown-input::placeholder, .panel input::placeholder {
+  color:var(--blur) !important; opacity:1;
+}
+.panel .shared-dropdown-input { background:transparent !important; }
+.panel .btns { grid-column:1 / -1; }
+@media (max-width:1250px) {
+  .panel .pb { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:650px) {
+  .panel .pb { grid-template-columns:minmax(0,1fr); }
+  .wrap { width:calc(100% - 16px) !important; }
+}
+
 </style>
 <body>
  <div class="wrap">
@@ -598,7 +635,6 @@ select:focus-visible{
 
 
   <select id="bankSelect" data-shared-dropdown data-placeholder="Select bank" aria-label="Select bank"></select>
-  </div>
 </div>
         
 <div class="field">
