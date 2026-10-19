@@ -659,7 +659,7 @@ html {
   </div>
 </div>
 <div class="btn-row">
-  <button class="btn-reset" onclick="resetDisplay()">Reset</button>
+  <button class="btn-reset" id="btn-reset" type="button">Reset</button>
   <button class="btn-update" id="btn-create" type="button">Create</button>
   <button class="btn-update" id="btn-blur" type="button">Blur</button>
   <button class="btn-update" id="btn-copy-image" type="button">Copy Image</button>
@@ -1363,6 +1363,8 @@ function resetDisplay() {
   localStorage.setItem("displayData", JSON.stringify(displayData));
   localStorage.setItem(LS_BLUR_MODE, "0");
 }
+  document.getElementById("btn-reset")
+  ?.addEventListener("click", resetDisplay);
 // ===== CREATE BUTTON HANDLER (WAJIB DI BAWAH SEKALI) =====
 const btnCreate = document.getElementById("btn-create");
 if (btnCreate) {
