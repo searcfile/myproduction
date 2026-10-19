@@ -608,7 +608,28 @@ html {
     max-width: 100%;
   }
 }
+/* ==========================================
+   CIMB CLICKS - NO DATA CARD
+   ========================================== */
 
+.cimb-empty-card {
+  width: 100%;
+  min-height: 185px;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cimb-empty-card .shared-empty {
+  width: 100%;
+  min-height: 160px;
+}
 </style>
 <body>
   
@@ -720,6 +741,16 @@ html {
         <div class="footer">More transfer details →</div>
       </div>
     </main>
+
+    <!-- CIMB CLICKS - NO DATA CARD -->
+    <section
+      id="cimbEmptyCard"
+      class="cimb-empty-card"
+      style="display:none;"
+    >
+      <div id="cimbEmptyContent"></div>
+    </section>
+
  </div>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -1493,7 +1524,75 @@ async function copyReceiptImage() {
 }
 
 document.getElementById("btn-copy-image")?.addEventListener("click", copyReceiptImage);
+/* ==========================================
+   CIMB CLICKS - EMPTY STATE CONTROLLER
+   ========================================== */
 
+function updateCimbEmptyState() {
+  const receiptCard = document.querySelector(
+    ".preview-panel.cimb-preview-outer"
+  );
+
+  const emptyCard = document.getElementById(
+    "cimbEmptyCard"
+  );
+
+  const emptyContent = document.getElementById(
+    "cimbEmptyContent"
+  );
+
+  if (!receiptCard || !emptyCard || !emptyContent) {
+    return;
+  }
+
+  let hasData = false;
+
+  try {
+    const stored = JSON.parse(
+      localStorage.getItem("displayData") || "null"
+    );
+
+    hasData = Boolean(
+      stored &&
+      stored.mode !== "reset"
+    );
+  } catch (error) {
+    hasData = false;
+  }
+
+  receiptCard.style.display = hasData ? "" : "none";
+  emptyCard.style.display = hasData ? "none" : "flex";
+
+  if (!hasData) {
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(
+        emptyContent,
+        "No data",
+        "large",
+        "center"
+      );
+    } else {
+      emptyContent.textContent = "No data";
+    }
+  }
+}
+
+/* Selepas tekan Create */
+document.getElementById("btn-create")
+  ?.addEventListener("click", () => {
+    updateCimbEmptyState();
+  });
+
+/* Selepas tekan Reset */
+document.getElementById("btn-reset")
+  ?.addEventListener("click", () => {
+    updateCimbEmptyState();
+  });
+
+/* Restore selepas refresh */
+window.addEventListener("DOMContentLoaded", () => {
+  updateCimbEmptyState();
+});
 document.addEventListener("keydown", function(e) {
   const key = String(e.key || "").toLowerCase();
 
