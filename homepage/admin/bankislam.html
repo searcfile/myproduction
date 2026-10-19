@@ -456,6 +456,32 @@ body{overflow-x:hidden!important;}
   box-sizing: border-box;
   overflow-x: auto;
 }
+  /* ==========================================
+   BANK ISLAM - NO DATA CARD
+   ========================================== */
+
+.bankislam-empty-card {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bankislam-empty-card .shared-empty {
+  width: 100%;
+  min-height: 160px;
+}
+
+/* Pastikan hidden attribute tidak dioverride */
+.bankislam-empty-card[hidden] {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -524,8 +550,17 @@ body{overflow-x:hidden!important;}
         </div>
       </div>
 
-      <!-- KANAN: Card -->
-      <div class="preview-outer-card">
+<!-- BANK ISLAM - NO DATA CARD -->
+<section
+  id="bankIslamEmptyCard"
+  class="bankislam-empty-card"
+  hidden
+>
+  <div id="bankIslamEmptyContent"></div>
+</section>
+
+<!-- KANAN: Card -->
+<div class="preview-outer-card">
       <div class="card" id="card">
         <!-- HAPUS tombol gear -->
         <div class="row-top">
@@ -847,11 +882,52 @@ function genNameByLetter(letter){
   if(Math.random() < 0.35) full += ' ' + randLetters( Math.floor(Math.random()*5)+3 );
   return full;
 }
+/* ==========================================
+   BANK ISLAM - EMPTY STATE CONTROLLER
+   ========================================== */
 
+function updateBankIslamEmptyState() {
+  const receiptCard = document.querySelector(
+    ".preview-outer-card"
+  );
+
+  const emptyCard = document.getElementById(
+    "bankIslamEmptyCard"
+  );
+
+  const emptyContent = document.getElementById(
+    "bankIslamEmptyContent"
+  );
+
+  if (!receiptCard || !emptyCard || !emptyContent) {
+    return;
+  }
+
+  const hasReceipt = loadCardSnapshot() !== null;
+
+  receiptCard.style.display = hasReceipt ? "" : "none";
+  emptyCard.hidden = hasReceipt;
+
+  if (!hasReceipt) {
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(
+        emptyContent,
+        "No data",
+        "large",
+        "center"
+      );
+    } else {
+      emptyContent.textContent = "No data";
+    }
+  }
+}
 function resetLocal(){
   localStorage.removeItem(LS_DRAFT);
   localStorage.removeItem(LS_CARD);
   localStorage.removeItem(LS_BLUR);
+
+  updateBankIslamEmptyState();
+
   location.reload();
 }
   function setNowToInput(){
@@ -871,10 +947,15 @@ function resetLocal(){
 
   // Initial state: biarkan kosong (lebih jelas user bisa ketik/klik Now)
 window.addEventListener('load', ()=>{
-  restoreFromStorage();   // pulihkan form & kartu dari localStorage
+  restoreFromStorage();
   updatePrefixFromDate();
   inLen.value = DEFAULT_REF_TOTAL;
-  inLen.closest('.fld')?.style && (inLen.closest('.fld').style.display = 'none');
+
+  inLen.closest('.fld')?.style &&
+    (inLen.closest('.fld').style.display = 'none');
+
+  // Semak snapshot sebenar selepas refresh
+  updateBankIslamEmptyState();
 });
 
 apply.addEventListener('click', e=>{
@@ -905,8 +986,6 @@ inPrefix.value = prefixFromDate(dt);                       // field prefix tetap
 showRefMasked(fullRef, KEEP_VISIBLE);                              // tampilkan keep depan, tail blur
 inLen.value = String(fullRef.length);                      // harusnya 23
 
-saveCardSnapshot({ ref: fullRef });// sync panjang (opsional)
-
   // bank & account
   const bank = pickBank(inBank.value || '');
   bankName.textContent = bank.name;
@@ -923,8 +1002,11 @@ saveCardSnapshot({ ref: fullRef });// sync panjang (opsional)
     if (!getBlurState()) {
     setBlurState(false);
   }
+  saveCardSnapshot({ ref: fullRef });
   // ===== simpan ke localStorage (HARUS di akhir, setelah newRef ada) =====
   saveDraft();
+  // Paparkan receipt selepas Create
+  updateBankIslamEmptyState();
 });
   const btnGenName = document.getElementById('btnGenName');
 const nmAlphaSel = document.getElementById('nmAlpha');
