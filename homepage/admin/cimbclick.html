@@ -205,11 +205,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-    @media (max-width: 600px) {
-    .left, .right {
-    width: 100%;
-    }
-  }
+
   /* ===== NEW LAYOUT: builder kiri, preview kanan ===== */
 .app-layout{
   width: calc(100% - 24px);
@@ -599,15 +595,39 @@ html {
 }
 
 /* Mobile */
-@media (max-width: 650px) {
-  .cimb-preview-outer {
-    padding: 10px;
-  }
 
-  .cimb-preview-outer > .container {
-    max-width: 100%;
-  }
+/* Panel luar boleh scroll */
+.sample-preview-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-sizing: border-box;
 }
+
+/* Kandungan tidak boleh mengecil */
+.sample-preview-content {
+  width: 540px;
+  min-width: 540px;
+  max-width: 540px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Kolum tidak turun baris */
+.sample-preview-content .sample-details {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.sample-preview-content .sample-left,
+.sample-preview-content .sample-right {
+  width: 48%;
+  flex: 0 0 48%;
+}
+
 
 </style>
 <body>
