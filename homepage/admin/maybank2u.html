@@ -641,7 +641,26 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   box-sizing: border-box;
   overflow-x: auto;
 }
+/* ==========================================
+   MAYBANK2U - NO DATA CARD
+   ========================================== */
 
+.maybank-empty-card {
+  width: 100%;
+  min-height: 185px;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+
+.maybank-empty-card .shared-empty {
+  width: 100%;
+  min-height: 160px;
+}
 </style>
 <body>
  <div class="wrap">
@@ -700,7 +719,14 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
 
       </div>
     </div>
-
+<!-- MAYBANK2U - NO DATA CARD -->
+<section
+  id="maybankEmptyCard"
+  class="maybank-empty-card"
+  style="display:none;"
+>
+  <div id="maybankEmptyContent"></div>
+</section>
     <!-- RIGHT RECEIPT -->
    <div class="preview-outer-card">
     <div class="receipt" id="receiptCard">
@@ -1155,9 +1181,10 @@ function attachLiveHandlers(){
     // pick random 1
     const list = state.accountsByBank[state.bank] || [];
     state.selectedAccountByBank[state.bank] = list[Math.floor(Math.random() * list.length)] || "";
-
-    state.created = false; // switch bank -> uncreated view
+    state.created = false;
     state = render(state);
+
+    updateMaybankEmptyState(true);
   });
 
   dateInput.addEventListener("input", () => {
@@ -1259,9 +1286,47 @@ blurBtn?.addEventListener("click", () => {
     state = structuredClone(DEFAULT_STATE);
     state = ensureAccountsForBank(state, state.bank);
     state = render(state);
+
+    updateMaybankEmptyState(false);
   });
 }
+/* ==========================================
+   MAYBANK2U - NO DATA CONTROLLER
+   ========================================== */
 
+function updateMaybankEmptyState(hasData) {
+  const receiptCard = document.querySelector(
+    ".preview-outer-card"
+  );
+
+  const emptyCard = document.getElementById(
+    "maybankEmptyCard"
+  );
+
+  const emptyContent = document.getElementById(
+    "maybankEmptyContent"
+  );
+
+  if (!receiptCard || !emptyCard || !emptyContent) {
+    return;
+  }
+
+  receiptCard.style.display = hasData ? "" : "none";
+  emptyCard.style.display = hasData ? "none" : "flex";
+
+  if (!hasData) {
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(
+        emptyContent,
+        "No data",
+        "large",
+        "center"
+      );
+    } else {
+      emptyContent.textContent = "No data";
+    }
+  }
+}
     // Boot
 initBanks();
 let state = loadState();
@@ -1270,10 +1335,14 @@ let state = loadState();
 bankSelect.value = state.bank;
 bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
 
+const hasSavedReceipt = localStorage.getItem(LS_KEY) !== null;
+
 state = ensureAccountsForBank(state, state.bank);
 state = render(state);
 attachLiveHandlers();
 window.NewUI?.init?.(document);
+
+updateMaybankEmptyState(hasSavedReceipt);
 (function () {
   const THEME_KEY = "siteTheme";
 
