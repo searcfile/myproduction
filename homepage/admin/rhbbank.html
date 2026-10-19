@@ -148,6 +148,54 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
+
+/* RHB SETTINGS UI ONLY — do not style #preview or receipt children */
+html,body{min-height:100%;overflow-y:auto !important;}
+body > .wrap{
+  width:calc(100% - 24px) !important;max-width:none !important;
+  margin:16px 12px !important;padding:0 !important;
+  display:flex !important;flex-direction:column !important;
+  align-items:flex-start !important;gap:14px !important;
+}
+#form.card.form{
+  width:100% !important;max-width:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+  gap:12px !important;padding:16px 18px !important;
+  background:var(--page-input) !important;
+  border:1px solid var(--border-input) !important;
+  border-radius:12px !important;box-shadow:none !important;
+  overflow:visible !important;
+}
+#form > h2{display:none !important;}
+#form > .fld{grid-column:span 4 !important;min-width:0 !important;}
+#form > .fld.w12{grid-column:1/-1 !important;}
+#form .lbl{color:var(--page-text) !important;font-size:12px !important;}
+#form .input-row{display:flex;align-items:center;gap:8px;min-width:0;}
+#form .input-row > .new-ui-input-wrap,
+#form .input-row > .shared-dropdown{flex:1 1 0;min-width:0;}
+#form .input-row > .shared-dropdown:has(#letterSel),
+#form .input-row > .shared-dropdown:has(#binSel){flex:0 0 75px;}
+#form .shared-dropdown-trigger{height:40px;}
+#form .shared-dropdown-input{height:100%;background:transparent !important;border:0 !important;color:var(--page-text) !important;box-shadow:none !important;}
+#form input[data-new-ui-input]{height:40px;width:100%;color:var(--page-text) !important;background:var(--page-input) !important;border-color:var(--border-input) !important;}
+#form .new-ui-input-wrap{min-width:0;}
+#form .chip{flex:0 0 auto;min-width:72px;height:40px;border-radius:6px;background:#444;color:#fff;border:1px solid var(--border-input);font-weight:400;}
+#form .chip.on{background:var(--blue);color:white;border-color:var(--blue);}
+#form .btn,#form .btn-reset{height:40px;width:auto !important;min-width:140px;flex:0 1 190px;border-radius:6px;font-weight:500;}
+#form .btn{background:var(--blue);border:1px solid var(--blue);color:#fff;}
+#form .btn-reset{background:transparent;border:1px solid var(--border-input);color:var(--page-text);}
+#form > .fld.w12{display:flex !important;gap:10px !important;flex-wrap:wrap;}
+@media(max-width:1150px){#form > .fld{grid-column:span 6 !important;}}
+@media(max-width:700px){
+  body > .wrap{width:calc(100% - 16px) !important;margin:10px 8px !important;}
+  #form.card.form{padding:12px !important;}
+  #form > .fld{grid-column:1/-1 !important;}
+  #form .input-row > .shared-dropdown:has(#letterSel),
+  #form .input-row > .shared-dropdown:has(#binSel){flex-basis:58px;}
+  #form .btn,#form .btn-reset{flex:1 1 130px;}
+}
+
 </style>
 </head>
 <body>
@@ -162,7 +210,7 @@ html {
       <label class="lbl">To (Recipient Name)</label>
       <div class="input-row">
         <button type="button" class="chip" id="autoName">Auto</button>
-        <select class="mini" id="letterSel" title="Huruf awal">
+        <select class="mini" id="letterSel" data-shared-dropdown title="Huruf awal">
           <!-- A–Z -->
           <script>
             document.write(
@@ -171,12 +219,12 @@ html {
             );
           </script>
         </select>
-        <select class="mini" id="binSel" title="BIN / BINTI">
+        <select class="mini" id="binSel" data-shared-dropdown title="BIN / BINTI">
           <option value="">-</option>
           <option value="BIN">BIN</option>
           <option value="BINTI">BINTI</option>
         </select>
-        <input class="inp" id="toName" placeholder="MAMA & PAPA" value="I LOVE YOU">
+        <input class="inp" id="toName" data-new-ui-input placeholder="MAMA & PAPA" value="I LOVE YOU">
       </div>
     </div>
 
@@ -185,7 +233,7 @@ html {
       <label class="lbl">Recipient Account / ID</label>
       <div class="input-row">
         <button type="button" class="chip" id="autoAcct">Auto</button>
-        <input class="inp" id="toId" placeholder="123456789">
+        <input class="inp" id="toId" data-new-ui-input placeholder="123456789">
       </div>
     </div>
 
@@ -194,7 +242,7 @@ html {
       <label class="lbl">Bank</label>
       <div class="input-row">
         <button type="button" class="chip" id="autoBank">Auto</button>
-        <select class="sel" id="bankSel" style="width:100%">
+        <select class="sel" id="bankSel" data-shared-dropdown style="width:100%">
           <option>Touch N Go Digital</option>
           <option>Maybank</option>
           <option>CIMB</option>
@@ -208,17 +256,17 @@ html {
 
     <div class="fld">
       <label class="lbl">Payment Type</label>
-      <input class="inp" id="payType" value="Fund Transfer">
+      <input class="inp" id="payType" data-new-ui-input value="Fund Transfer">
     </div>
 
     <div class="fld">
       <label class="lbl">Amount (MYR)</label>
-      <input class="inp" id="amount" inputmode="decimal" placeholder="Amount" value="0.00">
+      <input class="inp" id="amount" data-new-ui-input inputmode="decimal" placeholder="Amount" value="0.00">
     </div>
 
     <div class="fld">
       <label class="lbl">Recipient Reference</label>
-      <input class="inp" id="reference" value="Payment" placeholder="Payment">
+      <input class="inp" id="reference" data-new-ui-input value="Payment" placeholder="Payment">
     </div>
 
 <div class="fld w12" style="display:flex; gap:8px">
