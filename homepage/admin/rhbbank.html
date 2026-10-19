@@ -224,7 +224,17 @@ body > .wrap > #preview {
     min-width: 0 !important;
   }
 }
-
+/* CARD LUAR UNTUK PREVIEW DEMO */
+.preview-outer-card {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
 </style>
 </head>
 <body>
@@ -305,6 +315,7 @@ body > .wrap > #preview {
   </div>
 
   <!-- Preview -->
+ <div class"preview-outer-card">
   <div class="card preview" id="preview">
     <div class="row">
       <div>
@@ -327,6 +338,7 @@ body > .wrap > #preview {
       </div>
     </div>
   </div>
+</div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
