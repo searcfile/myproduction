@@ -627,6 +627,22 @@ html {
   width: 100%;
   min-height: 160px;
 }
+
+/* Dynamic Bank Management: only settings UI, receipt unchanged */
+.cimb-bank-actions{display:flex;gap:8px;margin-bottom:8px}
+.cimb-bank-actions button{width:auto;flex:1;min-width:0}
+.cimb-bank-form{display:grid;gap:12px}
+.cimb-bank-form label{display:grid;gap:5px;font-size:13px;color:var(--page-text)}
+.cimb-bank-form input,.cimb-bank-form select{height:34px;width:100%;padding:0 10px;background:var(--page-input);color:var(--page-text);border:1px solid var(--border-input);border-radius:6px}
+.cimb-bank-form .cimb-bank-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cimb-bank-form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.cimb-bank-form-actions button{width:auto;min-width:92px}
+.cimb-bank-list{display:grid;gap:8px;max-height:55vh;overflow:auto}
+.cimb-bank-list-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border:1px solid var(--border-input);border-radius:8px;color:var(--page-text)}
+.cimb-bank-list-row small{display:block;opacity:.65;margin-top:4px}
+.cimb-bank-list-row .cimb-bank-list-buttons{display:flex;gap:6px;flex-shrink:0}
+.cimb-bank-list-buttons button{width:auto;padding:0 10px}
+@media(max-width:550px){.cimb-bank-form .cimb-bank-form-row{grid-template-columns:1fr}.cimb-bank-list-row{flex-wrap:wrap}}
 </style>
 <body>
   
@@ -637,6 +653,10 @@ html {
         <div class="builder-row">
           <!-- ===== Custom Bank Dropdown ===== -->
 <div class="builder-field">
+  <div class="cimb-bank-actions">
+    <button type="button" class="btn-update" id="bankCreate">+ Create Bank</button>
+    <button type="button" class="btn-reset" id="bankManage">Manage Banks</button>
+  </div>
   <div class="bank-select" id="bankSelect">
     <button type="button" class="bank-btn" id="bankBtn" aria-expanded="false">
       <span id="bankBtnText">CIMB BANK BERHAD</span>
@@ -762,7 +782,7 @@ html {
   });
 </script>
 <script type="module">
- const BANK_CONFIG = {
+ const DEFAULT_BANK_CONFIG = {
   "CIMB BANK BERHAD": { len: 10, prefix: "7" },
   "Maybank / Maybank Islamic": { len: 12, prefix: "1" },
   "TOUCH N GO eWALLET": { len: 12, prefix: "1" },
@@ -776,6 +796,12 @@ html {
   "GXBank": { len: 13, prefix: "88" }
 };
 
+// Local defaults remain available until the Firebase catalog has been imported.
+// Once Firebase has bank records, that catalog becomes the source of truth.
+let BANK_CONFIG = { ...DEFAULT_BANK_CONFIG };
+let BANK_RECORDS = {};
+let bankCatalogLoaded = false;
+const BANK_DB_PATH = "bank_catalog/cimbclicks";
 let selectedBank = "CIMB BANK BERHAD";
 let lastRealAcc  = "";
 let lastRealName = "";
@@ -1607,6 +1633,200 @@ document.addEventListener("keydown", function(e) {
     copyReceiptImage();
   }
 }, true);
+
+/* =====================================================
+   CIMB CLICKS - FIREBASE BANK CATALOG
+   Uses existing Firebase compat SDK and existing NewUI.
+   RTDB rules must restrict writes to authorized admins.
+   ===================================================== */
+const bankToast = (message, type="success") => {
+  if (typeof window.showToast === "function") window.showToast(message, type);
+  else console[type === "error" ? "error" : "log"](message);
+};
+const bankDb = () => {
+  try {
+    if (!window.firebase || !firebase.apps.length) return null;
+    return firebase.database().ref(BANK_DB_PATH);
+  } catch (error) {
+    console.error("Bank catalog Firebase:", error);
+    return null;
+  }
+};
+const bankEscape = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+})[char]);
+function normalizedBankRecord(value) {
+  if (!value || typeof value !== "object") return null;
+  const name = String(value.name || "").trim();
+  const len = Number(value.len);
+  const rule = value.rule === "start" ? "start" : "prefix";
+  const digits = String(value.digits ?? "");
+  if (!name || name.length > 100 || !Number.isInteger(len) || len < 1 || len > 30 ||
+      !/^\d*$/.test(digits) || digits.length > len) return null;
+  return {name,len,rule,digits,active:value.active !== false};
+}
+function refreshBankCatalog() {
+  const active = Object.values(BANK_RECORDS).filter(x=>x.active);
+  if (bankCatalogLoaded && (Object.keys(BANK_RECORDS).length || localStorage.getItem("cimb_bank_catalog_initialized") === "1")) {
+    BANK_CONFIG = Object.fromEntries(active.map(x => [x.name, {
+      len:x.len, [x.rule]:x.digits
+    }]));
+  } else if (bankCatalogLoaded) {
+    // An empty database is intentionally shown as defaults until imported.
+    BANK_CONFIG = {...DEFAULT_BANK_CONFIG};
+  }
+  if (!BANK_CONFIG[selectedBank]) {
+    selectedBank = Object.keys(BANK_CONFIG)[0] || "";
+    localStorage.setItem("selectedBank", selectedBank);
+    if (selectedBank) {
+      lastRealAcc = buildAccountNumber(selectedBank);
+      toggleAccountNameByBank(selectedBank);
+      updateBankChargeCurrencyVisibility(selectedBank);
+    }
+  }
+  bankBtnText.textContent = selectedBank || "No banks available";
+  renderBankMenu();
+}
+function initFirebaseBanks() {
+  const ref = bankDb();
+  if (!ref) {
+    bankToast("Firebase belum siap. Bank default masih tersedia.", "warning");
+    return;
+  }
+  ref.on("value", snap => {
+    const records = {};
+    snap.forEach(child => {
+      const normalized = normalizedBankRecord(child.val());
+      if (normalized) records[child.key] = normalized;
+    });
+    BANK_RECORDS = records;
+    if (Object.keys(records).length) localStorage.setItem("cimb_bank_catalog_initialized", "1");
+    bankCatalogLoaded = true;
+    refreshBankCatalog();
+  }, error => bankToast("Tidak dapat membaca bank Firebase: " + error.message, "error"));
+}
+function bankFormModal(id=null) {
+  if (!window.NewUI?.modal?.open) return bankToast("Custom modal belum tersedia.", "error");
+  const current = id ? BANK_RECORDS[id] : null;
+  const content = document.createElement("form");
+  content.className = "cimb-bank-form";
+  content.innerHTML = `
+    <label>Bank Name<input name="name" maxlength="100" required placeholder="Bank name" value="${bankEscape(current?.name || "")}"></label>
+    <div class="cimb-bank-form-row">
+      <label>Account Length<input name="len" type="number" min="1" max="30" required value="${current?.len ?? 10}"></label>
+      <label>Number Rule<select name="rule"><option value="prefix">Prefix</option><option value="start">Start</option></select></label>
+    </div>
+    <label>Prefix / Start digits<input name="digits" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 7 or 88" value="${bankEscape(current?.digits ?? "")}"></label>
+    <label style="display:flex;align-items:center;gap:8px"><input name="active" type="checkbox" style="width:auto;height:auto" ${current?.active === false ? "" : "checked"}> Active (show in dropdown)</label>
+    <div class="cimb-bank-form-actions"><button type="button" class="btn-reset" data-cancel>Cancel</button><button type="submit" class="btn-update" data-save>${id ? "Save Changes" : "Create Bank"}</button></div>`;
+  content.elements.rule.value = current?.rule || "prefix";
+  const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:490});
+  content.querySelector("[data-cancel]").addEventListener("click",()=>modal.close());
+  content.addEventListener("submit", async event => {
+    event.preventDefault();
+    const ref = bankDb();
+    if (!ref) return bankToast("Firebase belum tersedia.", "error");
+    const value = normalizedBankRecord({
+      name:content.elements.name.value, len:Number(content.elements.len.value),
+      rule:content.elements.rule.value, digits:content.elements.digits.value.trim(),
+      active:content.elements.active.checked
+    });
+    if (!value) return bankToast("Semak nama bank, length dan digits.", "warning");
+    if (Object.entries(BANK_RECORDS).some(([key,other])=>key!==id && other.name.toLowerCase()===value.name.toLowerCase()))
+      return bankToast("Nama bank sudah wujud.", "warning");
+    const saveButton = content.querySelector("[data-save]");
+    saveButton.disabled = true;
+    try {
+      await (id ? ref.child(id) : ref.push()).set({...value,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+      localStorage.setItem("cimb_bank_catalog_initialized", "1");
+      modal.close();
+      bankToast(id ? "Bank updated successfully" : "Bank created successfully");
+    } catch (error) {
+      bankToast("Gagal simpan bank: " + error.message,"error");
+    } finally { saveButton.disabled = false; }
+  });
+}
+function bankManageModal() {
+  if (!window.NewUI?.modal?.open) return bankToast("Custom modal belum tersedia.", "error");
+  const content = document.createElement("div");
+  const toolbar = document.createElement("div");
+  toolbar.className = "cimb-bank-form-actions";
+  toolbar.style.marginBottom = "12px";
+  const importButton = document.createElement("button");
+  importButton.type="button"; importButton.className="btn-reset";
+  importButton.textContent="Import 11 Default Banks";
+  const addButton = document.createElement("button");
+  addButton.type="button"; addButton.className="btn-update";addButton.textContent="+ Create Bank";
+  toolbar.append(importButton,addButton);
+  const list = document.createElement("div");list.className="cimb-bank-list";
+  content.append(toolbar,list);
+  const modal = NewUI.modal.open({title:"Manage Banks",content,width:700});
+  function renderList() {
+    list.replaceChildren();
+    const records = Object.entries(BANK_RECORDS).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+    if (!records.length) {
+      if (window.showEmptyState) window.showEmptyState(list,"No data","large","center");
+      else list.textContent="No data";
+      return;
+    }
+    for (const [key,bank] of records) {
+      const row=document.createElement("div");row.className="cimb-bank-list-row";
+      const description=document.createElement("div");
+      const strong=document.createElement("strong");strong.textContent=bank.name;
+      const detail=document.createElement("small");
+      detail.textContent=`Length: ${bank.len} · ${bank.rule}: ${bank.digits || "(none)"} · ${bank.active ? "Active" : "Inactive"}`;
+      description.append(strong,detail);
+      const buttons=document.createElement("div");buttons.className="cimb-bank-list-buttons";
+      const edit=document.createElement("button");edit.type="button";edit.className="btn-update";edit.textContent="Edit";
+      edit.addEventListener("click",()=>{modal.close();bankFormModal(key);});
+      const del=document.createElement("button");del.type="button";del.className="btn-reset";del.textContent="Delete";
+      del.addEventListener("click",async()=>{
+        if (!window.NewUI?.confirm) return bankToast("Custom confirm belum tersedia.","error");
+        const confirmed=await NewUI.confirm({target:del,title:"Delete Bank",message:`Delete ${bank.name}?`,confirmText:"Delete",danger:true});
+        if (!confirmed) return;
+        const ref=bankDb();if(!ref)return bankToast("Firebase belum tersedia.","error");
+        try {await ref.child(key).remove();bankToast("Bank deleted successfully");renderList();}
+        catch(error){bankToast("Gagal delete: "+error.message,"error");}
+      });
+      buttons.append(edit,del);row.append(description,buttons);list.append(row);
+    }
+  }
+  addButton.addEventListener("click",()=>{modal.close();bankFormModal();});
+  importButton.addEventListener("click",async()=>{
+    const ref=bankDb();if(!ref)return bankToast("Firebase belum tersedia.","error");
+    importButton.disabled=true;
+    try {
+      const current=await ref.once("value");
+      const existingNames=new Set();
+      current.forEach(item=>{if(item.val()?.name)existingNames.add(String(item.val().name).toLowerCase());});
+      const updates={};
+      for(const [name,cfg] of Object.entries(DEFAULT_BANK_CONFIG)) {
+        if(existingNames.has(name.toLowerCase()))continue;
+        const key=ref.push().key;
+        const rule=Object.hasOwn(cfg,"start") ? "start" : "prefix";
+        updates[key]={name,len:cfg.len,rule,digits:String(cfg[rule]||""),active:true};
+      }
+      if(Object.keys(updates).length)await ref.update(updates);
+      localStorage.setItem("cimb_bank_catalog_initialized", "1");
+      const updated=await ref.once("value");
+      BANK_RECORDS={};updated.forEach(child=>{const v=normalizedBankRecord(child.val());if(v)BANK_RECORDS[child.key]=v;});
+      renderList();
+      bankToast(`${Object.keys(updates).length} default banks imported`);
+      // Live listener will update the dropdown and list.
+    } catch(error){bankToast("Import gagal: "+error.message,"error");}
+    finally{importButton.disabled=false;}
+  });
+  const ref=bankDb();
+  if(ref) ref.once("value").then(snap=>{
+    const records={};snap.forEach(child=>{const v=normalizedBankRecord(child.val());if(v)records[child.key]=v;});
+    BANK_RECORDS=records;renderList();
+  }).catch(error=>bankToast(error.message,"error"));
+  else renderList();
+}
+document.getElementById("bankCreate")?.addEventListener("click",()=>bankFormModal());
+document.getElementById("bankManage")?.addEventListener("click",bankManageModal);
+initFirebaseBanks();
+
 </script>
 </body>
 </html>
