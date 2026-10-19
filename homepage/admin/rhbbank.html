@@ -236,6 +236,31 @@ body > .wrap > #preview {
   box-sizing: border-box;
   overflow-x: auto;
 }
+/* ==========================================
+   RHB BANK - NO DATA CARD
+   ========================================== */
+
+.rhb-empty-card {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rhb-empty-card .shared-empty {
+  width: 100%;
+  min-height: 160px;
+}
+
+.rhb-empty-card[hidden] {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -315,8 +340,17 @@ body > .wrap > #preview {
 </div>
   </div>
 
-  <!-- Preview -->
- <div class="preview-outer-card">
+<!-- RHB BANK - NO DATA CARD -->
+<section
+  id="rhbEmptyCard"
+  class="rhb-empty-card"
+  hidden
+>
+  <div id="rhbEmptyContent"></div>
+</section>
+
+<!-- Preview -->
+<div class="preview-outer-card">
   <div class="card preview" id="preview">
     <div class="row">
       <div>
@@ -398,6 +432,7 @@ function loadState(){
 }
 function resetAll(){
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
   el.toName.value = 'I LOVE YOU';
   el.toId.value   = '0';
   el.bankSel.value= 'Touch N Go Digital';
@@ -410,6 +445,8 @@ function resetAll(){
   el.autoBank.classList.remove('on');
   el.autoAcct.classList.remove('on');
   render();
+
+  updateRhbEmptyState();
 }
 
 /* ---------- Helpers ---------- */
@@ -503,7 +540,48 @@ function render(){
   el.vAmount.textContent = fmtMYR(el.amount.value);
   el.vRef.textContent = el.ref.value || '';
 }
+/* ==========================================
+   RHB BANK - EMPTY STATE CONTROLLER
+   ========================================== */
 
+const RHB_RECEIPT_VISIBLE_KEY = "rhb.receipt.visible.v1";
+
+function updateRhbEmptyState() {
+  const receiptCard = document.querySelector(
+    ".preview-outer-card"
+  );
+
+  const emptyCard = document.getElementById(
+    "rhbEmptyCard"
+  );
+
+  const emptyContent = document.getElementById(
+    "rhbEmptyContent"
+  );
+
+  if (!receiptCard || !emptyCard || !emptyContent) {
+    return;
+  }
+
+  const hasReceipt =
+    localStorage.getItem(RHB_RECEIPT_VISIBLE_KEY) === "true";
+
+  receiptCard.style.display = hasReceipt ? "" : "none";
+  emptyCard.hidden = hasReceipt;
+
+  if (!hasReceipt) {
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(
+        emptyContent,
+        "No data",
+        "large",
+        "center"
+      );
+    } else {
+      emptyContent.textContent = "No data";
+    }
+  }
+}
 /* ---------- Listeners ---------- */
 // angka -> bersihkan saat blur
 el.amount.addEventListener('blur', e=>{
@@ -524,12 +602,21 @@ el.bankSel.addEventListener('change', ()=>{
   saveState(); render();
 });
 // tombol
-el.createBtn.addEventListener('click', ()=>{ render(); saveState(); });
+el.createBtn.addEventListener("click", () => {
+  render();
+  saveState();
+
+  localStorage.setItem(RHB_RECEIPT_VISIBLE_KEY, "true");
+
+  updateRhbEmptyState();
+});
 el.resetBtn.addEventListener('click', resetAll);
 
 /* ---------- Init ---------- */
-loadState();   // ambil dari localStorage
-render();      // lalu render tampilan
+loadState();
+render();
+
+updateRhbEmptyState();
   (function () {
   const THEME_KEY = "siteTheme";
 
