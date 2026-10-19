@@ -95,7 +95,11 @@
     margin-top:10px !important; background:var(--card);font-family:var(--font) !important;
     padding:18px 20px; box-shadow: var(--shadow),inset 0 -60px 20px -20px rgb(218 218 218 / 46%); border:1px solid var(--border);
   }
-  #card {font-family:var(--font) !important;}
+  /* BANK ISLAM - FORCE FONT FOR ENTIRE CARD */
+.card,
+.card * {
+  font-family: var(--font) !important;
+}
   .edit{
     position:absolute; right:18px; margin-top:-6px;
     background:transparent; border:0; cursor:pointer; color:#9a9a9a; font-size:18px;
