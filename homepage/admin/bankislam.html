@@ -445,7 +445,17 @@ body{overflow-x:hidden!important;}
 @media(max-width:850px){#back .modal{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:550px){#back .modal{grid-template-columns:minmax(0,1fr);padding:12px!important;}
 #back .modal .ctl>.btn{flex:1 1 calc(50% - 10px)!important;}}
-
+/* CARD LUAR UNTUK PREVIEW DEMO */
+.preview-outer-card {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  background: var(--page-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
 </style>
 </head>
 <body>
@@ -515,6 +525,7 @@ body{overflow-x:hidden!important;}
       </div>
 
       <!-- KANAN: Card -->
+      <div class="preview-outer-card">
       <div class="card" id="card">
         <!-- HAPUS tombol gear -->
         <div class="row-top">
@@ -553,6 +564,7 @@ body{overflow-x:hidden!important;}
 
        <div class="more">View More <span class="chev" aria-hidden="true"></span></div>
       </div>
+    </div>
     </div>
     <!-- ===== end layout ===== -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
