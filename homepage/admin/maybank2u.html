@@ -1183,7 +1183,7 @@ function attachLiveHandlers(){
     state.selectedAccountByBank[state.bank] = list[Math.floor(Math.random() * list.length)] || "";
     state.created = false;
     state = render(state);
-
+    localStorage.setItem("maybank.receipt.visible", "true");
     updateMaybankEmptyState(true);
   });
 
@@ -1286,7 +1286,7 @@ blurBtn?.addEventListener("click", () => {
     state = structuredClone(DEFAULT_STATE);
     state = ensureAccountsForBank(state, state.bank);
     state = render(state);
-
+    localStorage.removeItem("maybank.receipt.visible");
     updateMaybankEmptyState(false);
   });
 }
@@ -1335,7 +1335,8 @@ let state = loadState();
 bankSelect.value = state.bank;
 bankSelect.dispatchEvent(new Event("change", { bubbles:true }));
 
-const hasSavedReceipt = localStorage.getItem(LS_KEY) !== null;
+const hasSavedReceipt =
+  localStorage.getItem("maybank.receipt.visible") === "true";
 
 state = ensureAccountsForBank(state, state.bank);
 state = render(state);
