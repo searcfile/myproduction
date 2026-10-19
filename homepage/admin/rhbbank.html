@@ -202,6 +202,29 @@ body > .wrap{
   #form .btn,#form .btn-reset{flex:1 1 130px;}
 }
 
+/* =========================================
+   RHB PREVIEW - RESPONSIVE WIDTH ONLY
+   ========================================= */
+
+/* Desktop - maksimum 800px */
+body > .wrap > #preview {
+  width: 100% !important;
+  max-width: 800px !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  flex: 0 1 auto !important;
+  align-self: flex-start !important;
+}
+
+/* Mobile - ikut lebar parent */
+@media (max-width: 650px) {
+  body > .wrap > #preview {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
 </style>
 </head>
 <body>
