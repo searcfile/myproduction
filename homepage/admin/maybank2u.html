@@ -1900,14 +1900,20 @@ function mainanOpenBankForm(editId = null) {
         await ref.push(data);
       }
 
+      // Tunggu spinner minimum 700ms seperti CIMB Clicks
+      await NewUI.setButtonLoading(saveBtn, false, {
+        minDuration: 700
+      });
+
+      // Tutup modal selepas loading selesai
+      modal.close();
+
       mainanToast(
         editing
           ? "Bank updated successfully"
           : "Bank created successfully",
         "success"
       );
-
-      modal.close();
 
     } catch (error) {
       console.error("Save bank failed:", error);
