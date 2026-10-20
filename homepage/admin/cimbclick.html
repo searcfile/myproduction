@@ -1697,7 +1697,7 @@ function bankManageModal() {
   toolbar.append(addButton);
   const list = document.createElement("div");list.className="cimb-bank-list";
   content.append(toolbar,list);
-  const modal = NewUI.modal.open({title:"Manage Banks",content,width:700});
+  const modal = NewUI.modal.open({title:"Manage Banks",content,width:720});
   function renderList() {
     list.replaceChildren();
     const records = Object.entries(BANK_RECORDS).sort((a,b)=>a[1].name.localeCompare(b[1].name));
