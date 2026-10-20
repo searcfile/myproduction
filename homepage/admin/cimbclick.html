@@ -1625,12 +1625,30 @@ content.innerHTML = `
       value="${bankEscape(current?.digits ?? "")}">
   </label>
 
-  <label style="display:flex;align-items:center;gap:8px">
-    <input name="active" type="checkbox"
-      style="width:auto;height:auto"
-      ${current?.active === false ? "" : "checked"}>
-    Active (show in dropdown)
+<div style="display:flex;align-items:center;gap:12px">
+
+  <label class="shared-active-switch">
+
+    <input
+      name="active"
+      type="checkbox"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+      ${current?.active === false ? "" : "checked"}
+    >
+
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+
   </label>
+
+  <span style="font-size:13px;color:var(--page-text)">
+    Show in dropdown
+  </span>
+
+</div>
 
   <div class="cimb-bank-form-actions">
     <button type="button" class="btn-reset" data-cancel>
@@ -1644,6 +1662,7 @@ content.innerHTML = `
   content.elements.rule.value = current?.rule || "prefix";
   const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:720});
   NewUI.init(content);
+  NewUI.activeSwitch.init(content);
   content.querySelector("[data-cancel]").addEventListener("click",()=>modal.close());
   content.addEventListener("submit", async event => {
     event.preventDefault();
