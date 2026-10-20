@@ -782,23 +782,7 @@ html {
   });
 </script>
 <script type="module">
- const DEFAULT_BANK_CONFIG = {
-  "CIMB BANK BERHAD": { len: 10, prefix: "7" },
-  "Maybank / Maybank Islamic": { len: 12, prefix: "1" },
-  "TOUCH N GO eWALLET": { len: 12, prefix: "1" },
-  "HONG LEONG BANK": { len: 11, prefix: "1" },
-  "AmBANK BERHAD": { len: 13, prefix: "88" },
-  "BANK SIMPANAN NASIONAL BERHAD": { len: 16, start: "0" },
-  "RHB BANK": { len: 14, prefix: "16" },
-  "PUBLIC BANK": { len: 10, start: "6" },
-  "Merchantrade": { len: 12, prefix: "50" },
-  "BANK ISLAM MALAYSIA": { len: 14, start: "1" },
-  "GXBank": { len: 13, prefix: "88" }
-};
-
-// Local defaults remain available until the Firebase catalog has been imported.
-// Once Firebase has bank records, that catalog becomes the source of truth.
-let BANK_CONFIG = { ...DEFAULT_BANK_CONFIG };
+let BANK_CONFIG = {};
 let BANK_RECORDS = {};
 let bankCatalogLoaded = false;
 const BANK_DB_PATH = "bank_catalog/cimbclicks";
@@ -1243,8 +1227,6 @@ if (dateInput) {
   dateInput.addEventListener("input", () => updateDisplay(true));
 }
 
-
-// ===== LOAD FROM STORAGE =====
 // ===== LOAD FROM STORAGE =====
 window.addEventListener("DOMContentLoaded", () => {
   // ✅ render dropdown list bank dulu
@@ -1666,31 +1648,50 @@ function normalizedBankRecord(value) {
   return {name,len,rule,digits,active:value.active !== false};
 }
 function refreshBankCatalog() {
-  const active = Object.values(BANK_RECORDS).filter(x=>x.active);
-  if (bankCatalogLoaded && (Object.keys(BANK_RECORDS).length || localStorage.getItem("cimb_bank_catalog_initialized") === "1")) {
-    BANK_CONFIG = Object.fromEntries(active.map(x => [x.name, {
-      len:x.len, [x.rule]:x.digits
-    }]));
-  } else if (bankCatalogLoaded) {
-    // An empty database is intentionally shown as defaults until imported.
-    BANK_CONFIG = {...DEFAULT_BANK_CONFIG};
-  }
+  if (!bankCatalogLoaded) return;
+
+  const active = Object.values(BANK_RECORDS)
+    .filter(bank => bank.active);
+
+  BANK_CONFIG = Object.fromEntries(
+    active.map(bank => [
+      bank.name,
+      {
+        len: bank.len,
+        [bank.rule]: bank.digits
+      }
+    ])
+  );
+
   if (!BANK_CONFIG[selectedBank]) {
     selectedBank = Object.keys(BANK_CONFIG)[0] || "";
-    localStorage.setItem("selectedBank", selectedBank);
+
     if (selectedBank) {
+      localStorage.setItem("selectedBank", selectedBank);
+
       lastRealAcc = buildAccountNumber(selectedBank);
+
       toggleAccountNameByBank(selectedBank);
       updateBankChargeCurrencyVisibility(selectedBank);
+    } else {
+      localStorage.removeItem("selectedBank");
+      lastRealAcc = "";
+      toggleAccountNameByBank("");
+      updateBankChargeCurrencyVisibility("");
     }
   }
-  bankBtnText.textContent = selectedBank || "No banks available";
+
+  bankBtnText.textContent =
+    selectedBank || "No banks available";
+
+  bankBtn.disabled = !selectedBank;
+
   renderBankMenu();
 }
 function initFirebaseBanks() {
   const ref = bankDb();
   if (!ref) {
-    bankToast("Firebase belum siap. Bank default masih tersedia.", "warning");
+    bankToast("Data belum siap. Tidak dapat memuatkan senarai bank.", "warning");
     return;
   }
   ref.on("value", snap => {
@@ -1700,7 +1701,6 @@ function initFirebaseBanks() {
       if (normalized) records[child.key] = normalized;
     });
     BANK_RECORDS = records;
-    if (Object.keys(records).length) localStorage.setItem("cimb_bank_catalog_initialized", "1");
     bankCatalogLoaded = true;
     refreshBankCatalog();
   }, error => bankToast("Tidak dapat membaca bank Firebase: " + error.message, "error"));
@@ -1752,12 +1752,9 @@ function bankManageModal() {
   const toolbar = document.createElement("div");
   toolbar.className = "cimb-bank-form-actions";
   toolbar.style.marginBottom = "12px";
-  const importButton = document.createElement("button");
-  importButton.type="button"; importButton.className="btn-reset";
-  importButton.textContent="Import 11 Default Banks";
   const addButton = document.createElement("button");
   addButton.type="button"; addButton.className="btn-update";addButton.textContent="+ Create Bank";
-  toolbar.append(importButton,addButton);
+  toolbar.append(addButton);
   const list = document.createElement("div");list.className="cimb-bank-list";
   content.append(toolbar,list);
   const modal = NewUI.modal.open({title:"Manage Banks",content,width:700});
@@ -1792,30 +1789,7 @@ function bankManageModal() {
     }
   }
   addButton.addEventListener("click",()=>{modal.close();bankFormModal();});
-  importButton.addEventListener("click",async()=>{
-    const ref=bankDb();if(!ref)return bankToast("Firebase belum tersedia.","error");
-    importButton.disabled=true;
-    try {
-      const current=await ref.once("value");
-      const existingNames=new Set();
-      current.forEach(item=>{if(item.val()?.name)existingNames.add(String(item.val().name).toLowerCase());});
-      const updates={};
-      for(const [name,cfg] of Object.entries(DEFAULT_BANK_CONFIG)) {
-        if(existingNames.has(name.toLowerCase()))continue;
-        const key=ref.push().key;
-        const rule=Object.hasOwn(cfg,"start") ? "start" : "prefix";
-        updates[key]={name,len:cfg.len,rule,digits:String(cfg[rule]||""),active:true};
-      }
-      if(Object.keys(updates).length)await ref.update(updates);
-      localStorage.setItem("cimb_bank_catalog_initialized", "1");
-      const updated=await ref.once("value");
-      BANK_RECORDS={};updated.forEach(child=>{const v=normalizedBankRecord(child.val());if(v)BANK_RECORDS[child.key]=v;});
-      renderList();
-      bankToast(`${Object.keys(updates).length} default banks imported`);
-      // Live listener will update the dropdown and list.
-    } catch(error){bankToast("Import gagal: "+error.message,"error");}
-    finally{importButton.disabled=false;}
-  });
+ 
   const ref=bankDb();
   if(ref) ref.once("value").then(snap=>{
     const records={};snap.forEach(child=>{const v=normalizedBankRecord(child.val());if(v)records[child.key]=v;});
