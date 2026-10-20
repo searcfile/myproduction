@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>BANK ISLAM</title>
+<title>main main</title>
   <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
   <link rel="stylesheet" href="./new-ui.css">
@@ -397,54 +397,222 @@ select:focus-visible{
   transition: all .2s ease;
 }
 
-/* ===== BANK ISLAM: SETTINGS UI ONLY (card is not styled) ===== */
-html,body{min-height:100%;height:auto!important;overflow-y:auto!important;}
-body{overflow-x:hidden!important;}
-.layout{
-  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
-  justify-content:flex-start!important;gap:14px!important;
-  width:calc(100% - 22px)!important;max-width:none!important;
-  margin:16px 11px 56px!important;padding:0!important;
+/* =====================================================
+   BANK ISLAM - CLEAN SETTINGS UI
+   Custom NewUI Input + Shared Dropdown
+   ===================================================== */
+
+html,
+body {
+  min-height: 100%;
+  height: auto !important;
+  overflow-y: auto !important;
 }
-#back{
-  display:block!important;position:static!important;inset:auto!important;
-  width:100%!important;max-width:none!important;flex:none!important;
-  margin:0!important;padding:0!important;background:transparent!important;
+
+body {
+  overflow-x: hidden !important;
 }
-#back .modal{
-  position:static!important;width:100%!important;max-width:none!important;
-  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
-  align-items:end!important;gap:12px!important;
-  padding:16px 18px!important;margin:0!important;
-  border:1px solid var(--border-input)!important;border-radius:12px!important;
-  background:var(--page-input)!important;box-shadow:none!important;
-  overflow:visible!important;
+
+/* MAIN LAYOUT */
+.layout {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  width: calc(100% - 24px) !important;
+  max-width: none !important;
+  margin: 16px 12px 56px !important;
+  padding: 0 !important;
 }
-#back .modal>.row{display:contents!important;}
-#back .modal>.fld,#back .modal>.row>.fld{min-width:0!important;margin:0!important;}
-#back .modal .fld>label{display:none!important;}
-#back .modal .name-wrap,#back .modal .dt-wrap{display:flex!important;gap:8px!important;align-items:center!important;min-width:0!important;}
-#back .modal .name-wrap>.new-ui-input-wrap,#back .modal .dt-wrap>.new-ui-input-wrap{flex:1 1 0;min-width:0;}
-#back .modal .name-wrap>.shared-dropdown{flex:0 0 75px;min-width:0;}
-#back .modal .name-wrap .btn-mini{flex:0 0 auto;}
-#back .modal .dt-wrap .btn-now{flex:0 0 auto;order:2;}
-#back .modal .dt-wrap .new-ui-input-wrap{order:1;}
-#back .modal .fld :is(input,select,.shared-dropdown-trigger,.btn-now,.btn-mini){height:40px!important;min-height:40px!important;}
-#back .modal .fld input{min-width:0!important;width:100%!important;}
-#back .modal .fld .shared-dropdown-input{border:0!important;background:transparent!important;box-shadow:none!important;}
-#back .modal .fld .shared-dropdown{min-width:0!important;}
-#back .modal .ctl{
-  grid-column:1/-1!important;display:flex!important;justify-content:flex-start!important;
-  gap:10px!important;margin:0!important;flex-wrap:wrap!important;
+
+/* SETTINGS CONTAINER */
+#back {
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
 }
-#back .modal .ctl>.btn{flex:0 1 190px!important;min-width:115px!important;height:40px!important;}
-#back .modal .new-ui-input-wrap{min-width:0!important;}
-#back .modal .new-ui-input-wrap input{color:var(--text)!important;}
-/* Preview card dimensions, fonts, colors, markup and styles are not overridden. */
-@media(max-width:1150px){#back .modal{grid-template-columns:repeat(3,minmax(0,1fr));}}
-@media(max-width:850px){#back .modal{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:550px){#back .modal{grid-template-columns:minmax(0,1fr);padding:12px!important;}
-#back .modal .ctl>.btn{flex:1 1 calc(50% - 10px)!important;}}
+
+/* SETTINGS CARD */
+#back .modal {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  align-items: start !important;
+  gap: 12px !important;
+
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px 18px !important;
+
+  border: 1px solid var(--border-input) !important;
+  border-radius: 12px !important;
+  background: var(--page-input) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* KEEP FIELD GROUPS TOGETHER */
+#back .modal > .row {
+  display: contents !important;
+}
+
+#back .modal .fld {
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+#back .modal .row > .col {
+  min-width: 0 !important;
+  flex: initial !important;
+}
+
+/* HIDE OLD FIELD LABELS */
+#back .modal .fld > label {
+  display: none !important;
+}
+
+/* CUSTOM INPUT */
+#back .modal .new-ui-input-wrap {
+  display: flex;
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0 !important;
+}
+
+#back .modal input[data-new-ui-input] {
+  width: 100% !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  min-width: 0 !important;
+  color: var(--text) !important;
+}
+
+/* CUSTOM DROPDOWN */
+#back .modal .shared-dropdown {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+#back .modal .shared-dropdown-trigger {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+}
+
+#back .modal .shared-dropdown-input {
+  height: 100% !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* DATE + NOW */
+#back .modal .dt-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100%;
+  min-width: 0 !important;
+}
+
+#back .modal .dt-wrap > .new-ui-input-wrap {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  order: 1;
+}
+
+#back .modal .dt-wrap > .btn-now {
+  flex: 0 0 auto !important;
+  order: 2;
+}
+
+/* NAME + AUTO + A-Z */
+#back .modal .name-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100%;
+  min-width: 0 !important;
+}
+
+#back .modal .name-wrap > .btn-mini {
+  flex: 0 0 auto !important;
+}
+
+#back .modal .name-wrap > .shared-dropdown {
+  flex: 0 0 105px !important;
+  width: 105px !important;
+}
+
+#back .modal .name-wrap > .new-ui-input-wrap {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
+/* SMALL BUTTONS */
+#back .modal .btn-now,
+#back .modal .btn-mini {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* ACTION BUTTONS */
+#back .modal .ctl {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+#back .modal .ctl > .btn {
+  flex: 0 1 190px !important;
+  min-width: 110px !important;
+  height: 32px !important;
+}
+
+/* TABLET */
+@media (max-width: 1150px) {
+  #back .modal {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 650px) {
+  .layout {
+    width: calc(100% - 16px) !important;
+    margin: 12px 8px 40px !important;
+  }
+
+  #back .modal {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  #back .modal .ctl > .btn {
+    flex: 1 1 calc(50% - 5px) !important;
+    min-width: 0 !important;
+  }
+
+  #back .modal .name-wrap > .shared-dropdown {
+    flex-basis: 90px !important;
+    width: 90px !important;
+  }
+}
 /* CARD LUAR UNTUK PREVIEW DEMO */
 .preview-outer-card {
   width: 100%;
@@ -536,7 +704,7 @@ body{overflow-x:hidden!important;}
     <select id="nmAlpha" data-shared-dropdown class="nm-alpha" aria-label="First letter">
       <option value="">A–Z</option>
     </select>
-    <input id="inName" data-new-ui-input type="text" placeholder="Holde Name" class="col">
+    <input id="inName" data-new-ui-input type="text" placeholder="Holder Name" class="col">
   </div>
   <label>Saat Update, data sensitif akan otomatis di-blur, hanya huruf awal nama yang tampak.</label>
 </div>
