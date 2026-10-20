@@ -1803,9 +1803,9 @@ function bankManageModal() {
       detail.textContent=`Length: ${bank.len} · ${bank.rule}: ${bank.digits || "(none)"} · ${bank.active ? "Active" : "Inactive"}`;
       description.append(strong,detail);
       const buttons=document.createElement("div");buttons.className="cimb-bank-list-buttons";
-      const edit=document.createElement("button");edit.type="button";edit.className="btn-update";edit.textContent="Edit";
+      const edit=document.createElement("button");edit.type="button";edit.className="btn-primary-new";edit.textContent="Edit";
       edit.addEventListener("click",()=>{modal.close();bankFormModal(key);});
-      const del=document.createElement("button");del.type="button";del.className="btn-reset";del.textContent="Delete";
+      const del=document.createElement("button");del.type="button";del.className="btn-delete-new";del.textContent="Delete";
       del.addEventListener("click",async()=>{
         if (!window.NewUI?.confirm) return bankToast("Custom confirm belum tersedia.","error");
         const confirmed=await NewUI.confirm({target:del,title:"Delete Bank",message:`Delete ${bank.name}?`,confirmText:"Delete",danger:true});
