@@ -276,11 +276,36 @@ body > .wrap > #preview {
 .rhb-empty-card[hidden] {
   display: none !important;
 }
-  /* ==========================================
-   RHB BANK - RESPONSIVE INPUT FIX
+/* ==========================================
+   RHB BANK - FINAL CUSTOM INPUT LAYOUT
    ========================================== */
 
-/* Semua input row boleh wrap apabila ruang sempit */
+/* Susunan form: dua kolum */
+#form.card.form {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  overflow: visible !important;
+}
+
+/* Semua field mengambil satu kolum */
+#form > .fld {
+  grid-column: auto !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* Recipient Name diberikan satu baris penuh */
+#form > .fld:has(#toName) {
+  grid-column: 1 / -1 !important;
+}
+
+/* Baris tombol diberikan satu baris penuh */
+#form > .fld.w12 {
+  grid-column: 1 / -1 !important;
+}
+
+/* Semua kumpulan input */
 #form .input-row {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -290,63 +315,122 @@ body > .wrap > #preview {
   min-width: 0 !important;
 }
 
-/* Auto button kekal saiz asal */
+/* Tombol Auto */
 #form .input-row > .chip {
-  flex: 0 0 auto !important;
+  flex: 0 0 72px !important;
+  width: 72px !important;
+  min-width: 72px !important;
 }
 
-/* Dropdown A-Z dan BIN/BINTI */
-#form .input-row > .shared-dropdown:has(#letterSel),
-#form .input-row > .shared-dropdown:has(#binSel) {
-  flex: 0 0 105px !important;
-  width: 105px !important;
-  min-width: 105px !important;
+/* Dropdown A-Z */
+#form .shared-dropdown:has(#letterSel) {
+  flex: 0 0 140px !important;
+  width: 140px !important;
+  min-width: 140px !important;
 }
 
-/* Custom input nama ambil baki ruang */
+/* Dropdown BIN / BINTI */
+#form .shared-dropdown:has(#binSel) {
+  flex: 0 0 140px !important;
+  width: 140px !important;
+  min-width: 140px !important;
+}
+
+/* Input Recipient Name */
 #form .input-row:has(#toName) > .new-ui-input-wrap {
-  flex: 1 1 180px !important;
-  min-width: 180px !important;
+  flex: 1 1 240px !important;
   width: auto !important;
+  min-width: 200px !important;
 }
 
-/* Input account ambil baki ruang */
+/* Input Account */
 #form .input-row:has(#toId) > .new-ui-input-wrap {
-  flex: 1 1 180px !important;
-  min-width: 180px !important;
+  flex: 1 1 200px !important;
   width: auto !important;
-}
-
-/* Dropdown bank ambil baki ruang */
-#form .input-row:has(#bankSel) > .shared-dropdown {
-  flex: 1 1 180px !important;
-  min-width: 180px !important;
-  width: auto !important;
-}
-
-/* Semua custom input penuh dalam wrapper */
-#form .new-ui-input-wrap input {
-  width: 100% !important;
   min-width: 0 !important;
 }
 
-/* Responsive apabila zoom tinggi atau skrin kecil */
-@media (max-width: 900px) {
+/* Dropdown Bank */
+#form .input-row:has(#bankSel) > .shared-dropdown {
+  flex: 1 1 200px !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+/* Custom input wrapper */
+#form .new-ui-input-wrap {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+
+/* Custom input */
+#form .new-ui-input-wrap input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Custom dropdown */
+#form .shared-dropdown {
+  max-width: 100% !important;
+}
+
+#form .shared-dropdown-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+}
+
+#form .shared-dropdown-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Panel dropdown A-Z dan BIN/BINTI */
+#form .shared-dropdown:has(#letterSel) .shared-dropdown-panel,
+#form .shared-dropdown:has(#binSel) .shared-dropdown-panel {
+  width: max(100%, 180px) !important;
+  min-width: 0 !important;
+  max-width: min(280px, calc(100vw - 32px)) !important;
+}
+
+/* Elak dropdown terlalu panjang */
+#form .shared-dropdown-options {
+  max-height: min(220px, 40vh) !important;
+  overflow-y: auto !important;
+}
+
+/* Pastikan dropdown terbuka di atas field lain */
+#form .fld:has(.shared-dropdown.open) {
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+/* Desktop kecil / zoom tinggi */
+@media (max-width: 1000px) {
+  #form.card.form {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   #form > .fld {
     grid-column: 1 / -1 !important;
   }
 }
 
-@media (max-width: 480px) {
+/* Mobile */
+@media (max-width: 520px) {
   #form .input-row:has(#toName) > .new-ui-input-wrap {
     flex: 1 1 100% !important;
     min-width: 0 !important;
   }
 
-  #form .input-row:has(#toId) > .new-ui-input-wrap,
-  #form .input-row:has(#bankSel) > .shared-dropdown {
-    flex: 1 1 100% !important;
-    min-width: 0 !important;
+  #form .shared-dropdown:has(#letterSel),
+  #form .shared-dropdown:has(#binSel) {
+    flex: 1 1 120px !important;
+    width: auto !important;
+    min-width: 120px !important;
   }
 }
 </style>
