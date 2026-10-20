@@ -754,6 +754,160 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
     flex-wrap: wrap;
   }
 }
+    /* =====================================================
+   MAINAN KANAK2 - CIMB STYLE RESPONSIVE SETTINGS
+   ONLY BUILDER PANEL - RECEIPT NOT TOUCHED
+   ===================================================== */
+
+/* Main settings card */
+.wrap > .panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 12px !important;
+  overflow: visible !important;
+}
+
+/* Four equal columns like CIMB */
+.wrap > .panel .pb {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  align-items: end !important;
+}
+
+/* Prevent input overflow */
+.wrap > .panel .pb > *,
+.wrap > .panel .field,
+.wrap > .panel .row2,
+.wrap > .panel .nameRow,
+.wrap > .panel .dateRow {
+  min-width: 0 !important;
+}
+
+/* Reset oversized input heights */
+.wrap > .panel .pb input[data-new-ui-input],
+.wrap > .panel .pb input.shared-input {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+}
+
+/* Custom input wrappers */
+.wrap > .panel .pb .new-ui-input-wrap,
+.wrap > .panel .pb .shared-input-wrap {
+  min-width: 0 !important;
+  width: 100%;
+}
+
+/* Shared custom dropdown */
+.wrap > .panel .pb .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.wrap > .panel .pb .shared-dropdown-trigger {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+/* Holder and date rows */
+.wrap > .panel .nameRow,
+.wrap > .panel .dateRow {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.wrap > .panel .nameRow > :is(
+  .new-ui-input-wrap,
+  .shared-input-wrap
+),
+.wrap > .panel .dateRow > :is(
+  .new-ui-input-wrap,
+  .shared-input-wrap
+) {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
+/* Buttons next to input */
+.wrap > .panel .autoBtn,
+.wrap > .panel .dateBtn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* Create / Manage buttons */
+.wrap > .panel .mainan-bank-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.wrap > .panel .mainan-bank-actions button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+/* Reference + Amount */
+.wrap > .panel .row2 {
+  display: contents !important;
+}
+
+/* Bottom action buttons */
+.wrap > .panel .btns {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.wrap > .panel .btns > button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 110px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* Tablet */
+@media (max-width: 1000px) {
+  .wrap > .panel .pb {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .wrap > .panel .pb {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .wrap > .panel {
+    padding: 12px !important;
+  }
+
+  .wrap > .panel .btns > button {
+    flex: 1 1 calc(50% - 8px) !important;
+    min-width: 0 !important;
+  }
+}
 </style>
 <body>
  <div class="wrap">
