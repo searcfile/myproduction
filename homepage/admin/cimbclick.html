@@ -1455,33 +1455,42 @@ async function copyReceiptImage() {
       useCORS: true
     });
 
-    canvas.toBlob(async function(blob) {
-      if (!blob) return;
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        result => result
+          ? resolve(result)
+          : reject(new Error("Failed to create image")),
+        "image/png"
+      );
+    });
 
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "image/png": blob
-        })
-      ]);
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "image/png": blob
+      })
+    ]);
 
-      sendUserAction("COPY IMAGE", {
-        method: "button"
-      });
+    sendUserAction("COPY IMAGE", {
+      method: "button"
+    });
 
-      const btn = document.getElementById("btn-copy-image");
-      if (btn) {
-        const oldText = btn.textContent;
-        btn.textContent = "Copied!";
-        setTimeout(() => btn.textContent = oldText, 1200);
-      }
-    }, "image/png");
+    // SUCCESS TOAST
+    if (typeof window.showToast === "function") {
+      window.showToast("Image copied successfully!", "success");
+    }
 
   } catch (err) {
     console.error("Copy image failed:", err);
-    alert("Copy image failed. Please allow clipboard permission.");
+
+    // ERROR TOAST
+    if (typeof window.showToast === "function") {
+      window.showToast(
+        "Copy image failed. Please allow clipboard permission.",
+        "error"
+      );
+    }
   }
 }
-
 document.getElementById("btn-copy-image")?.addEventListener("click", copyReceiptImage);
 /* ==========================================
    CIMB CLICKS - EMPTY STATE CONTROLLER
