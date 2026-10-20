@@ -661,6 +661,99 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   width: 100%;
   min-height: 160px;
 }
+/* ==========================================
+   MAINAN KANAK2 - DYNAMIC BANK MANAGER
+   ========================================== */
+
+.mainan-bank-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mainan-bank-actions button {
+  width: auto !important;
+  min-width: max-content;
+  height: 32px;
+  padding: 0 15px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.mainan-bank-form {
+  display: grid;
+  gap: 12px;
+}
+
+.mainan-bank-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--page-text);
+  font-size: 13px;
+}
+
+.mainan-bank-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mainan-bank-form input,
+.mainan-bank-form select {
+  width: 100%;
+  min-width: 0;
+}
+
+.mainan-bank-list {
+  display: grid;
+  gap: 8px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.mainan-bank-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  color: var(--page-text);
+}
+
+.mainan-bank-list-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mainan-bank-list-info small {
+  display: block;
+  margin-top: 5px;
+  opacity: 0.65;
+}
+
+.mainan-bank-list-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mainan-bank-list-buttons button {
+  width: auto;
+}
+
+@media (max-width: 550px) {
+  .mainan-bank-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mainan-bank-list-row {
+    flex-wrap: wrap;
+  }
+}
 </style>
 <body>
  <div class="wrap">
@@ -671,7 +764,21 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
       <div class="pb">
 <div class="field">
 
+<div class="mainan-bank-actions">
+  <button
+    type="button"
+    class="btn-primary-new"
+    id="mainanCreateBank">
+    + Create Bank
+  </button>
 
+  <button
+    type="button"
+    class="btn-cancel-new"
+    id="mainanManageBanks">
+    Manage Banks
+  </button>
+</div>
   <select id="bankSelect" data-shared-dropdown data-placeholder="Select bank" aria-label="Select bank"></select>
 </div>
         
@@ -852,19 +959,7 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
     //  FULL RECEIPT BUILDER v1
     // ============================
     const LS_KEY = "receipt.builder.v1";
-const BANK_CONFIG = {
-  "CIMB BANK BERHAD": { len: 10, prefix: "7" },
-  "Maybank / Maybank Islamic":{ len: 12, prefix: "1" },
-  "TOUCH N GO eWALLET":{ len: 12, prefix: "1" },
-  "HONG LEONG BANK": { len: 11, prefix: "1" },
-  "AmBANK BERHAD": { len: 13, prefix: "88" },
-  "BANK SIMPANAN NASIONAL BERHAD": { len: 16, start: "0" },
-  "RHB BANK":{ len: 14, prefix: "16" },
-  "PUBLIC BANK":{ len: 10, start: "6" },
-  "Merchantrade":{ len: 12, start: "5" },
-  "BANK ISLAM MALAYSIA":{ len: 14, start: "1" },
-  "GXBANK": { len: 13, prefix: "88" }
-};
+let BANK_CONFIG = {};
     const DEFAULT_STATE = {
       bank: "Please Select",
       effectiveDate: "",
@@ -1158,15 +1253,27 @@ function ensureAccountsForBank(state, bank){
       return state;
     }
 
-function initBanks(){
+function initBanks() {
+  const previous = bankSelect.value;
   const banks = Object.keys(BANK_CONFIG);
+
   bankSelect.replaceChildren();
-  for (const name of banks) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    bankSelect.appendChild(option);
-  }
+
+  bankSelect.add(new Option(
+    banks.length ? "Select bank" : "No banks available",
+    ""
+  ));
+
+  banks.forEach(name => {
+    bankSelect.add(new Option(name, name));
+  });
+
+  bankSelect.value = BANK_CONFIG[previous]
+    ? previous
+    : "";
+
+  bankSelect.disabled = !banks.length;
+  bankSelect._sharedDropdown?.refresh?.();
 }
 
 // Live update amount/date/bank (but "mask name" only after Create)
@@ -1344,6 +1451,430 @@ attachLiveHandlers();
 window.NewUI?.init?.(document);
 
 updateMaybankEmptyState(hasSavedReceipt);
+/* ==========================================================
+   MAINAN KANAK2 - FIREBASE BANK MANAGEMENT
+   CREATE / EDIT / DELETE / REALTIME SYNC
+   ========================================================== */
+
+const MAINAN_BANK_PATH = "bank_catalog/mainan_kanak2";
+
+let MAINAN_BANK_RECORDS = {};
+let mainanBankLoaded = false;
+
+const mainanToast = (message, type = "success") => {
+  window.showToast?.(message, type);
+};
+
+function mainanBankRef() {
+  if (!window.firebase || !firebase.apps.length) {
+    throw new Error("Firebase is not initialized");
+  }
+
+  return firebase.database().ref(MAINAN_BANK_PATH);
+}
+
+function mainanEscape(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]
+  );
+}
+
+function mainanNormalizeBank(data) {
+  if (!data || typeof data !== "object") return null;
+
+  const name = String(data.name || "").trim();
+  const len = Number(data.len);
+  const rule = data.rule === "start" ? "start" : "prefix";
+  const digits = String(data.digits ?? "");
+
+  if (
+    !name ||
+    name.length > 100 ||
+    !Number.isInteger(len) ||
+    len < 1 ||
+    len > 30 ||
+    !/^\d*$/.test(digits) ||
+    digits.length > len
+  ) {
+    return null;
+  }
+
+  return {
+    name,
+    len,
+    rule,
+    digits
+  };
+}
+
+/* ==========================================================
+   REALTIME DATA LISTENER
+   ========================================================== */
+
+function mainanRefreshBankCatalog() {
+  const oldBank = state.bank;
+
+  BANK_CONFIG = {};
+
+  Object.values(MAINAN_BANK_RECORDS).forEach(bank => {
+    BANK_CONFIG[bank.name] = {
+      len: bank.len,
+      [bank.rule]: bank.digits
+    };
+  });
+
+  initBanks();
+
+  const nextBank = BANK_CONFIG[oldBank]
+    ? oldBank
+    : "";
+
+  state.bank = nextBank;
+
+  if (nextBank) {
+    state = ensureAccountsForBank(state, nextBank);
+  }
+
+  state = render(state);
+
+  bankSelect.value = nextBank;
+  bankSelect._sharedDropdown?.refresh?.();
+
+  if (oldBank !== nextBank) {
+    saveState(state);
+  }
+
+  mainanBankLoaded = true;
+}
+
+function mainanStartBankListener() {
+  let databaseRef;
+
+  try {
+    databaseRef = mainanBankRef();
+  } catch (error) {
+    mainanToast(error.message, "error");
+    return;
+  }
+
+  databaseRef.on(
+    "value",
+    snapshot => {
+      const records = {};
+
+      snapshot.forEach(child => {
+        const bank = mainanNormalizeBank(child.val());
+
+        if (bank) {
+          records[child.key] = {
+            id: child.key,
+            ...bank
+          };
+        }
+      });
+
+      MAINAN_BANK_RECORDS = records;
+      mainanRefreshBankCatalog();
+    },
+    error => {
+      console.error("Bank listener failed:", error);
+      mainanToast("Failed to load banks", "error");
+    }
+  );
+}
+
+/* ==========================================================
+   CREATE / EDIT BANK MODAL
+   ========================================================== */
+
+function mainanOpenBankForm(editId = null) {
+  const editing = editId !== null;
+  const existing = editing
+    ? MAINAN_BANK_RECORDS[editId]
+    : null;
+
+  if (editing && !existing) {
+    mainanToast("Bank not found", "error");
+    return;
+  }
+
+  const modal = NewUI.modal.open({
+    title: editing ? "Edit Bank" : "Create Bank",
+    width: 520,
+    content: `
+      <form id="mainanBankForm" class="mainan-bank-form">
+
+        <label>
+          Bank Name
+          <input
+            id="mainanBankName"
+            data-new-ui-input
+            type="text"
+            maxlength="100"
+            placeholder="Enter bank name"
+            required
+          />
+        </label>
+
+        <div class="mainan-bank-form-row">
+
+          <label>
+            Account Number Length
+            <input
+              id="mainanBankLength"
+              data-new-ui-input
+              type="number"
+              min="1"
+              max="30"
+              placeholder="Example: 12"
+              required
+            />
+          </label>
+
+          <label>
+            Number Rule
+            <select
+              id="mainanBankRule"
+              data-shared-dropdown
+              data-placeholder="Select rule"
+            >
+              <option value="prefix">Prefix</option>
+              <option value="start">Start</option>
+            </select>
+          </label>
+
+        </div>
+
+        <label>
+          Starting Digits
+          <input
+            id="mainanBankDigits"
+            data-new-ui-input
+            type="text"
+            inputmode="numeric"
+            maxlength="30"
+            placeholder="Example: 88"
+          />
+        </label>
+
+      </form>
+    `
+  });
+
+  const root = modal.body;
+
+  const nameInput = root.querySelector("#mainanBankName");
+  const lengthInput = root.querySelector("#mainanBankLength");
+  const ruleInput = root.querySelector("#mainanBankRule");
+  const digitsInput = root.querySelector("#mainanBankDigits");
+  const form = root.querySelector("#mainanBankForm");
+
+  nameInput.value = existing?.name || "";
+  lengthInput.value = existing?.len || 10;
+  ruleInput.value = existing?.rule || "prefix";
+  digitsInput.value = existing?.digits || "";
+
+  NewUI.init(root);
+  ruleInput._sharedDropdown?.refresh?.();
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "btn-cancel-new";
+  cancelBtn.textContent = "Cancel";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "submit";
+  saveBtn.className = "btn-primary-new";
+  saveBtn.textContent = editing ? "Save Changes" : "Create Bank";
+
+  modal.footer.append(cancelBtn, saveBtn);
+
+  cancelBtn.addEventListener("click", () => modal.close());
+
+  digitsInput.addEventListener("input", () => {
+    digitsInput.value = digitsInput.value.replace(/\D/g, "");
+  });
+
+  async function saveBank(event) {
+    event.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    const data = mainanNormalizeBank({
+      name: nameInput.value,
+      len: lengthInput.value,
+      rule: ruleInput.value,
+      digits: digitsInput.value
+    });
+
+    if (!data) {
+      mainanToast("Please enter valid bank information", "error");
+      return;
+    }
+
+    const duplicate = Object.entries(MAINAN_BANK_RECORDS)
+      .some(([id, bank]) =>
+        id !== editId &&
+        bank.name.toLowerCase() === data.name.toLowerCase()
+      );
+
+    if (duplicate) {
+      mainanToast("Bank name already exists", "error");
+      return;
+    }
+
+    cancelBtn.disabled = true;
+    await NewUI.setButtonLoading(saveBtn, true, {
+      text: "Saving..."
+    });
+
+    try {
+      const ref = mainanBankRef();
+
+      if (editing) {
+        await ref.child(editId).set(data);
+      } else {
+        await ref.push(data);
+      }
+
+      mainanToast(
+        editing
+          ? "Bank updated successfully"
+          : "Bank created successfully",
+        "success"
+      );
+
+      modal.close();
+
+    } catch (error) {
+      console.error("Save bank failed:", error);
+      mainanToast(error.message || "Failed to save bank", "error");
+
+    } finally {
+      if (saveBtn.isConnected) {
+        await NewUI.setButtonLoading(saveBtn, false);
+        cancelBtn.disabled = false;
+      }
+    }
+  }
+
+  form.addEventListener("submit", saveBank);
+
+  saveBtn.addEventListener("click", () => {
+    form.requestSubmit();
+  });
+}
+
+/* ==========================================================
+   MANAGE BANKS MODAL
+   ========================================================== */
+
+function mainanOpenManageBanks() {
+  const modal = NewUI.modal.open({
+    title: "Manage Banks",
+    width: 650,
+    content: `<div id="mainanBankList" class="mainan-bank-list"></div>`
+  });
+
+  const list = modal.body.querySelector("#mainanBankList");
+
+  const banks = Object.values(MAINAN_BANK_RECORDS)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (!banks.length) {
+    window.showEmptyState?.(list, "No data", "large", "center");
+    return;
+  }
+
+  banks.forEach(bank => {
+    const row = document.createElement("div");
+    row.className = "mainan-bank-list-row";
+
+    row.innerHTML = `
+      <div class="mainan-bank-list-info">
+        <strong>${mainanEscape(bank.name)}</strong>
+        <small>
+          Length: ${bank.len}
+          | ${mainanEscape(bank.rule)}:
+          ${mainanEscape(bank.digits || "None")}
+        </small>
+      </div>
+
+      <div class="mainan-bank-list-buttons">
+        <button type="button" class="btn-primary-new" data-edit>
+          Edit
+        </button>
+        <button type="button" class="btn-cancel-new" data-delete>
+          Delete
+        </button>
+      </div>
+    `;
+
+    const editBtn = row.querySelector("[data-edit]");
+    const deleteBtn = row.querySelector("[data-delete]");
+
+    editBtn.addEventListener("click", () => {
+      modal.close();
+      mainanOpenBankForm(bank.id);
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      NewUI.confirm({
+        target: deleteBtn,
+        title: "Delete Bank",
+        message: `Are you sure you want to delete ${bank.name}?`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        loadingText: "Deleting...",
+
+        onConfirm: async () => {
+          await mainanBankRef().child(bank.id).remove();
+
+          mainanToast("Bank deleted successfully", "success");
+
+          modal.close();
+          mainanOpenManageBanks();
+        }
+      });
+    });
+
+    list.appendChild(row);
+  });
+}
+
+/* ==========================================================
+   BUTTON EVENTS
+   ========================================================== */
+
+document.getElementById("mainanCreateBank")
+  ?.addEventListener("click", () => {
+    if (!mainanBankLoaded) {
+      mainanToast("Bank data is still loading", "error");
+      return;
+    }
+
+    mainanOpenBankForm();
+  });
+
+document.getElementById("mainanManageBanks")
+  ?.addEventListener("click", () => {
+    if (!mainanBankLoaded) {
+      mainanToast("Bank data is still loading", "error");
+      return;
+    }
+
+    mainanOpenManageBanks();
+  });
+
+/* START FIREBASE REALTIME LISTENER */
+mainanStartBankListener();
 (function () {
   const THEME_KEY = "siteTheme";
 
