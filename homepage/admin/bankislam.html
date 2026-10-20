@@ -717,6 +717,81 @@ body {
     max-width: 155px !important;
   }
 }
+  /* BANK ISLAM - CREATE & MANAGE */
+#back .modal > .bank-islam-actions {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+#back .bank-islam-actions .btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 120px;
+}
+
+.bi-bank-form {
+  display: grid;
+  gap: 14px;
+}
+
+.bi-bank-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.bi-bank-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bi-bank-list {
+  display: grid;
+  gap: 10px;
+}
+
+.bi-bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.bi-bank-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.bi-bank-info small {
+  display: block;
+  margin-top: 5px;
+  opacity: .65;
+}
+
+.bi-bank-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .bi-bank-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .bi-bank-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
 </style>
 </head>
 <body>
@@ -725,6 +800,14 @@ body {
       <!-- KIRI: Editor selalu tampil -->
       <div class="back" id="back">
         <div class="modal" role="document" aria-label="Editor">
+          <div class="bank-islam-actions">
+  <button type="button" class="btn primary" id="biCreateBank">
+    + Create Bank
+  </button>
+  <button type="button" class="btn" id="biManageBanks">
+    Manage Banks
+  </button>
+</div>
 
           <div class="fld">
             <label>Amount (RM)</label>
@@ -756,10 +839,6 @@ body {
               <label>Force Bank (optional)</label>
               <select id="inBank" data-shared-dropdown>
                 <option value="">Random Bank</option>
-                <option>Maybank</option>
-                <option>CIMB Bank</option>
-                <option>Bank Simpanan Nasional</option>
-                <option>Touch n Go</option>
               </select>
             </div>
           </div>
@@ -846,12 +925,104 @@ body {
 <script defer src="./shared-ui.js"></script>
 <script type="module">
   /* ======== DATA BANK (panjang no. akun) ======== */
-  const BANKS = [
-    {name:'Maybank', len:12},
-    {name:'CIMB Bank',len:10},
-    {name:'Touch n Go', len:12},
-    {name:'Bank Simpanan Nasional', len:16},
-  ];
+/* BANK ISLAM - REALTIME BANK CATALOG */
+const BI_BANK_PATH = "bank_catalog/bankislam";
+
+let BANKS = [];
+let biBankRecords = {};
+let biBanksLoaded = false;
+
+const biToast = (message, type = "success") =>
+  window.showToast?.(message, type);
+
+function biBankRef() {
+  if (!window.firebase || !firebase.apps.length) {
+    throw new Error("Firebase is not initialized");
+  }
+
+  return firebase.database().ref(BI_BANK_PATH);
+}
+
+function biNormalizeBank(data) {
+  if (!data || typeof data !== "object") return null;
+
+  const name = String(data.name || "").trim();
+  const len = Number(data.len);
+  const rule = data.rule === "start" ? "start" : "prefix";
+  const startDigits = String(data.digits ?? "");
+
+  if (
+    !name ||
+    name.length > 100 ||
+    !Number.isInteger(len) ||
+    len < 1 ||
+    len > 30 ||
+    !/^\d*$/.test(startDigits) ||
+    startDigits.length > len
+  ) return null;
+
+  return { name, len, rule, digits: startDigits };
+}
+
+function biEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function biRefreshBankDropdown() {
+  const previous = inBank.value;
+
+  BANKS = Object.values(biBankRecords)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  inBank.replaceChildren(new Option("Random Bank", ""));
+
+  BANKS.forEach(bank => {
+    inBank.add(new Option(bank.name, bank.name));
+  });
+
+  inBank.value = BANKS.some(bank => bank.name === previous)
+    ? previous
+    : "";
+
+  inBank._sharedDropdown?.refresh?.();
+}
+
+function biStartBankListener() {
+  try {
+    biBankRef().on("value", snapshot => {
+      const records = {};
+
+      snapshot.forEach(child => {
+        const bank = biNormalizeBank(child.val());
+
+        if (bank) {
+          records[child.key] = {
+            id: child.key,
+            ...bank
+          };
+        }
+      });
+
+      biBankRecords = records;
+      biBanksLoaded = true;
+      biRefreshBankDropdown();
+
+    }, error => {
+      console.error("Bank Islam catalog:", error);
+      biToast("Failed to load banks", "error");
+    });
+
+  } catch (error) {
+    console.error(error);
+    biToast(error.message, "error");
+  }
+}
 
   /* ======== EL ======== */
   const apply   = document.getElementById('apply');
@@ -876,8 +1047,13 @@ body {
   const pad2   = n => String(n).padStart(2,'0');
   const randi  = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
   const digits = n => Array.from({length:n},()=>String(randi(0,9))).join('');
-  const pickBank = forced => forced ? BANKS.find(b=>b.name===forced) : BANKS[randi(0,BANKS.length-1)];
-  const splitName = name => {
+const pickBank = forced => {
+  if (!BANKS.length) return null;
+
+  return forced
+    ? BANKS.find(bank => bank.name === forced) || null
+    : BANKS[randi(0, BANKS.length - 1)];
+};  const splitName = name => {
     const s=(name||'').trim().toUpperCase();
     if(!s) return {i:'—', r:''};
     return {i:s[0], r:s.slice(1)};
@@ -1226,9 +1402,23 @@ showRefMasked(fullRef, KEEP_VISIBLE);                              // tampilkan 
 inLen.value = String(fullRef.length);                      // harusnya 23
 
   // bank & account
-  const bank = pickBank(inBank.value || '');
-  bankName.textContent = bank.name;
-  accNum.textContent = digits(bank.len);
+const bank = pickBank(inBank.value || '');
+
+if (!bank) {
+  biToast("Please create a bank first", "error");
+  return;
+}
+
+bankName.textContent = bank.name;
+
+const fixed = bank.digits || "";
+const remaining = Math.max(0, bank.len - fixed.length);
+
+if (bank.rule === "start") {
+  accNum.textContent = fixed + digits(remaining);
+} else {
+  accNum.textContent = fixed + digits(remaining);
+}
 
   // name
   const {i,r} = splitName(inName.value || 'BAHARUDEEN BIN ABDUL');
@@ -1289,6 +1479,273 @@ document.addEventListener('keydown', (e)=>{
     }
   });
 })();
+/* =====================================================
+   BANK ISLAM - CREATE / EDIT / MANAGE BANKS
+   ===================================================== */
+
+function biOpenBankForm(editId = null) {
+  const editing = editId !== null;
+  const existing = editing ? biBankRecords[editId] : null;
+
+  if (editing && !existing) {
+    biToast("Bank not found", "error");
+    return;
+  }
+
+  const modal = NewUI.modal.open({
+    title: editing ? "Edit Bank" : "Create Bank",
+    width: 720,
+    content: `
+      <form id="biBankForm" class="bi-bank-form">
+        <label>
+          Bank Name
+          <input id="biBankName"
+                 data-new-ui-input
+                 type="text"
+                 maxlength="100"
+                 placeholder="Enter bank name"
+                 required>
+        </label>
+
+        <div class="bi-bank-form-row">
+          <label>
+            Account Number Length
+            <input id="biBankLength"
+                   data-new-ui-input
+                   type="number"
+                   min="1"
+                   max="30"
+                   required>
+          </label>
+
+          <label>
+            Number Rule
+            <select id="biBankRule"
+                    data-shared-dropdown>
+              <option value="prefix">Prefix</option>
+              <option value="start">Start</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Starting Digits
+          <input id="biBankDigits"
+                 data-new-ui-input
+                 type="text"
+                 inputmode="numeric"
+                 maxlength="30"
+                 placeholder="Example: 12">
+        </label>
+      </form>
+    `
+  });
+
+  const root = modal.body;
+  const form = root.querySelector("#biBankForm");
+  const name = root.querySelector("#biBankName");
+  const length = root.querySelector("#biBankLength");
+  const rule = root.querySelector("#biBankRule");
+  const number = root.querySelector("#biBankDigits");
+
+  name.value = existing?.name || "";
+  length.value = existing?.len || 12;
+  rule.value = existing?.rule || "prefix";
+  number.value = existing?.digits || "";
+
+  NewUI.init(root);
+  rule._sharedDropdown?.refresh?.();
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "btn-cancel-new";
+  cancelBtn.textContent = "Cancel";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "submit";
+  saveBtn.className = "btn-primary-new";
+  saveBtn.textContent = editing ? "Save Changes" : "Create Bank";
+
+  modal.setFooter(null);
+  modal.footer.hidden = false;
+  modal.footer.append(cancelBtn, saveBtn);
+
+  cancelBtn.addEventListener("click", () => modal.close());
+
+  number.addEventListener("input", () => {
+    number.value = number.value.replace(/\D/g, "");
+  });
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    const data = biNormalizeBank({
+      name: name.value,
+      len: length.value,
+      rule: rule.value,
+      digits: number.value
+    });
+
+    if (!data) {
+      biToast("Please enter valid bank information", "error");
+      return;
+    }
+
+    const duplicate = Object.entries(biBankRecords)
+      .some(([id, bank]) =>
+        id !== editId &&
+        bank.name.toLowerCase() === data.name.toLowerCase()
+      );
+
+    if (duplicate) {
+      biToast("Bank name already exists", "error");
+      return;
+    }
+
+    cancelBtn.disabled = true;
+
+    await NewUI.setButtonLoading(saveBtn, true, {
+      text: "Saving..."
+    });
+
+    let success = false;
+
+    try {
+      const ref = biBankRef();
+
+      if (editing) {
+        await ref.child(editId).set(data);
+      } else {
+        await ref.push(data);
+      }
+
+      success = true;
+
+    } catch (error) {
+      console.error("Save bank failed:", error);
+      biToast(error.message || "Failed to save bank", "error");
+
+    } finally {
+      await NewUI.setButtonLoading(saveBtn, false, {
+        minDuration: 700
+      });
+
+      cancelBtn.disabled = false;
+    }
+
+    if (success) {
+      modal.close();
+
+      biToast(
+        editing
+          ? "Bank updated successfully"
+          : "Bank created successfully",
+        "success"
+      );
+    }
+  });
+
+  saveBtn.addEventListener("click", () => {
+    form.requestSubmit();
+  });
+}
+
+function biOpenManageBanks() {
+  const modal = NewUI.modal.open({
+    title: "Manage Banks",
+    width: 720,
+    content: `<div id="biBankList" class="bi-bank-list"></div>`
+  });
+
+  const list = modal.body.querySelector("#biBankList");
+  const banks = Object.values(biBankRecords)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (!banks.length) {
+    window.showEmptyState?.(list, "No data", "large", "center");
+    return;
+  }
+
+  banks.forEach(bank => {
+    const row = document.createElement("div");
+    row.className = "bi-bank-row";
+
+    row.innerHTML = `
+      <div class="bi-bank-info">
+        <strong>${biEscape(bank.name)}</strong>
+        <small>
+          Length: ${bank.len}
+          | ${biEscape(bank.rule)}
+          | ${biEscape(bank.digits || "No digits")}
+        </small>
+      </div>
+
+      <div class="bi-bank-buttons">
+        <button type="button"
+                class="btn-primary-new"
+                data-edit>Edit</button>
+
+        <button type="button"
+                class="btn-cancel-new"
+                data-delete>Delete</button>
+      </div>
+    `;
+
+    row.querySelector("[data-edit]")
+      .addEventListener("click", () => {
+        modal.close();
+        biOpenBankForm(bank.id);
+      });
+
+    const deleteBtn = row.querySelector("[data-delete]");
+
+    deleteBtn.addEventListener("click", () => {
+      NewUI.confirm({
+        target: deleteBtn,
+        title: "Delete Bank",
+        message: `Delete ${bank.name}?`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        loadingText: "Deleting...",
+
+        onConfirm: async () => {
+          await biBankRef().child(bank.id).remove();
+
+          biToast("Bank deleted successfully", "success");
+          modal.close();
+          biOpenManageBanks();
+        }
+      });
+    });
+
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("biCreateBank")
+  ?.addEventListener("click", () => {
+    if (!biBanksLoaded) {
+      biToast("Bank data is still loading", "error");
+      return;
+    }
+
+    biOpenBankForm();
+  });
+
+document.getElementById("biManageBanks")
+  ?.addEventListener("click", () => {
+    if (!biBanksLoaded) {
+      biToast("Bank data is still loading", "error");
+      return;
+    }
+
+    biOpenManageBanks();
+  });
+
+/* START REALTIME DATABASE */
+biStartBankListener();
 const btnCopy = document.getElementById("copyImg");
 
 btnCopy.addEventListener("click", async () => {
