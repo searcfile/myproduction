@@ -539,34 +539,28 @@ html {
   width: 100%;
   min-height: 160px;
 }
-/* FIX CREATE BANK & MANAGE BANKS BUTTON OVERFLOW */
+
+/* Dynamic Bank Management: only settings UI, receipt unchanged */
+/* CREATE BANK & MANAGE BANKS - AUTO WIDTH */
 .cimb-bank-actions {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 8px;
   width: 100%;
 }
 
 .cimb-bank-actions button {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100%;
-  padding: 0 8px !important;
-  font-size: 12px !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  padding: 0 15px !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis;
+  font-size: 12px;
 }
-
-/* Beri ruang lebih kepada butang bank */
-@media (min-width: 1001px) {
-  .builder-panel .builder-row > .builder-field:first-child {
-    grid-column: span 2;
-  }
-}
-/* Dynamic Bank Management: only settings UI, receipt unchanged */
-.cimb-bank-actions{display:flex;gap:8px;margin-bottom:8px}
-.cimb-bank-actions button{width:auto;flex:1;min-width:0}
 .cimb-bank-form{display:grid;gap:12px}
 .cimb-bank-form label{display:grid;gap:5px;font-size:13px;color:var(--page-text)}
 .cimb-bank-form .cimb-bank-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -578,16 +572,13 @@ html {
 .cimb-bank-list-row .cimb-bank-list-buttons{display:flex;gap:6px;flex-shrink:0}
 .cimb-bank-list-buttons button{width:auto;padding:0 10px}
 @media(max-width:550px){.cimb-bank-form .cimb-bank-form-row{grid-template-columns:1fr}.cimb-bank-list-row{flex-wrap:wrap}}
-/* Prevent button text from wrapping */
-.cimb-bank-actions button,
+/* Other action buttons - prevent text wrapping */
 .builder-panel .btn-row button {
   white-space: nowrap;
   min-width: 0;
 }
 
-/* Responsive button text */
 @media (max-width: 550px) {
-  .cimb-bank-actions button,
   .builder-panel .btn-row button {
     font-size: 12px;
     padding-left: 6px;
