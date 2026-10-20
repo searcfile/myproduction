@@ -1768,9 +1768,20 @@ await NewUI.setButtonLoading(saveButton, true, {
 });
     try {
       await (id ? ref.child(id) : ref.push()).set({...value,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-      localStorage.setItem("cimb_bank_catalog_initialized", "1");
-      modal.close();
-      bankToast(id ? "Bank updated successfully" : "Bank created successfully");
+localStorage.setItem("cimb_bank_catalog_initialized", "1");
+
+// Tunggu loading minimum 700ms seperti MEGA888
+await NewUI.setButtonLoading(saveButton, false, {
+  minDuration: 700
+});
+
+// Tutup modal selepas loading selesai
+modal.close();
+
+bankToast(
+  id ? "Bank updated successfully" : "Bank created successfully",
+  "success"
+);
     } catch (error) {
       bankToast("Gagal simpan bank: " + error.message,"error");
 } finally {
