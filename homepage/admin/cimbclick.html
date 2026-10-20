@@ -554,6 +554,22 @@ html {
 .cimb-bank-list-row .cimb-bank-list-buttons{display:flex;gap:6px;flex-shrink:0}
 .cimb-bank-list-buttons button{width:auto;padding:0 10px}
 @media(max-width:550px){.cimb-bank-form .cimb-bank-form-row{grid-template-columns:1fr}.cimb-bank-list-row{flex-wrap:wrap}}
+/* Prevent button text from wrapping */
+.cimb-bank-actions button,
+.builder-panel .btn-row button {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Responsive button text */
+@media (max-width: 550px) {
+  .cimb-bank-actions button,
+  .builder-panel .btn-row button {
+    font-size: 12px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
 </style>
 <body>
   
