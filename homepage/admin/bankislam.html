@@ -548,8 +548,22 @@ body {
 }
 
 #back .modal .name-wrap > .shared-dropdown {
-  flex: 0 0 105px !important;
-  width: 105px !important;
+  flex: 0 0 155px !important;
+  width: 155px !important;
+  min-width: 155px !important;
+  max-width: 155px !important;
+}
+
+#back .modal .name-wrap .shared-dropdown-trigger {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#back .modal .name-wrap .shared-dropdown-input {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding-right: 30px !important;
+  text-overflow: ellipsis;
 }
 
 #back .modal .name-wrap > .new-ui-input-wrap {
@@ -608,10 +622,12 @@ body {
     min-width: 0 !important;
   }
 
-  #back .modal .name-wrap > .shared-dropdown {
-    flex-basis: 90px !important;
-    width: 90px !important;
-  }
+#back .modal .name-wrap > .shared-dropdown {
+  flex: 0 0 145px !important;
+  width: 145px !important;
+  min-width: 145px !important;
+  max-width: 145px !important;
+}
 }
 /* CARD LUAR UNTUK PREVIEW DEMO */
 .preview-outer-card {
