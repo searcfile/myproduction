@@ -209,12 +209,6 @@ body > .wrap{
   body > .wrap{width:calc(100% - 16px) !important;margin:10px 8px !important;}
   #form.card.form{padding:12px !important;}
   #form > .fld{grid-column:1/-1 !important;}
-#form .input-row > .shared-dropdown:has(#letterSel),
-#form .input-row > .shared-dropdown:has(#binSel) {
-  flex: 0 0 105px !important;
-  width: 105px !important;
-  min-width: 105px !important;
-}
   #form .btn,#form .btn-reset{flex:1 1 130px;}
 }
 
@@ -321,19 +315,12 @@ body > .wrap > #preview {
   width: 72px !important;
   min-width: 72px !important;
 }
-
-/* Dropdown A-Z */
-#form .shared-dropdown:has(#letterSel) {
-  flex: 0 0 140px !important;
-  width: 140px !important;
-  min-width: 140px !important;
-}
-
-/* Dropdown BIN / BINTI */
-#form .shared-dropdown:has(#binSel) {
-  flex: 0 0 140px !important;
-  width: 140px !important;
-  min-width: 140px !important;
+#form .input-row > .shared-dropdown:has(#letterSel),
+#form .input-row > .shared-dropdown:has(#binSel) {
+  flex: 0 0 155px !important;
+  width: 155px !important;
+  min-width: 155px !important;
+  max-width: 155px !important;
 }
 
 /* Input Recipient Name */
@@ -388,12 +375,18 @@ body > .wrap > #preview {
   text-overflow: ellipsis !important;
 }
 
-/* Panel dropdown A-Z dan BIN/BINTI */
+/* ==========================================
+   RHB - DROPDOWN PANEL SAME WIDTH AS INPUT
+   ========================================== */
+
 #form .shared-dropdown:has(#letterSel) .shared-dropdown-panel,
 #form .shared-dropdown:has(#binSel) .shared-dropdown-panel {
-  width: max(100%, 180px) !important;
+  width: 100% !important;
   min-width: 0 !important;
-  max-width: min(280px, calc(100vw - 32px)) !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  left: 0 !important;
+  right: auto !important;
 }
 
 /* Elak dropdown terlalu panjang */
