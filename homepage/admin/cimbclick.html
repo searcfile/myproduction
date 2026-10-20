@@ -630,7 +630,20 @@ html {
     <input type="text" id="input-recipient" 
       data-new-ui-input
       placeholder="Recipient Name" />
-    <button class="btn-now" id="btn-auto-name" type="button" aria-pressed="true">AUTO: ON</button>
+    
+<label class="shared-active-switch">
+  <input
+    id="btn-auto-name"
+    type="checkbox"
+    data-active-label="AUTO: ON"
+    data-inactive-label="AUTO: OFF"
+    checked
+  >
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
   </div>
 </div>
           
@@ -1002,38 +1015,46 @@ function randomAZName(){
 
 function setAutoName(on){
   autoNameOn = !!on;
-  localStorage.setItem("autoNameOn", autoNameOn ? "1" : "0");
+
+  localStorage.setItem(
+    "autoNameOn",
+    autoNameOn ? "1" : "0"
+  );
 
   const input = document.getElementById("input-recipient");
-  const btn   = document.getElementById("btn-auto-name");
+  const btn = document.getElementById("btn-auto-name");
+
   if (!input || !btn) return;
 
+  // Sync custom slide switch
+  btn.checked = autoNameOn;
+  window.NewUI?.activeSwitch?.sync?.(btn);
+
   if (autoNameOn){
+
     input.disabled = true;
 
     const saved = localStorage.getItem("lastRecipientName");
+
     if (saved && saved.trim()){
-      input.value = saved; // ✅ kekal
+      input.value = saved;
     } else {
-      const gen = randomAZName(); // ✅ sekali je random
+      const gen = randomAZName();
       input.value = gen;
+
       localStorage.setItem("lastRecipientName", gen);
     }
 
-    btn.textContent = "AUTO: ON";
-    btn.classList.remove("off");
-    btn.setAttribute("aria-pressed","true");
   } else {
+
     input.disabled = false;
 
-    // bila OFF, jangan auto tukar nilai, biar user edit
-    btn.textContent = "AUTO: OFF";
-    btn.classList.add("off");
-    btn.setAttribute("aria-pressed","false");
-
-    // kalau ada saved, isi balik supaya refresh kekal
     const saved = localStorage.getItem("lastRecipientName");
-    if (saved && saved.trim()) input.value = saved;
+
+    if (saved && saved.trim()){
+      input.value = saved;
+    }
+
   }
 }
 function updateDisplay(live = false) {
@@ -1130,11 +1151,13 @@ if (String(selectedBank).trim().toUpperCase() === "CIMB BANK BERHAD") {
 }
 
 
-// ===== EVENTS =====
-// Toggle AUTO name
-document.getElementById("btn-auto-name")?.addEventListener("click", () => {
-  setAutoName(!autoNameOn);
-});
+// Toggle AUTO name - Custom Shared Switch
+document.getElementById("btn-auto-name")
+  ?.addEventListener("change", function () {
+
+    setAutoName(this.checked);
+
+  });
 
 // Kalau manual edit recipient, boleh live update blur preview (optional)
 document.getElementById("input-recipient")?.addEventListener("input", () => {
