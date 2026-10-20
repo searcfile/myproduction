@@ -657,13 +657,12 @@ html {
     <button type="button" class="btn-update" id="bankCreate">+ Create Bank</button>
     <button type="button" class="btn-reset" id="bankManage">Manage Banks</button>
   </div>
-  <div class="bank-select" id="bankSelect">
-    <button type="button" class="bank-btn" id="bankBtn" aria-expanded="false">
-      <span id="bankBtnText">CIMB BANK BERHAD</span>
-      <span class="bank-caret">▾</span>
-    </button>
-    <div class="bank-menu" id="bankMenu" role="listbox" aria-hidden="true"></div>
-  </div>
+<select
+  id="bankSelectNative"
+  data-shared-dropdown
+  data-placeholder="Select bank">
+  <option value="">Select bank</option>
+</select>
 </div>
 <div class="builder-field">
   <div class="input-row">
@@ -824,62 +823,55 @@ function buildZeroAccount(bankName){
   const len = cfg?.len || 10;
   return "0".repeat(len);
 }
-// ===== init custom dropdown =====
-const bankSelectEl = document.getElementById("bankSelect");
-const bankBtn      = document.getElementById("bankBtn");
-const bankBtnText  = document.getElementById("bankBtnText");
-const bankMenu     = document.getElementById("bankMenu");
+// ===== CUSTOM SHARED BANK DROPDOWN =====
+const bankSelectNative = document.getElementById("bankSelectNative");
 
-// isi menu
-function renderBankMenu(){
-  bankMenu.innerHTML = "";
-  Object.keys(BANK_CONFIG).forEach(name => {
-    const div = document.createElement("div");
-    div.className = "bank-item" + (name === selectedBank ? " active" : "");
-    div.textContent = name;
-    div.addEventListener("click", () => selectBank(name));
-    bankMenu.appendChild(div);
+function renderBankMenu() {
+  const names = Object.keys(BANK_CONFIG);
+
+  bankSelectNative.replaceChildren();
+
+  bankSelectNative.add(new Option(
+    names.length ? "Select bank" : "No banks available", ""
+  ));
+
+  names.forEach(name => {
+    bankSelectNative.add(new Option(name, name));
   });
+
+  bankSelectNative.value = BANK_CONFIG[selectedBank]
+    ? selectedBank
+    : "";
+
+  bankSelectNative.disabled = !names.length;
+
+  bankSelectNative._sharedDropdown?.refresh?.();
 }
 
-function openBankMenu(){
-  bankMenu.classList.add("open");
-  bankBtn.setAttribute("aria-expanded","true");
-  bankMenu.setAttribute("aria-hidden","false");
-}
+function selectBank(name) {
+  if (!BANK_CONFIG[name]) return;
 
-function closeBankMenu(){
-  bankMenu.classList.remove("open");
-  bankBtn.setAttribute("aria-expanded","false");
-  bankMenu.setAttribute("aria-hidden","true");
-}
-
-function toggleBankMenu(){
-  bankMenu.classList.contains("open") ? closeBankMenu() : openBankMenu();
-}
-
-function selectBank(name){
   selectedBank = name;
+
   toggleAccountNameByBank(selectedBank);
-  bankBtnText.textContent = name;
-  closeBankMenu();
-  renderBankMenu();
   updateBankChargeCurrencyVisibility(selectedBank);
+
   lastRealAcc = buildAccountNumber(name);
 
   const inRec = document.getElementById("input-recipient");
   lastRealName = (inRec?.value || "").trim() || "PA";
 
-  // ✅ pilih bank: tunjuk full dulu
   setAccountPreviewMode("full", lastRealAcc);
   setNamePreviewMode("full", lastRealName);
 
   localStorage.setItem("selectedBank", name);
+
+  bankSelectNative.value = name;
+  bankSelectNative._sharedDropdown?.refresh?.();
 }
-// events
-bankBtn.addEventListener("click", toggleBankMenu);
-document.addEventListener("click", (e) => {
-  if (!bankSelectEl.contains(e.target)) closeBankMenu();
+
+bankSelectNative.addEventListener("change", () => {
+  selectBank(bankSelectNative.value);
 });
 
 // ✅ Account Name options (CIMB sahaja)
@@ -1233,9 +1225,9 @@ window.addEventListener("DOMContentLoaded", () => {
   const savedBank = localStorage.getItem("selectedBank");
   if (savedBank && BANK_CONFIG[savedBank]) selectedBank = savedBank;
 
-  if (typeof bankBtnText !== "undefined" && bankBtnText) {
-    bankBtnText.textContent = selectedBank;
-  }
+bankSelectNative.value = selectedBank;
+bankSelectNative._sharedDropdown?.refresh?.();
+  
   if (typeof renderBankMenu === "function") renderBankMenu();
   toggleAccountNameByBank(selectedBank);
   updateBankChargeCurrencyVisibility(selectedBank);
@@ -1310,9 +1302,9 @@ try {
     selectedBank = data.bank;
     localStorage.setItem("selectedBank", selectedBank);
 
-    if (typeof bankBtnText !== "undefined" && bankBtnText) {
-      bankBtnText.textContent = selectedBank;
-    }
+    bankSelectNative.value = selectedBank;
+    bankSelectNative._sharedDropdown?.refresh?.();
+    
     if (typeof renderBankMenu === "function") renderBankMenu();
   }
 
@@ -1681,12 +1673,7 @@ function refreshBankCatalog() {
     }
   }
 
-  bankBtnText.textContent =
-    selectedBank || "No banks available";
-
-  bankBtn.disabled = !selectedBank;
-
-  renderBankMenu();
+renderBankMenu();
 }
 function initFirebaseBanks() {
   const ref = bankDb();
@@ -1710,17 +1697,57 @@ function bankFormModal(id=null) {
   const current = id ? BANK_RECORDS[id] : null;
   const content = document.createElement("form");
   content.className = "cimb-bank-form";
-  content.innerHTML = `
-    <label>Bank Name<input name="name" maxlength="100" required placeholder="Bank name" value="${bankEscape(current?.name || "")}"></label>
-    <div class="cimb-bank-form-row">
-      <label>Account Length<input name="len" type="number" min="1" max="30" required value="${current?.len ?? 10}"></label>
-      <label>Number Rule<select name="rule"><option value="prefix">Prefix</option><option value="start">Start</option></select></label>
-    </div>
-    <label>Prefix / Start digits<input name="digits" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 7 or 88" value="${bankEscape(current?.digits ?? "")}"></label>
-    <label style="display:flex;align-items:center;gap:8px"><input name="active" type="checkbox" style="width:auto;height:auto" ${current?.active === false ? "" : "checked"}> Active (show in dropdown)</label>
-    <div class="cimb-bank-form-actions"><button type="button" class="btn-reset" data-cancel>Cancel</button><button type="submit" class="btn-update" data-save>${id ? "Save Changes" : "Create Bank"}</button></div>`;
+content.innerHTML = `
+  <label>Bank Name
+    <input name="name" data-new-ui-input
+      maxlength="100" required
+      placeholder="Bank name"
+      value="${bankEscape(current?.name || "")}">
+  </label>
+
+  <div class="cimb-bank-form-row">
+    <label>Account Length
+      <input name="len" data-new-ui-input
+        type="number" min="1" max="30" required
+        value="${current?.len ?? 10}">
+    </label>
+
+    <label>Number Rule
+      <select name="rule"
+        data-shared-dropdown
+        data-placeholder="Select rule">
+        <option value="prefix">Prefix</option>
+        <option value="start">Start</option>
+      </select>
+    </label>
+  </div>
+
+  <label>Prefix / Start digits
+    <input name="digits" data-new-ui-input
+      inputmode="numeric" pattern="[0-9]*"
+      placeholder="e.g. 7 or 88"
+      value="${bankEscape(current?.digits ?? "")}">
+  </label>
+
+  <label style="display:flex;align-items:center;gap:8px">
+    <input name="active" type="checkbox"
+      style="width:auto;height:auto"
+      ${current?.active === false ? "" : "checked"}>
+    Active (show in dropdown)
+  </label>
+
+  <div class="cimb-bank-form-actions">
+    <button type="button" class="btn-reset" data-cancel>
+      Cancel
+    </button>
+    <button type="submit" class="btn-update" data-save>
+      ${id ? "Save Changes" : "Create Bank"}
+    </button>
+  </div>
+`;
   content.elements.rule.value = current?.rule || "prefix";
-  const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:490});
+  const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:720});
+  NewUI.init(content);
   content.querySelector("[data-cancel]").addEventListener("click",()=>modal.close());
   content.addEventListener("submit", async event => {
     event.preventDefault();
@@ -1734,8 +1761,11 @@ function bankFormModal(id=null) {
     if (!value) return bankToast("Semak nama bank, length dan digits.", "warning");
     if (Object.entries(BANK_RECORDS).some(([key,other])=>key!==id && other.name.toLowerCase()===value.name.toLowerCase()))
       return bankToast("Nama bank sudah wujud.", "warning");
-    const saveButton = content.querySelector("[data-save]");
-    saveButton.disabled = true;
+const saveButton = content.querySelector("[data-save]");
+
+await NewUI.setButtonLoading(saveButton, true, {
+  text: id ? "Saving..." : "Creating..."
+});
     try {
       await (id ? ref.child(id) : ref.push()).set({...value,updatedAt:firebase.database.ServerValue.TIMESTAMP});
       localStorage.setItem("cimb_bank_catalog_initialized", "1");
@@ -1743,7 +1773,9 @@ function bankFormModal(id=null) {
       bankToast(id ? "Bank updated successfully" : "Bank created successfully");
     } catch (error) {
       bankToast("Gagal simpan bank: " + error.message,"error");
-    } finally { saveButton.disabled = false; }
+} finally {
+  await NewUI.setButtonLoading(saveButton, false);
+}
   });
 }
 function bankManageModal() {
