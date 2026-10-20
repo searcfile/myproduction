@@ -441,7 +441,7 @@ body {
 #back .modal {
   position: static !important;
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   align-items: start !important;
   gap: 8px !important;
 
@@ -665,6 +665,57 @@ body {
 /* Pastikan hidden attribute tidak dioverride */
 .bankislam-empty-card[hidden] {
   display: none !important;
+}
+  /* ==========================================
+   BANK ISLAM - RESPONSIVE SETTINGS FIX
+   ========================================== */
+
+/* Setiap field boleh menggunakan ruang penuh */
+#back .modal > .fld,
+#back .modal > .row > .col {
+  min-width: 0 !important;
+}
+
+/* Auto + Select option + Holder Name */
+#back .modal .name-wrap {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* Auto button */
+#back .modal .name-wrap > .btn-mini {
+  flex: 0 0 auto !important;
+}
+
+/* Dropdown */
+#back .modal .name-wrap > .shared-dropdown {
+  flex: 0 0 155px !important;
+  width: 155px !important;
+  min-width: 155px !important;
+  max-width: 155px !important;
+}
+
+/* Holder Name - ambil baki ruang */
+#back .modal .name-wrap > .new-ui-input-wrap {
+  flex: 1 1 140px !important;
+  min-width: 140px !important;
+}
+
+/* Skrin kecil / zoom tinggi */
+@media (max-width: 650px) {
+  #back .modal {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #back .modal .name-wrap > .shared-dropdown {
+    flex: 0 0 155px !important;
+    width: 155px !important;
+    min-width: 155px !important;
+    max-width: 155px !important;
+  }
 }
 </style>
 </head>
