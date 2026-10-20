@@ -1746,62 +1746,105 @@ document.getElementById("biManageBanks")
 
 /* START REALTIME DATABASE */
 biStartBankListener();
+/* ==========================================
+   BANK ISLAM - COPY IMAGE WITH CUSTOM TOAST
+   ========================================== */
+
 const btnCopy = document.getElementById("copyImg");
 
-btnCopy.addEventListener("click", async () => {
+btnCopy?.addEventListener("click", async () => {
   const card = document.getElementById("card");
+
+  if (!card || !loadCardSnapshot()) {
+    biToast("Please create a receipt first", "error");
+    return;
+  }
+
+  if (!navigator.clipboard?.write || !window.ClipboardItem) {
+    biToast("Image clipboard is not supported in this browser", "error");
+    return;
+  }
+
+  if (btnCopy.disabled) return;
+
+  btnCopy.disabled = true;
 
   try {
     const canvas = await html2canvas(card, {
       scale: 3,
       useCORS: true,
       backgroundColor: "#ffffff",
+
       onclone: (clonedDoc) => {
         const clonedCard = clonedDoc.getElementById("card");
         if (!clonedCard) return;
 
-        // cari icon chevron dalam clone sahaja
         const chev = clonedCard.querySelector(".more .chev");
+
         if (chev) {
-          const svg = clonedDoc.createElementNS("http://www.w3.org/2000/svg", "svg");
+          const svg = clonedDoc.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+
           svg.setAttribute("viewBox", "0 0 24 24");
           svg.setAttribute("aria-hidden", "true");
+
           svg.style.width = "19px";
           svg.style.height = "19px";
           svg.style.display = "block";
           svg.style.fill = getComputedStyle(chev).color || "currentColor";
           svg.style.flex = "0 0 auto";
 
-          const path = clonedDoc.createElementNS("http://www.w3.org/2000/svg", "path");
-          path.setAttribute("d", "M7.41 8.59 12 13.17l4.59-4.58 1.41 1.41L12 16 6 10l1.41-1.41Z");
+          const path = clonedDoc.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+
+          path.setAttribute(
+            "d",
+            "M7.41 8.59 12 13.17l4.59-4.58 1.41 1.41L12 16 6 10l1.41-1.41Z"
+          );
 
           svg.appendChild(path);
           chev.replaceWith(svg);
         }
 
-        // pastikan card clone nampak stabil
         clonedCard.style.background = "#ffffff";
       }
     });
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        alert("❌ Failed generate image");
-        return;
-      }
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        result => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(new Error("Failed to generate image"));
+          }
+        },
+        "image/png"
+      );
+    });
 
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "image/png": blob
-        })
-      ]);
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "image/png": blob
+      })
+    ]);
 
-      alert("✅ Image copied! (boleh paste di WhatsApp / Telegram)");
-    }, "image/png");
+    biToast("Image copied successfully!", "success");
 
-  } catch (err) {
-    console.error(err);
-    alert("❌ Failed copy image");
+  } catch (error) {
+    console.error("Copy Image Error:", error);
+
+    biToast(
+      "Failed to copy image. Please try again.",
+      "error"
+    );
+
+  } finally {
+    btnCopy.disabled = false;
   }
 });
 // ✅ Tukar ikut page
