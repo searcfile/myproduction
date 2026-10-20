@@ -940,9 +940,19 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
 
   <div class="nameRow">
     <input id="holderInput" data-new-ui-input type="text" placeholder="tien ci cun" />
-    <button type="button" class="autoBtn" id="autoNameBtn" aria-pressed="false">
-      Auto: OFF
-    </button>
+<label class="shared-active-switch">
+  <input
+    id="autoNameBtn"
+    type="checkbox"
+    data-active-label="AUTO: ON"
+    data-inactive-label="AUTO: OFF"
+  />
+
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
   </div>
 </div>
 
@@ -1376,9 +1386,7 @@ function ensureAccountsForBank(state, bank){
       completedInput.value = state.completedText || "";
       
       holderInput.value = state.holderName || "";
-      autoNameBtn.classList.toggle("on", !!state.autoName);
-      autoNameBtn.textContent = state.autoName ? "Auto: ON" : "Auto: OFF";
-      autoNameBtn.setAttribute("aria-pressed", state.autoName ? "true" : "false");
+      autoNameBtn.checked = !!state.autoName;
 
       // Receipt values
       bankValue.textContent = state.bank;
@@ -1485,10 +1493,10 @@ function attachLiveHandlers(){
     state = render(state);
   });
 
-  autoNameBtn.addEventListener("click", () => {
-    state.autoName = !state.autoName;
-    state = render(state);
-  });
+autoNameBtn.addEventListener("change", () => {
+  state.autoName = autoNameBtn.checked;
+  state = render(state);
+});
 
   completedInput.addEventListener("input", () => {
     state.completedText = completedInput.value.trim() || DEFAULT_STATE.completedText;
