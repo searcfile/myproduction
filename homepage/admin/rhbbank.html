@@ -175,14 +175,21 @@ body > .wrap{
   overflow:visible !important;
 }
 #form > h2{display:none !important;}
-#form > .fld{grid-column:span 4 !important;min-width:0 !important;}
+#form > .fld {
+  grid-column: span 6 !important;
+  min-width: 0 !important;
+}
 #form > .fld.w12{grid-column:1/-1 !important;}
 #form .lbl{color:var(--page-text) !important;font-size:12px !important;}
 #form .input-row{display:flex;align-items:center;gap:8px;min-width:0;}
 #form .input-row > .new-ui-input-wrap,
 #form .input-row > .shared-dropdown{flex:1 1 0;min-width:0;}
 #form .input-row > .shared-dropdown:has(#letterSel),
-#form .input-row > .shared-dropdown:has(#binSel){flex:0 0 75px;}
+#form .input-row > .shared-dropdown:has(#binSel) {
+  flex: 0 0 105px !important;
+  width: 105px !important;
+  min-width: 105px !important;
+}
 #form .shared-dropdown-trigger{height:40px;}
 #form .shared-dropdown-input{height:100%;background:transparent !important;border:0 !important;color:var(--page-text) !important;box-shadow:none !important;}
 #form input[data-new-ui-input]{height:40px;width:100%;color:var(--page-text) !important;background:var(--page-input) !important;border-color:var(--border-input) !important;}
@@ -193,13 +200,21 @@ body > .wrap{
 #form .btn{background:var(--blue);border:1px solid var(--blue);color:#fff;}
 #form .btn-reset{background:transparent;border:1px solid var(--border-input);color:var(--page-text);}
 #form > .fld.w12{display:flex !important;gap:10px !important;flex-wrap:wrap;}
-@media(max-width:1150px){#form > .fld{grid-column:span 6 !important;}}
-@media(max-width:700px){
+@media (max-width: 1150px) {
+  #form > .fld {
+    grid-column: span 6 !important;
+  }
+}
+  @media(max-width:700px){
   body > .wrap{width:calc(100% - 16px) !important;margin:10px 8px !important;}
   #form.card.form{padding:12px !important;}
   #form > .fld{grid-column:1/-1 !important;}
-  #form .input-row > .shared-dropdown:has(#letterSel),
-  #form .input-row > .shared-dropdown:has(#binSel){flex-basis:58px;}
+#form .input-row > .shared-dropdown:has(#letterSel),
+#form .input-row > .shared-dropdown:has(#binSel) {
+  flex: 0 0 105px !important;
+  width: 105px !important;
+  min-width: 105px !important;
+}
   #form .btn,#form .btn-reset{flex:1 1 130px;}
 }
 
@@ -260,6 +275,79 @@ body > .wrap > #preview {
 
 .rhb-empty-card[hidden] {
   display: none !important;
+}
+  /* ==========================================
+   RHB BANK - RESPONSIVE INPUT FIX
+   ========================================== */
+
+/* Semua input row boleh wrap apabila ruang sempit */
+#form .input-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Auto button kekal saiz asal */
+#form .input-row > .chip {
+  flex: 0 0 auto !important;
+}
+
+/* Dropdown A-Z dan BIN/BINTI */
+#form .input-row > .shared-dropdown:has(#letterSel),
+#form .input-row > .shared-dropdown:has(#binSel) {
+  flex: 0 0 105px !important;
+  width: 105px !important;
+  min-width: 105px !important;
+}
+
+/* Custom input nama ambil baki ruang */
+#form .input-row:has(#toName) > .new-ui-input-wrap {
+  flex: 1 1 180px !important;
+  min-width: 180px !important;
+  width: auto !important;
+}
+
+/* Input account ambil baki ruang */
+#form .input-row:has(#toId) > .new-ui-input-wrap {
+  flex: 1 1 180px !important;
+  min-width: 180px !important;
+  width: auto !important;
+}
+
+/* Dropdown bank ambil baki ruang */
+#form .input-row:has(#bankSel) > .shared-dropdown {
+  flex: 1 1 180px !important;
+  min-width: 180px !important;
+  width: auto !important;
+}
+
+/* Semua custom input penuh dalam wrapper */
+#form .new-ui-input-wrap input {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Responsive apabila zoom tinggi atau skrin kecil */
+@media (max-width: 900px) {
+  #form > .fld {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #form .input-row:has(#toName) > .new-ui-input-wrap {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+
+  #form .input-row:has(#toId) > .new-ui-input-wrap,
+  #form .input-row:has(#bankSel) > .shared-dropdown {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
 }
 </style>
 </head>
