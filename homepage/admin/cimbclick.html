@@ -559,7 +559,7 @@ html {
   max-width: none !important;
   padding: 0 15px !important;
   white-space: nowrap !important;
-  font-size: 12px;
+  font-size: 14px;
 }
 .cimb-bank-form{display:grid;gap:12px}
 .cimb-bank-form label{display:grid;gap:5px;font-size:13px;color:var(--page-text)}
@@ -580,10 +580,30 @@ html {
 
 @media (max-width: 550px) {
   .builder-panel .btn-row button {
-    font-size: 12px;
+    font-size: 14px;
     padding-left: 6px;
     padding-right: 6px;
   }
+}
+/* FIX ACTION BUTTONS - AUTO WIDTH */
+.builder-panel .btn-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.builder-panel .btn-row > button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+  font-size: 14px;
 }
 </style>
 <body>
