@@ -659,9 +659,9 @@ html {
 </div>
 <div class="btn-row">
   <button class="btn-reset" id="btn-reset" type="button">Reset</button>
-  <button class="btn-update" id="btn-primary-new" type="button">Create</button>
-  <button class="btn-update" id="btn-primary-new" type="button">Blur</button>
-  <button class="btn-update" id="btn-primary-new" type="button">Copy Image</button>
+  <button class="btn-primary-new" id="btn-create" type="button">Create</button>
+  <button class="btn-primary-new" id="btn-blur" type="button">Blur</button>
+  <button class="btn-primary-new" id="btn-copy-image" type="button">Copy Image</button>
 </div>
         </div>
       </div>
@@ -1336,7 +1336,7 @@ function resetDisplay() {
   document.getElementById("btn-reset")
   ?.addEventListener("click", resetDisplay);
 // ===== CREATE BUTTON HANDLER (WAJIB DI BAWAH SEKALI) =====
-const btnCreate = document.getElementById("btn-primary-new");
+const btnCreate = document.getElementById("btn-create");
 if (btnCreate) {
   btnCreate.addEventListener("click", () => {
     updateDisplay(false);   // ⬅️ trigger SAVE mode
