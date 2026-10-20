@@ -1694,6 +1694,8 @@ function mainanOpenBankForm(editId = null) {
   saveBtn.className = "btn-primary-new";
   saveBtn.textContent = editing ? "Save Changes" : "Create Bank";
 
+  modal.setFooter(null);
+  modal.footer.hidden = false;
   modal.footer.append(cancelBtn, saveBtn);
 
   cancelBtn.addEventListener("click", () => modal.close());
