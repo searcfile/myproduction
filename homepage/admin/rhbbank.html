@@ -64,12 +64,6 @@ body {
   color:var(--page-text);
   padding: 0;
 }
-
-body > .wrap {
-  margin-top: 16px;
-  padding-left: 12px;
-  padding-right: 12px;
-}
 /* RHB BANK - FORCE LATO FONT ON PREVIEW ONLY */
 #preview,
 #preview * {
@@ -160,9 +154,9 @@ html {
 html,body{min-height:100%;overflow-y:auto !important;}
 body > .wrap{
   width:calc(100% - 24px) !important;max-width:none !important;
-  margin:16px 12px !important;padding:0 !important;
+  margin:12px !important;padding:0 !important;
   display:flex !important;flex-direction:column !important;
-  align-items:flex-start !important;gap:14px !important;
+  align-items:flex-start !important;gap:12px !important;
 }
 #form.card.form{
   width:100% !important;max-width:none !important;
@@ -226,7 +220,7 @@ body > .wrap{
   }
 }
   @media(max-width:700px){
-  body > .wrap{width:calc(100% - 16px) !important;margin:10px 8px !important;}
+  body > .wrap{width:calc(100% - 16px) !important;}
   #form.card.form{padding:12px !important;}
   #form > .fld{grid-column:1/-1 !important;}
   #form .btn,#form .btn-reset{flex:1 1 130px;}
