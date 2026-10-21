@@ -291,55 +291,111 @@ body > .wrap > #preview {
   display: none !important;
 }
 
-
 /* ==========================================
-   RHB BANK - RESPONSIVE FORM V2
+   RHB BANK - FINAL 3 COLUMN RESPONSIVE GRID
    ========================================== */
 
+/* Form desktop: 3 kolum */
 #form.card.form {
   display: grid !important;
-  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px 14px !important;
+  width: 100% !important;
   overflow: visible !important;
 }
 
-/* Desktop: 3 field setiap baris */
-#form > .fld.rhb-bank-field,
-#form > .fld.rhb-account-field,
-#form > .fld.rhb-name-field,
-#form > .fld.rhb-amount-field,
-#form > .fld.rhb-payment-field,
-#form > .fld.rhb-reference-field {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+/* Baris pertama: Bank, Account, Name */
+#form > .rhb-bank-field {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+#form > .rhb-account-field {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+
+#form > .rhb-name-field {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+}
+
+/* Baris kedua: Amount, Payment Type, Reference */
+#form > .rhb-amount-field {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+}
+
+#form > .rhb-payment-field {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+}
+
+#form > .rhb-reference-field {
+  grid-column: 3 !important;
+  grid-row: 2 !important;
+}
+
+/* Semua field full width */
+#form > .fld {
   width: 100% !important;
   min-width: 0 !important;
+  max-width: 100% !important;
 }
 
-/* Button satu baris penuh */
+/* Baris tombol */
 #form > .fld.w12 {
   grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
 }
 
-/* Input row */
-#form .fld .input-row {
+/* Input bersama toggle */
+#form .input-row {
   display: flex !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 8px !important;
+  width: 100% !important;
   min-width: 0 !important;
+}
+
+/* Wrapper input custom */
+#form .new-ui-input-wrap {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Input biasa penuh kolum */
+#form .rhb-amount-field > .new-ui-input-wrap,
+#form .rhb-payment-field > .new-ui-input-wrap,
+#form .rhb-reference-field > .new-ui-input-wrap {
+  display: flex !important;
   width: 100% !important;
 }
 
-/* Custom input & dropdown dalam input-row */
-#form .fld .input-row > .new-ui-input-wrap,
-#form .fld .input-row > .shared-dropdown {
+/* Input yang bersama toggle */
+#form .input-row > .new-ui-input-wrap,
+#form .input-row > .shared-dropdown {
   flex: 1 1 0 !important;
+  width: auto !important;
   min-width: 0 !important;
-  width: 100% !important;
   max-width: 100% !important;
 }
 
-/* Dropdown A-Z / BIN */
+/* Input sebenar */
+#form .new-ui-input-wrap input,
+#form input[data-new-ui-input] {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Dropdown A-Z dan BIN/BINTI */
 #form .rhb-name-field .shared-dropdown:has(#letterSel),
 #form .rhb-name-field .shared-dropdown:has(#binSel) {
   flex: 0 1 90px !important;
@@ -348,97 +404,115 @@ body > .wrap > #preview {
   max-width: 90px !important;
 }
 
-/* Input name */
-#form .rhb-name-field .new-ui-input-wrap {
-  flex: 1 1 130px !important;
+/* Input Name ambil semua ruang yang tinggal */
+#form .rhb-name-field .input-row > .new-ui-input-wrap {
+  flex: 1 1 100px !important;
+  min-width: 0 !important;
 }
 
-/* Custom toggle */
-#form .fld .shared-active-switch {
+/* Toggle kekalkan saiz */
+#form .input-row > .shared-active-switch {
   flex: 0 0 auto !important;
   width: auto !important;
   min-width: 0 !important;
   height: 32px !important;
   display: inline-flex !important;
   align-items: center !important;
-  margin: 0 !important;
 }
 
-#form .fld .shared-active-track {
-  width: 75px;
-  height: 24px;
-}
-
-/* Height 32px */
-#form .fld .shared-dropdown-trigger,
-#form .fld input[data-new-ui-input] {
+/* Semua input dan dropdown tinggi 32px */
+#form input[data-new-ui-input],
+#form .shared-dropdown-trigger {
   height: 32px !important;
   min-height: 32px !important;
   max-height: 32px !important;
+}
+
+/* Dropdown trigger */
+#form .shared-dropdown-trigger,
+#form .shared-dropdown-input {
+  width: 100% !important;
+  min-width: 0 !important;
   box-sizing: border-box !important;
 }
 
 /* Dropdown panel */
-#form .fld .shared-dropdown-panel {
+#form .shared-dropdown-panel {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* Pastikan dropdown tidak terlindung */
 #form > .fld:has(.shared-dropdown.open) {
   position: relative !important;
   z-index: 100 !important;
 }
 
 /* ==========================================
-   LAPTOP / ZOOM
+   LAPTOP / ZOOM: 2 KOLOM
    ========================================== */
 
-@media (max-width: 1400px) {
-  #form > .fld.rhb-bank-field,
-  #form > .fld.rhb-account-field,
-  #form > .fld.rhb-name-field,
-  #form > .fld.rhb-amount-field,
-  #form > .fld.rhb-payment-field,
-  #form > .fld.rhb-reference-field {
-    grid-column: span 6 !important;
+@media (max-width: 1150px) {
+  #form.card.form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
-  #form > .fld.rhb-name-field {
+  #form > .rhb-bank-field,
+  #form > .rhb-account-field,
+  #form > .rhb-name-field,
+  #form > .rhb-amount-field,
+  #form > .rhb-payment-field,
+  #form > .rhb-reference-field {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  #form > .rhb-name-field {
     grid-column: 1 / -1 !important;
+  }
+
+  #form > .fld.w12 {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
   }
 }
 
 /* ==========================================
-   TABLET / PHONE
+   PHONE: 1 KOLOM
    ========================================== */
 
 @media (max-width: 700px) {
-  #form > .fld.rhb-bank-field,
-  #form > .fld.rhb-account-field,
-  #form > .fld.rhb-name-field,
-  #form > .fld.rhb-amount-field,
-  #form > .fld.rhb-payment-field,
-  #form > .fld.rhb-reference-field {
-    grid-column: 1 / -1 !important;
+  #form.card.form {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 12px !important;
   }
 
-  #form.card.form {
-    padding: 12px !important;
+  #form > .rhb-bank-field,
+  #form > .rhb-account-field,
+  #form > .rhb-name-field,
+  #form > .rhb-amount-field,
+  #form > .rhb-payment-field,
+  #form > .rhb-reference-field {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
   }
 
   #form .rhb-name-field .input-row {
     flex-wrap: wrap !important;
   }
 
-  #form .rhb-name-field .new-ui-input-wrap {
+  #form .rhb-name-field .input-row > .new-ui-input-wrap {
     flex: 1 1 100% !important;
+  }
+
+  #form > .fld.w12 {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
   }
 }
 
-/* Sangat kecil */
+/* Phone sangat kecil */
 @media (max-width: 380px) {
   #form .rhb-name-field .shared-dropdown:has(#letterSel),
   #form .rhb-name-field .shared-dropdown:has(#binSel) {
@@ -446,74 +520,6 @@ body > .wrap > #preview {
     width: auto !important;
     max-width: none !important;
   }
-
-  #form > .fld.w12 {
-    display: flex !important;
-    flex-wrap: wrap !important;
-  }
-}
-
-/* ==========================================
-   RHB BANK - FULL WIDTH INPUT FIX
-   ========================================== */
-
-/* Setiap field memenuhi grid */
-#form > .fld {
-  min-width: 0 !important;
-  width: 100% !important;
-}
-
-/* Wrapper custom input mesti full width */
-#form .new-ui-input-wrap {
-  display: flex !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Input sebenar */
-#form .new-ui-input-wrap input {
-  display: block !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Input yang berada bersama toggle */
-#form .input-row > .new-ui-input-wrap {
-  flex: 1 1 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-}
-
-/* Custom dropdown bersama toggle */
-#form .input-row > .shared-dropdown {
-  flex: 1 1 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-}
-
-/* Toggle tidak mengecil */
-#form .input-row > .shared-active-switch {
-  flex: 0 0 auto !important;
-}
-
-/* Amount, Payment Type, Reference */
-#form .rhb-amount-field > .new-ui-input-wrap,
-#form .rhb-payment-field > .new-ui-input-wrap,
-#form .rhb-reference-field > .new-ui-input-wrap {
-  width: 100% !important;
-  max-width: none !important;
-  flex: none !important;
-}
-
-/* Fallback jika custom input belum dibungkus */
-#form .rhb-amount-field > input,
-#form .rhb-payment-field > input,
-#form .rhb-reference-field > input {
-  width: 100% !important;
 }
 
 </style>
