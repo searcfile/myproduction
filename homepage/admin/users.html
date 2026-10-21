@@ -249,24 +249,46 @@
   color: #9bb5da;
   font-size: 12px;
 }
+/* ==========================================
+   AUTH USERS - 4 DOTS LOADING
+   ========================================== */
 
-.auth-loading-spinner {
-  display: block;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-
-  border: 3px solid rgba(88, 151, 255, .18);
-  border-top-color: #3987ff;
-  border-radius: 50%;
-
-  animation: authLoadingSpin .75s linear infinite;
+.auth-loading-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 190px;
+  color: #9bb5da;
+  font-size: 12px;
 }
 
-@keyframes authLoadingSpin {
-  to {
-    transform: rotate(360deg);
-  }
+.auth-loading-dots {
+  display: grid;
+  grid-template-columns: repeat(2, 6px);
+  grid-template-rows: repeat(2, 6px);
+  gap: 4px;
+  width: 16px;
+  height: 16px;
+  animation: authDotsRotate 1s linear infinite;
+}
+
+.auth-loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2685ff;
+}
+
+.auth-loading-dots span:nth-child(1) { opacity: 1; }
+.auth-loading-dots span:nth-child(2) { opacity: .7; }
+.auth-loading-dots span:nth-child(3) { opacity: .45; }
+.auth-loading-dots span:nth-child(4) { opacity: .2; }
+
+@keyframes authDotsRotate {
+  to { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -316,10 +338,15 @@
         <tbody id="rows">
   <tr>
     <td colspan="6" class="auth-empty-cell">
-      <div class="auth-loading-center">
-        <span class="auth-loading-spinner"></span>
-        <span>Please wait the moment...</span>
-      </div>
+<div class="auth-loading-center">
+  <span class="auth-loading-dots" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </span>
+  <span>Please wait the moment...</span>
+</div>
     </td>
   </tr>
 </tbody>
@@ -485,10 +512,6 @@ async function load() {
   if (loading) return;
 
   loading = true;
-
-  if (!users.length) {
-    emptyRow('Please wait the moment...', 'loading');
-  }
 
   try {
     const d = await api('/api/admin-users');
