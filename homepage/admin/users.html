@@ -91,61 +91,7 @@
 .shared-modal-body #userForm{display:block;width:100%}
 .shared-modal-body #modalActions{padding-top:18px;margin-top:12px;border-top:1px solid var(--tx-border,#2b3e5b)}
 @media(max-width:620px){.shared-modal-body:has(#userForm){max-height:calc(100dvh - 115px)}}
-/* ==========================================
-   AUTH USERS - TOP SEARCH + CREATE TOOLBAR
-   ========================================== */
 
-.auth-top-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-
-  width: 100%;
-  min-width: 0;
-  margin-bottom: 20px;
-}
-
-.auth-top-toolbar .auth-search-holder {
-  flex: 0 1 400px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 0;
-}
-
-.auth-top-toolbar .auth-search-holder input {
-  width: 100%;
-  min-width: 0;
-}
-
-.auth-top-toolbar .auth-create {
-  flex: 0 0 auto;
-  width: auto !important;
-  min-width: 0;
-  height: 34px !important;
-  padding: 0 15px !important;
-  margin: 0 0 0 auto !important;
-  white-space: nowrap;
-}
-
-/* MOBILE / ZOOM */
-
-@media (max-width: 600px) {
-
-  .auth-top-toolbar {
-    gap: 10px;
-  }
-
-  .auth-top-toolbar .auth-search-holder {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .auth-top-toolbar .auth-create {
-    margin-left: auto !important;
-  }
-}
 /* ==========================================
    AUTH USERS - TOOLBAR CARD
    ========================================== */
@@ -319,21 +265,35 @@
   background: #2685ff;
 }
 /* ==========================================
-   AUTH USERS - SEARCH 400PX + STATUS FILTER
+   AUTH USERS - FINAL RESPONSIVE TOOLBAR
    ========================================== */
 
-/* TOOLBAR */
+/* TOOLBAR CARD */
+.auth-toolbar-card {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #1f1f1f;
+  border: 1px solid #383838;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+/* DESKTOP */
 .auth-toolbar-card .auth-top-toolbar {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important;
   flex-wrap: wrap !important;
   gap: 10px !important;
   width: 100% !important;
   min-width: 0 !important;
+  margin: 0 !important;
 }
 
-/* SEARCH - 400PX DESKTOP */
+/* SEARCH - 400PX */
 .auth-toolbar-card .auth-search-holder {
   flex: 0 0 400px !important;
   width: 400px !important;
@@ -341,7 +301,7 @@
   min-width: 0 !important;
 }
 
-/* CUSTOM SEARCH WRAPPER */
+/* CUSTOM SEARCH */
 .auth-toolbar-card .auth-search-holder .shared-sync-search,
 .auth-toolbar-card .auth-search-holder .new-ui-input-wrap,
 .auth-toolbar-card .auth-search-holder input {
@@ -351,8 +311,7 @@
   box-sizing: border-box !important;
 }
 
-/* STATUS FILTER - 240PX */
-/* STATUS FILTER - 400PX */
+/* CUSTOM STATUS DROPDOWN - 400PX */
 .auth-toolbar-card .auth-status-filter {
   flex: 0 0 400px !important;
   width: 400px !important;
@@ -369,9 +328,6 @@
   max-width: 100% !important;
   box-sizing: border-box !important;
 }
-.auth-toolbar-card .auth-status-filter .shared-chip-dropdown {
-  width: 100% !important;
-}
 
 .auth-toolbar-card .auth-status-filter .shared-chip-dropdown-panel {
   z-index: 1000 !important;
@@ -380,44 +336,60 @@
 /* CREATE BUTTON - RIGHT */
 .auth-toolbar-card .auth-create {
   flex: 0 0 auto !important;
+  align-self: center !important;
   width: auto !important;
+  max-width: 100% !important;
   height: 32px !important;
   padding: 0 15px !important;
-  margin-left: auto !important;
+  margin: 0 0 0 auto !important;
   white-space: nowrap !important;
 }
 
-/* TABLET / ZOOM */
-@media (max-width: 850px) {
-  .auth-toolbar-card .auth-search-holder {
-    flex: 1 1 400px !important;
-    width: 100% !important;
-    max-width: 400px !important;
+/* ==========================================
+   PHONE / TABLET / BROWSER ZOOM
+   ========================================== */
+
+@media (max-width: 900px) {
+
+  /* Susun semua dalam 3 baris */
+  .auth-toolbar-card .auth-top-toolbar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
   }
 
-.auth-toolbar-card .auth-status-filter {
-  flex: 1 1 400px !important;
-  width: 400px !important;
-  max-width: 400px !important;
-}
-}
-
-/* MOBILE */
-@media (max-width: 620px) {
+  /* BARIS 1 - SEARCH */
   .auth-toolbar-card .auth-search-holder {
-    flex: 1 1 100% !important;
+    flex: 0 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
   }
 
+  /* BARIS 2 - STATUS CHIPS */
   .auth-toolbar-card .auth-status-filter {
-    flex: 1 1 100% !important;
+    flex: 0 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
   }
 
+  /* BARIS 3 - CREATE DI KANAN */
   .auth-toolbar-card .auth-create {
-    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    align-self: flex-end !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    height: 32px !important;
+    padding: 0 15px !important;
+    white-space: nowrap !important;
   }
 }
 </style>
