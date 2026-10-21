@@ -466,6 +466,29 @@ body > .wrap > #preview {
     min-width: 120px !important;
   }
 }
+/* ==========================================
+   RHB BANK - CUSTOM AUTO TOGGLE LAYOUT
+   ========================================== */
+
+#form .input-row > .shared-active-switch {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+#form .shared-active-switch .shared-active-track {
+  min-width: 74px;
+  height: 24px;
+}
+
+#form .shared-active-switch .shared-active-knob {
+  top: 4px;
+}
 </style>
 </head>
 <body>
@@ -479,7 +502,18 @@ body > .wrap > #preview {
     <div class="fld">
       <label class="lbl">To (Recipient Name)</label>
       <div class="input-row">
-        <button type="button" class="chip" id="autoName">Auto</button>
+        <label class="shared-active-switch">
+  <input
+    type="checkbox"
+    id="autoName"
+    data-active-label="Auto ON"
+    data-inactive-label="Auto OFF"
+  >
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
         <select class="mini" id="letterSel" data-shared-dropdown title="Huruf awal">
           <!-- A–Z -->
           <script>
@@ -502,7 +536,18 @@ body > .wrap > #preview {
     <div class="fld">
       <label class="lbl">Recipient Account / ID</label>
       <div class="input-row">
-        <button type="button" class="chip" id="autoAcct">Auto</button>
+        <label class="shared-active-switch">
+  <input
+    type="checkbox"
+    id="autoAcct"
+    data-active-label="Auto ON"
+    data-inactive-label="Auto OFF"
+  >
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
         <input class="inp" id="toId" data-new-ui-input placeholder="123456789">
       </div>
     </div>
@@ -511,7 +556,18 @@ body > .wrap > #preview {
     <div class="fld">
       <label class="lbl">Bank</label>
       <div class="input-row">
-        <button type="button" class="chip" id="autoBank">Auto</button>
+        <label class="shared-active-switch">
+  <input
+    type="checkbox"
+    id="autoBank"
+    data-active-label="Auto ON"
+    data-inactive-label="Auto OFF"
+  >
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob" aria-hidden="true"></span>
+  </span>
+</label>
         <select class="sel" id="bankSel" data-shared-dropdown style="width:100%">
           <option>Touch N Go Digital</option>
           <option>Maybank</option>
@@ -611,9 +667,9 @@ function readState(){
     ref: el.ref.value,
     letterSel: el.letterSel.value,
     binSel: el.binSel.value,
-    autoName: el.autoName.classList.contains('on'),
-    autoBank: el.autoBank.classList.contains('on'),
-    autoAcct: el.autoAcct.classList.contains('on')
+    autoName: el.autoName.checked,
+    autoBank: el.autoBank.checked,
+    autoAcct: el.autoAcct.checked
   };
 }
 function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(readState())); }catch{} }
@@ -629,8 +685,9 @@ function applyState(s){
   el.binSel.value    = s.binSel ?? el.binSel.value;
 
   [['autoName',s.autoName],['autoBank',s.autoBank],['autoAcct',s.autoAcct]].forEach(([k,on])=>{
-    el[k].classList.toggle('on', !!on);
-  });
+  el[k].checked = !!on;
+  window.SharedActiveSwitch?.sync(el[k]);
+});
 }
 function loadState(){
   try{ applyState(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')); }catch{}
@@ -646,9 +703,13 @@ function resetAll(){
   el.ref.value    = 'Payment';
   el.letterSel.value = '';
   el.binSel.value    = '';
-  el.autoName.classList.remove('on');
-  el.autoBank.classList.remove('on');
-  el.autoAcct.classList.remove('on');
+el.autoName.checked = false;
+el.autoBank.checked = false;
+el.autoAcct.checked = false;
+
+[el.autoName, el.autoBank, el.autoAcct].forEach(input => {
+  window.SharedActiveSwitch?.sync(input);
+});
   render();
 
   updateRhbEmptyState();
@@ -725,14 +786,14 @@ function makeAccountFor(bank){
 /* ---------- Render ---------- */
 function render(){
   // auto toggles
-  if (el.autoBank.classList.contains('on')){
+  if (el.autoBank.checked){
     const options = Array.from(el.bankSel.options).map(o=>o.value);
     el.bankSel.value = pick(options);
   }
-  if (el.autoAcct.classList.contains('on')){
+  if (el.autoAcct.checked){
     el.toId.value = makeAccountFor(el.bankSel.value);
   }
-  if (el.autoName.classList.contains('on')){
+  if (el.autoName.checked){
     el.toName.value = makeRandomName();
   }
 
@@ -798,8 +859,15 @@ el.amount.addEventListener('blur', e=>{
     .forEach(n => n.addEventListener(evt, ()=>{ saveState(); render(); }));
 });
 // klik chip auto
-[el.autoName, el.autoBank, el.autoAcct].forEach(btn=>{
-  btn.addEventListener('click', ()=>{ btn.classList.toggle('on'); saveState(); render(); });
+/* ==========================================
+   RHB - CUSTOM AUTO TOGGLE SWITCH
+   ========================================== */
+
+[el.autoName, el.autoBank, el.autoAcct].forEach(input => {
+  input.addEventListener('change', () => {
+    saveState();
+    render();
+  });
 });
 // ganti bank → buat no akaun sesuai pola
 el.bankSel.addEventListener('change', ()=>{
