@@ -595,6 +595,90 @@ html {
   white-space: nowrap !important;
   font-size: 14px;
 }
+    /* ==========================================
+   CIMB - BOTTOM ACTIONS LEFT & RIGHT
+   ========================================== */
+
+.builder-panel .cimb-bottom-actions {
+  grid-column: 1 / -1 !important;
+  width: 100%;
+  min-width: 0;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* LEFT: Create, Blur, Copy Image, Reset */
+.builder-panel .cimb-bottom-actions .btn-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  flex: 0 1 auto;
+  width: auto !important;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.builder-panel .cimb-bottom-actions .btn-row > button {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  height: 32px;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* RIGHT: Create Bank & Manage Banks */
+.builder-panel .cimb-bottom-actions .cimb-bank-actions {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end !important;
+  flex: 0 0 auto;
+  width: auto !important;
+  gap: 8px;
+  margin: 0 !important;
+  margin-left: auto !important;
+}
+
+.builder-panel .cimb-bottom-actions .cimb-bank-actions > button {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  height: 32px;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .builder-panel .cimb-bottom-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .builder-panel .cimb-bottom-actions .btn-row,
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .builder-panel .cimb-bottom-actions .btn-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  .builder-panel .cimb-bottom-actions .btn-row > button {
+    width: 100% !important;
+  }
+}
 </style>
 <body>
   
@@ -605,10 +689,6 @@ html {
         <div class="builder-row">
           <!-- ===== Custom Bank Dropdown ===== -->
 <div class="builder-field">
-  <div class="cimb-bank-actions">
-    <button type="button" class="btn-primary-new" id="bankCreate">+ Create Bank</button>
-    <button type="button" class="btn-cancel-new" id="bankManage">Manage Banks</button>
-  </div>
 <select
   id="bankSelectNative"
   data-shared-dropdown
@@ -665,6 +745,11 @@ html {
   <button class="btn-primary-new" id="btn-blur" type="button">Blur</button>
   <button class="btn-primary-new" id="btn-copy-image" type="button">Copy Image</button>
   <button class="btn-reset" id="btn-reset" type="button">Reset</button>
+
+    <div class="cimb-bank-actions">
+    <button type="button" class="btn-primary-new" id="bankCreate">+ Create Bank</button>
+    <button type="button" class="btn-cancel-new" id="bankManage">Manage Banks</button>
+  </div>
 </div>
         </div>
       </div>
