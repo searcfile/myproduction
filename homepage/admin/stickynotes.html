@@ -13,7 +13,6 @@
   --bg:#ffffff;
   --panel:#ffffff;
   --panel2:#f6f8fb;
-  --text:#111827;
   --soft:#6b7280;
   --border:#d9d9d9;
   --blue:#1668dc;
@@ -562,7 +561,7 @@ input::placeholder{
 .content{
   min-width:0;
   min-height:0;
-  padding:16px 12px;
+  padding:12px;
   overflow:auto;
 }
 .content-toolbar{
@@ -1139,8 +1138,8 @@ select:focus-visible{
 .shared-modal-body .field{margin-bottom:14px;}
 .shared-modal-body .input,.shared-modal-body .textarea{width:100%;}
 /* STICKY NOTES UPGRADE — local-only overrides, shared NewUI remains unchanged */
-.content{padding:14px clamp(10px,2vw,24px)!important;overflow:visible!important;max-width:100%;}
-.sticky-shell{background:var(--page-bg2,#1f1f1f);border:1px solid var(--border-input,#424242);border-radius:12px;padding:12px;margin-bottom:14px;}
+.content{overflow:visible!important;max-width:100%;}
+.sticky-shell{background:var(--page-bg2,#1f1f1f);border:1px solid var(--border-input,#424242);border-radius:12px;padding:12px;margin-bottom:12px;}
 .sticky-toolbar{display:grid!important;grid-template-columns:minmax(220px,1.15fr) minmax(240px,1fr) auto!important;align-items:center!important;gap:10px!important;margin:0!important;}
 .sticky-search,.sticky-filter{min-width:0;width:100%;}
 .sticky-search .shared-sync-search{width:100%;max-width:none;min-width:0;}
@@ -1153,9 +1152,9 @@ select:focus-visible{
 .note-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.20);}
 .note-title{color:#fff!important;}
 .note-body{min-height:0!important;}
-.sticky-empty-holder{width:100%;margin-top:8px;}
-.sticky-empty-holder .shared-empty-card{min-height:240px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
-.sticky-empty-holder .shared-empty{min-height:180px;}
+.sticky-empty-holder{width:100%;}
+.sticky-empty-holder .shared-empty-card{min-height:160px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
+.sticky-empty-holder .shared-empty{min-height:160px;}
 .dialog{max-width:calc(100vw - 24px)!important;}
 .dialog .input,.dialog .textarea{width:100%;min-width:0;}
 .dialog .new-ui-input-wrap{width:100%;display:block;}
@@ -1467,7 +1466,7 @@ function renderNotes(){
 
   if(!list.length){
     els.emptyState.style.display = "block";
-    const label = notes.length ? "No matching notes" : "No notes yet. Click Create Note to add your first note.";
+    const label = notes.length ? "No matching notes" : "No data";
     if (window.showEmptyState) window.showEmptyState(els.emptyState, label, "large", "center", true);
     else els.emptyState.textContent = label;
     return;
