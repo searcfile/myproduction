@@ -1,56 +1,313 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auth Users · 5G88</title><link rel="icon" href="./logo.svg"><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./modern-admin.css"><link rel="stylesheet" href="./new-ui.css"></head><body>
-<main class="workspace"><div class="page-top"><div><div class="eyebrow">Access management</div><h1>Auth Users</h1><p class="subtitle">Create and manage secure admin login accounts.</p></div><button class="btn primary" id="create" disabled>+ Create Username</button></div>
-<div class="stats"><div class="card stat"><small>Total users</small><strong id="total">—</strong></div><div class="card stat"><small>Active</small><strong id="activeCount">—</strong></div><div class="card stat"><small>Site admins</small><strong id="siteCount">—</strong></div></div>
-<section class="card"><div class="toolbar"><div class="tools"><input id="search" class="search" placeholder="Search username or UID"><button class="btn" id="refresh">↻ Refresh</button></div></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Firebase UID</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="6" class="empty">Checking session…</td></tr></tbody></table></div><div class="status" id="status" role="status"></div></section></main>
-<div class="modal" id="modal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><h2 id="modalTitle">Create Username</h2><button type="button" class="btn small" id="x">✕</button></div><form id="userForm"><div class="modalbody"><div class="formgrid"><div class="field full" id="uidWrap" hidden><label>Firebase UID</label><div style="display:flex;gap:8px"><input id="uid" readonly><button type="button" class="btn" id="copyUid">Copy</button></div></div><div class="field full"><label for="username">Username</label><input id="username" required minlength="3" maxlength="40" pattern="[a-z0-9._-]{3,40}" placeholder="e.g. admin_5g88" autocomplete="off"></div><div class="field"><label for="password">Password</label><input id="password" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters"><div class="hint" id="passwordHint">Required for new accounts</div></div><div class="field"><label for="secondPassword">2nd Password · 6-digit PIN</label><input id="secondPassword" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="new-password" placeholder="6 digits"><div class="hint" id="pinHint">Required for new accounts</div></div><div class="field full"><label class="site-option"><input id="enabled" type="checkbox" checked> Active account</label></div><div class="field full"><div class="notice" id="accountNote">A Site Admin login will be created. Assign sites and permissions in Admin Users afterwards.</div></div></div></div><div class="modalfooter"><button class="btn" type="button" id="cancel">Cancel</button><button class="btn primary" id="save" type="submit">Create Username</button></div></form></div></div>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script defer src="./shared-ui.js"></script><script src="./new-ui.js"></script><script>
-'use strict';const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';const $ = id => document.getElementById(id);let users=[],editing=null,ready=false;
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auth Users · 5G88</title>
+<link rel="icon" href="./logo.svg">
+<link rel="stylesheet" href="./shared-ui.css">
+<link rel="stylesheet" href="./admin.css">
+<link rel="stylesheet" href="./modern-admin.css">
+<link rel="stylesheet" href="./new-ui.css">
+<style>
+
+/* 5G88 Auth Users — page-scoped upgrade. Shared NewUI files are not modified. */
+.auth-workspace{width:min(100% - 36px,1240px);max-width:1240px;margin:0 auto;padding:32px 0 64px;color:var(--text,#eaf0fb);box-sizing:border-box}
+.auth-workspace *{box-sizing:border-box}
+.auth-hero{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:24px;padding:8px 2px}
+.auth-hero h1{font-size:clamp(25px,3vw,32px);font-weight:750;letter-spacing:-.8px;line-height:1.15;margin:8px 0}
+.auth-hero .eyebrow{font-size:11px;letter-spacing:1.7px;color:#76a9ff;font-weight:750}
+.hero-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#43d5ae;margin:0 7px 2px}
+.auth-hero .subtitle{color:var(--muted,#94a3b8);font-size:13px;line-height:1.6;margin:0}
+.auth-create{height:36px!important;padding:0 17px!important;white-space:nowrap;flex:none}
+.auth-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.auth-stats .stat{position:relative;min-width:0;min-height:134px;padding:20px 22px!important;border:1px solid var(--tx-border,#2b3e5b);border-radius:14px;background:linear-gradient(135deg,var(--tx-surface,#152237),var(--panel2,#171e28));overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.auth-stats .stat small{font-size:12px;color:var(--muted,#9aaac0);margin-bottom:7px}
+.auth-stats .stat strong{font-size:29px;line-height:1.25;letter-spacing:-1px}
+.auth-stats .stat-note{font-size:11px;color:var(--muted,#9aaac0);margin-top:5px}
+.auth-stats .stat-icon{position:absolute;right:19px;top:17px;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;color:#75a9ff;background:rgba(22,104,220,.13);font-size:18px}
+.auth-list{padding:0!important;overflow:hidden;border-radius:14px!important;border:1px solid var(--tx-border,#2b3e5b)!important;background:var(--tx-surface,#152237)}
+.auth-section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:20px 20px 15px}
+.auth-section-heading h2{font-size:16px;font-weight:700;margin:0 0 4px}
+.auth-section-heading p{font-size:12px;color:var(--muted,#9aaac0);margin:0}
+.auth-count{font-size:11px;white-space:nowrap;border:1px solid var(--tx-border,#2b3e5b);padding:6px 10px;border-radius:30px;color:var(--muted,#9aaac0)}
+.auth-toolbar{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important;justify-content:flex-start!important;padding:0 20px 20px!important}
+.auth-search-holder{flex:0 1 400px;width:100%;max-width:400px;min-width:170px}
+.auth-search-holder .shared-sync-search{width:100%;height:34px}
+.auth-search-holder .shared-sync-search-input,.auth-search-holder .shared-sync-search-button{height:34px!important}
+.auth-refresh{display:inline-flex;align-items:center;gap:6px;height:34px!important;white-space:nowrap;padding:0 15px!important}
+.auth-refresh:disabled .refresh-glyph{animation:authSpin .8s linear infinite}
+@keyframes authSpin{to{transform:rotate(360deg)}}
+.auth-tablewrap{width:100%;overflow-x:auto;scrollbar-width:thin}
+.auth-table{width:100%;border-collapse:collapse;table-layout:auto;min-width:830px;font-size:12px}
+.auth-table thead{background:rgba(113,158,229,.055)}
+.auth-table th{text-align:left;padding:15px 16px;font-size:10px;letter-spacing:.65px;font-weight:750;color:#9abff8;border-bottom:1px solid var(--tx-border,#2b3e5b);white-space:nowrap}
+.auth-table td{padding:15px 16px;border-bottom:1px solid var(--tx-border,#2b3e5b);vertical-align:middle}
+.auth-table tbody tr:last-child td{border-bottom:0}
+.auth-table tbody tr:hover{background:rgba(104,154,232,.045)}
+.auth-user-cell{white-space:nowrap}
+.auth-avatar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(51,121,231,.18);color:#84b6ff;margin-right:9px;font-weight:750}
+.auth-user-cell strong{font-weight:650}
+.auth-uid-inline{display:flex;align-items:center;gap:8px;min-width:0}
+.auth-uid-inline .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;color:#8cb7ff;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-role-cell{text-transform:capitalize}
+.auth-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;border-radius:20px;padding:5px 9px;white-space:nowrap}
+.auth-status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.auth-status.is-active{background:rgba(29,194,143,.10);color:#49ddb0}
+.auth-status.is-inactive{background:rgba(234,92,111,.11);color:#ff8a9b}
+.auth-date{white-space:nowrap;color:var(--muted,#a2b0c5)}
+.actions-cell{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.auth-mini-btn{border:1px solid var(--tx-border,#344963);background:rgba(115,150,201,.10);color:var(--text,#eaf0fb);padding:0 11px;border-radius:7px;height:30px;font-size:11px;cursor:pointer;transition:.2s}
+.auth-mini-btn:hover{border-color:#428fff;color:#7eb4ff}
+.auth-mini-btn.auth-copy{width:30px;min-width:30px;padding:0;font-size:16px}
+.auth-mini-btn.auth-delete{background:rgba(215,56,75,.12);color:#ff8597;border-color:rgba(215,56,75,.32)}
+.auth-mini-btn.auth-delete:hover{background:rgba(215,56,75,.2);color:#ffacb8}
+.auth-protected{color:var(--muted,#9aaac0);font-size:11px}
+.auth-empty-cell{height:185px!important;text-align:center;padding:18px!important}
+.auth-table-footer{min-height:49px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid var(--tx-border,#2b3e5b)}
+.auth-table-footer .status{font-size:11px;color:#84b6ff;line-height:1.5;overflow-wrap:anywhere}
+.auth-table-footer .status.error{color:#ff8c99}
+.auth-footer-label{font-size:10px;color:var(--muted,#9aaac0);white-space:nowrap}
+.auth-modal-fields{width:100%;min-width:0}
+.auth-formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:4px 0}
+.auth-formgrid .field{min-width:0;display:flex;flex-direction:column;gap:7px}
+.auth-formgrid .field.full{grid-column:1/-1}
+.auth-formgrid .field label:not(.auth-switch-row){font-size:12px;font-weight:600}
+.auth-formgrid .field input:not([type=checkbox]){height:34px;width:100%;min-width:0}
+.auth-formgrid .hint{font-size:11px;color:var(--muted,#9aaac0);line-height:1.45}
+.auth-uid-field{display:flex;gap:8px;min-width:0}
+.auth-uid-field .new-ui-input-wrap{flex:1;min-width:0}
+.auth-uid-field button{flex:none}
+.auth-switch-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--tx-border,#2b3e5b);border-radius:9px;padding:13px 14px}
+.auth-switch-row>span:first-child{display:flex;flex-direction:column;gap:5px}
+.auth-switch-row strong{font-size:12px}
+.auth-switch-row small{font-size:11px;color:var(--muted,#9aaac0)}
+.auth-notice{border-radius:9px;padding:12px 14px;background:rgba(54,120,227,.09);border:1px solid rgba(75,138,240,.19);font-size:11px;line-height:1.6;color:var(--text,#dbeafe)}
+.auth-modal-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;width:100%}
+.auth-modal-actions button{height:34px!important;padding:0 15px!important;min-width:105px}
+.shared-modal:has(.auth-modal-fields){width:min(600px,calc(100vw - 28px))!important;max-width:calc(100vw - 28px)!important}
+.shared-modal-body:has(.auth-modal-fields){overflow:visible;max-height:min(65vh,550px);overflow-y:auto}
+.shared-modal-actions:has(.auth-modal-actions){display:block}
+.auth-formgrid [hidden]{display:none!important}
+@media(max-width:900px){.auth-workspace{width:calc(100% - 26px);padding-top:22px}.auth-stats .stat{padding:16px!important;min-height:120px}}
+@media(max-width:620px){.auth-workspace{width:calc(100% - 20px);padding-top:16px}.auth-hero{align-items:flex-start;flex-wrap:wrap;gap:15px}.auth-create{margin-left:auto}.auth-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.auth-stats .stat{min-height:108px}.auth-stats .stat:last-child{grid-column:1/-1}.auth-stats .stat strong{font-size:25px}.auth-section-heading{padding:15px 12px}.auth-toolbar{padding:0 12px 14px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}.auth-search-holder{min-width:0;max-width:none;width:100%}.auth-refresh{padding:0 10px!important}.auth-table-footer{padding:11px 12px}.auth-footer-label{display:none}.auth-formgrid{grid-template-columns:1fr;gap:12px}.auth-formgrid .field{grid-column:1/-1}.auth-modal-actions{flex-wrap:wrap}.auth-modal-actions button{flex:1 1 auto}.auth-count{font-size:10px}}
+@media(max-width:340px){.auth-toolbar{grid-template-columns:1fr!important}.auth-refresh{justify-self:end}.auth-stats .stat-icon{display:none}}
+
+</style>
+</head>
+<body>
+<main class="workspace auth-workspace">
+  <header class="auth-hero">
+    <div class="hero-copy">
+      <div class="eyebrow">ACCESS MANAGEMENT <span class="hero-dot"></span> ADMIN SECURITY</div>
+      <h1>Auth Users</h1>
+      <p class="subtitle">Create and manage secure admin login accounts.</p>
+    </div>
+    <button class="btn-primary-new auth-create" id="create" type="button" disabled>+ Create Username</button>
+  </header>
+  <div class="stats auth-stats">
+    <div class="card stat"><div class="stat-icon">◈</div><small>Total users</small><strong id="total">—</strong><span class="stat-note">Registered admin accounts</span></div>
+    <div class="card stat"><div class="stat-icon">✓</div><small>Active</small><strong id="activeCount">—</strong><span class="stat-note">Enabled for sign-in</span></div>
+    <div class="card stat"><div class="stat-icon">♙</div><small>Site admins</small><strong id="siteCount">—</strong><span class="stat-note">Site-level admin accounts</span></div>
+  </div>
+  <section class="card auth-list">
+    <div class="auth-section-heading"><div><h2>Admin accounts</h2><p>Manage credentials and account status</p></div><span id="resultCount" class="auth-count">— accounts</span></div>
+    <div class="toolbar auth-toolbar">
+      <div class="auth-search-holder"><input id="search" type="search" placeholder="Search username, UID or role" aria-label="Search admin users"></div>
+      <button class="btn-cancel-new auth-refresh" id="refresh" type="button"><span class="refresh-glyph">↻</span> Refresh</button>
+    </div>
+    <div class="tablewrap auth-tablewrap">
+      <table class="auth-table">
+        <thead><tr><th>USERNAME</th><th>FIREBASE UID</th><th>ROLE</th><th>STATUS</th><th>CREATED</th><th>ACTION</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="6" class="auth-empty-cell">Checking session…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="auth-table-footer"><div class="status" id="status" role="status" aria-live="polite"></div><span class="auth-footer-label">5G88 • Access management</span></div>
+  </section>
+</main>
+<!-- Original form nodes are retained; NewUI.modal moves body and footer into shared modal. -->
+<div class="auth-form-source" id="formSource" hidden>
+  <form id="userForm">
+    <div id="modalFields" class="auth-modal-fields">
+      <div class="formgrid auth-formgrid">
+        <div class="field full" id="uidWrap" hidden><label for="uid">Firebase UID</label><div class="auth-uid-field"><input id="uid" readonly data-new-ui-input><button type="button" class="btn-cancel-new" id="copyUid">Copy</button></div></div>
+        <div class="field full"><label for="username">Username</label><input id="username" data-new-ui-input required minlength="3" maxlength="40" pattern="[a-z0-9._-]{3,40}" placeholder="e.g. admin_5g88" autocomplete="off"></div>
+        <div class="field"><label for="password">Password</label><input id="password" data-new-ui-input type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters"><div class="hint" id="passwordHint">Required for new accounts</div></div>
+        <div class="field"><label for="secondPassword">2nd Password · 6-digit PIN</label><input id="secondPassword" data-new-ui-input type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="new-password" placeholder="6 digits"><div class="hint" id="pinHint">Required for new accounts</div></div>
+        <div class="field full"><label class="auth-switch-row"><span><strong>Active account</strong><small>Allow this account to sign in</small></span><span class="shared-active-switch"><input id="enabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div>
+        <div class="field full"><div class="notice auth-notice" id="accountNote">A Site Admin login will be created. Assign sites and permissions in Admin Users afterwards.</div></div>
+      </div>
+    </div>
+    <div id="modalActions" class="auth-modal-actions">
+      <button class="btn-cancel-new" type="button" id="cancel">Cancel</button>
+      <button class="btn-primary-new" id="save" type="submit" form="userForm">Create Username</button>
+    </div>
+  </form>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="../firebase.js"></script>
+<script defer src="./shared-ui.js"></script>
+<script src="./new-ui.js"></script>
+<script>
+'use strict';
+const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
+const $=id=>document.getElementById(id);
+let users=[],editing=null,ready=false,formModal=null,loading=false;
+const searchInput=$('search');
+// Fields are moved into NewUI modal, so associate them explicitly with the form.
+$('modalFields').querySelectorAll('input').forEach(input=>input.setAttribute('form','userForm'));
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
-function showModal(){ $('modal').classList.add('open'); }function closeModal(){$('modal').classList.remove('open');editing=null;}
-async function api(path,opts={}){if(!auth.currentUser)throw Error('Session expired');const token=await auth.currentUser.getIdToken();const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});const raw=await r.text();let d;try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);return d;}
-async function check() {
-  const user = await new Promise(resolve => {
-    const unsubscribe = auth.onAuthStateChanged(
-      u => {
-        unsubscribe();
-        resolve(u);
-      },
-      () => resolve(null)
-    );
+function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else status(message,type==='error');}
+function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
+function showModal(){
+  if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
+  const form=$('userForm'),fields=$('modalFields'),actions=$('modalActions');
+  formModal=NewUI.modal.open({
+    title:editing?'Manage Username':'Create Username',
+    width:'600px',
+    content:fields,
+    footer:actions,
+    onClose(){
+      form.append(fields,actions);
+      formModal=null;editing=null;
+    }
   });
-
-  if (!user || user.isAnonymous) {
-    location.replace("./login.html");
-    return false;
+  // Form association remains valid through form="userForm" on Save.
+  setTimeout(()=>$('username').disabled?$('password').focus():$('username').focus(),80);
+}
+function closeModal(){if(formModal)formModal.close();}
+async function api(path,opts={}){
+  if(!auth.currentUser)throw Error('Session expired');
+  const token=await auth.currentUser.getIdToken();
+  const r=await fetch(BACKEND+path,{...opts,headers:{Authorization:'Bearer '+token,...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});
+  const raw=await r.text();let d;
+  try{d=JSON.parse(raw)}catch{d={message:raw.slice(0,100)}}
+  if(!r.ok||d.ok===false)throw Error(d.message||d.error||'HTTP '+r.status);
+  return d;
+}
+async function check(){
+  const user=await new Promise(resolve=>{
+    const unsubscribe=auth.onAuthStateChanged(u=>{unsubscribe();resolve(u)},()=>resolve(null));
+  });
+  if(!user||user.isAnonymous){location.replace('./login.html');return false;}
+  const token=await user.getIdTokenResult(true);
+  if(token.claims.secondVerified!==true||!Number.isSafeInteger(token.claims.pinVersion)){
+    status('Please complete 2nd password verification.',true);return false;
   }
-
-  const token = await user.getIdTokenResult(true);
-
-  if (
-    token.claims.secondVerified !== true ||
-    !Number.isSafeInteger(token.claims.pinVersion)
-  ) {
-    status("Please complete 2nd password verification.", true);
-    return false;
-  }
-
-  try {
-    // Backend mesti mengesahkan role Superadmin.
-    // Frontend tidak lagi membaca adminUsers secara terus.
-    await api("/api/admin-users");
-    return true;
-  } catch (error) {
-    status("Superadmin verification failed: " + error.message, true);
-    return false;
+  try{await api('/api/admin-users');return true}
+  catch(error){status('Superadmin verification failed: '+error.message,true);return false;}
+}
+function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}
+function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
+function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
+function emptyRow(message,kind='empty'){
+  const rows=$('rows');rows.replaceChildren();
+  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.className='auth-empty-cell';
+  if(kind==='loading'&&window.createLoadingState)td.innerHTML=window.createLoadingState(message,'large');
+  else if(window.createEmptyState)td.innerHTML=window.createEmptyState(message,'large','center');
+  else td.textContent=message;
+  tr.append(td);rows.append(tr);
+}
+function render(){
+  const q=searchInput.value.toLowerCase().trim(),rows=$('rows');rows.replaceChildren();
+  $('total').textContent=users.length;
+  $('activeCount').textContent=users.filter(u=>u.enabled).length;
+  $('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;
+  const filtered=users.filter(u=>[u.username,u.uid,u.role].join(' ').toLowerCase().includes(q));
+  $('resultCount').textContent=filtered.length+' account'+(filtered.length===1?'':'s');
+  if(!filtered.length){emptyRow(users.length?'No matching users':'No data');return}
+  for(const u of filtered){
+    const tr=document.createElement('tr');
+    const userTd=document.createElement('td');userTd.className='auth-user-cell';
+    const avatar=document.createElement('span');avatar.className='auth-avatar';avatar.textContent=(u.username||'?').slice(0,1).toUpperCase();
+    const name=document.createElement('strong');name.textContent=u.username;userTd.append(avatar,name);tr.append(userTd);
+    const uidTd=document.createElement('td');const uidWrap=document.createElement('div');uidWrap.className='auth-uid-inline';
+    const code=document.createElement('span');code.className='mono';code.textContent=u.uid;
+    uidWrap.append(code,btn('⧉','auth-copy',()=>copy(u.uid),'Copy UID'));uidTd.append(uidWrap);tr.append(uidTd);
+    const roleTd=cell(tr,u.role);roleTd.className='auth-role-cell';
+    const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
+    cell(tr,date(u.createdAt),'auth-date');
+    const td=document.createElement('td'),wrap=document.createElement('div');wrap.className='actions-cell';
+    if(u.role==='siteadmin'){wrap.append(btn('Manage','auth-manage',()=>manage(u)),btn('Delete','auth-delete',e=>removeUser(u,e.currentTarget)))}
+    else{const protectedLabel=document.createElement('span');protectedLabel.className='auth-protected';protectedLabel.textContent='Protected';wrap.append(protectedLabel)}
+    td.append(wrap);tr.append(td);rows.append(tr);
   }
 }
-function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}function btn(label,cls,fn){const b=document.createElement('button');b.className='btn small '+cls;b.textContent=label;b.onclick=fn;return b;}function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
-function render(){const q=$('search').value.toLowerCase().trim();const rows=$('rows');rows.replaceChildren();$('total').textContent=users.length;$('activeCount').textContent=users.filter(u=>u.enabled).length;$('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;const filtered=users.filter(u=>(u.username+' '+u.uid+' '+u.role).toLowerCase().includes(q));if(!filtered.length){const tr=document.createElement('tr');const td=cell(tr,'No matching users','empty');td.colSpan=6;rows.append(tr);return}for(const u of filtered){const tr=document.createElement('tr');cell(tr,u.username,'primarytext');const uidTd=document.createElement('td');const code=document.createElement('span');code.className='mono';code.textContent=u.uid;uidTd.append(code,document.createTextNode(' '),btn('⧉','',()=>copy(u.uid)));tr.append(uidTd);cell(tr,u.role);const s=cell(tr,u.enabled?'Active':'Inactive','pill'+(u.enabled?'':' off'));s.style.display='table-cell';cell(tr,date(u.createdAt));const td=document.createElement('td');const wrap=document.createElement('div');wrap.className='actions-cell';if(u.role==='siteadmin'){wrap.append(btn('Manage','',()=>manage(u)),btn('Delete','danger',()=>removeUser(u)))}else{wrap.textContent='Protected'}td.append(wrap);tr.append(td);rows.append(tr)}}
-async function copy(v){try{await navigator.clipboard.writeText(v);status('UID copied.')}catch{status('Copy failed; select the UID manually.',true)}}
-async function load(){status('Loading accounts…');try{const d=await api('/api/admin-users');users=d.users||[];render();status('Loaded '+users.length+' accounts.')}catch(e){status('Cannot load accounts: '+e.message,true)}}
-function create(){editing=null;$('userForm').reset();$('uidWrap').hidden=true;$('username').disabled=false;$('password').required=true;$('secondPassword').required=true;$('passwordHint').textContent='At least 6 characters';$('pinHint').textContent='Exactly 6 digits';$('modalTitle').textContent='Create Username';$('save').textContent='Create Username';showModal()}
-function manage(u){editing=u;$('userForm').reset();$('uidWrap').hidden=false;$('uid').value=u.uid;$('username').value=u.username;$('username').disabled=true;$('enabled').checked=u.enabled;$('password').required=false;$('secondPassword').required=false;$('passwordHint').textContent='Leave blank to keep current password';$('pinHint').textContent='Leave blank to keep current PIN';$('modalTitle').textContent='Manage Username';$('save').textContent='Save Changes';showModal()}
-async function removeUser(u){if(!confirm('Delete username '+u.username+' permanently? This cannot be undone.'))return;try{await api('/api/admin-users/'+encodeURIComponent(u.uid),{method:'DELETE'});await load();status('Username deleted.')}catch(e){status('Delete failed: '+e.message,true)}}
-$('userForm').onsubmit=async e=>{e.preventDefault();const save=$('save');save.disabled=true;try{const password=$('password').value,pin=$('secondPassword').value;let result;if(editing){const body={enabled:$('enabled').checked};if(password)body.password=password;if(pin)body.secondPassword=pin;result=await api('/api/admin-users/'+encodeURIComponent(editing.uid),{method:'PATCH',body:JSON.stringify(body)});}else{if(!password||!pin)throw Error('Password and PIN required');result=await api('/api/admin-users',{method:'POST',body:JSON.stringify({username:$('username').value.trim().toLowerCase(),password,secondPassword:pin,enabled:$('enabled').checked,siteIds:[]})});}const wasEdit=Boolean(editing);closeModal();await load();status(wasEdit?'Updated successfully.':'Username created.');}catch(err){status('Save failed: '+err.message,true)}finally{save.disabled=false}};
-$('search').oninput=render;$('refresh').onclick=load;$('create').onclick=create;$('cancel').onclick=closeModal;$('x').onclick=closeModal;$('copyUid').onclick=()=>copy($('uid').value);$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});(async()=>{try{if(await check()){$('create').disabled=false;ready=true;await load()}}catch(e){status('Authorization error: '+e.message,true)}})();
-</script></body></html>
+async function copy(v){try{await navigator.clipboard.writeText(v);toast('UID copied successfully.')}catch{toast('Copy failed; select the UID manually.','error')}}
+async function load(){
+  if(loading)return;loading=true;
+  $('refresh').disabled=true;status('Loading accounts…');
+  if(!users.length)emptyRow('Loading accounts…','loading');
+  const started=performance.now();
+  try{
+    const d=await api('/api/admin-users');users=d.users||[];render();status('Loaded '+users.length+' accounts.');
+  }catch(e){if(!users.length)emptyRow('Unable to load accounts');status('Cannot load accounts: '+e.message,true);toast('Cannot load accounts: '+e.message,'error')}
+  finally{
+    const wait=Math.max(0,650-(performance.now()-started));if(wait)await new Promise(r=>setTimeout(r,wait));
+    $('refresh').disabled=false;loading=false;
+  }
+}
+function create(){
+  editing=null;$('userForm').reset();$('uidWrap').hidden=true;$('username').disabled=false;
+  $('password').required=true;$('secondPassword').required=true;
+  $('passwordHint').textContent='At least 6 characters';$('pinHint').textContent='Exactly 6 digits';
+  $('save').textContent='Create Username';syncSwitch();showModal();
+}
+function manage(u){
+  editing=u;$('userForm').reset();$('uidWrap').hidden=false;$('uid').value=u.uid;
+  $('username').value=u.username;$('username').disabled=true;$('enabled').checked=!!u.enabled;
+  $('password').required=false;$('secondPassword').required=false;
+  $('passwordHint').textContent='Leave blank to keep current password';
+  $('pinHint').textContent='Leave blank to keep current PIN';
+  $('save').textContent='Save Changes';syncSwitch();showModal();
+}
+async function removeUser(u,target){
+  if(u.role!=='siteadmin')return;
+  if(!window.NewUI?.confirm){toast('Custom confirm component unavailable. Check new-ui.js','error');return}
+  const confirmed=await NewUI.confirm({
+    target,title:'Delete Username',message:'Delete username '+u.username+' permanently? This cannot be undone.',
+    confirmText:'Delete',cancelText:'Cancel',loadingText:'Deleting...',
+    onConfirm:async()=>{
+      await api('/api/admin-users/'+encodeURIComponent(u.uid),{method:'DELETE'});
+      await load();toast('Username deleted.');
+    }
+  });
+  return confirmed;
+}
+$('userForm').addEventListener('submit',async e=>{
+  e.preventDefault();if(!ready)return;
+  const save=$('save'),wasEdit=Boolean(editing);
+  if(!window.NewUI?.setButtonLoading){toast('Custom loading component unavailable.','error');return}
+  await NewUI.setButtonLoading(save,true,{text:wasEdit?'Saving...':'Creating...'});
+  try{
+    const password=$('password').value,pin=$('secondPassword').value;
+    if(pin&&!/^[0-9]{6}$/.test(pin))throw Error('PIN must contain exactly 6 digits');
+    if(editing){
+      const body={enabled:$('enabled').checked};
+      if(password)body.password=password;if(pin)body.secondPassword=pin;
+      await api('/api/admin-users/'+encodeURIComponent(editing.uid),{method:'PATCH',body:JSON.stringify(body)});
+    }else{
+      if(!password||!pin)throw Error('Password and PIN required');
+      await api('/api/admin-users',{method:'POST',body:JSON.stringify({
+        username:$('username').value.trim().toLowerCase(),password,secondPassword:pin,
+        enabled:$('enabled').checked,siteIds:[]
+      })});
+    }
+    await NewUI.setButtonLoading(save,false,{minDuration:850});
+    closeModal();await load();toast(wasEdit?'Username updated successfully.':'Username created successfully.');
+  }catch(err){toast('Save failed: '+err.message,'error')}
+  finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
+});
+searchInput.addEventListener('input',render);
+$('refresh').addEventListener('click',load);
+$('create').addEventListener('click',create);
+$('cancel').addEventListener('click',closeModal);
+$('copyUid').addEventListener('click',()=>copy($('uid').value));
+if(window.NewUI?.syncSearch){
+  NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
+}
+(async()=>{try{if(await check()){$('create').disabled=false;ready=true;await load()}}catch(e){status('Authorization error: '+e.message,true)}})();
+</script>
+</body></html>
