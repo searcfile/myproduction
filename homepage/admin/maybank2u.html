@@ -162,10 +162,7 @@
       display:flex;
       gap:8px;
     }
-#blurBtn,
-#copyImageBtn{
-  width:120px;
-}
+
 
 .btns > button{
   min-width: 0;
@@ -185,7 +182,6 @@
       transition: all 0.2s
     }
     .btn-reset{
-      width:120px;
       color:var(--page-text);
       background:var(--page-input);
       border:1px solid var(--border-input);
@@ -875,8 +871,9 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
 
 .wrap > .panel .btns > button {
   flex: 0 0 auto !important;
-  width: auto !important;
-  min-width: 110px !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: none !important;
   height: 32px !important;
   min-height: 32px !important;
   padding: 0 15px !important;
@@ -900,11 +897,6 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
 
   .wrap > .panel {
     padding: 12px !important;
-  }
-
-  .wrap > .panel .btns > button {
-    flex: 1 1 calc(50% - 8px) !important;
-    min-width: 0 !important;
   }
 }
 
