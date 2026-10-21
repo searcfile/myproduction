@@ -290,205 +290,169 @@ body > .wrap > #preview {
 .rhb-empty-card[hidden] {
   display: none !important;
 }
+
+
 /* ==========================================
-   RHB BANK - FINAL CUSTOM INPUT LAYOUT
+   RHB BANK - RESPONSIVE FORM V2
    ========================================== */
 
-/* Susunan form: dua kolum */
 #form.card.form {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 8px !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 12px !important;
   overflow: visible !important;
 }
 
-/* Semua field mengambil satu kolum */
-#form > .fld {
-  grid-column: auto !important;
-  min-width: 0 !important;
+/* Desktop: 3 field setiap baris */
+#form > .fld.rhb-bank-field,
+#form > .fld.rhb-account-field,
+#form > .fld.rhb-name-field,
+#form > .fld.rhb-amount-field,
+#form > .fld.rhb-payment-field,
+#form > .fld.rhb-reference-field {
+  grid-column: span 4 !important;
   width: 100% !important;
+  min-width: 0 !important;
 }
 
-/* Recipient Name diberikan satu baris penuh */
-#form > .fld:has(#toName) {
-  grid-column: 1 / -1 !important;
-}
-
-/* Baris tombol diberikan satu baris penuh */
+/* Button satu baris penuh */
 #form > .fld.w12 {
   grid-column: 1 / -1 !important;
 }
 
-/* Semua kumpulan input */
-#form .input-row {
+/* Input row */
+#form .fld .input-row {
   display: flex !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 8px !important;
-  width: 100% !important;
   min-width: 0 !important;
+  width: 100% !important;
 }
 
-/* Tombol Auto */
-#form .input-row > .chip {
-  flex: 0 0 72px !important;
-  width: 72px !important;
-  min-width: 72px !important;
-}
-#form .input-row > .shared-dropdown:has(#letterSel),
-#form .input-row > .shared-dropdown:has(#binSel) {
-  flex: 0 0 155px !important;
-  width: 155px !important;
-  min-width: 155px !important;
-  max-width: 155px !important;
-}
-
-/* Input Recipient Name */
-#form .input-row:has(#toName) > .new-ui-input-wrap {
-  flex: 1 1 240px !important;
+/* Custom input & dropdown */
+#form .fld .new-ui-input-wrap,
+#form .fld .shared-dropdown {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
   width: auto !important;
-  min-width: 200px !important;
-}
-
-/* Input Account */
-#form .input-row:has(#toId) > .new-ui-input-wrap {
-  flex: 1 1 200px !important;
-  width: auto !important;
-  min-width: 0 !important;
-}
-
-/* Dropdown Bank */
-#form .input-row:has(#bankSel) > .shared-dropdown {
-  flex: 1 1 200px !important;
-  width: auto !important;
-  min-width: 0 !important;
-}
-
-/* Custom input wrapper */
-#form .new-ui-input-wrap {
-  box-sizing: border-box !important;
   max-width: 100% !important;
 }
 
-/* Custom input */
-#form .new-ui-input-wrap input {
-  width: 100% !important;
+/* Dropdown A-Z / BIN */
+#form .rhb-name-field .shared-dropdown:has(#letterSel),
+#form .rhb-name-field .shared-dropdown:has(#binSel) {
+  flex: 0 1 90px !important;
+  width: 90px !important;
   min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  max-width: 90px !important;
 }
 
-/* Custom dropdown wrapper */
-#form .shared-dropdown {
-  max-width: 100% !important;
-  min-height: 32px !important;
+/* Input name */
+#form .rhb-name-field .new-ui-input-wrap {
+  flex: 1 1 130px !important;
 }
 
-/* Custom dropdown trigger */
-#form .shared-dropdown-trigger {
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
-  box-sizing: border-box !important;
-}
-
-/* Custom input */
-#form input[data-new-ui-input] {
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
-  box-sizing: border-box !important;
-}
-
-#form .shared-dropdown-trigger {
-  width: 100% !important;
-  min-width: 0 !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
-  box-sizing: border-box !important;
-}
-
-#form .shared-dropdown-input {
-  width: 100% !important;
-  min-width: 0 !important;
-  text-overflow: ellipsis !important;
-}
-
-/* ==========================================
-   RHB - DROPDOWN PANEL SAME WIDTH AS INPUT
-   ========================================== */
-
-#form .shared-dropdown:has(#letterSel) .shared-dropdown-panel,
-#form .shared-dropdown:has(#binSel) .shared-dropdown-panel {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  left: 0 !important;
-  right: auto !important;
-}
-
-/* Elak dropdown terlalu panjang */
-#form .shared-dropdown-options {
-  max-height: min(220px, 40vh) !important;
-  overflow-y: auto !important;
-}
-
-/* Pastikan dropdown terbuka di atas field lain */
-#form .fld:has(.shared-dropdown.open) {
-  position: relative !important;
-  z-index: 50 !important;
-}
-
-/* Desktop kecil / zoom tinggi */
-@media (max-width: 1000px) {
-  #form.card.form {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-
-  #form > .fld {
-    grid-column: 1 / -1 !important;
-  }
-}
-
-/* Mobile */
-@media (max-width: 520px) {
-  #form .input-row:has(#toName) > .new-ui-input-wrap {
-    flex: 1 1 100% !important;
-    min-width: 0 !important;
-  }
-
-  #form .shared-dropdown:has(#letterSel),
-  #form .shared-dropdown:has(#binSel) {
-    flex: 1 1 120px !important;
-    width: auto !important;
-    min-width: 120px !important;
-  }
-}
-/* ==========================================
-   RHB BANK - CUSTOM AUTO TOGGLE LAYOUT
-   ========================================== */
-
-#form .input-row > .shared-active-switch {
+/* Custom toggle */
+#form .fld .shared-active-switch {
   flex: 0 0 auto !important;
   width: auto !important;
   min-width: 0 !important;
   height: 32px !important;
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
   margin: 0 !important;
 }
 
-#form .shared-active-switch .shared-active-track {
+#form .fld .shared-active-track {
   width: 75px;
   height: 24px;
 }
 
-#form .shared-active-switch .shared-active-knob {
-  top: 4px;
+/* Height 32px */
+#form .fld .shared-dropdown-trigger,
+#form .fld input[data-new-ui-input] {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  box-sizing: border-box !important;
 }
+
+/* Dropdown panel */
+#form .fld .shared-dropdown-panel {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Pastikan dropdown tidak terlindung */
+#form > .fld:has(.shared-dropdown.open) {
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+/* ==========================================
+   LAPTOP / ZOOM
+   ========================================== */
+
+@media (max-width: 1400px) {
+  #form > .fld.rhb-bank-field,
+  #form > .fld.rhb-account-field,
+  #form > .fld.rhb-name-field,
+  #form > .fld.rhb-amount-field,
+  #form > .fld.rhb-payment-field,
+  #form > .fld.rhb-reference-field {
+    grid-column: span 6 !important;
+  }
+
+  #form > .fld.rhb-name-field {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* ==========================================
+   TABLET / PHONE
+   ========================================== */
+
+@media (max-width: 700px) {
+  #form > .fld.rhb-bank-field,
+  #form > .fld.rhb-account-field,
+  #form > .fld.rhb-name-field,
+  #form > .fld.rhb-amount-field,
+  #form > .fld.rhb-payment-field,
+  #form > .fld.rhb-reference-field {
+    grid-column: 1 / -1 !important;
+  }
+
+  #form.card.form {
+    padding: 12px !important;
+  }
+
+  #form .rhb-name-field .input-row {
+    flex-wrap: wrap !important;
+  }
+
+  #form .rhb-name-field .new-ui-input-wrap {
+    flex: 1 1 100% !important;
+  }
+}
+
+/* Sangat kecil */
+@media (max-width: 380px) {
+  #form .rhb-name-field .shared-dropdown:has(#letterSel),
+  #form .rhb-name-field .shared-dropdown:has(#binSel) {
+    flex: 1 1 80px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  #form > .fld.w12 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -498,102 +462,122 @@ body > .wrap > #preview {
   <div class="card form" id="form">
     <h2>RHB BANK</h2>
 
-    <!-- NAME with Auto + A–Z + BIN/BINTI -->
-    <div class="fld">
-      <label class="lbl">To (Recipient Name)</label>
-      <div class="input-row">
-        <label class="shared-active-switch">
-  <input
-    type="checkbox"
-    id="autoName"
-    data-active-label="Auto ON"
-    data-inactive-label="Auto OFF"
-  >
-  <span class="shared-active-track">
-    <span class="shared-active-text"></span>
-    <span class="shared-active-knob" aria-hidden="true"></span>
-  </span>
-</label>
-        <select class="mini" id="letterSel" data-shared-dropdown title="Huruf awal">
-          <!-- A–Z -->
-          <script>
-            document.write(
-              '<option value="">A–Z</option>'+
-              'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>`<option>${l}</option>`).join('')
-            );
-          </script>
-        </select>
-        <select class="mini" id="binSel" data-shared-dropdown title="BIN / BINTI">
-          <option value="">-</option>
-          <option value="BIN">BIN</option>
-          <option value="BINTI">BINTI</option>
-        </select>
-        <input class="inp" id="toName" data-new-ui-input placeholder="MAMA & PAPA" value="I LOVE YOU">
-      </div>
-    </div>
 
-    <!-- ACCOUNT -->
-    <div class="fld">
-      <label class="lbl">Recipient Account / ID</label>
-      <div class="input-row">
-        <label class="shared-active-switch">
-  <input
-    type="checkbox"
-    id="autoAcct"
-    data-active-label="Auto ON"
-    data-inactive-label="Auto OFF"
-  >
-  <span class="shared-active-track">
-    <span class="shared-active-text"></span>
-    <span class="shared-active-knob" aria-hidden="true"></span>
-  </span>
-</label>
-        <input class="inp" id="toId" data-new-ui-input placeholder="123456789">
-      </div>
-    </div>
+<!-- RHB BANK - RESPONSIVE CUSTOM FORM -->
 
-    <!-- BANK + Auto -->
-    <div class="fld">
-      <label class="lbl">Bank</label>
-      <div class="input-row">
-        <label class="shared-active-switch">
-  <input
-    type="checkbox"
-    id="autoBank"
-    data-active-label="Auto ON"
-    data-inactive-label="Auto OFF"
-  >
-  <span class="shared-active-track">
-    <span class="shared-active-text"></span>
-    <span class="shared-active-knob" aria-hidden="true"></span>
-  </span>
-</label>
-        <select class="sel" id="bankSel" data-shared-dropdown style="width:100%">
-          <option>Touch N Go Digital</option>
-          <option>Maybank</option>
-          <option>CIMB</option>
-          <option>Bank Simpanan Nasional</option>
-          <option>Hong Leong Bank Berhad</option>
-          <option>Public Bank</option>
-          <option>Bank Kerjasama Rakyat Malaysia</option>
-        </select>
-      </div>
-    </div>
+<!-- BANK -->
+<div class="fld rhb-bank-field">
+  <label class="lbl">Bank</label>
+  <div class="input-row">
+    <select class="sel" id="bankSel" data-shared-dropdown>
+      <option>Touch N Go Digital</option>
+      <option>Maybank</option>
+      <option>CIMB</option>
+      <option>Bank Simpanan Nasional</option>
+      <option>Hong Leong Bank Berhad</option>
+      <option>Public Bank</option>
+      <option>Bank Kerjasama Rakyat Malaysia</option>
+    </select>
 
-    <div class="fld">
-      <label class="lbl">Payment Type</label>
-      <input class="inp" id="payType" data-new-ui-input value="Fund Transfer">
-    </div>
+    <label class="shared-active-switch">
+      <input type="checkbox" id="autoBank"
+        data-active-label="Auto ON"
+        data-inactive-label="Auto OFF">
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob" aria-hidden="true"></span>
+      </span>
+    </label>
+  </div>
+</div>
 
-    <div class="fld">
-      <label class="lbl">Amount (MYR)</label>
-      <input class="inp" id="amount" data-new-ui-input inputmode="decimal" placeholder="Amount" value="0.00">
-    </div>
+<!-- ACCOUNT -->
+<div class="fld rhb-account-field">
+  <label class="lbl">Recipient Account / ID</label>
+  <div class="input-row">
+    <input class="inp" id="toId"
+      data-new-ui-input
+      placeholder="123456789">
 
-    <div class="fld">
-      <label class="lbl">Recipient Reference</label>
-      <input class="inp" id="reference" data-new-ui-input value="Payment" placeholder="Payment">
-    </div>
+    <label class="shared-active-switch">
+      <input type="checkbox" id="autoAcct"
+        data-active-label="Auto ON"
+        data-inactive-label="Auto OFF">
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob" aria-hidden="true"></span>
+      </span>
+    </label>
+  </div>
+</div>
+
+<!-- NAME -->
+<div class="fld rhb-name-field">
+  <label class="lbl">To (Recipient Name)</label>
+
+  <div class="input-row">
+
+    <select class="mini" id="letterSel"
+      data-shared-dropdown title="Huruf awal">
+      <option value="">A–Z</option>
+      <script>
+        document.write(
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+            .map(l => `<option>${l}</option>`).join('')
+        );
+      </script>
+    </select>
+
+    <select class="mini" id="binSel"
+      data-shared-dropdown title="BIN / BINTI">
+      <option value="">-</option>
+      <option value="BIN">BIN</option>
+      <option value="BINTI">BINTI</option>
+    </select>
+
+    <label class="shared-active-switch">
+      <input type="checkbox" id="autoName"
+        data-active-label="Auto ON"
+        data-inactive-label="Auto OFF">
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob" aria-hidden="true"></span>
+      </span>
+    </label>
+
+    <input class="inp" id="toName"
+      data-new-ui-input
+      placeholder="MAMA & PAPA"
+      value="I LOVE YOU">
+  </div>
+</div>
+
+<!-- AMOUNT -->
+<div class="fld rhb-amount-field">
+  <label class="lbl">Amount (MYR)</label>
+  <input class="inp" id="amount"
+    data-new-ui-input
+    inputmode="decimal"
+    placeholder="Amount"
+    value="0.00">
+</div>
+
+<!-- PAYMENT TYPE -->
+<div class="fld rhb-payment-field">
+  <label class="lbl">Payment Type</label>
+  <input class="inp" id="payType"
+    data-new-ui-input
+    value="Fund Transfer">
+</div>
+
+<!-- REFERENCE -->
+<div class="fld rhb-reference-field">
+  <label class="lbl">Recipient Reference</label>
+  <input class="inp" id="reference"
+    data-new-ui-input
+    value="Payment"
+    placeholder="Payment">
+</div>
 
 <div class="fld w12" style="display:flex; gap:8px">
   <button class="btn-reset" id="resetBtn">Reset</button>
