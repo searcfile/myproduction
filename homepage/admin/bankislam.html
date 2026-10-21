@@ -825,6 +825,81 @@ body {
   white-space: nowrap;
   font-size: 10px;
 }
+/* ==========================================
+   BANK ISLAM - BOTTOM ACTION BUTTONS
+   ========================================== */
+
+/* Semua tombol pada satu baris */
+#back .modal > .ctl {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Saiz tombol ikut tulisan */
+#back .modal > .ctl > .btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+}
+
+/* Create Bank + Manage Banks ke kanan */
+#back .modal > .ctl > .bank-islam-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex: 0 0 auto !important;
+  gap: 8px !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+}
+
+/* Saiz tombol bank */
+#back .modal > .ctl > .bank-islam-actions > .btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+}
+
+/* Mobile: dua kolum, tiga baris */
+@media (max-width: 650px) {
+
+  #back .modal > .ctl {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  #back .modal > .ctl > .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #back .modal > .ctl > .bank-islam-actions {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #back .modal > .ctl > .bank-islam-actions > .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -833,14 +908,6 @@ body {
       <!-- KIRI: Editor selalu tampil -->
       <div class="back" id="back">
         <div class="modal" role="document" aria-label="Editor">
-          <div class="bank-islam-actions">
-  <button type="button" class="btn primary" id="biCreateBank">
-    + Create Bank
-  </button>
-  <button type="button" class="btn" id="biManageBanks">
-    Manage Banks
-  </button>
-</div>
 
           <div class="fld">
             <label>Amount (RM)</label>
@@ -893,6 +960,15 @@ body {
   <button type="button" class="btn primary" id="btnBlur">Blur</button>
   <button type="button" class="btn primary" id="copyImg">Copy Image</button>
   <button type="button" class="btn" id="btnReset">Reset</button>
+
+            <div class="bank-islam-actions">
+  <button type="button" class="btn primary" id="biCreateBank">
+    + Create Bank
+  </button>
+  <button type="button" class="btn" id="biManageBanks">
+    Manage Banks
+  </button>
+</div>
 </div>
         </div>
       </div>
