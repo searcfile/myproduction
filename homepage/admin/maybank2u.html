@@ -950,6 +950,31 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   font-size: 10px;
 }
 
+/* MAINAN KANAK2 - STATUS LABEL */
+
+.mainan-bank-form .mainan-bank-status-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.mainan-bank-form .mainan-bank-status-label {
+  display: block;
+  color: var(--page-text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.mainan-bank-form .mainan-bank-status-field
+.shared-active-switch {
+  display: inline-flex !important;
+  width: max-content !important;
+  margin: 0 !important;
+}
+
 </style>
 <body>
  <div class="wrap">
@@ -1874,21 +1899,28 @@ function mainanOpenBankForm(editId = null) {
           />
         </label>
 
+
 <div class="mainan-bank-status">
-  <label class="shared-active-switch">
-    <input
-      id="mainanBankActive"
-      type="checkbox"
-      data-active-label="Active"
-      data-inactive-label="Inactive"
-      checked
-    />
-    <span class="shared-active-track">
-      <span class="shared-active-text"></span>
-      <span class="shared-active-knob" aria-hidden="true"></span>
-    </span>
-  </label>
+  <div class="mainan-bank-status-field">
+    <span class="mainan-bank-status-label">Status</span>
+
+    <label class="shared-active-switch">
+      <input
+        id="mainanBankActive"
+        type="checkbox"
+        data-active-label="Active"
+        data-inactive-label="Inactive"
+        checked
+      />
+
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob" aria-hidden="true"></span>
+      </span>
+    </label>
+  </div>
 </div>
+
 
       </form>
     `
