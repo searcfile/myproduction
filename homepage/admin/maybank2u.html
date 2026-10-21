@@ -1006,67 +1006,60 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
 
 @media (max-width: 650px) {
 
-  /* Semua tombol utama jadi 2 grid */
+  /* Semua tombol utama */
   .wrap > .panel .btns {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
     gap: 8px !important;
     width: 100% !important;
-    align-items: stretch !important;
-    justify-content: stretch !important;
+    min-width: 0 !important;
   }
 
   /* Create, Blur, Copy Image, Reset */
   .wrap > .panel .btns > button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-
+    flex: 1 1 120px !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 100% !important;
     height: 32px !important;
     min-height: 32px !important;
-    padding: 0 8px !important;
+    padding: 0 15px !important;
     margin: 0 !important;
-
-    flex: none !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
   }
 
-  /* Create Bank + Manage Banks pada baris ketiga */
+  /* Create Bank + Manage Banks */
   .wrap > .panel .btns .mainan-bank-actions {
-    grid-column: 1 / -1 !important;
-
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
     gap: 8px !important;
-
+    flex: 0 0 auto !important;
     width: 100% !important;
     min-width: 0 !important;
-
     margin: 0 !important;
     padding: 0 !important;
-    flex: none !important;
   }
 
-  /* Kedua-dua tombol bank penuh ikut grid */
+  /* Kedua-dua tombol bank */
   .wrap > .panel .btns .mainan-bank-actions > button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-
+    flex: 1 1 135px !important;
+    width: auto !important;
+    min-width: 135px !important;
+    max-width: 100% !important;
     height: 32px !important;
     min-height: 32px !important;
-    padding: 0 8px !important;
+    padding: 0 15px !important;
     margin: 0 !important;
-
-    flex: none !important;
+    box-sizing: border-box !important;
     white-space: nowrap !important;
+    text-align: center !important;
     font-size: 14px !important;
   }
 }
