@@ -1000,11 +1000,74 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   white-space: nowrap !important;
 }
 
-/* Mobile: jangan bertindih */
+/* ==========================================
+   MAINAN KANAK2 - RESPONSIVE ACTION BUTTONS
+   ========================================== */
+
 @media (max-width: 600px) {
+
+  /* Semua tombol utama jadi 2 grid */
+  .wrap > .panel .btns {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+
+  /* Create, Blur, Copy Image, Reset */
+  .wrap > .panel .btns > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+
+    flex: none !important;
+  }
+
+  /* Create Bank + Manage Banks pada baris ketiga */
   .wrap > .panel .btns .mainan-bank-actions {
-    margin-left: auto !important;
-    flex-wrap: wrap !important;
+    grid-column: 1 / -1 !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: none !important;
+  }
+
+  /* Kedua-dua tombol bank penuh ikut grid */
+  .wrap > .panel .btns .mainan-bank-actions > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+
+    flex: none !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
   }
 }
 </style>
