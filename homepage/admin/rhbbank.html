@@ -637,6 +637,90 @@ body > .wrap > #preview {
   }
 }
 
+/* RHB - BANK CATALOG */
+#form > .rhb-bank-toolbar {
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.rhb-bank-toolbar button {
+  width: auto;
+  min-height: 32px;
+  padding: 0 15px;
+}
+
+.rhb-catalog-form {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+}
+
+.rhb-catalog-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--page-text);
+  min-width: 0;
+}
+
+.rhb-catalog-form input {
+  width: 100%;
+  min-width: 0;
+}
+
+.rhb-catalog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rhb-catalog-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.rhb-catalog-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.rhb-catalog-info {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rhb-catalog-info small {
+  opacity: .7;
+}
+
+.rhb-catalog-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .rhb-catalog-actions button,
+  .rhb-catalog-buttons button {
+    flex: 1 1 auto;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -649,19 +733,32 @@ body > .wrap > #preview {
 
 <!-- RHB BANK - RESPONSIVE CUSTOM FORM -->
 
+<div class="rhb-bank-toolbar">
+  <button type="button"
+    class="btn-primary-new"
+    id="rhbCreateBank">
+    + Create Bank
+  </button>
+
+  <button type="button"
+    class="btn-cancel-new"
+    id="rhbManageBank">
+    Manage Banks
+  </button>
+</div>
+
 <!-- BANK -->
 <div class="fld rhb-bank-field">
   <label class="lbl">Bank</label>
   <div class="input-row">
-    <select class="sel" id="bankSel" data-shared-dropdown>
-      <option>Touch N Go Digital</option>
-      <option>Maybank</option>
-      <option>CIMB</option>
-      <option>Bank Simpanan Nasional</option>
-      <option>Hong Leong Bank Berhad</option>
-      <option>Public Bank</option>
-      <option>Bank Kerjasama Rakyat Malaysia</option>
-    </select>
+
+<select class="sel"
+  id="bankSel"
+  data-shared-dropdown
+  data-placeholder="Select bank">
+  <option value="">Select bank</option>
+</select>
+
 
     <label class="shared-active-switch">
       <input type="checkbox" id="autoBank"
@@ -863,9 +960,10 @@ function loadState(){
 function resetAll(){
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
-  el.toName.value = 'I LOVE YOU';
+  el.toName.value = '';
   el.toId.value   = '0';
-  el.bankSel.value= 'Touch N Go Digital';
+  el.bankSel.value = el.bankSel.options[1]?.value || "";
+  el.bankSel._sharedDropdown?.refresh();
   el.payType.value= 'Fund Transfer';
   el.amount.value = '0.00';
   el.ref.value    = 'Payment';
@@ -932,32 +1030,40 @@ function makeRandomName(){
 }
 
 /* Pola akaun per bank – PASTIKAN nilai <option> sama persis dengan key di sini */
-const BANK_PATTERNS = {
-  'Touch N Go Digital': [1,4,6,1],
-  'Maybank':            [1,4,6,1],
-  'CIMB':               [10],
-  'Bank Simpanan Nasional':[1,5,7,3],
-  'Hong Leong Bank Berhad':[11],
-  'Public Bank':        [10],
-  'Bank Kerjasama Rakyat Malaysia':[10],
-  'Bank Islam':         [4,4,4],
-  'AmBank':             [4,4,4],
-  'OCBC Bank':          [4,4,4],
-  'UOB Bank':           [4,4,4]
-};
+
 function genDigits(n){return Array.from({length:n},()=>String(randomInt(0,9))).join('')}
-function makeAccountFor(bank){
-  const groups = BANK_PATTERNS[bank] || [4,4,4];
-  return groups.map(n=>genDigits(n)).join('-');
+
+let RHB_BANK_RECORDS = {};
+const RHB_BANK_PATH = "bank_catalog/rhb";
+
+function makeAccountFor(bank) {
+  const record = Object.values(RHB_BANK_RECORDS)
+    .find(item => item.name === bank && item.active);
+
+  if (!record) return "";
+
+  const groups = record.pattern
+    .split("-")
+    .map(Number);
+
+  return groups.map(n => genDigits(n)).join("-");
 }
+
 
 /* ---------- Render ---------- */
 function render(){
   // auto toggles
   if (el.autoBank.checked){
-    const options = Array.from(el.bankSel.options).map(o=>o.value);
-    el.bankSel.value = pick(options);
-  }
+
+const options = Array.from(el.bankSel.options)
+  .map(option => option.value)
+  .filter(Boolean);
+
+if (options.length) {
+  el.bankSel.value = pick(options);
+  el.bankSel._sharedDropdown?.refresh();
+}
+
   if (el.autoAcct.checked){
     el.toId.value = makeAccountFor(el.bankSel.value);
   }
@@ -1053,11 +1159,399 @@ el.createBtn.addEventListener("click", () => {
 });
 el.resetBtn.addEventListener('click', resetAll);
 
+/* ==========================================
+   RHB BANK - CREATE & MANAGE FIREBASE CATALOG
+   ========================================== */
+
+const rhbToast = (message, type = "success") => {
+  if (typeof window.showToast === "function") {
+    window.showToast(message, type);
+  } else {
+    console.log(message);
+  }
+};
+
+function rhbBankRef() {
+  try {
+    if (!window.firebase || !firebase.apps.length) {
+      return null;
+    }
+    return firebase.database().ref(RHB_BANK_PATH);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+function rhbEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+function rhbNormalizeBank(value) {
+  if (!value || typeof value !== "object") return null;
+
+  const name = String(value.name || "").trim();
+  const pattern = String(value.pattern || "").trim();
+
+  if (!name || name.length > 100) return null;
+  if (!/^\d{1,2}(-\d{1,2})*$/.test(pattern)) return null;
+
+  const groups = pattern.split("-").map(Number);
+  const total = groups.reduce((sum, n) => sum + n, 0);
+
+  if (groups.some(n => n < 1 || n > 30) || total > 30) {
+    return null;
+  }
+
+  return {
+    name,
+    pattern,
+    active: value.active !== false
+  };
+}
+
+function rhbRefreshBankDropdown() {
+  const selected = el.bankSel.value;
+
+  const banks = Object.values(RHB_BANK_RECORDS)
+    .filter(bank => bank.active)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  el.bankSel.replaceChildren(new Option("Select bank", ""));
+
+  for (const bank of banks) {
+    el.bankSel.add(new Option(bank.name, bank.name));
+  }
+
+  el.bankSel.value = banks.some(b => b.name === selected)
+    ? selected
+    : (banks[0]?.name || "");
+
+  el.bankSel._sharedDropdown?.refresh();
+
+  saveState();
+  render();
+}
+
+function rhbLoadBanks() {
+  const ref = rhbBankRef();
+
+  if (!ref) {
+    rhbToast("Firebase belum tersedia.", "error");
+    return;
+  }
+
+  ref.on("value", snapshot => {
+    const records = {};
+
+    snapshot.forEach(child => {
+      const bank = rhbNormalizeBank(child.val());
+      if (bank) records[child.key] = bank;
+    });
+
+    RHB_BANK_RECORDS = records;
+    rhbRefreshBankDropdown();
+  }, error => {
+    rhbToast("Gagal load banks: " + error.message, "error");
+  });
+}
+
+function rhbBankFormModal(id = null) {
+  if (!window.NewUI?.modal?.open) {
+    return rhbToast("Custom modal belum tersedia.", "error");
+  }
+
+  const current = id ? RHB_BANK_RECORDS[id] : null;
+  const form = document.createElement("form");
+  form.className = "rhb-catalog-form";
+
+  form.innerHTML = `
+    <label>
+      Bank Name
+      <input
+        name="name"
+        data-new-ui-input
+        required
+        maxlength="100"
+        placeholder="Enter bank name"
+        value="${rhbEscape(current?.name || "")}">
+    </label>
+
+    <label>
+      Account Number Pattern
+      <input
+        name="pattern"
+        data-new-ui-input
+        required
+        placeholder="Example: 4-4-4 or 10"
+        value="${rhbEscape(current?.pattern || "")}">
+    </label>
+
+    <label>
+      Status
+      <span class="shared-active-switch">
+        <input
+          type="checkbox"
+          name="active"
+          data-active-label="Active"
+          data-inactive-label="Inactive"
+          ${current?.active === false ? "" : "checked"}>
+        <span class="shared-active-track">
+          <span class="shared-active-text"></span>
+          <span class="shared-active-knob"
+            aria-hidden="true"></span>
+        </span>
+      </span>
+    </label>
+
+    <div class="rhb-catalog-actions">
+      <button type="button"
+        class="btn-cancel-new"
+        data-cancel>
+        Cancel
+      </button>
+      <button type="submit"
+        class="btn-primary-new"
+        data-save>
+        ${id ? "Save Changes" : "Create Bank"}
+      </button>
+    </div>
+  `;
+
+  const modal = NewUI.modal.open({
+    title: id ? "Edit Bank" : "Create Bank",
+    content: form,
+    width: 620
+  });
+
+  NewUI.init(form);
+  NewUI.activeSwitch?.init?.(form);
+
+  form.querySelector("[data-cancel]")
+    .addEventListener("click", () => modal.close());
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const value = rhbNormalizeBank({
+      name: form.elements.name.value,
+      pattern: form.elements.pattern.value,
+      active: form.elements.active.checked
+    });
+
+    if (!value) {
+      return rhbToast(
+        "Semak Bank Name dan Account Pattern. Contoh: 4-4-4",
+        "warning"
+      );
+    }
+
+    const duplicate = Object.entries(RHB_BANK_RECORDS)
+      .some(([key, bank]) =>
+        key !== id &&
+        bank.name.toLowerCase() === value.name.toLowerCase()
+      );
+
+    if (duplicate) {
+      return rhbToast("Bank name sudah wujud.", "warning");
+    }
+
+    const ref = rhbBankRef();
+    if (!ref) return rhbToast("Firebase belum tersedia.", "error");
+
+    const saveButton = form.querySelector("[data-save]");
+
+    await NewUI.setButtonLoading(saveButton, true, {
+      text: id ? "Saving..." : "Creating..."
+    });
+
+    let success = false;
+
+    try {
+      const target = id ? ref.child(id) : ref.push();
+
+      await target.set({
+        ...value,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      success = true;
+    } catch (error) {
+      rhbToast("Gagal save: " + error.message, "error");
+    } finally {
+      await NewUI.setButtonLoading(saveButton, false, {
+        minDuration: 700
+      });
+    }
+
+    if (success) {
+      modal.close();
+      rhbToast(
+        id ? "Bank updated successfully" : "Bank created successfully"
+      );
+    }
+  });
+}
+
+function rhbManageBanksModal() {
+  if (!window.NewUI?.modal?.open) {
+    return rhbToast("Custom modal belum tersedia.", "error");
+  }
+
+  const content = document.createElement("div");
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "rhb-catalog-actions";
+  toolbar.style.marginBottom = "12px";
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn-primary-new";
+  addButton.textContent = "+ Create Bank";
+  toolbar.append(addButton);
+
+  const list = document.createElement("div");
+  list.className = "rhb-catalog-list";
+
+  content.append(toolbar, list);
+
+  const modal = NewUI.modal.open({
+    title: "Manage Banks",
+    content,
+    width: 720
+  });
+
+  function renderList() {
+    list.replaceChildren();
+
+    const records = Object.entries(RHB_BANK_RECORDS)
+      .sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+    if (!records.length) {
+      if (window.showEmptyState) {
+        window.showEmptyState(list, "No data", "large", "center");
+      } else {
+        list.textContent = "No data";
+      }
+      return;
+    }
+
+    for (const [id, bank] of records) {
+      const row = document.createElement("div");
+      row.className = "rhb-catalog-item";
+
+      const info = document.createElement("div");
+      info.className = "rhb-catalog-info";
+
+      const name = document.createElement("strong");
+      name.textContent = bank.name;
+
+      const details = document.createElement("small");
+      details.textContent =
+        `Pattern: ${bank.pattern} · ` +
+        (bank.active ? "Active" : "Inactive");
+
+      info.append(name, details);
+
+      const actions = document.createElement("div");
+      actions.className = "rhb-catalog-buttons";
+
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "btn-primary-new";
+      edit.textContent = "Edit";
+
+      edit.addEventListener("click", () => {
+        modal.close();
+        rhbBankFormModal(id);
+      });
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "btn-delete-new";
+      del.textContent = "Delete";
+
+      del.addEventListener("click", async () => {
+        if (!window.NewUI?.confirm) {
+          return rhbToast("Custom confirm belum tersedia.", "error");
+        }
+
+        const confirmed = await NewUI.confirm({
+          target: del,
+          title: "Delete Bank",
+          message: `Delete ${bank.name}?`,
+          confirmText: "Delete",
+          danger: true
+        });
+
+        if (!confirmed) return;
+
+        const ref = rhbBankRef();
+        if (!ref) return rhbToast("Firebase belum tersedia.", "error");
+
+        del.disabled = true;
+
+        try {
+          await ref.child(id).remove();
+          delete RHB_BANK_RECORDS[id];
+          renderList();
+          rhbToast("Bank deleted successfully");
+        } catch (error) {
+          rhbToast("Gagal delete: " + error.message, "error");
+          del.disabled = false;
+        }
+      });
+
+      actions.append(edit, del);
+      row.append(info, actions);
+      list.append(row);
+    }
+  }
+
+  addButton.addEventListener("click", () => {
+    modal.close();
+    rhbBankFormModal();
+  });
+
+  const ref = rhbBankRef();
+
+  if (ref) {
+    ref.once("value").then(snapshot => {
+      const records = {};
+
+      snapshot.forEach(child => {
+        const bank = rhbNormalizeBank(child.val());
+        if (bank) records[child.key] = bank;
+      });
+
+      RHB_BANK_RECORDS = records;
+      renderList();
+    }).catch(error => {
+      rhbToast(error.message, "error");
+    });
+  } else {
+    renderList();
+  }
+}
+
+document.getElementById("rhbCreateBank")
+  ?.addEventListener("click", () => rhbBankFormModal());
+
+document.getElementById("rhbManageBank")
+  ?.addEventListener("click", rhbManageBanksModal);
+
 /* ---------- Init ---------- */
 loadState();
 render();
 
 updateRhbEmptyState();
+  rhbLoadBanks();
   (function () {
   const THEME_KEY = "siteTheme";
 
