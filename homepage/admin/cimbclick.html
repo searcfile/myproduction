@@ -652,31 +652,63 @@ html {
   white-space: nowrap;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
+/* ==========================================
+   CIMB CLICKS - MOBILE BUTTONS 2 GRID
+   ========================================== */
+
+@media (max-width: 650px) {
+
+  /* Wrapper utama */
   .builder-panel .cimb-bottom-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .builder-panel .cimb-bottom-actions .btn-row,
-  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
     width: 100% !important;
-    margin-left: 0 !important;
+    min-width: 0 !important;
+    align-items: stretch !important;
   }
 
+  /* Empat tombol utama */
   .builder-panel .cimb-bottom-actions .btn-row {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
-    display: flex !important;
-    justify-content: flex-end !important;
-  }
-
-  .builder-panel .cimb-bottom-actions .btn-row > button {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
     width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Dua tombol bank */
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Semua tombol ikut lebar grid */
+  .builder-panel .cimb-bottom-actions .btn-row > button,
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: none !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+
+    white-space: nowrap !important;
+    font-size: 12px !important;
   }
 }
 </style>
