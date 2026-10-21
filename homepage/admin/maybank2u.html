@@ -966,7 +966,47 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   width: max-content !important;
   margin: 0 !important;
 }
+/* MAINAN KANAK2 - ACTION BUTTONS POSITION */
 
+.wrap > .panel .btns {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* Create Bank + Manage Banks di kanan */
+.wrap > .panel .btns .mainan-bank-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+/* Saiz tombol ikut teks */
+.wrap > .panel .btns .mainan-bank-actions button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+}
+
+/* Mobile: jangan bertindih */
+@media (max-width: 600px) {
+  .wrap > .panel .btns .mainan-bank-actions {
+    margin-left: auto !important;
+    flex-wrap: wrap !important;
+  }
+}
 </style>
 <body>
  <div class="wrap">
@@ -977,21 +1017,6 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
       <div class="pb">
 <div class="field">
 
-<div class="mainan-bank-actions">
-  <button
-    type="button"
-    class="btn-primary-new"
-    id="mainanCreateBank">
-    + Create Bank
-  </button>
-
-  <button
-    type="button"
-    class="btn-cancel-new"
-    id="mainanManageBanks">
-    Manage Banks
-  </button>
-</div>
   <select id="bankSelect" data-shared-dropdown data-placeholder="Select bank" aria-label="Select bank"></select>
 </div>
         
@@ -1043,6 +1068,22 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
   <button class="btn-create" id="blurBtn" type="button">Blur</button>
   <button class="btn-create" id="copyImageBtn" type="button">Copy Image</button>
   <button class="btn-reset" id="resetBtn">Reset</button>
+
+  <div class="mainan-bank-actions">
+  <button
+    type="button"
+    class="btn-primary-new"
+    id="mainanCreateBank">
+    + Create Bank
+  </button>
+
+  <button
+    type="button"
+    class="btn-cancel-new"
+    id="mainanManageBanks">
+    Manage Banks
+  </button>
+</div>
 </div>
 
         
