@@ -225,6 +225,34 @@
   }
 
 }
+/* AUTH USERS - CENTER LOADING */
+
+.auth-loading-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 150px;
+  width: 100%;
+  color: #9bb5da;
+  font-size: 12px;
+}
+
+.auth-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(88, 151, 255, .18);
+  border-top-color: #3987ff;
+  border-radius: 50%;
+  animation: authLoadingSpin .75s linear infinite;
+}
+
+@keyframes authLoadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>
 </head>
 <body>
@@ -357,7 +385,7 @@ async function check(){
 function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}
 function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
 function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
-function emptyRow(message) {
+function emptyRow(message, kind = 'empty') {
   const rows = $('rows');
   rows.replaceChildren();
 
@@ -367,12 +395,36 @@ function emptyRow(message) {
   td.colSpan = 6;
   td.className = 'auth-empty-cell';
 
-  if (window.createEmptyState) {
+  if (kind === 'loading') {
+
+    if (typeof window.createLoadingState === 'function') {
+      td.innerHTML = window.createLoadingState(
+        message,
+        'large',
+        'center'
+      );
+    } else {
+      const loading = document.createElement('div');
+      loading.className = 'auth-loading-center';
+
+      const spinner = document.createElement('span');
+      spinner.className = 'auth-loading-spinner';
+
+      const text = document.createElement('span');
+      text.textContent = message;
+
+      loading.append(spinner, text);
+      td.append(loading);
+    }
+
+  } else if (typeof window.createEmptyState === 'function') {
+
     td.innerHTML = window.createEmptyState(
       message,
       'large',
       'center'
     );
+
   } else {
     td.textContent = message;
   }
@@ -408,7 +460,11 @@ async function copy(v){try{await navigator.clipboard.writeText(v);toast('UID cop
 async function load() {
   if (loading) return;
 
-    loading = true;
+  loading = true;
+
+  if (!users.length) {
+    emptyRow('Please wait the moment...', 'loading');
+  }
 
   try {
     const d = await api('/api/admin-users');
