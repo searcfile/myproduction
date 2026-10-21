@@ -873,7 +873,6 @@ body.dark-theme .note-card{
   display:flex;
   justify-content:flex-end;
   gap:8px;
-  background:var(--page-bg2);
 }
 
 .confirm-text{
@@ -1153,7 +1152,7 @@ select:focus-visible{
 .note-title{color:#fff!important;}
 .note-body{min-height:0!important;}
 .sticky-empty-holder{width:100%;}
-.sticky-empty-holder .shared-empty-card{min-height:160px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
+.sticky-empty-holder .shared-empty-card{min-height:160px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
 .sticky-empty-holder .shared-empty{min-height:160px;}
 .dialog{max-width:calc(100vw - 24px)!important;}
 .dialog .input,.dialog .textarea{width:100%;min-width:0;}
@@ -1173,7 +1172,7 @@ select:focus-visible{
     <section class="content">
       <div class="sticky-shell">
         <div class="content-toolbar sticky-toolbar">
-          <div class="sticky-search"><input id="searchInput" type="search" placeholder="Search notes..." autocomplete="off" aria-label="Search notes"></div>
+          <div class="sticky-search"><input id="searchInput" type="search" placeholder="Search" autocomplete="off" aria-label="Search notes"></div>
           <div id="stickyFilter" class="sticky-filter" aria-label="Filter notes"></div>
           <button id="createBtn" type="button" class="btn-primary-new sticky-create">+ Create Note</button>
         </div>
