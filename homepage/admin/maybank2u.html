@@ -908,6 +908,21 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
     min-width: 0 !important;
   }
 }
+  /* MAINAN KANAK2 - BANK ACTIVE SWITCH */
+.mainan-bank-form .mainan-bank-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  margin-top: 4px;
+}
+
+.mainan-bank-form .mainan-bank-status .shared-active-switch {
+  display: inline-flex;
+  width: max-content;
+  margin: 0;
+}
 </style>
 <body>
  <div class="wrap">
@@ -1648,6 +1663,7 @@ function mainanEscape(value) {
   );
 }
 
+
 function mainanNormalizeBank(data) {
   if (!data || typeof data !== "object") return null;
 
@@ -1655,6 +1671,7 @@ function mainanNormalizeBank(data) {
   const len = Number(data.len);
   const rule = data.rule === "start" ? "start" : "prefix";
   const digits = String(data.digits ?? "");
+  const active = data.active !== false;
 
   if (
     !name ||
@@ -1672,9 +1689,11 @@ function mainanNormalizeBank(data) {
     name,
     len,
     rule,
-    digits
+    digits,
+    active
   };
 }
+
 
 /* ==========================================================
    REALTIME DATA LISTENER
@@ -1685,7 +1704,9 @@ function mainanRefreshBankCatalog() {
 
   BANK_CONFIG = {};
 
-  Object.values(MAINAN_BANK_RECORDS).forEach(bank => {
+Object.values(MAINAN_BANK_RECORDS)
+  .filter(bank => bank.active !== false)
+  .forEach(bank => {
     BANK_CONFIG[bank.name] = {
       len: bank.len,
       [bank.rule]: bank.digits
@@ -1826,6 +1847,22 @@ function mainanOpenBankForm(editId = null) {
           />
         </label>
 
+<div class="mainan-bank-status">
+  <label class="shared-active-switch">
+    <input
+      id="mainanBankActive"
+      type="checkbox"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+      checked
+    />
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
+</div>
+
       </form>
     `
   });
@@ -1836,12 +1873,14 @@ function mainanOpenBankForm(editId = null) {
   const lengthInput = root.querySelector("#mainanBankLength");
   const ruleInput = root.querySelector("#mainanBankRule");
   const digitsInput = root.querySelector("#mainanBankDigits");
+  const activeInput = root.querySelector("#mainanBankActive");
   const form = root.querySelector("#mainanBankForm");
 
   nameInput.value = existing?.name || "";
   lengthInput.value = existing?.len || 10;
   ruleInput.value = existing?.rule || "prefix";
   digitsInput.value = existing?.digits || "";
+  activeInput.checked = existing?.active !== false;
 
   NewUI.init(root);
   ruleInput._sharedDropdown?.refresh?.();
@@ -1871,12 +1910,13 @@ function mainanOpenBankForm(editId = null) {
 
     if (!form.reportValidity()) return;
 
-    const data = mainanNormalizeBank({
-      name: nameInput.value,
-      len: lengthInput.value,
-      rule: ruleInput.value,
-      digits: digitsInput.value
-    });
+const data = mainanNormalizeBank({
+  name: nameInput.value,
+  len: lengthInput.value,
+  rule: ruleInput.value,
+  digits: digitsInput.value,
+  active: activeInput.checked
+});
 
     if (!data) {
       mainanToast("Please enter valid bank information", "error");
@@ -1974,6 +2014,7 @@ function mainanOpenManageBanks() {
           Length: ${bank.len}
           | ${mainanEscape(bank.rule)}:
           ${mainanEscape(bank.digits || "None")}
+          | ${bank.active !== false ? "Active" : "Inactive"}
         </small>
       </div>
 
