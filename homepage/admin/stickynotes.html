@@ -1156,7 +1156,7 @@ select:focus-visible{
 .sticky-create{height:32px!important;white-space:nowrap!important;padding:0 15px!important;width:max-content!important;min-width:max-content!important;margin:0!important;}
 .notes-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))!important;gap:14px!important;}
 .note-card{min-height:260px!important;height:290px!important;max-height:290px!important;border-radius:12px!important;box-shadow:0 3px 15px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s;}
-.note-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.20);}
+.note-card:hover{box-shadow:0 10px 26px rgba(0,0,0,.20);}
 .note-title{color:#fff!important;}
 .note-body{min-height:0!important;}
 .sticky-empty-holder{width:100%;}
@@ -1510,8 +1510,8 @@ function renderNotes(){
       </div>
 
 <div class="note-actions">
-  <button class="btn-edit" data-action="edit" data-id="${note.id}">Edit</button>
-  <button class="btn-delete" data-action="delete" data-id="${note.id}">Delete</button>
+  <button class="btn-edit-new" data-action="edit" data-id="${note.id}">Edit</button>
+  <button class="btn-delete-new" data-action="delete" data-id="${note.id}">Delete</button>
 </div>
     `;
 
