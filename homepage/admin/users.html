@@ -225,7 +225,16 @@
   }
 
 }
-/* AUTH USERS - CENTER LOADING */
+/* ==========================================
+   AUTH USERS - INSTANT CENTER LOADING
+   ========================================== */
+
+.auth-table .auth-empty-cell {
+  height: 190px !important;
+  padding: 0 16px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
 
 .auth-loading-center {
   display: flex;
@@ -233,18 +242,24 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 150px;
+
   width: 100%;
+  min-height: 190px;
+
   color: #9bb5da;
   font-size: 12px;
 }
 
 .auth-loading-spinner {
+  display: block;
   width: 28px;
   height: 28px;
+  flex: 0 0 28px;
+
   border: 3px solid rgba(88, 151, 255, .18);
   border-top-color: #3987ff;
   border-radius: 50%;
+
   animation: authLoadingSpin .75s linear infinite;
 }
 
@@ -298,7 +313,16 @@
     <div class="tablewrap auth-tablewrap">
       <table class="auth-table">
         <thead><tr><th>USERNAME</th><th>FIREBASE UID</th><th>ROLE</th><th>STATUS</th><th>CREATED</th><th>ACTION</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows">
+  <tr>
+    <td colspan="6" class="auth-empty-cell">
+      <div class="auth-loading-center">
+        <span class="auth-loading-spinner"></span>
+        <span>Please wait the moment...</span>
+      </div>
+    </td>
+  </tr>
+</tbody>
       </table>
     </div>
 </section>
@@ -549,6 +573,20 @@ $('copyUid').addEventListener('click',()=>copy($('uid').value));
 if(window.NewUI?.syncSearch){
   NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
 }
-(async()=>{try{if(await check()){$('create').disabled=false;ready=true;await load()}}catch(e){status('Authorization error: '+e.message,true)}})();
+(async () => {
+  try {
+    if (await check()) {
+      $('create').disabled = false;
+      ready = true;
+      await load();
+    } else {
+      emptyRow('Unable to verify admin session');
+    }
+  } catch (e) {
+    emptyRow('Unable to verify admin session');
+    status('Authorization error: ' + e.message, true);
+    toast('Authorization error: ' + e.message, 'error');
+  }
+})();
 </script>
 </body></html>
