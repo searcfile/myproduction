@@ -93,6 +93,12 @@
 @media(max-width:620px){.auth-workspace{width:calc(100% - 20px);padding-top:16px}.auth-hero{align-items:flex-start;flex-wrap:wrap;gap:15px}.auth-create{margin-left:auto}.auth-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.auth-stats .stat{min-height:108px}.auth-stats .stat:last-child{grid-column:1/-1}.auth-stats .stat strong{font-size:25px}.auth-section-heading{padding:15px 12px}.auth-toolbar{padding:0 12px 14px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}.auth-search-holder{min-width:0;max-width:none;width:100%}.auth-refresh{padding:0 10px!important}.auth-table-footer{padding:11px 12px}.auth-footer-label{display:none}.auth-formgrid{grid-template-columns:1fr;gap:12px}.auth-formgrid .field{grid-column:1/-1}.auth-modal-actions{flex-wrap:wrap}.auth-modal-actions button{flex:1 1 auto}.auth-count{font-size:10px}}
 @media(max-width:340px){.auth-toolbar{grid-template-columns:1fr!important}.auth-refresh{justify-self:end}.auth-stats .stat-icon{display:none}}
 
+/* Single-file modal form corrections */
+.auth-form-source[hidden]{display:none!important}
+.shared-modal-body:has(#userForm){overflow-y:auto;max-height:min(75vh,620px)}
+.shared-modal-body #userForm{display:block;width:100%}
+.shared-modal-body #modalActions{padding-top:18px;margin-top:12px;border-top:1px solid var(--tx-border,#2b3e5b)}
+@media(max-width:620px){.shared-modal-body:has(#userForm){max-height:calc(100dvh - 115px)}}
 </style>
 </head>
 <body>
@@ -125,7 +131,7 @@
     <div class="auth-table-footer"><div class="status" id="status" role="status" aria-live="polite"></div><span class="auth-footer-label">5G88 • Access management</span></div>
   </section>
 </main>
-<!-- Original form nodes are retained; NewUI.modal moves body and footer into shared modal. -->
+<!-- The original form is moved intact into the shared modal to preserve native validation and submit events. -->
 <div class="auth-form-source" id="formSource" hidden>
   <form id="userForm">
     <div id="modalFields" class="auth-modal-fields">
@@ -156,26 +162,27 @@ const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
 let users=[],editing=null,ready=false,formModal=null,loading=false;
 const searchInput=$('search');
-// Fields are moved into NewUI modal, so associate them explicitly with the form.
-$('modalFields').querySelectorAll('input').forEach(input=>input.setAttribute('form','userForm'));
 function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
 function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else status(message,type==='error');}
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
 function showModal(){
   if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
-  const form=$('userForm'),fields=$('modalFields'),actions=$('modalActions');
+  const form=$('userForm'),home=$('formSource');
+  home.hidden=false;
   formModal=NewUI.modal.open({
     title:editing?'Manage Username':'Create Username',
     width:'600px',
-    content:fields,
-    footer:actions,
+    content:form,
     onClose(){
-      form.append(fields,actions);
-      formModal=null;editing=null;
+      home.append(form);
+      home.hidden=true;
+      formModal=null;
+      editing=null;
     }
   });
-  // Form association remains valid through form="userForm" on Save.
-  setTimeout(()=>$('username').disabled?$('password').focus():$('username').focus(),80);
+  NewUI.init?.(form);
+  NewUI.activeSwitch?.init?.(form);
+  setTimeout(()=>($('username').disabled?$('password'):$('username')).focus(),80);
 }
 function closeModal(){if(formModal)formModal.close();}
 async function api(path,opts={}){
