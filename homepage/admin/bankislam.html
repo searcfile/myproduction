@@ -590,9 +590,14 @@ body {
 }
 
 #back .modal .ctl > .btn {
-  flex: 0 1 190px !important;
-  min-width: 110px !important;
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: none !important;
   height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
 }
 
 /* TABLET */
@@ -615,10 +620,6 @@ body {
     gap: 10px !important;
   }
 
-  #back .modal .ctl > .btn {
-    flex: 1 1 calc(50% - 5px) !important;
-    min-width: 0 !important;
-  }
 
 #back .modal .name-wrap > .shared-dropdown {
   flex: 0 0 145px !important;
