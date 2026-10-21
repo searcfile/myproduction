@@ -99,15 +99,84 @@
 .shared-modal-body #userForm{display:block;width:100%}
 .shared-modal-body #modalActions{padding-top:18px;margin-top:12px;border-top:1px solid var(--tx-border,#2b3e5b)}
 @media(max-width:620px){.shared-modal-body:has(#userForm){max-height:calc(100dvh - 115px)}}
+/* ==========================================
+   AUTH USERS - TOP SEARCH + CREATE TOOLBAR
+   ========================================== */
+
+.auth-top-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 20px;
+}
+
+.auth-top-toolbar .auth-search-holder {
+  flex: 0 1 400px;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.auth-top-toolbar .auth-search-holder input {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-top-toolbar .auth-create {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 0;
+  height: 34px !important;
+  padding: 0 15px !important;
+  margin: 0 0 0 auto !important;
+  white-space: nowrap;
+}
+
+/* MOBILE / ZOOM */
+
+@media (max-width: 600px) {
+
+  .auth-top-toolbar {
+    gap: 10px;
+  }
+
+  .auth-top-toolbar .auth-search-holder {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .auth-top-toolbar .auth-create {
+    margin-left: auto !important;
+  }
+}
 </style>
 </head>
 <body>
 <main class="workspace auth-workspace">
-  <header class="auth-hero">
-    <div class="hero-copy">
-    </div>
-    <button class="btn-primary-new auth-create" id="create" type="button" disabled>+ Create Username</button>
-  </header>
+<div class="auth-top-toolbar">
+  <div class="auth-search-holder">
+    <input
+      id="search"
+      type="search"
+      placeholder="Search username, UID or role"
+      aria-label="Search admin users"
+    >
+  </div>
+
+  <button
+    class="btn-primary-new auth-create"
+    id="create"
+    type="button"
+    disabled
+  >
+    + Create Username
+  </button>
+</div>
   <div class="stats auth-stats">
     <div class="card stat"><div class="stat-icon">◈</div><small>Total users</small><strong id="total">—</strong><span class="stat-note">Registered admin accounts</span></div>
     <div class="card stat"><div class="stat-icon">✓</div><small>Active</small><strong id="activeCount">—</strong><span class="stat-note">Enabled for sign-in</span></div>
@@ -115,10 +184,7 @@
   </div>
   <section class="card auth-list">
     <div class="auth-section-heading"><div><h2>Admin accounts</h2><p>Manage credentials and account status</p></div><span id="resultCount" class="auth-count">— accounts</span></div>
-    <div class="toolbar auth-toolbar">
-      <div class="auth-search-holder"><input id="search" type="search" placeholder="Search username, UID or role" aria-label="Search admin users"></div>
-      <button class="btn-cancel-new auth-refresh" id="refresh" type="button"><span class="refresh-glyph">↻</span> Refresh</button>
-    </div>
+
     <div class="tablewrap auth-tablewrap">
       <table class="auth-table">
         <thead><tr><th>USERNAME</th><th>FIREBASE UID</th><th>ROLE</th><th>STATUS</th><th>CREATED</th><th>ACTION</th></tr></thead>
@@ -240,17 +306,40 @@ function render(){
   }
 }
 async function copy(v){try{await navigator.clipboard.writeText(v);toast('UID copied successfully.')}catch{toast('Copy failed; select the UID manually.','error')}}
-async function load(){
-  if(loading)return;loading=true;
-  $('refresh').disabled=true;status('Loading accounts…');
-  if(!users.length)emptyRow('Loading accounts…','loading');
-  const started=performance.now();
-  try{
-    const d=await api('/api/admin-users');users=d.users||[];render();status('Loaded '+users.length+' accounts.');
-  }catch(e){if(!users.length)emptyRow('Unable to load accounts');status('Cannot load accounts: '+e.message,true);toast('Cannot load accounts: '+e.message,'error')}
-  finally{
-    const wait=Math.max(0,650-(performance.now()-started));if(wait)await new Promise(r=>setTimeout(r,wait));
-    $('refresh').disabled=false;loading=false;
+async function load() {
+  if (loading) return;
+
+  loading = true;
+  status('Loading accounts…');
+
+  if (!users.length) {
+    emptyRow('Loading accounts…', 'loading');
+  }
+
+  try {
+    const d = await api('/api/admin-users');
+
+    users = d.users || [];
+
+    render();
+
+    status('Loaded ' + users.length + ' accounts.');
+
+  } catch (e) {
+
+    if (!users.length) {
+      emptyRow('Unable to load accounts');
+    }
+
+    status('Cannot load accounts: ' + e.message, true);
+
+    toast(
+      'Cannot load accounts: ' + e.message,
+      'error'
+    );
+
+  } finally {
+    loading = false;
   }
 }
 function create(){
@@ -305,7 +394,6 @@ $('userForm').addEventListener('submit',async e=>{
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
 });
 searchInput.addEventListener('input',render);
-$('refresh').addEventListener('click',load);
 $('create').addEventListener('click',create);
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
