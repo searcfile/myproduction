@@ -582,10 +582,10 @@ input::placeholder{
 }
 
 .content-toolbar .search-wrap{
-  width:33%;
-  min-width:260px;
-  max-width:620px;
-  flex:unset;
+  width:100%;
+  max-width:400px;
+  min-width:0;
+  flex:0 1 400px;
 }
 .content-toolbar .filter-combo{
   width:33%;
@@ -594,8 +594,10 @@ input::placeholder{
   flex:unset;
 }
 .content-toolbar .btn{
-  flex-shrink:0;
+  flex:0 0 auto;
+  width:fit-content;
   margin-left:auto;
+  white-space:nowrap;
 }
 .notes-grid{
   display:grid;
@@ -1147,7 +1149,41 @@ select:focus-visible{
 /* STICKY NOTES UPGRADE — local-only overrides, shared NewUI remains unchanged */
 .content{overflow:visible!important;max-width:100%;}
 .sticky-shell{background:var(--page-bg2,#1f1f1f);border:1px solid var(--border-input,#424242);border-radius:12px;padding:12px;margin-bottom:12px;}
-.sticky-toolbar{display:grid!important;grid-template-columns:minmax(220px,1.15fr) minmax(240px,1fr) auto!important;align-items:center!important;gap:10px!important;margin:0!important;}
+/* STICKY NOTES - TOOLBAR DESKTOP */
+.sticky-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* SEARCH - MAX 400PX */
+.sticky-toolbar .sticky-search {
+  flex: 0 1 400px !important;
+  width: 100% !important;
+  max-width: 400px !important;
+  min-width: 0 !important;
+}
+
+/* DROPDOWN CHIPS - MAX 400PX */
+.sticky-toolbar .sticky-filter {
+  flex: 0 1 400px !important;
+  width: 100% !important;
+  max-width: 400px !important;
+  min-width: 0 !important;
+}
+
+/* CREATE NOTE - KEKAL DI KANAN */
+.sticky-toolbar .sticky-create {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: max-content !important;
+  margin-left: auto !important;
+  white-space: nowrap !important;
+}
 .sticky-search,.sticky-filter{min-width:0;width:100%;}
 .sticky-search .shared-sync-search{width:100%;max-width:none;min-width:0;}
 .sticky-search input{width:100%!important;min-width:0!important;}
@@ -1167,8 +1203,62 @@ select:focus-visible{
 .dialog .new-ui-input-wrap{width:100%;display:block;}
 .dialog-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
 .dialog-foot button{min-width:95px;height:32px;}
-@media(max-width:900px){.sticky-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}.sticky-create{grid-column:1/-1;justify-self:end;}}
-@media(max-width:620px){.content{padding:10px!important;}.sticky-shell{padding:10px;}.sticky-toolbar{grid-template-columns:minmax(0,1fr)!important;}.sticky-create{grid-column:1;justify-self:stretch;width:100%!important;}.notes-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))!important;}.note-card{height:270px!important;min-height:270px!important;}}
+/* STICKY NOTES - RESPONSIVE */
+@media (max-width: 900px) {
+
+  .sticky-toolbar .sticky-search,
+  .sticky-toolbar .sticky-filter {
+    flex: 1 1 250px !important;
+    max-width: 400px !important;
+  }
+
+  .sticky-toolbar .sticky-create {
+    margin-left: auto !important;
+  }
+
+}
+
+@media (max-width: 620px) {
+
+  .content {
+    padding: 10px !important;
+  }
+
+  .sticky-shell {
+    padding: 10px !important;
+  }
+
+  .sticky-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .sticky-toolbar .sticky-search,
+  .sticky-toolbar .sticky-filter {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sticky-toolbar .sticky-create {
+    align-self: flex-end !important;
+    margin-left: auto !important;
+    width: fit-content !important;
+  }
+
+  .notes-grid {
+    grid-template-columns:
+      repeat(auto-fill, minmax(min(100%, 220px), 1fr)) !important;
+  }
+
+  .note-card {
+    height: 270px !important;
+    min-height: 270px !important;
+  }
+
+}
 
 </style>
 </head>
