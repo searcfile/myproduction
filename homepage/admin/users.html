@@ -105,9 +105,6 @@
 <main class="workspace auth-workspace">
   <header class="auth-hero">
     <div class="hero-copy">
-      <div class="eyebrow">ACCESS MANAGEMENT <span class="hero-dot"></span> ADMIN SECURITY</div>
-      <h1>Auth Users</h1>
-      <p class="subtitle">Create and manage secure admin login accounts.</p>
     </div>
     <button class="btn-primary-new auth-create" id="create" type="button" disabled>+ Create Username</button>
   </header>
@@ -224,7 +221,7 @@ function render(){
   $('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;
   const filtered=users.filter(u=>[u.username,u.uid,u.role].join(' ').toLowerCase().includes(q));
   $('resultCount').textContent=filtered.length+' account'+(filtered.length===1?'':'s');
-  if(!filtered.length){emptyRow(users.length?'No matching users':'No data');return}
+  if(!filtered.length){emptyRow(users.length?'No Data':'No data');return}
   for(const u of filtered){
     const tr=document.createElement('tr');
     const userTd=document.createElement('td');userTd.className='auth-user-cell';
