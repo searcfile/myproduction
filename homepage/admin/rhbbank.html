@@ -404,10 +404,19 @@ body > .wrap > #preview {
   max-width: 90px !important;
 }
 
-/* Input Name ambil semua ruang yang tinggal */
+/* NAME INPUT - FILL REMAINING SPACE */
 #form .rhb-name-field .input-row > .new-ui-input-wrap {
-  flex: 1 1 100px !important;
+  flex: 1 1 0 !important;
+  width: 100% !important;
   min-width: 0 !important;
+  max-width: none !important;
+}
+
+#form .rhb-name-field #toName {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
 /* Toggle kekalkan saiz */
@@ -521,7 +530,29 @@ body > .wrap > #preview {
     max-width: none !important;
   }
 }
+/* NAME ROW - FULL WIDTH */
+#form .rhb-name-field {
+  width: 100% !important;
+  min-width: 0 !important;
+}
 
+#form .rhb-name-field .input-row {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+#form .rhb-name-field .shared-dropdown:has(#letterSel),
+#form .rhb-name-field .shared-dropdown:has(#binSel) {
+  flex: 0 0 90px !important;
+  width: 90px !important;
+  min-width: 90px !important;
+}
+
+#form .rhb-name-field .shared-active-switch {
+  flex: 0 0 auto !important;
+}
 </style>
 </head>
 <body>
