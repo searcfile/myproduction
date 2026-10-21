@@ -1414,20 +1414,10 @@ function rhbManageBanksModal() {
 
   const content = document.createElement("div");
 
-  const toolbar = document.createElement("div");
-  toolbar.className = "rhb-catalog-actions";
-  toolbar.style.marginBottom = "12px";
-
-  const addButton = document.createElement("button");
-  addButton.type = "button";
-  addButton.className = "btn-primary-new";
-  addButton.textContent = "+ Create Bank";
-  toolbar.append(addButton);
-
   const list = document.createElement("div");
   list.className = "rhb-catalog-list";
 
-  content.append(toolbar, list);
+  content.append(list);
 
   const modal = NewUI.modal.open({
     title: "Manage Banks",
@@ -1521,11 +1511,6 @@ function rhbManageBanksModal() {
       list.append(row);
     }
   }
-
-  addButton.addEventListener("click", () => {
-    modal.close();
-    rhbBankFormModal();
-  });
 
   const ref = rhbBankRef();
 
