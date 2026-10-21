@@ -290,6 +290,34 @@
 @keyframes authDotsRotate {
   to { transform: rotate(360deg); }
 }
+/* ==========================================
+   AUTH USERS - STATS 4 DOTS LOADING
+   ========================================== */
+
+.auth-stats .stat strong {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.auth-stats .auth-stat-dots {
+  display: grid;
+  grid-template-columns: repeat(2, 6px);
+  grid-template-rows: repeat(2, 6px);
+  gap: 4px;
+
+  width: 16px;
+  height: 16px;
+
+  animation: authDotsRotate 1s linear infinite;
+}
+
+.auth-stats .auth-stat-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2685ff;
+}
 </style>
 </head>
 <body>
@@ -320,11 +348,42 @@
   </div>
 
 </div>
-  <div class="stats auth-stats">
-    <div class="card stat"><div class="stat-icon">◈</div><small>Total users</small><strong id="total">—</strong><span class="stat-note">Registered admin accounts</span></div>
-    <div class="card stat"><div class="stat-icon">✓</div><small>Active</small><strong id="activeCount">—</strong><span class="stat-note">Enabled for sign-in</span></div>
-    <div class="card stat"><div class="stat-icon">♙</div><small>Site admins</small><strong id="siteCount">—</strong><span class="stat-note">Site-level admin accounts</span></div>
+<div class="stats auth-stats">
+
+  <div class="card stat">
+    <div class="stat-icon">◈</div>
+    <small>Total users</small>
+    <strong id="total">
+      <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+        <span></span><span></span><span></span><span></span>
+      </span>
+    </strong>
+    <span class="stat-note">Registered admin accounts</span>
   </div>
+
+  <div class="card stat">
+    <div class="stat-icon">✓</div>
+    <small>Active</small>
+    <strong id="activeCount">
+      <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+        <span></span><span></span><span></span><span></span>
+      </span>
+    </strong>
+    <span class="stat-note">Enabled for sign-in</span>
+  </div>
+
+  <div class="card stat">
+    <div class="stat-icon">♙</div>
+    <small>Site admins</small>
+    <strong id="siteCount">
+      <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+        <span></span><span></span><span></span><span></span>
+      </span>
+    </strong>
+    <span class="stat-note">Site-level admin accounts</span>
+  </div>
+
+</div>
   <section class="card auth-list">
 <div class="auth-section-heading">
   <div>
