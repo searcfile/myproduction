@@ -721,7 +721,83 @@ body > .wrap > #preview {
     flex: 1 1 auto;
   }
 }
+/* ==========================================
+   RHB BANK - BOTTOM ACTION BUTTONS
+   ========================================== */
 
+#form > .rhb-bottom-actions {
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+/* Reset + Create */
+#form > .rhb-bottom-actions > button {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+}
+
+/* Create Bank + Manage Banks di kanan */
+#form > .rhb-bottom-actions > .rhb-bank-toolbar {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin-left: auto !important;
+  gap: 8px !important;
+}
+
+/* Saiz tombol ikut text + padding */
+#form > .rhb-bottom-actions > .rhb-bank-toolbar > button {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+}
+
+/* Responsive mobile */
+@media (max-width: 650px) {
+
+  #form > .rhb-bottom-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  #form > .rhb-bottom-actions > button {
+    width: 100% !important;
+  }
+
+  #form > .rhb-bottom-actions > .rhb-bank-toolbar {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #form > .rhb-bottom-actions > .rhb-bank-toolbar > button {
+    width: 100% !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -730,19 +806,6 @@ body > .wrap > #preview {
   <!-- Form -->
   <div class="card form" id="form">
     <h2>RHB BANK</h2>
-<div class="rhb-bank-toolbar">
-  <button type="button"
-    class="btn-primary-new"
-    id="rhbCreateBank">
-    + Create Bank
-  </button>
-
-  <button type="button"
-    class="btn-cancel-new"
-    id="rhbManageBank">
-    Manage Banks
-  </button>
-</div>
 
 <!-- RHB BANK - RESPONSIVE CUSTOM FORM -->
 
@@ -859,9 +922,26 @@ body > .wrap > #preview {
     placeholder="Payment">
 </div>
 
-<div class="fld w12" style="display:flex; gap:8px">
-  <button class="btn-cancel-new" id="resetBtn">Reset</button>
-  <button class="btn-primary-new" id="createBtn">Create</button>
+<div class="fld w12 rhb-bottom-actions">
+
+  <button type="button" class="btn-cancel-new" id="resetBtn">
+    Reset
+  </button>
+
+  <button type="button" class="btn-primary-new" id="createBtn">
+    Create
+  </button>
+
+  <div class="rhb-bank-toolbar">
+    <button type="button" class="btn-primary-new" id="rhbCreateBank">
+      + Create Bank
+    </button>
+
+    <button type="button" class="btn-cancel-new" id="rhbManageBank">
+      Manage Banks
+    </button>
+  </div>
+
 </div>
   </div>
 
