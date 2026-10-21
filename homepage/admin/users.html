@@ -270,7 +270,7 @@
     <div class="tablewrap auth-tablewrap">
       <table class="auth-table">
         <thead><tr><th>USERNAME</th><th>FIREBASE UID</th><th>ROLE</th><th>STATUS</th><th>CREATED</th><th>ACTION</th></tr></thead>
-        <tbody id="rows"><tr><td colspan="6" class="auth-empty-cell">Checking session…</td></tr></tbody>
+        <tbody id="rows"></tbody>
       </table>
     </div>
 </section>
@@ -357,13 +357,28 @@ async function check(){
 function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}
 function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
 function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
-function emptyRow(message,kind='empty'){
-  const rows=$('rows');rows.replaceChildren();
-  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.className='auth-empty-cell';
-  if(kind==='loading'&&window.createLoadingState)td.innerHTML=window.createLoadingState(message,'large');
-  else if(window.createEmptyState)td.innerHTML=window.createEmptyState(message,'large','center');
-  else td.textContent=message;
-  tr.append(td);rows.append(tr);
+function emptyRow(message) {
+  const rows = $('rows');
+  rows.replaceChildren();
+
+  const tr = document.createElement('tr');
+  const td = document.createElement('td');
+
+  td.colSpan = 6;
+  td.className = 'auth-empty-cell';
+
+  if (window.createEmptyState) {
+    td.innerHTML = window.createEmptyState(
+      message,
+      'large',
+      'center'
+    );
+  } else {
+    td.textContent = message;
+  }
+
+  tr.append(td);
+  rows.append(tr);
 }
 function render(){
   const q=searchInput.value.toLowerCase().trim(),rows=$('rows');rows.replaceChildren();
@@ -393,12 +408,7 @@ async function copy(v){try{await navigator.clipboard.writeText(v);toast('UID cop
 async function load() {
   if (loading) return;
 
-  loading = true;
-  status('Loading accounts…');
-
-  if (!users.length) {
-    emptyRow('Loading accounts…', 'loading');
-  }
+    loading = true;
 
   try {
     const d = await api('/api/admin-users');
