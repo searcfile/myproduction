@@ -318,6 +318,73 @@
   border-radius: 50%;
   background: #2685ff;
 }
+   /* ==========================================
+   AUTH USERS - STATUS FILTER CHIPS
+   ========================================== */
+
+.auth-toolbar-card .auth-top-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.auth-toolbar-card .auth-search-holder {
+  flex: 0 1 400px !important;
+  max-width: 400px !important;
+  min-width: 0 !important;
+}
+
+.auth-toolbar-card .auth-status-filter {
+  flex: 0 1 240px;
+  width: 240px;
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  z-index: 20;
+}
+
+.auth-status-filter .shared-chip-dropdown {
+  width: 100%;
+}
+
+.auth-status-filter .shared-chip-dropdown-trigger {
+  min-height: 34px;
+}
+
+.auth-status-filter .shared-chip-dropdown-panel {
+  z-index: 1000;
+}
+
+.auth-toolbar-card .auth-create {
+  margin-left: auto !important;
+}
+
+/* Mobile dan browser zoom */
+
+@media (max-width: 760px) {
+  .auth-toolbar-card .auth-search-holder {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  .auth-toolbar-card .auth-status-filter {
+    flex: 1 1 220px;
+    width: auto;
+  }
+
+  .auth-toolbar-card .auth-create {
+    margin-left: auto !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-toolbar-card .auth-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
@@ -335,7 +402,10 @@
         aria-label="Search admin users"
       >
     </div>
-
+<!-- AUTH USERS - CUSTOM STATUS FILTER -->
+<div class="auth-status-filter">
+  <div id="statusFilterChips"></div>
+</div>   
     <button
       class="btn-primary-new auth-create"
       id="create"
@@ -444,6 +514,33 @@ const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
 let users=[],editing=null,ready=false,formModal=null,loading=false;
 const searchInput=$('search');
+   /* ==========================================
+   AUTH USERS - STATUS FILTER
+   ========================================== */
+
+let selectedStatuses = [];
+
+const statusFilter = NewUI.chips(
+  '#statusFilterChips',
+  {
+    placeholder: 'All Status',
+
+    options: [
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' }
+    ],
+
+    value: [],
+
+    onChange(values) {
+      selectedStatuses = Array.isArray(values)
+        ? values
+        : statusFilter.getValue();
+
+      render();
+    }
+  }
+);
 function status(msg, error = false) {
   if (error) {
     console.error('[Auth Users]', msg);
@@ -547,7 +644,26 @@ function render(){
   $('total').textContent=users.length;
   $('activeCount').textContent=users.filter(u=>u.enabled).length;
   $('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;
-  const filtered=users.filter(u=>[u.username,u.uid,u.role].join(' ').toLowerCase().includes(q));
+   const filtered = users.filter(u => {
+
+  // Filter search username, UID dan role
+  const matchSearch = [
+    u.username,
+    u.uid,
+    u.role
+  ].join(' ').toLowerCase().includes(q);
+
+  // Filter status Active / Inactive
+  const matchStatus =
+    selectedStatuses.length === 0 ||
+    selectedStatuses.length === 2 ||
+    selectedStatuses.includes(
+      u.enabled ? 'active' : 'inactive'
+    );
+
+  return matchSearch && matchStatus;
+
+});
   if(!filtered.length){emptyRow(users.length?'No Data':'No data');return}
   for(const u of filtered){
     const tr=document.createElement('tr');
