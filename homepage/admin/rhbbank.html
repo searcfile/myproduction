@@ -773,63 +773,44 @@ body > .wrap > #preview {
   white-space: nowrap !important;
 }
 
-/* ==========================================
-   BANK ISLAM - RESPONSIVE BUTTONS
-   ========================================== */
-
+/* RHB BANK - RESPONSIVE BUTTONS */
 @media (max-width: 650px) {
 
-  /* Container semua tombol */
-  #back .modal > .ctl {
+  #form > .rhb-bottom-actions {
     display: flex !important;
     flex-wrap: wrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
     gap: 8px !important;
-    width: 100% !important;
-    min-width: 0 !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
   }
 
-  /* Create, Blur, Copy Image, Reset */
-  #back .modal > .ctl > .btn {
+  #form > .rhb-bottom-actions > button {
     flex: 1 1 120px !important;
     width: auto !important;
     min-width: 120px !important;
     max-width: 100% !important;
-    height: 32px !important;
-    min-height: 32px !important;
     padding: 0 15px !important;
-    box-sizing: border-box !important;
     white-space: nowrap !important;
-    text-align: center !important;
   }
 
-  /* Container Create Bank + Manage Banks */
-  #back .modal > .ctl > .bank-islam-actions {
+  #form > .rhb-bottom-actions > .rhb-bank-toolbar {
     display: flex !important;
     flex: 1 1 100% !important;
     flex-wrap: wrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
     gap: 8px !important;
     width: 100% !important;
     min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin-left: 0 !important;
+    justify-content: flex-start !important;
   }
 
-  /* Dua tombol bank */
-  #back .modal > .ctl > .bank-islam-actions > .btn {
-    flex: 1 1 135px !important;
+  #form > .rhb-bottom-actions > .rhb-bank-toolbar > button {
+    flex: 1 1 120px !important;
     width: auto !important;
-    min-width: 135px !important;
+    min-width: 120px !important;
     max-width: 100% !important;
-    height: 32px !important;
-    min-height: 32px !important;
     padding: 0 15px !important;
-    box-sizing: border-box !important;
     white-space: nowrap !important;
-    text-align: center !important;
   }
 }
 </style>
