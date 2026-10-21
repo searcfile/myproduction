@@ -273,7 +273,6 @@
         <tbody id="rows"><tr><td colspan="6" class="auth-empty-cell">Checking session…</td></tr></tbody>
       </table>
     </div>
-<div id="status" class="auth-hidden-status" role="status" aria-live="polite"></div>
 </section>
 </main>
 <!-- The original form is moved intact into the shared modal to preserve native validation and submit events. -->
@@ -307,7 +306,11 @@ const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
 let users=[],editing=null,ready=false,formModal=null,loading=false;
 const searchInput=$('search');
-function status(msg,error=false){$('status').textContent=msg;$('status').className='status'+(error?' error':'');}
+function status(msg, error = false) {
+  if (error) {
+    console.error('[Auth Users]', msg);
+  }
+}
 function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else status(message,type==='error');}
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
 function showModal(){
@@ -404,7 +407,6 @@ async function load() {
 
     render();
 
-    status('Loaded ' + users.length + ' accounts.');
 
   } catch (e) {
 
