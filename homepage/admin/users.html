@@ -318,71 +318,101 @@
   border-radius: 50%;
   background: #2685ff;
 }
-   /* ==========================================
-   AUTH USERS - STATUS FILTER CHIPS
+/* ==========================================
+   AUTH USERS - SEARCH 400PX + STATUS FILTER
    ========================================== */
 
+/* TOOLBAR */
 .auth-toolbar-card .auth-top-toolbar {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   flex-wrap: wrap !important;
   gap: 10px !important;
-}
-
-.auth-toolbar-card .auth-search-holder {
-  flex: 0 1 400px !important;
-  max-width: 400px !important;
+  width: 100% !important;
   min-width: 0 !important;
 }
 
+/* SEARCH - 400PX DESKTOP */
+.auth-toolbar-card .auth-search-holder {
+  flex: 0 0 400px !important;
+  width: 400px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* CUSTOM SEARCH WRAPPER */
+.auth-toolbar-card .auth-search-holder .shared-sync-search,
+.auth-toolbar-card .auth-search-holder .new-ui-input-wrap,
+.auth-toolbar-card .auth-search-holder input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* STATUS FILTER - 240PX */
 .auth-toolbar-card .auth-status-filter {
-  flex: 0 1 240px;
-  width: 240px;
-  max-width: 100%;
-  min-width: 0;
+  flex: 0 0 240px !important;
+  width: 240px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   position: relative;
   z-index: 20;
 }
 
-.auth-status-filter .shared-chip-dropdown {
-  width: 100%;
+.auth-toolbar-card .auth-status-filter .shared-chip-dropdown {
+  width: 100% !important;
 }
 
-.auth-status-filter .shared-chip-dropdown-trigger {
-  min-height: 34px;
+.auth-toolbar-card .auth-status-filter .shared-chip-dropdown-trigger {
+  min-height: 34px !important;
 }
 
-.auth-status-filter .shared-chip-dropdown-panel {
-  z-index: 1000;
+.auth-toolbar-card .auth-status-filter .shared-chip-dropdown-panel {
+  z-index: 1000 !important;
 }
 
+/* CREATE BUTTON - RIGHT */
 .auth-toolbar-card .auth-create {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  height: 32px !important;
+  padding: 0 15px !important;
   margin-left: auto !important;
+  white-space: nowrap !important;
 }
 
-/* Mobile dan browser zoom */
+/* TABLET / ZOOM */
+@media (max-width: 850px) {
+  .auth-toolbar-card .auth-search-holder {
+    flex: 1 1 400px !important;
+    width: 100% !important;
+    max-width: 400px !important;
+  }
 
-@media (max-width: 760px) {
+  .auth-toolbar-card .auth-status-filter {
+    flex: 0 1 240px !important;
+    width: 240px !important;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 620px) {
   .auth-toolbar-card .auth-search-holder {
     flex: 1 1 100% !important;
+    width: 100% !important;
     max-width: 100% !important;
   }
 
   .auth-toolbar-card .auth-status-filter {
-    flex: 1 1 220px;
-    width: auto;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .auth-toolbar-card .auth-create {
     margin-left: auto !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .auth-toolbar-card .auth-status-filter {
-    flex: 1 1 100%;
-    width: 100%;
   }
 }
 </style>
