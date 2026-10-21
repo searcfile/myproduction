@@ -1132,6 +1132,38 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
+
+.shared-modal-body .dialog-body{padding:0!important;}
+.shared-modal-actions .dialog-foot{display:flex!important;justify-content:flex-end!important;gap:8px!important;width:100%;padding:0!important;}
+.shared-modal-actions .dialog-foot button{height:32px!important;padding:0 15px!important;}
+.shared-modal-body .field{margin-bottom:14px;}
+.shared-modal-body .input,.shared-modal-body .textarea{width:100%;}
+/* STICKY NOTES UPGRADE — local-only overrides, shared NewUI remains unchanged */
+.content{padding:14px clamp(10px,2vw,24px)!important;overflow:visible!important;max-width:100%;}
+.sticky-shell{background:var(--page-bg2,#1f1f1f);border:1px solid var(--border-input,#424242);border-radius:12px;padding:12px;margin-bottom:14px;}
+.sticky-toolbar{display:grid!important;grid-template-columns:minmax(220px,1.15fr) minmax(240px,1fr) auto!important;align-items:center!important;gap:10px!important;margin:0!important;}
+.sticky-search,.sticky-filter{min-width:0;width:100%;}
+.sticky-search .shared-sync-search{width:100%;max-width:none;min-width:0;}
+.sticky-search input{width:100%!important;min-width:0!important;}
+.sticky-filter .shared-chip-dropdown{width:100%;}
+.sticky-filter .shared-chip-dropdown-trigger{min-height:32px;}
+.sticky-create{height:32px!important;white-space:nowrap!important;padding:0 15px!important;width:max-content!important;min-width:max-content!important;margin:0!important;}
+.notes-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))!important;gap:14px!important;}
+.note-card{min-height:260px!important;height:290px!important;max-height:290px!important;border-radius:12px!important;box-shadow:0 3px 15px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s;}
+.note-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.20);}
+.note-title{color:#fff!important;}
+.note-body{min-height:0!important;}
+.sticky-empty-holder{width:100%;margin-top:8px;}
+.sticky-empty-holder .shared-empty-card{min-height:240px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
+.sticky-empty-holder .shared-empty{min-height:180px;}
+.dialog{max-width:calc(100vw - 24px)!important;}
+.dialog .input,.dialog .textarea{width:100%;min-width:0;}
+.dialog .new-ui-input-wrap{width:100%;display:block;}
+.dialog-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
+.dialog-foot button{min-width:95px;height:32px;}
+@media(max-width:900px){.sticky-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}.sticky-create{grid-column:1/-1;justify-self:end;}}
+@media(max-width:620px){.content{padding:10px!important;}.sticky-shell{padding:10px;}.sticky-toolbar{grid-template-columns:minmax(0,1fr)!important;}.sticky-create{grid-column:1;justify-self:stretch;width:100%!important;}.notes-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))!important;}.note-card{height:270px!important;min-height:270px!important;}}
+
 </style>
 </head>
 
@@ -1140,68 +1172,16 @@ select:focus-visible{
   <main class="main">
     
     <section class="content">
-      <div class="content-toolbar">
-  <div class="search-wrap">
- <input 
-  id="searchInput" 
-  class="search" 
-  type="text" 
-  name="sticky_search_no_autofill"
-  placeholder="Search"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="off"
-  spellcheck="false"
-/>
-
-<button class="search-clear-btn" type="button" id="searchClearBtn" aria-label="Clear search">
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 8.933-2.721-2.722c-.146-.146-.339-.219-.531-.219-.404 0-.75.324-.75.749 0 .193.073.384.219.531l2.722 2.722-2.728 2.728c-.147.147-.22.34-.22.531 0 .427.35.75.751.75.192 0 .384-.073.53-.219l2.728-2.728 2.729 2.728c.146.146.338.219.53.219.401 0 .75-.323.75-.75 0-.191-.073-.384-.22-.531l-2.727-2.728 2.717-2.717c.146-.147.219-.338.219-.531 0-.425-.346-.75-.75-.75-.192 0-.385.073-.531.22z"/>
-  </svg>
-</button>
-  <button class="search-icon-btn" type="button" aria-label="Search">
-    <svg viewBox="0 0 1024 1024" aria-hidden="true">
-      <path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/>
-    </svg>
-  </button>
-</div>
-<div class="filter-combo" id="filterCombo">
-  <div class="filter-combo-box" id="filterComboBox">
-    <div id="filterChip" class="filter-chip hidden">
-      <span id="filterChipText">All</span>
-      <button type="button" id="filterChipClose">×</button>
-    </div>
-
-    <input id="filterComboInput" type="text" placeholder="Filter Type" readonly />
-<button type="button" class="filter-combo-clear" id="filterComboClear" aria-label="Clear filters">
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 8.933-2.721-2.722c-.146-.146-.339-.219-.531-.219-.404 0-.75.324-.75.749 0 .193.073.384.219.531l2.722 2.722-2.728 2.728c-.147.147-.22.34-.22.531 0 .427.35.75.751.75.192 0 .384-.073.53-.219l2.728-2.728 2.729 2.728c.146.146.338.219.53.219.401 0 .75-.323.75-.75 0-.191-.073-.384-.22-.531l-2.727-2.728 2.717-2.717c.146-.147.219-.338.219-.531 0-.425-.346-.75-.75-.75-.192 0-.385.073-.531.22z"/>
-  </svg>
-</button>
-
-<span class="filter-combo-arrow" aria-hidden="true">
-  <svg viewBox="0 0 1024 1024">
-    <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/>
-  </svg>
-</span>
-  </div>
-
-  <div class="filter-combo-menu" id="filterComboMenu">
-    <button type="button" data-filter="all">All <span id="countAll">0</span></button>
-    <button type="button" data-filter="pinned">Pinned <span id="countPinned">0</span></button>
-    <button type="button" data-filter="recent">Recent <span id="countRecent">0</span></button>
-    <button type="button" data-filter="archived">Archived <span id="countArchived">0</span></button>
-  </div>
-</div>
-  <button id="createBtn" class="btn primary">Create</button>
-</div>
+      <div class="sticky-shell">
+        <div class="content-toolbar sticky-toolbar">
+          <div class="sticky-search"><input id="searchInput" type="search" placeholder="Search notes..." autocomplete="off" aria-label="Search notes"></div>
+          <div id="stickyFilter" class="sticky-filter" aria-label="Filter notes"></div>
+          <button id="createBtn" type="button" class="btn-primary-new sticky-create">+ Create Note</button>
+        </div>
+      </div>
       <div id="notesGrid" class="notes-grid"></div>
 
-      <div id="emptyState" class="empty">
-        <div style="font-size:44px">🗒️</div>
-        <h3>No notes yet</h3>
-        <p>Click Create New to add your first sticky note.</p>
-      </div>
+      <div id="emptyState" class="sticky-empty-holder"></div>
     </section>
   </main>
 </div>
@@ -1220,7 +1200,7 @@ select:focus-visible{
     <div class="dialog-body">
       <div class="field">
         <label class="label">Title</label>
-        <input id="noteTitle" class="input" type="text" placeholder="Enter note title..." maxlength="80" />
+        <input id="noteTitle" class="input" data-new-ui-input type="text" placeholder="Enter note title..." maxlength="80" />
       </div>
 
       <div class="field">
@@ -1235,8 +1215,8 @@ select:focus-visible{
     </div>
 
     <div class="dialog-foot">
-      <button id="cancelBtn" class="btn-cancel">Cancel</button>
-      <button id="saveBtn" class="btn primary">Save</button>
+      <button id="cancelBtn" class="btn-cancel-new">Cancel</button>
+      <button id="saveBtn" class="btn-primary-new">Save</button>
     </div>
   </div>
 </div>
@@ -1255,8 +1235,8 @@ select:focus-visible{
       <p class="confirm-text">Are you sure you want to delete this note?</p>
     </div>
     <div class="dialog-foot">
-      <button id="confirmNo" class="btn-cancel">Cancel</button>
-      <button id="confirmYes" class="btn primary" style="background:#dc2626">Delete</button>
+      <button id="confirmNo" class="btn-cancel-new">Cancel</button>
+      <button id="confirmYes" class="btn-primary-new" style="background:#dc2626">Delete</button>
     </div>
   </div>
 </div>
@@ -1478,7 +1458,7 @@ if(activeFilters.includes("all") && activeFilters.includes("archived")){
 function renderNotes(){
   renderUser();
   renderCounts();
-   updateFilterDropdown();
+
 
   if(!els.notesGrid) return;
 
@@ -1486,11 +1466,14 @@ function renderNotes(){
   els.notesGrid.innerHTML = "";
 
   if(!list.length){
-    els.emptyState?.classList.add("show");
+    els.emptyState.style.display = "block";
+    const label = notes.length ? "No matching notes" : "No notes yet. Click Create Note to add your first note.";
+    if (window.showEmptyState) window.showEmptyState(els.emptyState, label, "large", "center", true);
+    else els.emptyState.textContent = label;
     return;
   }
 
-  els.emptyState?.classList.remove("show");
+  if (els.emptyState) els.emptyState.style.display = "none";
 
   list.forEach(note => {
     const card = document.createElement("div");
@@ -1571,6 +1554,8 @@ function renderColors(){
   });
 }
 
+let stickyNoteSharedModal = null;
+let stickyConfirmSharedModal = null;
 function openModal(note = null){
   editingId = note ? note.id : null;
   selectedColor = note?.color || COLORS[0];
@@ -1580,22 +1565,35 @@ function openModal(note = null){
   if(els.noteBody) els.noteBody.value = note?.body || "";
 
   renderColors();
-  els.noteModal?.classList.add("show");
-
+  if (window.NewUI?.modal) {
+    const body = els.noteModal.querySelector(".dialog-body");
+    const footer = els.noteModal.querySelector(".dialog-foot");
+    stickyNoteSharedModal = window.NewUI.modal.open({
+      title: note ? "Edit Note" : "Create Note", width: "540px",
+      content: body, footer,
+      onClose(){
+        els.noteModal.querySelector(".dialog").append(body, footer);
+        stickyNoteSharedModal = null;
+        editingId = null;
+      }
+    });
+  } else els.noteModal?.classList.add("show");
   setTimeout(() => els.noteTitle?.focus(), 50);
 }
 
 function closeModal(){
-  els.noteModal?.classList.remove("show");
+  if(stickyNoteSharedModal) stickyNoteSharedModal.close();
+  else els.noteModal?.classList.remove("show");
   editingId = null;
 }
 
-function handleSave(){
+async function handleSave(){
   const title = (els.noteTitle?.value || "").trim();
   const body = (els.noteBody?.value || "").trim();
 
   if(!title && !body){
     els.noteTitle?.focus();
+    window.NewUI?.showToast?.("Please enter a title or note", "warning");
     return;
   }
 
@@ -1632,14 +1630,18 @@ function handleSave(){
     };
   }
 
-  saveNoteToFirebase(note)
-    .then(() => {
-      closeModal();
-    })
-    .catch(err => {
-      console.error("Save note failed:", err);
-      alert("Save failed. Please check Firebase rules.");
-    });
+  window.NewUI?.setButtonLoading?.(els.saveBtn, true, {text:"Saving..."});
+  try {
+    await saveNoteToFirebase(note);
+    const wasEditing = Boolean(editingId);
+    closeModal();
+    window.NewUI?.showToast?.(wasEditing ? "Note updated" : "Note saved", "success");
+  } catch(err) {
+    console.error("Save note failed:", err);
+    window.NewUI?.showToast?.("Save failed. Please check Firebase rules.", "error");
+  } finally {
+    await window.NewUI?.setButtonLoading?.(els.saveBtn, false, {minDuration:850});
+  }
 }
 
 /* =========================
@@ -1647,22 +1649,34 @@ function handleSave(){
 ========================= */
 function openConfirm(id){
   deleteId = id;
-  els.confirmModal?.classList.add("show");
+  if (window.NewUI?.modal) {
+    const body = els.confirmModal.querySelector(".dialog-body");
+    const footer = els.confirmModal.querySelector(".dialog-foot");
+    stickyConfirmSharedModal = window.NewUI.modal.open({
+      title:"Delete Note", width:"420px", content:body, footer,
+      onClose(){
+        els.confirmModal.querySelector(".dialog").append(body, footer);
+        stickyConfirmSharedModal = null;
+        deleteId = null;
+      }
+    });
+  } else els.confirmModal?.classList.add("show");
 }
 
 function closeConfirm(){
+  if(stickyConfirmSharedModal) stickyConfirmSharedModal.close();
+  else els.confirmModal?.classList.remove("show");
   deleteId = null;
-  els.confirmModal?.classList.remove("show");
 }
 
 function deleteNote(){
   if(!deleteId) return;
 
   deleteNoteFromFirebase(deleteId)
-    .then(() => closeConfirm())
+    .then(() => { closeConfirm(); window.NewUI?.showToast?.("Note deleted", "success"); })
     .catch(err => {
       console.error("Delete note failed:", err);
-      alert("Delete failed. Please check Firebase rules.");
+      window.NewUI?.showToast?.("Delete failed. Please check Firebase rules.", "error");
     });
 }
 
@@ -1741,38 +1755,11 @@ els.cancelBtn?.addEventListener("click", closeModal);
 els.saveBtn?.addEventListener("click", handleSave);
 
 els.searchInput?.addEventListener("input", renderNotes);
-const searchIconBtn = document.querySelector(".search-icon-btn");
-const searchClearBtn = document.getElementById("searchClearBtn");
-
-function updateSearchClear(){
-  searchClearBtn?.classList.toggle("show", !!els.searchInput?.value);
-}
-
-els.searchInput?.addEventListener("input", updateSearchClear);
-
-searchClearBtn?.addEventListener("mousedown", (e) => {
-  e.preventDefault();
+// Reuse the exact custom NewUI search with rotating sync icon.
+window.NewUI?.init?.(document);
+window.NewUI?.syncSearch?.(els.searchInput, {
+  onSearch: async () => { renderNotes(); await new Promise(resolve => setTimeout(resolve, 550)); }
 });
-
-searchClearBtn?.addEventListener("click", () => {
-  els.searchInput.value = "";
-  updateSearchClear();
-  renderNotes();
-  els.searchInput.focus();
-});
-searchIconBtn?.addEventListener("mousedown", (e) => {
-  e.preventDefault();
-});
-
-searchIconBtn?.addEventListener("click", () => {
-  els.searchInput?.focus();
-  renderNotes();
-});
-
-searchIconBtn?.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  els.searchInput?.focus();
-}, { passive:false });
 els.noteModal?.addEventListener("click", (e) => {
   if(e.target === els.noteModal) closeModal();
 });
@@ -1785,99 +1772,15 @@ els.confirmModal?.addEventListener("click", (e) => {
   if(e.target === els.confirmModal) closeConfirm();
 });
 
-const filterCombo = document.getElementById("filterCombo");
-const filterComboBox = document.getElementById("filterComboBox");
-const filterComboInput = document.getElementById("filterComboInput");
-const filterComboMenu = document.getElementById("filterComboMenu");
-const filterChip = document.getElementById("filterChip");
-const filterChipText = document.getElementById("filterChipText");
-const filterChipClose = document.getElementById("filterChipClose");
-const filterComboClear = document.getElementById("filterComboClear");
-
-function updateFilterDropdown(){
-const labelMap = {
-  all: "All",
-  pinned: "Pinned",
-  recent: "Recent",
-  archived: "Archived"
-};
-
-  if(filterChip){
-    filterChip.innerHTML = "";
-
-    activeFilters.forEach(filter => {
-      const chip = document.createElement("div");
-      chip.className = "filter-chip-item";
-chip.innerHTML = `
-  <span>${labelMap[filter] || filter}</span>
-  <button type="button" data-remove-filter="${filter}" aria-label="Remove">
-    <svg viewBox="0 0 1024 1024" aria-hidden="true">
-      <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"/>
-    </svg>
-  </button>
-`;
-      filterChip.appendChild(chip);
-    });
-
-    filterChip.classList.toggle("hidden", activeFilters.length === 0);
-  }
-
-  if(filterComboInput){
-    filterComboInput.value = "";
-    filterComboInput.placeholder = activeFilters.length ? "" : "Filter Type";
-  }
-  filterCombo?.classList.toggle("has-chip", activeFilters.length > 0);
-  
-  document.querySelectorAll("#filterComboMenu button").forEach(btn => {
-    btn.classList.toggle("active", activeFilters.includes(btn.dataset.filter));
-  });
-}
-
-filterComboBox?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  filterCombo?.classList.add("open");
-  filterComboInput?.focus();
+// Shared chip dropdown, not the page's previous hardcoded dropdown.
+const FILTER_OPTIONS = [
+  {value:"all",label:"All"}, {value:"pinned",label:"Pinned"},
+  {value:"recent",label:"Recent"}, {value:"archived",label:"Archived"}
+];
+window.NewUI?.chips?.("#stickyFilter", {
+  placeholder:"Filter notes", options:FILTER_OPTIONS, value:["all"],
+  onChange(values){ activeFilters = values; renderNotes(); }
 });
-
-filterComboMenu?.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-filter]");
-  if(!btn) return;
-
-  const value = btn.dataset.filter || "all";
-
-  if(activeFilters.includes(value)){
-    activeFilters = activeFilters.filter(f => f !== value);
-  }else{
-    activeFilters.push(value);
-  }
-
-  updateFilterDropdown();
-  renderNotes();
-});
-
-filterChip?.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-remove-filter]");
-  if(!btn) return;
-
-  e.stopPropagation();
-
-  const value = btn.dataset.removeFilter;
-  activeFilters = activeFilters.filter(f => f !== value);
-
-  updateFilterDropdown();
-  renderNotes();
-});
-filterComboClear?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  activeFilters = [];
-  filterCombo?.classList.remove("open");
-  updateFilterDropdown();
-  renderNotes();
-});
-document.addEventListener("click", () => {
-  filterCombo?.classList.remove("open");
-});
-
 els.notesGrid?.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-action]");
   if(!btn) return;
