@@ -908,21 +908,50 @@ body { min-height:100vh !important; height:auto !important; max-height:none !imp
     min-width: 0 !important;
   }
 }
-  /* MAINAN KANAK2 - BANK ACTIVE SWITCH */
+
+/* MAINAN KANAK2 - BANK ACTIVE SWITCH FIX */
+
 .mainan-bank-form .mainan-bank-status {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  min-width: 0;
   margin-top: 4px;
 }
 
-.mainan-bank-form .mainan-bank-status .shared-active-switch {
-  display: inline-flex;
-  width: max-content;
-  margin: 0;
+.mainan-bank-form .mainan-bank-status label.shared-active-switch {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+  min-width: max-content;
+  height: auto;
+  margin: 0 !important;
+  padding: 0 !important;
 }
+
+/* Jangan biarkan CSS input global ubah checkbox toggle */
+.mainan-bank-form .mainan-bank-status input[type="checkbox"] {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+}
+
+/* Pastikan teks toggle mempunyai ruang */
+.mainan-bank-form .mainan-bank-status .shared-active-track {
+  display: inline-flex;
+  align-items: center;
+  min-width: 100px;
+  width: auto;
+}
+
+.mainan-bank-form .mainan-bank-status .shared-active-text {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
 </style>
 <body>
  <div class="wrap">
@@ -1883,6 +1912,24 @@ function mainanOpenBankForm(editId = null) {
   activeInput.checked = existing?.active !== false;
 
   NewUI.init(root);
+  
+/* Sync custom Active / Inactive switch text */
+const activeText = root.querySelector(
+  ".mainan-bank-status .shared-active-text"
+);
+
+function syncBankActiveText() {
+  if (!activeText) return;
+
+  activeText.textContent = activeInput.checked
+    ? "Active"
+    : "Inactive";
+}
+
+syncBankActiveText();
+
+activeInput.addEventListener("change", syncBankActiveText);
+
   ruleInput._sharedDropdown?.refresh?.();
 
   const cancelBtn = document.createElement("button");
