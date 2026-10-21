@@ -2087,12 +2087,12 @@ function mainanOpenManageBanks() {
     row.innerHTML = `
       <div class="mainan-bank-list-info">
         <strong>${mainanEscape(bank.name)}</strong>
-        <small>
-          Length: ${bank.len}
-          | ${mainanEscape(bank.rule)}:
-          ${mainanEscape(bank.digits || "None")}
-          | ${bank.active !== false ? "Active" : "Inactive"}
-        </small>
+<small>
+  Length: ${bank.len}
+  · ${mainanEscape(bank.rule)}:
+  ${mainanEscape(bank.digits || "None")}
+  · ${bank.active !== false ? "Active" : "Inactive"}
+</small>
       </div>
 
       <div class="mainan-bank-list-buttons">
