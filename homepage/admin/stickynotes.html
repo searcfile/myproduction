@@ -1543,7 +1543,7 @@ function renderNotes(){
 
   if(!list.length){
     els.emptyState.style.display = "block";
-    const label = notes.length ? "No matching notes" : "No data";
+    const label = notes.length ? "No Data" : "No data";
     if (window.showEmptyState) window.showEmptyState(els.emptyState, label, "large", "center", true);
     else els.emptyState.textContent = label;
     return;
