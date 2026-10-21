@@ -1050,36 +1050,45 @@ function makeAccountFor(bank) {
 }
 
 
+
 /* ---------- Render ---------- */
-function render(){
-  // auto toggles
-  if (el.autoBank.checked){
+function render() {
 
-const options = Array.from(el.bankSel.options)
-  .map(option => option.value)
-  .filter(Boolean);
+  // Auto pilih bank
+  if (el.autoBank.checked) {
+    const options = Array.from(el.bankSel.options)
+      .map(option => option.value)
+      .filter(Boolean);
 
-if (options.length) {
-  el.bankSel.value = pick(options);
-  el.bankSel._sharedDropdown?.refresh();
-}
+    if (options.length) {
+      el.bankSel.value = pick(options);
+      el.bankSel._sharedDropdown?.refresh();
+    }
+  }
 
-  if (el.autoAcct.checked){
+  // Auto generate account
+  if (el.autoAcct.checked) {
     el.toId.value = makeAccountFor(el.bankSel.value);
   }
-  if (el.autoName.checked){
+
+  // Auto generate recipient name
+  if (el.autoName.checked) {
     el.toName.value = makeRandomName();
   }
 
-  // preview
+  // Update receipt preview
   const nameFrag = maskNameFirst2(el.toName.value);
-  const idFrag   = maskAccountKeepDashes(el.toId.value);
-  el.toLine.innerHTML = `${nameFrag}<span class="dot">•</span>${idFrag}`;
-  el.vBank.textContent = el.bankSel.value || '';
-  el.vType.textContent = el.payType.value || '';
+  const idFrag = maskAccountKeepDashes(el.toId.value);
+
+  el.toLine.innerHTML =
+    `${nameFrag}<span class="dot">•</span>${idFrag}`;
+
+  el.vBank.textContent = el.bankSel.value || "";
+  el.vType.textContent = el.payType.value || "";
   el.vAmount.textContent = fmtMYR(el.amount.value);
-  el.vRef.textContent = el.ref.value || '';
+  el.vRef.textContent = el.ref.value || "";
 }
+
 /* ==========================================
    RHB BANK - EMPTY STATE CONTROLLER
    ========================================== */
