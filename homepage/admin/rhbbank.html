@@ -395,14 +395,6 @@ body > .wrap > #preview {
   box-sizing: border-box !important;
 }
 
-/* Dropdown A-Z dan BIN/BINTI */
-#form .rhb-name-field .shared-dropdown:has(#letterSel),
-#form .rhb-name-field .shared-dropdown:has(#binSel) {
-  flex: 0 1 90px !important;
-  width: 90px !important;
-  min-width: 0 !important;
-  max-width: 90px !important;
-}
 
 /* NAME INPUT - FILL REMAINING SPACE */
 #form .rhb-name-field .input-row > .new-ui-input-wrap {
@@ -543,16 +535,115 @@ body > .wrap > #preview {
   gap: 8px !important;
 }
 
-#form .rhb-name-field .shared-dropdown:has(#letterSel),
-#form .rhb-name-field .shared-dropdown:has(#binSel) {
-  flex: 0 0 90px !important;
-  width: 90px !important;
-  min-width: 90px !important;
-}
 
 #form .rhb-name-field .shared-active-switch {
   flex: 0 0 auto !important;
 }
+
+/* ==========================================
+   RHB BANK - NAME DROPDOWN FULL WIDTH FIX
+   ========================================== */
+
+/* Besarkan ruang Name pada desktop */
+@media (min-width: 1151px) {
+  #form.card.form {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1.35fr) !important;
+  }
+}
+
+/* Name row */
+#form .rhb-name-field .input-row {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+/* Dua dropdown: cukup ruang untuk Select option */
+#form .rhb-name-field .shared-dropdown:has(#letterSel),
+#form .rhb-name-field .shared-dropdown:has(#binSel) {
+  flex: 0 0 135px !important;
+  width: 135px !important;
+  min-width: 135px !important;
+  max-width: 135px !important;
+}
+
+/* Text dan arrow dalam dropdown */
+#form .rhb-name-field .shared-dropdown-trigger {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 32px !important;
+}
+
+#form .rhb-name-field .shared-dropdown-input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Toggle kekalkan saiz asal */
+#form .rhb-name-field .shared-active-switch {
+  flex: 0 0 auto !important;
+}
+
+/* Input Name ambil baki ruang */
+#form .rhb-name-field .input-row > .new-ui-input-wrap {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+#form .rhb-name-field #toName {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Dropdown option panel ikut lebar dropdown */
+#form .rhb-name-field .shared-dropdown-panel {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Tablet dan zoom tinggi */
+@media (min-width: 701px) and (max-width: 1150px) {
+  #form .rhb-name-field .shared-dropdown:has(#letterSel),
+  #form .rhb-name-field .shared-dropdown:has(#binSel) {
+    flex: 0 0 135px !important;
+    width: 135px !important;
+    min-width: 135px !important;
+    max-width: 135px !important;
+  }
+}
+
+/* Phone: susun kemas tanpa potong input */
+@media (max-width: 700px) {
+  #form .rhb-name-field .input-row {
+    flex-wrap: wrap !important;
+  }
+
+  #form .rhb-name-field .shared-dropdown:has(#letterSel),
+  #form .rhb-name-field .shared-dropdown:has(#binSel) {
+    flex: 1 1 135px !important;
+    width: auto !important;
+    min-width: 135px !important;
+    max-width: none !important;
+  }
+
+  #form .rhb-name-field .input-row > .new-ui-input-wrap {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+}
+
 </style>
 </head>
 <body>
