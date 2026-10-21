@@ -310,7 +310,7 @@ body > .wrap > #preview {
 #form > .fld.rhb-amount-field,
 #form > .fld.rhb-payment-field,
 #form > .fld.rhb-reference-field {
-  grid-column: span 4 !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   width: 100% !important;
   min-width: 0 !important;
 }
@@ -330,12 +330,12 @@ body > .wrap > #preview {
   width: 100% !important;
 }
 
-/* Custom input & dropdown */
-#form .fld .new-ui-input-wrap,
-#form .fld .shared-dropdown {
+/* Custom input & dropdown dalam input-row */
+#form .fld .input-row > .new-ui-input-wrap,
+#form .fld .input-row > .shared-dropdown {
   flex: 1 1 0 !important;
   min-width: 0 !important;
-  width: auto !important;
+  width: 100% !important;
   max-width: 100% !important;
 }
 
@@ -451,6 +451,69 @@ body > .wrap > #preview {
     display: flex !important;
     flex-wrap: wrap !important;
   }
+}
+
+/* ==========================================
+   RHB BANK - FULL WIDTH INPUT FIX
+   ========================================== */
+
+/* Setiap field memenuhi grid */
+#form > .fld {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* Wrapper custom input mesti full width */
+#form .new-ui-input-wrap {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Input sebenar */
+#form .new-ui-input-wrap input {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Input yang berada bersama toggle */
+#form .input-row > .new-ui-input-wrap {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+/* Custom dropdown bersama toggle */
+#form .input-row > .shared-dropdown {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+/* Toggle tidak mengecil */
+#form .input-row > .shared-active-switch {
+  flex: 0 0 auto !important;
+}
+
+/* Amount, Payment Type, Reference */
+#form .rhb-amount-field > .new-ui-input-wrap,
+#form .rhb-payment-field > .new-ui-input-wrap,
+#form .rhb-reference-field > .new-ui-input-wrap {
+  width: 100% !important;
+  max-width: none !important;
+  flex: none !important;
+}
+
+/* Fallback jika custom input belum dibungkus */
+#form .rhb-amount-field > input,
+#form .rhb-payment-field > input,
+#form .rhb-reference-field > input {
+  width: 100% !important;
 }
 
 </style>
