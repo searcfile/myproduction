@@ -1149,39 +1149,32 @@ select:focus-visible{
 /* STICKY NOTES UPGRADE — local-only overrides, shared NewUI remains unchanged */
 .content{overflow:visible!important;max-width:100%;}
 .sticky-shell{background:var(--page-bg2,#1f1f1f);border:1px solid var(--border-input,#424242);border-radius:12px;padding:12px;margin-bottom:12px;}
-/* STICKY NOTES - TOOLBAR DESKTOP */
+/* STICKY NOTES - STABLE TOOLBAR */
 .sticky-toolbar {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(max-content, 1fr) !important;
+  align-items: start !important;
   gap: 10px !important;
   width: 100% !important;
   margin: 0 !important;
 }
 
-/* SEARCH - MAX 400PX */
-.sticky-toolbar .sticky-search {
-  flex: 0 1 400px !important;
-  width: 100% !important;
-  max-width: 400px !important;
-  min-width: 0 !important;
-}
-
-/* DROPDOWN CHIPS - MAX 400PX */
+.sticky-toolbar .sticky-search,
 .sticky-toolbar .sticky-filter {
-  flex: 0 1 400px !important;
   width: 100% !important;
   max-width: 400px !important;
   min-width: 0 !important;
 }
 
-/* CREATE NOTE - KEKAL DI KANAN */
 .sticky-toolbar .sticky-create {
-  flex: 0 0 auto !important;
-  width: fit-content !important;
+  justify-self: end !important;
+  align-self: start !important;
+  width: max-content !important;
   min-width: max-content !important;
-  margin-left: auto !important;
+  margin: 0 !important;
   white-space: nowrap !important;
 }
 .sticky-search,.sticky-filter{min-width:0;width:100%;}
@@ -1203,23 +1196,29 @@ select:focus-visible{
 .dialog .new-ui-input-wrap{width:100%;display:block;}
 .dialog-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
 .dialog-foot button{min-width:95px;height:32px;}
-/* STICKY NOTES - RESPONSIVE */
+/* STICKY NOTES - RESPONSIVE STABLE */
+
+/* Tablet */
 @media (max-width: 900px) {
+  .sticky-toolbar {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+  }
 
   .sticky-toolbar .sticky-search,
   .sticky-toolbar .sticky-filter {
-    flex: 1 1 250px !important;
-    max-width: 400px !important;
+    max-width: 100% !important;
   }
 
   .sticky-toolbar .sticky-create {
-    margin-left: auto !important;
+    grid-column: 2 !important;
+    justify-self: end !important;
   }
-
 }
 
+/* Mobile */
 @media (max-width: 620px) {
-
   .content {
     padding: 10px !important;
   }
@@ -1229,23 +1228,21 @@ select:focus-visible{
   }
 
   .sticky-toolbar {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 8px !important;
   }
 
-  .sticky-toolbar .sticky-search,
+  .sticky-toolbar .sticky-search {
+    grid-column: 1 !important;
+  }
+
   .sticky-toolbar .sticky-filter {
-    flex: 0 0 auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+    grid-column: 1 !important;
   }
 
   .sticky-toolbar .sticky-create {
-    align-self: flex-end !important;
-    margin-left: auto !important;
-    width: fit-content !important;
+    grid-column: 1 !important;
+    justify-self: end !important;
   }
 
   .notes-grid {
@@ -1257,9 +1254,7 @@ select:focus-visible{
     height: 270px !important;
     min-height: 270px !important;
   }
-
 }
-
 </style>
 </head>
 
