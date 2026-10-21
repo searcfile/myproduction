@@ -790,6 +790,40 @@ body {
     flex-direction: column;
   }
 }
+  /* BANK ISLAM - CUSTOM ACTIVE SWITCH */
+
+.bi-bank-form .bi-bank-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.bi-bank-form .bi-bank-status-label {
+  font-size: 13px;
+  color: var(--page-text);
+  line-height: 18px;
+}
+
+.bi-bank-form .bi-bank-status .shared-active-switch {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: max-content !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.bi-bank-form .bi-bank-status input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+
+.bi-bank-form .bi-bank-status .shared-active-text {
+  white-space: nowrap;
+  font-size: 10px;
+}
 </style>
 </head>
 <body>
@@ -948,7 +982,9 @@ function biNormalizeBank(data) {
   const len = Number(data.len);
   const rule = data.rule === "start" ? "start" : "prefix";
   const startDigits = String(data.digits ?? "");
+  const active = data.active !== false;
 
+  
   if (
     !name ||
     name.length > 100 ||
@@ -959,7 +995,13 @@ function biNormalizeBank(data) {
     startDigits.length > len
   ) return null;
 
-  return { name, len, rule, digits: startDigits };
+  return {
+  name,
+  len,
+  rule,
+  digits: startDigits,
+  active
+};
 }
 
 function biEscape(value) {
@@ -976,7 +1018,8 @@ function biRefreshBankDropdown() {
   const previous = inBank.value;
 
   BANKS = Object.values(biBankRecords)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  .filter(bank => bank.active !== false)
+  .sort((a, b) => a.name.localeCompare(b.name));
 
   inBank.replaceChildren(new Option("Random Bank", ""));
 
@@ -1535,6 +1578,26 @@ function biOpenBankForm(editId = null) {
                  maxlength="30"
                  placeholder="Example: 12">
         </label>
+
+        <div class="bi-bank-status">
+          <span class="bi-bank-status-label">Status</span>
+
+          <label class="shared-active-switch">
+            <input
+              id="biBankActive"
+              type="checkbox"
+              data-active-label="Active"
+              data-inactive-label="Inactive"
+              checked
+            />
+
+            <span class="shared-active-track">
+              <span class="shared-active-text"></span>
+              <span class="shared-active-knob" aria-hidden="true"></span>
+            </span>
+          </label>
+        </div>
+
       </form>
     `
   });
@@ -1545,13 +1608,33 @@ function biOpenBankForm(editId = null) {
   const length = root.querySelector("#biBankLength");
   const rule = root.querySelector("#biBankRule");
   const number = root.querySelector("#biBankDigits");
+  const activeInput = root.querySelector("#biBankActive");
 
   name.value = existing?.name || "";
   length.value = existing?.len || 12;
   rule.value = existing?.rule || "prefix";
   number.value = existing?.digits || "";
+  activeInput.checked = existing?.active !== false;
 
   NewUI.init(root);
+  const activeText = root.querySelector(
+  ".bi-bank-status .shared-active-text"
+);
+
+function syncBiBankActiveText() {
+  if (!activeText) return;
+
+  activeText.textContent = activeInput.checked
+    ? "Active"
+    : "Inactive";
+}
+
+syncBiBankActiveText();
+
+activeInput.addEventListener(
+  "change",
+  syncBiBankActiveText
+);
   rule._sharedDropdown?.refresh?.();
 
   const cancelBtn = document.createElement("button");
@@ -1579,12 +1662,13 @@ function biOpenBankForm(editId = null) {
 
     if (!form.reportValidity()) return;
 
-    const data = biNormalizeBank({
-      name: name.value,
-      len: length.value,
-      rule: rule.value,
-      digits: number.value
-    });
+const data = biNormalizeBank({
+  name: name.value,
+  len: length.value,
+  rule: rule.value,
+  digits: number.value,
+  active: activeInput.checked
+});
 
     if (!data) {
       biToast("Please enter valid bank information", "error");
@@ -1673,11 +1757,12 @@ function biOpenManageBanks() {
     row.innerHTML = `
       <div class="bi-bank-info">
         <strong>${biEscape(bank.name)}</strong>
-        <small>
-          Length: ${bank.len}
-          | ${biEscape(bank.rule)}
-          | ${biEscape(bank.digits || "No digits")}
-        </small>
+<small>
+  Length: ${bank.len}
+  · ${biEscape(bank.rule)}:
+  ${biEscape(bank.digits || "No digits")}
+  · ${bank.active !== false ? "Active" : "Inactive"}
+</small>
       </div>
 
       <div class="bi-bank-buttons">
