@@ -1256,25 +1256,16 @@ body.light-theme .theme-toggle-knob{
   display:flex;
   align-items:center;
   justify-content:space-between;
-
   gap:10px;
-
   margin:10px 5px;
-
   padding:4px 8px;
-
   color:rgba(255,255,255,.65);
-
   text-decoration:none;
-
   font-size:14px;
-  font-weight:bold;
-
+  font-weight:400;
   border-radius:6px;
   border-bottom:1px solid #424242;
-
   white-space:nowrap;
-
   transition:all .2s ease;
 }
 
@@ -1333,11 +1324,7 @@ body.light-theme .theme-toggle-knob{
 
 #customSidebarTabs{
   position:relative;
-
-  padding:10px 0 0;
-
   background:#001529;
-
   z-index:1;
 }
 
