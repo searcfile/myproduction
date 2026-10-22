@@ -2656,6 +2656,7 @@ function createSharedModal(options = {}) {
     document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>{if(e!==backdrop)e._sharedModalAPI?.close();});
     previousFocus=document.activeElement;
     backdrop.classList.add('open');backdrop.setAttribute('aria-hidden','false');
+    document.documentElement.classList.add('new-ui-modal-open');
     document.addEventListener('keydown',keydown);
     closeButton.focus();
     options.onOpen?.(api);
@@ -2664,6 +2665,7 @@ function createSharedModal(options = {}) {
   function close() {
     if(!backdrop.classList.contains('open'))return;
     backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');
+    document.documentElement.classList.remove('new-ui-modal-open');
     document.removeEventListener('keydown',keydown);
     if(previousFocus?.isConnected)previousFocus.focus();
     options.onClose?.(api);
