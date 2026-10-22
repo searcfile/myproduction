@@ -2677,10 +2677,53 @@ function createSharedModal(options = {}) {
     document.removeEventListener('keydown',keydown);
     backdrop.remove();
   }
-  closeButton.addEventListener('click',close);
-  backdrop.addEventListener('mousedown',event=>{
-    if(event.target===backdrop && options.closeOnBackdrop!==false)close();
-  });
+
+closeButton.addEventListener('click', close);
+
+/* ==========================================
+   MODAL - PREVENT SCROLLBAR AUTO CLOSE
+   ========================================== */
+
+let backdropMouseDown = false;
+
+backdrop.addEventListener('pointerdown', event => {
+  backdropMouseDown = false;
+
+  if (event.target !== backdrop) return;
+  if (event.button !== 0) return;
+  if (options.closeOnBackdrop === false) return;
+
+  // Abaikan klik pada scrollbar sebelah kanan.
+  const scrollbarWidth =
+    backdrop.offsetWidth - backdrop.clientWidth;
+
+  const rect = backdrop.getBoundingClientRect();
+
+  if (
+    scrollbarWidth > 0 &&
+    event.clientX >= rect.right - scrollbarWidth
+  ) {
+    return;
+  }
+
+  backdropMouseDown = true;
+});
+
+backdrop.addEventListener('pointerup', event => {
+  const shouldClose =
+    backdropMouseDown &&
+    event.target === backdrop &&
+    options.closeOnBackdrop !== false;
+
+  backdropMouseDown = false;
+
+  if (shouldClose) close();
+});
+
+backdrop.addEventListener('pointercancel', () => {
+  backdropMouseDown = false;
+});
+
   const api={element:backdrop,dialog,body,footer,open,close,destroy,
     setTitle(value){heading.textContent=String(value);},
     setContent(value){setContent(value,body);},
