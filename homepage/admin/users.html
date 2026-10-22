@@ -78,7 +78,6 @@
 .auth-notice{border-radius:9px;padding:12px 14px;background:rgba(54,120,227,.09);border:1px solid rgba(75,138,240,.19);font-size:11px;line-height:1.6;color:var(--text,#dbeafe)}
 .auth-modal-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;width:100%}
 .auth-modal-actions button{height:34px!important;padding:0 15px!important;min-width:105px}
-.shared-modal-body:has(.auth-modal-fields){overflow:visible;max-height:min(65vh,550px);overflow-y:auto}
 .shared-modal-actions:has(.auth-modal-actions){display:block}
 .auth-formgrid [hidden]{display:none!important}
 @media(max-width:900px){.auth-stats .stat{padding:16px!important;min-height:120px}}
@@ -87,10 +86,8 @@
 
 /* Single-file modal form corrections */
 .auth-form-source[hidden]{display:none!important}
-.shared-modal-body:has(#userForm){overflow-y:auto;max-height:min(75vh,620px)}
 .shared-modal-body #userForm{display:block;width:100%}
 .shared-modal-body #modalActions{padding-top:18px;margin-top:12px;border-top:1px solid var(--tx-border,#2b3e5b)}
-@media(max-width:620px){.shared-modal-body:has(#userForm){max-height:calc(100dvh - 115px)}}
 
 /* ==========================================
    AUTH USERS - TOOLBAR CARD
@@ -630,54 +627,43 @@
 }
 
 
+
+
 /* ==========================================
-   AUTH USERS - SINGLE MODAL PAGE SCROLL
+   AUTH USERS - NO NESTED FORM SCROLL
    ========================================== */
 
-/* Scroll pada lapisan luar modal */
-.shared-modal-backdrop:has(.auth-unified-shell) {
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  overscroll-behavior-y: contain;
-  padding: 16px !important;
-}
-
-/* Semua kandungan modal ikut tinggi sebenar */
-.shared-modal-backdrop:has(.auth-unified-shell)
-.shared-modal,
-.shared-modal-backdrop:has(.auth-unified-shell)
-.shared-modal-content,
-.shared-modal-backdrop:has(.auth-unified-shell)
-.shared-modal-body {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-/* Tiada scrollbar tambahan dalam form */
+/* Form dan pane ikut tinggi kandungan */
 .auth-unified-shell,
 .auth-unified-pane,
 #authManagePane,
 #authPermissionPane,
-#authPermissionPane .auth-permission-form {
+#userForm,
+#permissionProfileForm {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-/* Dropdown tidak terpotong */
+/* Jangan cipta scrollbar tambahan pada form */
+.auth-unified-pane .auth-permission-form {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Dropdown dan card */
 #authPermissionPane .auth-permission-panel,
 #authPermissionPane .auth-permission-chips {
   overflow: visible !important;
 }
 
-/* Module tabs kekal boleh scroll kiri kanan */
+/* Tabs module sahaja boleh bergerak kiri-kanan */
 .auth-permission-tabs {
   overflow-x: auto !important;
   overflow-y: hidden !important;
   scrollbar-width: none !important;
+  scroll-behavior: auto !important;
 }
 
 .auth-permission-tabs::-webkit-scrollbar {
