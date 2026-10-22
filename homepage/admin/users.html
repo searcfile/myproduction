@@ -1124,9 +1124,31 @@ function render(){
       u.enabled ? 'active' : 'inactive'
     );
 
+
   return matchSearch && matchStatus;
 
+}).sort((a, b) => {
+  const getTime = user => {
+    const value = user.createdAt;
+
+    if (typeof value === 'number') {
+      return value < 1e12 ? value * 1000 : value;
+    }
+
+    if (!value) return 0;
+
+    const numeric = Number(value);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric < 1e12 ? numeric * 1000 : numeric;
+    }
+
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  return getTime(b) - getTime(a);
 });
+
   if(!filtered.length){emptyRow(users.length?'No Data':'No data');return}
   for(const u of filtered){
     const tr=document.createElement('tr');
