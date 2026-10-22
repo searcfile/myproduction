@@ -3782,71 +3782,100 @@ mobileBtn?.setAttribute("title", "Select Site");
 
 
 function updateInput() {
-  const selected = availableSites.filter(
-    site => selectedIds.includes(site.id)
-  );
+  const selected = selectedIds
+    .map(id => availableSites.find(site => site.id === id))
+    .filter(Boolean);
 
-  let more = document.getElementById("headerSelectedSiteMore");
+  let chips = document.getElementById("headerSiteChips");
 
-  if (!selected.length) {
-    input.value = "";
-    input.placeholder = "🏢 🔍 Search";
-    input.title = "";
-    mobileInput.placeholder = "🏢 🔍 Search";
+  if (!chips) {
+    chips = document.createElement("div");
+    chips.id = "headerSiteChips";
+    chips.className = "header-site-chips";
 
-    if (more) {
-      more.hidden = true;
-      more.textContent = "";
-      more.title = "";
-    }
-
-    wrap.classList.remove("has-selected");
-    return;
+    input.parentElement.insertBefore(chips, input);
   }
 
-  input.value = selected[0].name;
-  input.title = selected.map(site => site.name).join(", ");
-  wrap.classList.add("has-selected");
+  chips.replaceChildren();
 
-  if (!more) {
-    more = document.createElement("span");
-    more.id = "headerSelectedSiteMore";
+  wrap.classList.toggle("has-selected", selected.length > 0);
 
-    more.style.cssText = [
-      "position:absolute",
-      "right:27px",
-      "top:50%",
-      "transform:translateY(-50%)",
-      "font-size:11px",
-      "font-weight:600",
-      "padding:2px 4px",
-      "border-radius:4px",
-      "background:rgba(255,255,255,.12)",
-      "color:inherit",
-      "cursor:help",
-      "z-index:2"
-    ].join(";");
+  input.value = "";
+  input.placeholder = selected.length ? "" : "🏢 🔍 Search";
 
-    input.parentElement.style.position = "relative";
-    input.parentElement.appendChild(more);
+  mobileInput.placeholder = selected.length
+    ? selected.map(site => site.name).join(", ")
+    : "🏢 🔍 Search";
+
+  if (!selected.length) return;
+
+  const createChip = site => {
+    const chip = document.createElement("span");
+    chip.className = "header-site-chip";
+
+    const label = document.createElement("span");
+    label.className = "header-site-chip-label";
+    label.textContent = site.name;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "header-site-chip-remove";
+    remove.textContent = "×";
+    remove.title = "Remove " + site.name;
+
+    remove.addEventListener("pointerdown", e => {
+      e.stopPropagation();
+    });
+
+    remove.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      selectedIds = selectedIds.filter(id => id !== site.id);
+      saveSelection();
+      updateInput();
+
+      if (list.style.display === "block") {
+        renderOptions("");
+      }
+    });
+
+    chip.append(label, remove);
+    return chip;
+  };
+
+  const first = selected[0];
+  chips.appendChild(createChip(first));
+
+  if (selected.length > 1) {
+    const more = document.createElement("span");
+    more.className = "header-site-chip-more";
+    more.textContent = "+" + (selected.length - 1);
+    more.tabIndex = 0;
+    more.title = selected.slice(1)
+      .map(site => site.name)
+      .join("\n");
+
+    const tooltip = document.createElement("span");
+    tooltip.className = "header-site-chip-tooltip";
+
+    selected.slice(1).forEach(site => {
+      const line = document.createElement("span");
+      line.textContent = site.name;
+      tooltip.appendChild(line);
+    });
+
+    more.appendChild(tooltip);
+    chips.appendChild(more);
   }
-
-  const extra = selected.slice(1);
-
-  more.hidden = extra.length === 0;
-  more.textContent = extra.length ? `+${extra.length}` : "";
-  more.title = extra.map(site => site.name).join("\n");
-
-  mobileInput.placeholder = selected
-    .map(site => site.name)
-    .join(", ");
 }
-
 
 
 function closeDropdown() {
   list.style.display = "none";
-  wrap.classList.remove("search-mode");
+  wrap.classList.remove("search-mode", "site-is-searching");
+  input.blur();
+  updateInput();
 }
 
   function closePanel() {
@@ -3920,9 +3949,9 @@ function closeDropdown() {
           selectedIds = selectedIds.filter(id => id !== site.id);
         }
 
-        saveSelection();
-        updateInput();
-        renderOptions();
+saveSelection();
+updateInput();
+renderOptions("");
       });
 
       option.append(checkbox, name);
@@ -3998,13 +4027,30 @@ function closeDropdown() {
   }
 
   // Desktop: klik input asal untuk buka dropdown.
-  input.addEventListener("click", () => {
-    if (!ready) {
-      loadSites().then(() => renderOptions());
-    } else {
-      renderOptions();
-    }
-  });
+
+input.addEventListener("focus", () => {
+  wrap.classList.add("site-is-searching");
+  input.placeholder = "Search sites...";
+});
+
+input.addEventListener("click", () => {
+  input.value = "";
+
+  if (!ready) {
+    loadSites().then(() => renderOptions(""));
+  } else {
+    renderOptions("");
+  }
+});
+
+input.addEventListener("blur", () => {
+  setTimeout(() => {
+    if (document.activeElement === input) return;
+
+    wrap.classList.remove("site-is-searching");
+    updateInput();
+  }, 150);
+});
 
 
 input.addEventListener("input", () => {
