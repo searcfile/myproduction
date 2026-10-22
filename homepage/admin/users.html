@@ -1073,6 +1073,54 @@
   font-size: 14px;
 }
 
+/* ==========================================
+   PAGINATION - PREV NEXT SVG ONLY
+   ========================================== */
+
+.auth-list .auth-page-btn.auth-page-arrow {
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  padding: 0 !important;
+  margin: 0 4px !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--text, #eaf0fb);
+  cursor: pointer;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-list .auth-page-btn.auth-page-arrow svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.auth-list .auth-page-btn.auth-page-arrow:hover:not(:disabled) {
+  background: transparent !important;
+  border: none !important;
+  color: #4096ff !important;
+}
+
+.auth-list .auth-page-btn.auth-page-arrow:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
 </style>
 </head>
 <body>
@@ -1458,24 +1506,51 @@ function authRenderPagination(total) {
 
   numbers.replaceChildren();
 
-  function addButton(label, page, disabled = false, active = false) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'auth-page-btn';
+
+function addButton(label, page, disabled = false, active = false) {
+  const button = document.createElement('button');
+
+  button.type = 'button';
+  button.className = 'auth-page-btn';
+  button.disabled = disabled;
+
+  if (label === '‹' || label === '›') {
+    const isPrev = label === '‹';
+
+    button.classList.add('auth-page-arrow');
+    button.setAttribute(
+      'aria-label',
+      isPrev ? 'Previous page' : 'Next page'
+    );
+    button.title = isPrev ? 'Previous page' : 'Next page';
+
+    button.innerHTML = isPrev
+      ? `<svg viewBox="64 64 896 896" focusable="false"
+           width="12" height="12"
+           fill="currentColor" aria-hidden="true">
+           <path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z"></path>
+         </svg>`
+      : `<svg viewBox="64 64 896 896" focusable="false"
+           width="12" height="12"
+           fill="currentColor" aria-hidden="true">
+           <path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"></path>
+         </svg>`;
+  } else {
     button.textContent = label;
-    button.disabled = disabled;
-
-    if (active) {
-      button.classList.add('active');
-      button.setAttribute('aria-current', 'page');
-    }
-
-    button.addEventListener('click', () => {
-      authSetPage(page);
-    });
-
-    numbers.append(button);
   }
+
+  if (active) {
+    button.classList.add('active');
+    button.setAttribute('aria-current', 'page');
+  }
+
+  button.addEventListener('click', () => {
+    authSetPage(page);
+  });
+
+  numbers.append(button);
+}
+
 
   function addDots() {
     const dots = document.createElement('span');
