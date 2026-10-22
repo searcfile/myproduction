@@ -434,6 +434,30 @@
 .auth-unified-pane{min-width:0;max-height:min(67dvh,620px);overflow-y:auto;overflow-x:hidden;padding:2px 3px 12px;scrollbar-width:thin}
 .auth-unified-pane .auth-permission-form{max-height:none;overflow:visible}
 .auth-unified-pane .auth-permission-tabs{max-width:100%}
+
+/* ==========================================
+   AUTH USERS - HIDE MODULE TABS SCROLLBAR
+   ========================================== */
+
+.auth-permission-tabs {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+.auth-permission-tabs::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.auth-permission-tabs .auth-permission-tab {
+  flex: 0 0 auto !important;
+}
+
 @media(max-width:650px){.auth-unified-tab{flex:1;padding:9px 10px}.auth-unified-pane{max-height:calc(100dvh - 185px)}}
 </style>
 </head>
@@ -798,6 +822,34 @@ function openAccount(u){
  if(u.role!=='siteadmin')return;
  manage(u);
 }
+
+/* MODULE TABS - MOUSE WHEEL HORIZONTAL */
+
+document.addEventListener('wheel', function(e) {
+  const tabs = e.target.closest?.('.auth-permission-tabs');
+
+  if (!tabs) return;
+
+  if (tabs.scrollWidth <= tabs.clientWidth) return;
+
+  const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX)
+    ? e.deltaY
+    : e.deltaX;
+
+  if (!delta) return;
+
+  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+  const next = Math.max(
+    0,
+    Math.min(maxScroll, tabs.scrollLeft + delta)
+  );
+
+  if (next === tabs.scrollLeft) return;
+
+  e.preventDefault();
+  tabs.scrollLeft = next;
+}, { passive: false });
+   
 function renderPermissionTabs(){
  const host=document.getElementById('permissionTabs');if(!host)return;host.replaceChildren();
  for(const [key,label] of getPermissionModules()){
@@ -919,8 +971,34 @@ $('userForm').addEventListener('submit',async e=>{
       })});
     }
     await NewUI.setButtonLoading(save,false,{minDuration:850});
-    closeModal();await load();toast(wasEdit?'Username updated successfully.':'Username created successfully.');
-  }catch(err){toast('Save failed: '+err.message,'error')}
+
+await load();
+
+if (wasEdit) {
+  // Kekalkan modal Manage Account terbuka
+  // selepas berjaya menyimpan perubahan.
+
+  const updatedUser = users.find(
+    u => u.uid === editing?.uid
+  );
+
+  if (updatedUser) {
+    editing = updatedUser;
+  }
+
+  // Kosongkan password dan PIN selepas save
+  // supaya tidak tersimpan dalam input.
+  $('password').value = '';
+  $('secondPassword').value = '';
+
+  toast('Account updated successfully.');
+} else {
+  // Create Username masih tutup modal seperti biasa.
+  closeModal();
+  toast('Username created successfully.');
+}
+
+}catch(err){toast('Save failed: '+err.message,'error')}
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
 });
 searchInput.addEventListener('input',render);
