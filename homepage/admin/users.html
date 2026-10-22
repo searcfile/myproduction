@@ -390,6 +390,111 @@
   }
 }
 
+/* ==========================================
+   MODULE PERMISSIONS - AUTO MORE DROPDOWN
+   ========================================== */
+
+.auth-permission-tabbar {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+.auth-permission-tabbar .auth-permission-tabs {
+  display: flex !important;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  max-width: none !important;
+  overflow: hidden !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+}
+
+.auth-permission-tabbar .auth-permission-tab {
+  flex: 0 0 auto !important;
+  white-space: nowrap;
+}
+
+.auth-permission-tabbar .auth-permission-tab[hidden] {
+  display: none !important;
+}
+
+.auth-permission-more {
+  position: relative;
+  flex: 0 0 38px;
+  margin-left: auto;
+}
+
+.auth-permission-more[hidden] {
+  display: none !important;
+}
+
+.auth-permission-more-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 100%;
+  min-height: 35px;
+  padding: 0;
+  border: 1px solid #344158;
+  border-radius: 8px 8px 0 0;
+  background: #172131;
+  color: #c5d4e8;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.auth-permission-more-btn:hover {
+  color: #78b2ff;
+  background: #20314a;
+}
+
+.auth-permission-more-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 9999;
+  min-width: 180px;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 40px));
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid #344158;
+  border-radius: 8px;
+  background: #172131;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+
+.auth-permission-more:hover .auth-permission-more-menu,
+.auth-permission-more:focus-within .auth-permission-more-menu,
+.auth-permission-more.is-open .auth-permission-more-menu {
+  display: block;
+}
+
+.auth-permission-more-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #c5d4e8;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.auth-permission-more-menu button:hover,
+.auth-permission-more-menu button.active {
+  color: #78b2ff;
+  background: rgba(52,140,255,.15);
+}
+
 /* USERS + PERMISSIONS — scoped responsive layout */
 .auth-table tbody tr.auth-clickable{cursor:pointer}
 .auth-table tbody tr.auth-clickable:focus-visible{outline:2px solid #348cff;outline-offset:-2px}
@@ -660,6 +765,24 @@
 
 .auth-permission-tabs::-webkit-scrollbar {
   display: none !important;
+}
+
+/* FINAL OVERRIDE - MORE DROPDOWN */
+.auth-permission-tabbar .auth-permission-tabs {
+  overflow: hidden !important;
+  scroll-behavior: auto !important;
+}
+
+.auth-permission-tabbar .auth-permission-tab[hidden] {
+  display: none !important;
+}
+
+.auth-unified-pane:has(.auth-permission-tabbar) {
+  overflow: visible !important;
+}
+
+.auth-permission-form:has(.auth-permission-tabbar) {
+  overflow: visible !important;
 }
 
 </style>
@@ -1073,44 +1196,150 @@ function openAccount(u){
 }
 
 
-/* ==========================================
-   MODULE PERMISSIONS - FAST MOUSE WHEEL
-   ========================================== */
-
-document.addEventListener('wheel', function(e) {
-  const tabs = e.target.closest?.('.auth-permission-tabs');
-  if (!tabs) return;
-
-  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
-  if (maxScroll <= 0) return;
-
-  const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
-    ? e.deltaX
-    : e.deltaY;
-
-  if (!delta) return;
-
-  const next = Math.max(
-    0,
-    Math.min(maxScroll, tabs.scrollLeft + delta * 2.2)
-  );
-
-  if (next === tabs.scrollLeft) return;
-
-  e.preventDefault();
-  tabs.scrollLeft = next;
-
-}, { passive: false });
-
    
-function renderPermissionTabs(){
- const host=document.getElementById('permissionTabs');if(!host)return;host.replaceChildren();
- for(const [key,label] of getPermissionModules()){
-  const b=document.createElement('button');b.type='button';b.className='auth-permission-tab'+(key===activePermissionModule?' active':'');b.textContent=label;
-  b.setAttribute('role','tab');b.setAttribute('aria-selected',String(key===activePermissionModule));
-  b.onclick=()=>{activePermissionModule=key;renderPermissionTabs();renderPermissionPanel()};host.append(b);
- }
+
+let permissionOverflowObserver = null;
+
+function renderPermissionTabs() {
+  const bar = document.getElementById('permissionTabbar');
+  const host = document.getElementById('permissionTabs');
+  const more = document.getElementById('permissionMore');
+  const menu = document.getElementById('permissionMoreMenu');
+  const moreBtn = document.getElementById('permissionMoreBtn');
+
+  if (!bar || !host || !more || !menu || !moreBtn) return;
+
+  permissionOverflowObserver?.disconnect();
+  permissionOverflowObserver = null;
+
+  const modules = getPermissionModules();
+
+  host.replaceChildren();
+  menu.replaceChildren();
+
+  function selectModule(key) {
+    activePermissionModule = key;
+    renderPermissionTabs();
+    renderPermissionPanel();
+  }
+
+  for (const [key, label] of modules) {
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className = 'auth-permission-tab' +
+      (key === activePermissionModule ? ' active' : '');
+
+    button.textContent = label;
+    button.dataset.module = key;
+
+    button.setAttribute('role', 'tab');
+    button.setAttribute(
+      'aria-selected',
+      String(key === activePermissionModule)
+    );
+
+    button.onclick = () => selectModule(key);
+
+    host.appendChild(button);
+  }
+
+  function updateOverflow() {
+    if (!bar.isConnected || !bar.clientWidth) return;
+
+    const buttons = [...host.children];
+
+    // Reset tab supaya boleh diukur semula.
+    buttons.forEach(button => {
+      button.hidden = false;
+    });
+
+    more.hidden = true;
+    menu.replaceChildren();
+
+    const widths = buttons.map(button =>
+      button.getBoundingClientRect().width
+    );
+
+    const totalWidth = widths.reduce(
+      (sum, width) => sum + width, 0
+    );
+
+    const availableWidth = bar.clientWidth;
+
+    if (totalWidth <= availableWidth) {
+      more.classList.remove('is-open');
+      moreBtn.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    more.hidden = false;
+
+    const moreWidth = more.getBoundingClientRect().width;
+    const limit = Math.max(0, availableWidth - moreWidth);
+
+    let usedWidth = 0;
+
+    buttons.forEach((button, index) => {
+      const width = widths[index];
+
+      if (usedWidth + width <= limit) {
+        usedWidth += width;
+        return;
+      }
+
+      button.hidden = true;
+
+      const [key, label] = modules[index];
+
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.textContent = label;
+
+      if (key === activePermissionModule) {
+        item.classList.add('active');
+      }
+
+      item.onclick = () => {
+        more.classList.remove('is-open');
+        selectModule(key);
+      };
+
+      menu.appendChild(item);
+    });
+
+    more.hidden = menu.children.length === 0;
+  }
+
+  moreBtn.onclick = () => {
+    const opened = more.classList.toggle('is-open');
+
+    moreBtn.setAttribute(
+      'aria-expanded',
+      String(opened)
+    );
+  };
+
+  more.onmouseenter = () => {
+    moreBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  more.onmouseleave = () => {
+    more.classList.remove('is-open');
+    moreBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  updateOverflow();
+
+  if (typeof ResizeObserver !== 'undefined') {
+    permissionOverflowObserver = new ResizeObserver(() => {
+      updateOverflow();
+    });
+
+    permissionOverflowObserver.observe(bar);
+  }
 }
+
 function renderPermissionPanel(){
  const title=document.getElementById('permissionModuleTitle'),a=document.getElementById('permissionAvailable'),g=document.getElementById('permissionGiven');
  if(!title||!a||!g)return;
@@ -1131,7 +1360,29 @@ async function openPermissionEditor(u,container){
  <div><label for="permissionRole">Role</label><input id="permissionRole" data-new-ui-input readonly value="Site Admin"></div></div>
  <div class="auth-permission-section">Allowed Sites</div><div id="permissionSiteChoices"></div>
  <p class="auth-permission-note">Assign active sites before saving permissions.</p>
- <div class="auth-permission-section">Module Permissions</div><div class="auth-permission-tabs" id="permissionTabs" role="tablist"></div>
+ <div class="auth-permission-section">Module Permissions</div>
+ 
+<div class="auth-permission-tabbar" id="permissionTabbar">
+  <div class="auth-permission-tabs"
+       id="permissionTabs"
+       role="tablist"></div>
+
+  <div class="auth-permission-more"
+       id="permissionMore"
+       hidden>
+
+    <button type="button"
+            class="auth-permission-more-btn"
+            id="permissionMoreBtn"
+            aria-label="More modules"
+            aria-haspopup="true"
+            aria-expanded="false">⋯</button>
+
+    <div class="auth-permission-more-menu"
+         id="permissionMoreMenu"></div>
+  </div>
+</div>
+
  <div class="auth-permission-panel"><h3 id="permissionModuleTitle"></h3><div class="auth-permission-chips">
  <div><label>Available Functions</label><div id="permissionAvailable" class="auth-readonly-chips"></div></div>
  <div><label>Given Permissions</label><div id="permissionGiven"></div></div></div>
