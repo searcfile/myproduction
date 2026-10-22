@@ -1007,6 +1007,73 @@
 }
 
 
+/* ==========================================
+   AUTH PAGINATION - CUSTOM DROPDOWN UP
+   ========================================== */
+
+/* Allow dropdown panel to extend above footer */
+.auth-list {
+  overflow: visible !important;
+}
+
+/* Keep pagination above nearby content */
+.auth-list > .auth-pagination {
+  position: relative;
+  z-index: 30;
+}
+
+/* Fixed width custom dropdown */
+.auth-pagination .shared-dropdown {
+  flex: 0 0 105px !important;
+  width: 105px !important;
+  min-width: 105px !important;
+  max-width: 105px !important;
+}
+
+/* Custom trigger */
+.auth-pagination .shared-dropdown-trigger {
+  width: 100% !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  background: var(--input, #141414);
+  border-radius: 6px;
+}
+
+/* Custom text */
+.auth-pagination .shared-dropdown-input {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  padding: 0 24px 0 9px !important;
+  font-size: 12px !important;
+}
+
+/* Open the options ABOVE the trigger */
+.auth-pagination .shared-dropdown-panel {
+  top: auto !important;
+  bottom: calc(100% + 5px) !important;
+  left: 0 !important;
+
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 160px !important;
+
+  z-index: 99999 !important;
+}
+
+/* Scrollable options */
+.auth-pagination .shared-dropdown-options {
+  max-height: 180px !important;
+  overflow-y: auto !important;
+}
+
+/* Compact option text */
+.auth-pagination .shared-dropdown-option {
+  min-height: 30px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
 </style>
 </head>
 <body>
@@ -1108,13 +1175,20 @@
 
     <div id="authPageNumbers" class="auth-page-numbers"></div>
 
-    <select id="authPageSize" class="auth-page-size"
-            aria-label="Rows per page">
-      <option value="10">10 / page</option>
-      <option value="20">20 / page</option>
-      <option value="50">50 / page</option>
-      <option value="100">100 / page</option>
-    </select>
+
+<select
+  id="authPageSize"
+  class="auth-page-size"
+  data-shared-dropdown
+  data-placeholder="Rows per page"
+  aria-label="Rows per page"
+>
+  <option value="10" selected>10 / page</option>
+  <option value="20">20 / page</option>
+  <option value="50">50 / page</option>
+  <option value="100">100 / page</option>
+</select>
+
 
     <div class="auth-page-goto">
       <span>Go to</span>
