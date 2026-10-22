@@ -2285,3 +2285,6 @@ input[type="checkbox"]:disabled
     transition: none;
   }
 }
+html.new-ui-modal-open {
+  overflow: hidden !important;
+}
