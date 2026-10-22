@@ -420,7 +420,47 @@
 .auth-readonly-chips .shared-chip-dropdown-trigger{pointer-events:none}
 .auth-readonly-chips .shared-chip-dropdown-icon-btn{display:none}
 .auth-permission-note{font-size:11px;color:#9cb0c8;line-height:1.6;margin:8px 0}
-.auth-permission-footer{display:flex;justify-content:flex-end;gap:9px;padding:16px 0 0}
+
+/* ==========================================
+   PERMISSION ACTIONS - SEPARATE FOOTER
+   ========================================== */
+
+.auth-permission-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  position: relative;
+  z-index: 1;
+
+  width: 100% !important;
+  margin-top: 20px !important;
+  padding: 16px 0 4px !important;
+
+  border-top: 1px solid #344158;
+  background: transparent !important;
+}
+
+.auth-permission-footer button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 105px !important;
+  height: 34px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  .auth-permission-footer {
+    gap: 8px !important;
+  }
+
+  .auth-permission-footer button {
+    min-width: 0 !important;
+  }
+}
 .auth-permission-footer button{height:34px;padding:0 15px}
 .auth-account-actions{margin-top:6px}
 @media(max-width:650px){.auth-permission-grid,.auth-permission-chips{grid-template-columns:1fr}.auth-permission-form{max-height:calc(100dvh - 140px);overflow-y:auto}.auth-account-actions{flex-direction:column}.auth-account-actions button{width:100%}}
@@ -444,8 +484,8 @@
   overflow-y: hidden !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
+   scroll-behavior: auto;
+   overscroll-behavior-x: contain;
 }
 
 .auth-permission-tabs::-webkit-scrollbar {
@@ -456,6 +496,58 @@
 
 .auth-permission-tabs .auth-permission-tab {
   flex: 0 0 auto !important;
+}
+
+/* ==========================================
+   AUTH USERS - PERMISSION DROPDOWN FIX
+   ========================================== */
+
+.auth-unified-pane:has(#permissionProfileForm) {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.auth-permission-form {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.auth-permission-panel {
+  position: relative;
+  overflow: visible !important;
+}
+
+.auth-permission-chips {
+  overflow: visible !important;
+}
+
+.auth-permission-chips > div {
+  position: relative;
+  min-width: 0;
+}
+
+.auth-permission-chips .shared-chip-dropdown {
+  position: relative;
+  overflow: visible !important;
+}
+
+.auth-permission-chips .shared-chip-dropdown-panel {
+  z-index: 9999 !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+}
+
+.auth-permission-panel:has(
+  .shared-chip-dropdown-panel
+) {
+  z-index: 10;
+}
+
+/* Modal body menjadi satu kawasan scroll utama */
+.shared-modal-body:has(#permissionProfileForm) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100dvh - 120px) !important;
 }
 
 @media(max-width:650px){.auth-unified-tab{flex:1;padding:9px 10px}.auth-unified-pane{max-height:calc(100dvh - 185px)}}
@@ -823,32 +915,36 @@ function openAccount(u){
  manage(u);
 }
 
-/* MODULE TABS - MOUSE WHEEL HORIZONTAL */
+
+/* ==========================================
+   MODULE PERMISSIONS - FAST MOUSE WHEEL
+   ========================================== */
 
 document.addEventListener('wheel', function(e) {
   const tabs = e.target.closest?.('.auth-permission-tabs');
-
   if (!tabs) return;
 
-  if (tabs.scrollWidth <= tabs.clientWidth) return;
+  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+  if (maxScroll <= 0) return;
 
-  const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX)
-    ? e.deltaY
-    : e.deltaX;
+  const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
+    ? e.deltaX
+    : e.deltaY;
 
   if (!delta) return;
 
-  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
   const next = Math.max(
     0,
-    Math.min(maxScroll, tabs.scrollLeft + delta)
+    Math.min(maxScroll, tabs.scrollLeft + delta * 2.2)
   );
 
   if (next === tabs.scrollLeft) return;
 
   e.preventDefault();
   tabs.scrollLeft = next;
+
 }, { passive: false });
+
    
 function renderPermissionTabs(){
  const host=document.getElementById('permissionTabs');if(!host)return;host.replaceChildren();
