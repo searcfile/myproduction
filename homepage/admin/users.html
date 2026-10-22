@@ -662,7 +662,10 @@
   max-height: none !important;
   overflow: visible !important;
 }
-
+#shared-modal-title-3 {
+  font-size:14px !important;
+  font-weight:400 !important;
+}
 /* Horizontal module tabs */
 .auth-permission-tabs {
   overflow-x: auto !important;
@@ -1540,7 +1543,7 @@ function showModal(){
     };
     shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
     formModal=NewUI.modal.open({
-  title:'Site Admin · '+u.username,
+  title:'Player · '+u.username,
   width:'1800px',
   content:shell,
   onClose(){
