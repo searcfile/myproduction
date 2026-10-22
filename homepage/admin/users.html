@@ -1671,33 +1671,47 @@ function addDots(direction) {
     authCurrentPage === 1
   );
 
-  const visible = new Set([1, totalPages]);
 
-  for (
-    let p = Math.max(1, authCurrentPage - 2);
-    p <= Math.min(totalPages, authCurrentPage + 2);
-    p++
-  ) {
-    visible.add(p);
-  }
 
-  const pages = [...visible].sort((a, b) => a - b);
-  let previous = 0;
+/* ==========================================
+   PAGINATION - DOUBLE DOTS LEFT & RIGHT
+   ========================================== */
+
+const visible = new Set([1, totalPages]);
+
+// Paparkan 2 page sebelum dan selepas current page
+for (
+  let p = Math.max(1, authCurrentPage - 2);
+  p <= Math.min(totalPages, authCurrentPage + 2);
+  p++
+) {
+  visible.add(p);
+}
+
+const pages = [...visible].sort((a, b) => a - b);
+
+let previous = 0;
 
 pages.forEach(page => {
+
   if (page - previous > 1) {
-    addDots(previous === 0 ? 'prev' : 'next');
+
+    const direction =
+      page <= authCurrentPage ? 'prev' : 'next';
+
+    addDots(direction);
   }
 
-    addButton(
-      String(page),
-      page,
-      false,
-      page === authCurrentPage
-    );
+  addButton(
+    String(page),
+    page,
+    false,
+    page === authCurrentPage
+  );
 
-    previous = page;
-  });
+  previous = page;
+});
+
 
   addButton(
     '›',
