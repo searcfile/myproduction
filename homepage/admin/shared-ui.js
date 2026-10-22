@@ -3781,238 +3781,73 @@ mobileBtn?.setAttribute("title", "Select Site");
   }
 
 
-/* ==========================================
-   HEADER SELECT SITE - RESPONSIVE CHIPS
-   ========================================== */
+function updateInput() {
+  const selected = availableSites.filter(
+    site => selectedIds.includes(site.id)
+  );
 
-const siteInputWrap = input.parentElement;
-
-const chipsBox = document.createElement("div");
-chipsBox.className = "header-site-chips";
-siteInputWrap.appendChild(chipsBox);
-
-const hiddenPopup = document.createElement("div");
-hiddenPopup.className = "header-site-hidden-popup";
-hiddenPopup.hidden = true;
-document.body.appendChild(hiddenPopup);
-
-let siteChipResizeFrame = 0;
-
-function removeSelectedSite(id) {
-  selectedIds = selectedIds.filter(item => item !== id);
-  saveSelection();
-  updateInput();
-
-  if (list.style.display === "block") {
-    renderOptions(isMobile() ? mobileInput.value : "");
-  }
-}
-
-function createSiteChip(site) {
-  const chip = document.createElement("span");
-  chip.className = "header-site-chip";
-
-  const label = document.createElement("span");
-  label.className = "header-site-chip-label";
-  label.textContent = site.name;
-  label.title = site.name;
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = "header-site-chip-close";
-  close.innerHTML = ICON_CLOSE;
-  close.setAttribute("aria-label", "Remove " + site.name);
-
-  close.addEventListener("click", e => {
-    e.preventDefault();
-    e.stopPropagation();
-    removeSelectedSite(site.id);
-  });
-
-  chip.append(label, close);
-  return chip;
-}
-
-function updateSiteChipOverflow() {
-  if (isMobile()) return;
-
-  const selected = selectedIds
-    .map(id => availableSites.find(site => site.id === id))
-    .filter(Boolean);
-
-  chipsBox.replaceChildren();
-  hiddenPopup.hidden = true;
+  let more = document.getElementById("headerSelectedSiteMore");
 
   if (!selected.length) {
-    chipsBox.hidden = true;
-    input.classList.remove("has-site-chips");
+    input.value = "";
+    input.placeholder = "🏢 🔍 Search";
+    input.title = "";
+    mobileInput.placeholder = "🏢 🔍 Search";
+
+    if (more) {
+      more.hidden = true;
+      more.textContent = "";
+      more.title = "";
+    }
+
+    wrap.classList.remove("has-selected");
     return;
   }
 
-  chipsBox.hidden = false;
-  input.classList.add("has-site-chips");
+  input.value = selected[0].name;
+  input.title = selected.map(site => site.name).join(", ");
+  wrap.classList.add("has-selected");
 
-  const availableWidth = Math.max(
-    0,
-    siteInputWrap.clientWidth - 48
-  );
+  if (!more) {
+    more = document.createElement("span");
+    more.id = "headerSelectedSiteMore";
 
-  // Ukur lebar sebenar setiap chip.
-  const measurements = selected.map(site => {
-    const chip = createSiteChip(site);
-    chip.style.position = "absolute";
-    chip.style.visibility = "hidden";
-    chipsBox.appendChild(chip);
+    more.style.cssText = [
+      "position:absolute",
+      "right:27px",
+      "top:50%",
+      "transform:translateY(-50%)",
+      "font-size:11px",
+      "font-weight:600",
+      "padding:2px 4px",
+      "border-radius:4px",
+      "background:rgba(255,255,255,.12)",
+      "color:inherit",
+      "cursor:help",
+      "z-index:2"
+    ].join(";");
 
-    const width = Math.ceil(chip.getBoundingClientRect().width);
-
-    chip.remove();
-    return width;
-  });
-
-  // Reserve ruang untuk +N apabila diperlukan.
-  let visibleCount = selected.length;
-
-  const totalWidth = measurements.reduce(
-    (sum, width) => sum + width + 4, 0
-  );
-
-  if (totalWidth > availableWidth) {
-    visibleCount = 0;
-    let used = 0;
-    const reserve = 38;
-
-    for (const width of measurements) {
-      if (used + width + 4 + reserve > availableWidth) break;
-      used += width + 4;
-      visibleCount++;
-    }
+    input.parentElement.style.position = "relative";
+    input.parentElement.appendChild(more);
   }
 
-  selected.slice(0, visibleCount).forEach(site => {
-    chipsBox.appendChild(createSiteChip(site));
-  });
+  const extra = selected.slice(1);
 
-  const hiddenSites = selected.slice(visibleCount);
+  more.hidden = extra.length === 0;
+  more.textContent = extra.length ? `+${extra.length}` : "";
+  more.title = extra.map(site => site.name).join("\n");
 
-  if (hiddenSites.length) {
-    const more = document.createElement("button");
-    more.type = "button";
-    more.className = "header-site-more";
-    more.textContent = "+" + hiddenSites.length;
-    more.title = hiddenSites.map(s => s.name).join("\n");
-
-    more.addEventListener("click", e => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!hiddenPopup.hidden) {
-        hiddenPopup.hidden = true;
-        return;
-      }
-
-      hiddenPopup.replaceChildren();
-
-      hiddenSites.forEach(site => {
-        const row = document.createElement("div");
-        row.className = "header-site-hidden-row";
-
-        const name = document.createElement("span");
-        name.textContent = site.name;
-        name.title = site.name;
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.innerHTML = ICON_CLOSE;
-        remove.setAttribute(
-          "aria-label",
-          "Remove " + site.name
-        );
-
-        remove.onclick = event => {
-          event.stopPropagation();
-          removeSelectedSite(site.id);
-        };
-
-        row.append(name, remove);
-        hiddenPopup.appendChild(row);
-      });
-
-      const rect = more.getBoundingClientRect();
-
-      hiddenPopup.style.left = Math.max(
-        8,
-        Math.min(rect.left, window.innerWidth - 228)
-      ) + "px";
-
-      hiddenPopup.style.top = rect.bottom + 6 + "px";
-      hiddenPopup.hidden = false;
-    });
-
-    chipsBox.appendChild(more);
-  }
+  mobileInput.placeholder = selected
+    .map(site => site.name)
+    .join(", ");
 }
 
-function scheduleSiteChipOverflow() {
-  cancelAnimationFrame(siteChipResizeFrame);
 
-  siteChipResizeFrame = requestAnimationFrame(
-    updateSiteChipOverflow
-  );
+
+function closeDropdown() {
+  list.style.display = "none";
+  wrap.classList.remove("search-mode");
 }
-
-function updateInput() {
-  const selected = selectedIds
-    .map(id => availableSites.find(site => site.id === id))
-    .filter(Boolean);
-
-  input.value = "";
-  input.placeholder = selected.length
-    ? ""
-    : "🏢 🔍 Search";
-
-  input.title = selected.map(s => s.name).join(", ");
-
-  mobileInput.placeholder = selected.length
-    ? selected.map(s => s.name).join(", ")
-    : "🏢 🔍 Search";
-
-  wrap.classList.toggle("has-selected", selected.length > 0);
-
-  scheduleSiteChipOverflow();
-}
-
-// Klik chip area untuk buka pilihan site.
-chipsBox.addEventListener("click", e => {
-  if (e.target.closest("button")) return;
-  input.focus();
-  renderOptions();
-});
-
-// Tutup popup bila klik di luar.
-document.addEventListener("pointerdown", e => {
-  if (
-    !hiddenPopup.contains(e.target) &&
-    !e.target.closest(".header-site-more")
-  ) {
-    hiddenPopup.hidden = true;
-  }
-});
-
-// Kira semula bila lebar selector berubah.
-const siteChipObserver = new ResizeObserver(
-  scheduleSiteChipOverflow
-);
-siteChipObserver.observe(siteInputWrap);
-
-window.addEventListener("resize", scheduleSiteChipOverflow);
-
-  function closeDropdown() {
-     chipsBox.style.display = "";
-    updateInput();
-    list.style.display = "none";
-    wrap.classList.remove("search-mode");
-  }
 
   function closePanel() {
     closeDropdown();
@@ -4173,17 +4008,7 @@ window.addEventListener("resize", scheduleSiteChipOverflow);
 
 
 input.addEventListener("input", () => {
-  chipsBox.style.display = input.value ? "none" : "";
   renderOptions(input.value);
-});
-
-input.addEventListener("focus", () => {
-  chipsBox.style.display = "none";
-});
-
-input.addEventListener("blur", () => {
-  chipsBox.style.display = "";
-  updateInput();
 });
 
 
