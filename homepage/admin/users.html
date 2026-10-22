@@ -1187,33 +1187,99 @@
   border: none !important;
 }
 
+
 /* ==========================================
-   AUTH USERS - LOADING BEFORE ACCOUNT MODAL
+   AUTH USERS - ACCOUNT MODAL LOADING
    ========================================== */
 
 .auth-open-loading {
   position: fixed;
   inset: 0;
-  z-index: 999999;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, .25);
+  z-index: 999999;
   opacity: 0;
   animation: authOpenFadeIn .18s ease forwards;
-}
-
-.auth-open-loading .auth-loading-dots {
-  display: grid;
-  grid-template-columns: repeat(2, 6px);
-  grid-template-rows: repeat(2, 6px);
-  gap: 4px;
 }
 
 .auth-open-loading.is-closing {
   animation: authOpenFadeOut .18s ease forwards;
   pointer-events: none;
+}
+
+.auth-open-loading .loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.auth-open-loading .loading-dots {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  margin: 0 auto;
+  animation: loadingRotate 1s linear infinite;
+}
+
+.auth-open-loading .loading-dots span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .85);
+  opacity: .25;
+  animation: dotPulse 1s linear infinite;
+}
+
+.auth-open-loading .loading-dots span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.auth-open-loading .loading-dots span:nth-child(2) {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation-delay: .25s;
+}
+
+.auth-open-loading .loading-dots span:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: .5s;
+}
+
+.auth-open-loading .loading-dots span:nth-child(4) {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation-delay: .75s;
+}
+
+@keyframes dotPulse {
+  0% { opacity: .2; }
+  25% { opacity: 1; }
+  50% { opacity: .4; }
+  100% { opacity: .2; }
+}
+
+@keyframes loadingRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.auth-open-loading .loading-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
 }
 
 @keyframes authOpenFadeIn {
@@ -1982,14 +2048,22 @@ async function openAccount(u) {
   const loading = document.createElement('div');
   loading.className = 'auth-open-loading';
 
-  loading.innerHTML = `
-    <span class="auth-loading-dots" aria-label="Loading">
+loading.innerHTML = `
+  <div class="loading-box" role="status" aria-live="polite">
+
+    <div class="loading-dots" aria-hidden="true">
       <span></span>
       <span></span>
       <span></span>
       <span></span>
-    </span>
-  `;
+    </div>
+
+    <div class="loading-text">
+      Please wait while fetching...
+    </div>
+
+  </div>
+`;
 
   document.body.appendChild(loading);
 
