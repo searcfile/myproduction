@@ -1121,6 +1121,72 @@
   cursor: not-allowed;
 }
 
+/* ==========================================
+   PAGINATION - DOTS JUMP 5 PAGES
+   ========================================== */
+
+.auth-list .auth-page-dots {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 32px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #a2b0c5;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-list .auth-page-dots .auth-dots-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+}
+
+.auth-list .auth-page-dots .auth-dots-icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-list .auth-page-dots .auth-dots-icon svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+}
+
+/* HOVER: DOTS BERTUKAR SVG */
+
+.auth-list .auth-page-dots:hover .auth-dots-text,
+.auth-list .auth-page-dots:focus-visible .auth-dots-text {
+  display: none;
+}
+
+.auth-list .auth-page-dots:hover .auth-dots-icon,
+.auth-list .auth-page-dots:focus-visible .auth-dots-icon {
+  display: inline-flex;
+}
+
+.auth-list .auth-page-dots:hover,
+.auth-list .auth-page-dots:focus-visible {
+  color: #4096ff !important;
+  background: transparent !important;
+  border: none !important;
+}
+
 </style>
 </head>
 <body>
@@ -1552,12 +1618,52 @@ function addButton(label, page, disabled = false, active = false) {
 }
 
 
-  function addDots() {
-    const dots = document.createElement('span');
-    dots.className = 'auth-page-dots';
-    dots.textContent = '…';
-    numbers.append(dots);
-  }
+
+function addDots(direction) {
+  const isPrev = direction === 'prev';
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'auth-page-dots';
+  button.title = isPrev
+    ? 'Jump back 5 pages'
+    : 'Jump forward 5 pages';
+
+  button.setAttribute(
+    'aria-label',
+    isPrev ? 'Jump back 5 pages' : 'Jump forward 5 pages'
+  );
+
+  const icon = isPrev
+    ? `<svg viewBox="64 64 896 896"
+         width="12" height="12"
+         fill="currentColor"
+         aria-hidden="true">
+         <path d="M272.9 512l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L186.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H532c6.7 0 10.4-7.7 6.3-12.9L272.9 512zm304 0l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L490.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H836c6.7 0 10.4-7.7 6.3-12.9L576.9 512z"></path>
+       </svg>`
+    : `<svg viewBox="64 64 896 896"
+         width="12" height="12"
+         fill="currentColor"
+         aria-hidden="true">
+         <path d="M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z"></path>
+       </svg>`;
+
+  button.innerHTML = `
+    <span class="auth-dots-text" aria-hidden="true">•••</span>
+    <span class="auth-dots-icon" aria-hidden="true">${icon}</span>
+  `;
+
+  button.addEventListener('click', () => {
+    const target = authCurrentPage + (isPrev ? -5 : 5);
+
+    authSetPage(
+      Math.max(1, Math.min(totalPages, target))
+    );
+  });
+
+  numbers.append(button);
+}
+
 
   addButton(
     '‹',
@@ -1578,8 +1684,10 @@ function addButton(label, page, disabled = false, active = false) {
   const pages = [...visible].sort((a, b) => a - b);
   let previous = 0;
 
-  pages.forEach(page => {
-    if (page - previous > 1) addDots();
+pages.forEach(page => {
+  if (page - previous > 1) {
+    addDots(previous === 0 ? 'prev' : 'next');
+  }
 
     addButton(
       String(page),
