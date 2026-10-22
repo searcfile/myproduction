@@ -409,9 +409,9 @@
 .auth-permission-grid input{width:100%;height:34px}
 .auth-permission-section{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:#88b4fb;margin:20px 0 9px;font-weight:700}
 .auth-permission-tabs{display:flex;overflow-x:auto;scrollbar-width:thin;gap:0;overscroll-behavior-x:contain}
-.auth-permission-tab{flex:0 0 auto;padding:8px 16px;border:1px solid #344158;border-radius:8px 8px 0 0;background:#172131;color:#c5d4e8;font-size:12px;cursor:pointer}
-.auth-permission-tab.active{color:#78b2ff;background:#101928;border-color:#3673b6}
-.auth-permission-panel{padding:14px;border:1px solid #344158;border-radius:0 8px 8px 8px;background:#101928;min-height:125px}
+.auth-permission-tab{flex:0 0 auto;padding:8px 16px;border:1px solid #424242;border-radius:8px 8px 0 0;background:transparent;color:var(--text);font-size:14px;cursor:pointer}
+.auth-permission-tab.active{color:#1668dc;background:#141414;}
+.auth-permission-panel{padding:14px;border:1px solid #344158;border-radius: 8px;background:#101928;min-height:125px}
 .auth-permission-panel h3{font-size:14px;margin:0 0 12px}
 .auth-permission-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .auth-permission-chips>div{min-width:0}
@@ -675,7 +675,9 @@
   width: 100%;
   min-width: 0;
   position: relative;
-  border-bottom: 1px solid var(--tx-border, #344158);
+  border-bottom: 1px solid var(--input-line);
+  margin-bottom: 14px;
+  
 }
 
 .auth-permission-tabbar .auth-permission-tabs {
