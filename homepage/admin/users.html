@@ -392,6 +392,38 @@
     white-space: nowrap !important;
   }
 }
+
+/* USERS + PERMISSIONS — scoped responsive layout */
+.auth-table tbody tr.auth-clickable{cursor:pointer}
+.auth-table tbody tr.auth-clickable:focus-visible{outline:2px solid #348cff;outline-offset:-2px}
+.auth-account-actions{display:flex;gap:8px;flex-wrap:wrap}
+.auth-account-actions button{height:33px;padding:0 14px;border-radius:7px;cursor:pointer;font-size:12px}
+.auth-account-actions .auth-permission-action{background:#1668dc;border:1px solid #1668dc;color:#fff}
+.auth-account-actions .auth-manage-action{background:#1c2b42;border:1px solid #344963;color:#dbeafe}
+.auth-account-head{display:flex;gap:12px;align-items:center;padding:6px 0 16px}
+.auth-account-head .auth-avatar{width:42px;height:42px;margin:0;font-size:17px}
+.auth-account-head strong{display:block;font-size:16px}
+.auth-account-head small{display:block;color:var(--muted);margin-top:4px}
+.auth-permission-form{width:100%;min-width:0}
+.auth-permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.auth-permission-grid label{display:block;font-size:12px;margin:0 0 6px;color:#a6b9d4}
+.auth-permission-grid input{width:100%;height:34px}
+.auth-permission-section{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:#88b4fb;margin:20px 0 9px;font-weight:700}
+.auth-permission-tabs{display:flex;overflow-x:auto;scrollbar-width:thin;gap:4px;padding:0 0 3px;overscroll-behavior-x:contain}
+.auth-permission-tab{flex:0 0 auto;padding:9px 12px;border:1px solid #344158;border-radius:7px 7px 0 0;background:#172131;color:#c5d4e8;font-size:12px;cursor:pointer}
+.auth-permission-tab.active{color:#78b2ff;background:#101928;border-color:#3673b6}
+.auth-permission-panel{padding:14px;border:1px solid #344158;border-radius:0 8px 8px 8px;background:#101928;min-height:125px}
+.auth-permission-panel h3{font-size:14px;margin:0 0 12px}
+.auth-permission-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.auth-permission-chips>div{min-width:0}
+.auth-permission-chips .shared-chip-dropdown{width:100%}
+.auth-readonly-chips .shared-chip-dropdown-trigger{pointer-events:none}
+.auth-readonly-chips .shared-chip-dropdown-icon-btn{display:none}
+.auth-permission-note{font-size:11px;color:#9cb0c8;line-height:1.6;margin:8px 0}
+.auth-permission-footer{display:flex;justify-content:flex-end;gap:9px;padding:16px 0 0}
+.auth-permission-footer button{height:34px;padding:0 15px}
+.auth-account-actions{margin-top:6px}
+@media(max-width:650px){.auth-permission-grid,.auth-permission-chips{grid-template-columns:1fr}.auth-permission-form{max-height:calc(100dvh - 140px);overflow-y:auto}.auth-account-actions{flex-direction:column}.auth-account-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -489,6 +521,7 @@
     </div>
 </section>
 </main>
+<div id="permissionFormHome" hidden></div>
 <!-- The original form is moved intact into the shared modal to preserve native validation and submit events. -->
 <div class="auth-form-source" id="formSource" hidden>
   <form id="userForm">
@@ -499,11 +532,11 @@
         <div class="field"><label for="password">Password</label><input id="password" data-new-ui-input type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters"><div class="hint" id="passwordHint">Required for new accounts</div></div>
         <div class="field"><label for="secondPassword">2nd Password · 6-digit PIN</label><input id="secondPassword" data-new-ui-input type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="new-password" placeholder="6 digits"><div class="hint" id="pinHint">Required for new accounts</div></div>
         <div class="field full"><label class="auth-switch-row"><span><strong>Active account</strong><small>Allow this account to sign in</small></span><span class="shared-active-switch"><input id="enabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div>
-        <div class="field full"><div class="notice auth-notice" id="accountNote">A Site Admin login will be created. Assign sites and permissions in Admin Users afterwards.</div></div>
+        <div class="field full"><div class="notice auth-notice" id="accountNote">A Site Admin login will be created. Open its account to manage sites and permissions.</div></div>
       </div>
     </div>
     <div id="modalActions" class="auth-modal-actions">
-      <button class="btn-cancel-new" type="button" id="cancel">Cancel</button>
+      <button class="btn-cancel-new" type="button" id="deleteInManage" hidden>Delete</button><button class="btn-cancel-new" type="button" id="cancel">Cancel</button>
       <button class="btn-primary-new" id="save" type="submit" form="userForm">Create Username</button>
     </div>
   </form>
@@ -518,7 +551,7 @@
 'use strict';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
-let users=[],editing=null,ready=false,formModal=null,loading=false;
+let users=[],editing=null,ready=false,formModal=null,loading=false,sites=[],permissionModal=null,accountModal=null;
 const searchInput=$('search');
    /* ==========================================
    AUTH USERS - STATUS FILTER
@@ -683,7 +716,7 @@ function render(){
     const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
     cell(tr,date(u.createdAt),'auth-date');
     const td=document.createElement('td'),wrap=document.createElement('div');wrap.className='actions-cell';
-    if(u.role==='siteadmin'){wrap.append(btn('Manage','auth-manage',()=>manage(u)),btn('Delete','auth-delete',e=>removeUser(u,e.currentTarget)))}
+    if(u.role==='siteadmin'){tr.classList.add('auth-clickable');tr.tabIndex=0;tr.setAttribute('aria-label','Open '+u.username+' account actions');tr.addEventListener('click',e=>{if(e.target.closest('button'))return;openAccount(u)});tr.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===tr){e.preventDefault();openAccount(u)}});wrap.append(btn('Open','auth-manage',()=>openAccount(u)))}
     else{const protectedLabel=document.createElement('span');protectedLabel.className='auth-protected';protectedLabel.textContent='Protected';wrap.append(protectedLabel)}
     td.append(wrap);tr.append(td);rows.append(tr);
   }
@@ -719,11 +752,113 @@ async function load() {
     loading = false;
   }
 }
+
+/* ==========================================================
+   UNIFIED SITE ADMIN — ACCOUNT ACTIONS + PERMISSIONS
+   ========================================================== */
+const SUPERADMIN_ONLY_PAGES = new Set(['users.html','site-management.html','admin-users.html']);
+const PERMISSION_DEFINITIONS={default:['show','view','create','edit','delete'],
+ 'livechat.html':['show','view','block','delete'],
+ 'livechat-support.html':['show','view'],
+ 'notice.html':['show','view','create','edit','delete'],
+ 'history.html':['show','view']};
+const ACTION_LABELS={show:'Show Module',view:'View',create:'Create',edit:'Edit',delete:'Delete',block:'Block'};
+let permissionDraft={},activePermissionModule='',siteChipApi=null,availableChipApi=null,givenChipApi=null,permissionUser=null;
+function getPermissionModules(){
+ const pages=typeof window.getAdminPages==='function'?window.getAdminPages():[];
+ return pages.filter(p=>p?.file&&!SUPERADMIN_ONLY_PAGES.has(p.file)).map(p=>[p.file,p.name||p.file]);
+}
+function permissionActions(key){return PERMISSION_DEFINITIONS[key]||PERMISSION_DEFINITIONS.default}
+function destroyPermissionChips(){for(const a of [siteChipApi,availableChipApi,givenChipApi]){try{a?.destroy?.()}catch(e){console.warn(e)}}siteChipApi=availableChipApi=givenChipApi=null}
+function openAccount(u){
+ if(u.role!=='siteadmin')return;
+ const root=document.createElement('div');
+ root.innerHTML='<div class="auth-account-head"><span class="auth-avatar"></span><div><strong></strong><small>Site Admin · Select an action</small></div></div><div class="auth-account-actions"><button type="button" class="auth-manage-action">Manage Account</button><button type="button" class="auth-permission-action">Edit Permissions</button></div>';
+ root.querySelector('.auth-avatar').textContent=(u.username||'?')[0].toUpperCase();
+ root.querySelector('strong').textContent=u.username;
+ root.querySelector('.auth-manage-action').onclick=()=>{accountModal?.close();manage(u)};
+ root.querySelector('.auth-permission-action').onclick=()=>{accountModal?.close();openPermissionEditor(u)};
+ accountModal=NewUI.modal.open({title:'Site Admin',width:'450px',content:root,onClose(){accountModal=null}});
+}
+function renderPermissionTabs(){
+ const host=document.getElementById('permissionTabs');if(!host)return;host.replaceChildren();
+ for(const [key,label] of getPermissionModules()){
+  const b=document.createElement('button');b.type='button';b.className='auth-permission-tab'+(key===activePermissionModule?' active':'');b.textContent=label;
+  b.setAttribute('role','tab');b.setAttribute('aria-selected',String(key===activePermissionModule));
+  b.onclick=()=>{activePermissionModule=key;renderPermissionTabs();renderPermissionPanel()};host.append(b);
+ }
+}
+function renderPermissionPanel(){
+ const title=document.getElementById('permissionModuleTitle'),a=document.getElementById('permissionAvailable'),g=document.getElementById('permissionGiven');
+ if(!title||!a||!g)return;
+ availableChipApi?.destroy?.();givenChipApi?.destroy?.();availableChipApi=givenChipApi=null;a.replaceChildren();g.replaceChildren();
+ const key=activePermissionModule,mod=getPermissionModules().find(m=>m[0]===key);title.textContent=mod?.[1]||'No modules';if(!key)return;
+ const actions=permissionActions(key),options=actions.map(v=>({value:v,label:ACTION_LABELS[v]||v}));
+ availableChipApi=NewUI.chips(a,{placeholder:'Available Functions',options,value:actions});
+ givenChipApi=NewUI.chips(g,{placeholder:'Select Permissions',options,value:[...(permissionDraft[key]||new Set())],onChange(v){permissionDraft[key]=new Set(v)}});
+}
+async function openPermissionEditor(u){
+ if(!window.NewUI?.chips||!window.NewUI?.modal?.open){toast('Custom components unavailable','error');return}
+ permissionUser=u;destroyPermissionChips();
+ const root=document.createElement('form');root.className='auth-permission-form';root.id='permissionProfileForm';
+ root.innerHTML=`<div class="auth-permission-grid">
+ <div><label for="permissionUsername">Username</label><input id="permissionUsername" data-new-ui-input readonly></div>
+ <div><label for="permissionUid">Firebase UID</label><input id="permissionUid" data-new-ui-input readonly></div>
+ <div><label for="permissionDisplayName">Display Name</label><input id="permissionDisplayName" data-new-ui-input maxlength="80" required></div>
+ <div><label for="permissionRole">Role</label><input id="permissionRole" data-new-ui-input readonly value="Site Admin"></div></div>
+ <div class="auth-permission-section">Allowed Sites</div><div id="permissionSiteChoices"></div>
+ <p class="auth-permission-note">Assign active sites before saving permissions.</p>
+ <div class="auth-permission-section">Module Permissions</div><div class="auth-permission-tabs" id="permissionTabs" role="tablist"></div>
+ <div class="auth-permission-panel"><h3 id="permissionModuleTitle"></h3><div class="auth-permission-chips">
+ <div><label>Available Functions</label><div id="permissionAvailable" class="auth-readonly-chips"></div></div>
+ <div><label>Given Permissions</label><div id="permissionGiven"></div></div></div>
+ <p class="auth-permission-note">Permissions must also be enforced by the backend and database rules.</p>
+ <div class="auth-permission-footer"><button type="button" class="btn-cancel-new" id="permissionCancel">Cancel</button><button type="submit" class="btn-primary-new" id="permissionSave">Save Permissions</button></div>`;
+ permissionModal=NewUI.modal.open({title:'Edit Permissions · '+u.username,width:'980px',content:root,onClose(){destroyPermissionChips();permissionModal=null;permissionUser=null}});
+ root.querySelector('#permissionUsername').value=u.username;
+ root.querySelector('#permissionUid').value=u.uid;
+ root.querySelector('#permissionDisplayName').value=u.displayName||u.username;
+ NewUI.init?.(root);
+ root.querySelector('#permissionCancel').onclick=()=>permissionModal?.close();
+ try{
+  const response=await api('/api/sites');
+  if(permissionUser?.uid!==u.uid||!permissionModal)return;
+  sites=response.sites||[];
+  const visible=sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id));
+  siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
+   placeholder:visible.length?'Select Allowed Sites':'No sites available',
+   options:visible.map(s=>({value:s.id,label:s.name+' ('+s.id+')'+(s.active?'':' · inactive')})),
+   value:(u.siteIds||[]).filter(id=>visible.some(s=>s.id===id))
+  });
+  permissionDraft={};const modules=getPermissionModules();
+  for(const [key] of modules){const saved=u.permissions?.[key]||u.permissions?.[key.replace(/\.html$/,'_html')]||[];permissionDraft[key]=new Set(Array.isArray(saved)?saved.filter(x=>permissionActions(key).includes(x)):[])}
+  activePermissionModule=modules[0]?.[0]||'';renderPermissionTabs();renderPermissionPanel();
+ }catch(err){toast('Cannot load sites: '+err.message,'error')}
+ root.addEventListener('submit',async e=>{
+  e.preventDefault();if(!permissionUser||!siteChipApi)return;
+  const save=root.querySelector('#permissionSave');
+  await NewUI.setButtonLoading(save,true,{text:'Saving...'});
+  try{
+   const siteIds=(siteChipApi.getValue()||[]).filter(id=>sites.some(s=>s.id===id&&s.active));
+   if(!siteIds.length)throw Error('Please assign at least one active site.');
+   const permissions={};
+   for(const [key] of getPermissionModules()){
+    const acts=[...(permissionDraft[key]||new Set())];
+    if(acts.some(x=>['create','edit','delete','block'].includes(x))&&!acts.includes('view'))acts.unshift('view');
+    if(acts.length)permissions[key]=acts;
+   }
+   await api('/api/admin-profiles/'+encodeURIComponent(u.uid),{method:'PATCH',body:JSON.stringify({displayName:root.querySelector('#permissionDisplayName').value.trim(),siteIds,permissions})});
+   await NewUI.setButtonLoading(save,false,{minDuration:850});
+   permissionModal?.close();await load();toast('Permissions saved successfully.');
+  }catch(err){toast('Save permissions failed: '+err.message,'error')}
+  finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
+ });
+}
 function create(){
   editing=null;$('userForm').reset();$('uidWrap').hidden=true;$('username').disabled=false;
   $('password').required=true;$('secondPassword').required=true;
   $('passwordHint').textContent='At least 6 characters';$('pinHint').textContent='Exactly 6 digits';
-  $('save').textContent='Create Username';syncSwitch();showModal();
+  $('deleteInManage').hidden=true;$('save').textContent='Create Username';syncSwitch();showModal();
 }
 function manage(u){
   editing=u;$('userForm').reset();$('uidWrap').hidden=false;$('uid').value=u.uid;
@@ -731,7 +866,7 @@ function manage(u){
   $('password').required=false;$('secondPassword').required=false;
   $('passwordHint').textContent='Leave blank to keep current password';
   $('pinHint').textContent='Leave blank to keep current PIN';
-  $('save').textContent='Save Changes';syncSwitch();showModal();
+  $('deleteInManage').hidden=false;$('save').textContent='Save Changes';syncSwitch();showModal();
 }
 async function removeUser(u,target){
   if(u.role!=='siteadmin')return;
@@ -774,6 +909,7 @@ searchInput.addEventListener('input',render);
 $('create').addEventListener('click',create);
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
+$('deleteInManage').addEventListener('click',()=>{const u=editing;if(!u)return;closeModal();removeUser(u,$('deleteInManage'))});
 if(window.NewUI?.syncSearch){
   NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
 }
