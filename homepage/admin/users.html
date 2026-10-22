@@ -849,7 +849,6 @@ function showModal(){
   title:'Site Admin · '+u.username,
   width:'980px',
   content:shell,
-  closeOnBackdrop:false,
   onClose(){
       destroyPermissionChips();permissionUser=null;
       home.append(form);home.hidden=true;formModal=null;editing=null;
@@ -859,7 +858,6 @@ function showModal(){
   title:'Create Username',
   width:'720px',
   content:form,
-  closeOnBackdrop:false,
   onClose(){
       home.append(form);home.hidden=true;formModal=null;editing=null;
     }});
