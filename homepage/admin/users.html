@@ -827,6 +827,120 @@
 }
 
 
+/* ==========================================
+   AUTH USERS - TABLE PAGINATION
+   ========================================== */
+
+.auth-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 58px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--tx-border, #2b3e5b);
+  background: var(--tx-surface, #152237);
+  font-size: 12px;
+}
+
+.auth-page-info {
+  color: #a2b0c5;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.auth-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.auth-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #141414;
+  color: #d5dce8;
+  font: inherit;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.auth-page-btn:hover:not(:disabled) {
+  color: #4096ff;
+  border-color: #4096ff;
+}
+
+.auth-page-btn.active {
+  border-color: #1677ff;
+  color: #4096ff;
+  background: rgba(22, 119, 255, .12);
+}
+
+.auth-page-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.auth-page-dots {
+  padding: 0 4px;
+  color: #a2b0c5;
+}
+
+.auth-page-size,
+.auth-page-jump {
+  height: 28px;
+  border: 1px solid #424242;
+  border-radius: 6px;
+  background: #141414;
+  color: #eaf0fb;
+  font-size: 12px;
+  outline: none;
+}
+
+.auth-page-size {
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.auth-page-jump {
+  width: 45px;
+  padding: 0 5px;
+  text-align: center;
+}
+
+.auth-page-jump:focus,
+.auth-page-size:focus {
+  border-color: #1677ff;
+}
+
+.auth-page-goto {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  color: #a2b0c5;
+}
+
+@media (max-width: 650px) {
+  .auth-pagination {
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  .auth-page-info {
+    flex-basis: 100%;
+    text-align: center;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -922,8 +1036,33 @@
 </tbody>
       </table>
     </div>
+
+  <div id="authPagination" class="auth-pagination" hidden>
+    <span id="authPageInfo" class="auth-page-info"></span>
+
+    <div id="authPageNumbers" class="auth-page-numbers"></div>
+
+    <select id="authPageSize" class="auth-page-size"
+            aria-label="Rows per page">
+      <option value="10">10 / page</option>
+      <option value="20">20 / page</option>
+      <option value="50">50 / page</option>
+      <option value="100">100 / page</option>
+    </select>
+
+    <div class="auth-page-goto">
+      <span>Go to</span>
+      <input id="authPageJump"
+             class="auth-page-jump"
+             type="number"
+             min="1"
+             aria-label="Go to page">
+      <span>Page</span>
+    </div>
+  </div>
 </section>
 </main>
+
 <div id="permissionFormHome" hidden></div>
 <!-- The original form is moved intact into the shared modal to preserve native validation and submit events. -->
 <div class="auth-form-source" id="formSource" hidden>
@@ -975,11 +1114,14 @@ const statusFilter = NewUI.chips(
     value: [],
 
     onChange(values) {
-      selectedStatuses = Array.isArray(values)
-        ? values
-        : statusFilter.getValue();
 
-      render();
+selectedStatuses = Array.isArray(values)
+  ? values
+  : statusFilter.getValue();
+
+authCurrentPage = 1;
+render();
+
     }
   }
 );
@@ -1133,6 +1275,151 @@ function emptyRow(message, kind = 'empty') {
   tr.append(td);
   rows.append(tr);
 }
+
+/* ==========================================
+   AUTH USERS - PAGINATION LOGIC
+   ========================================== */
+
+let authCurrentPage = 1;
+let authPageSize = 10;
+
+function authSetPage(page) {
+  authCurrentPage = page;
+  render();
+}
+
+function authRenderPagination(total) {
+  const footer = $('authPagination');
+  const info = $('authPageInfo');
+  const numbers = $('authPageNumbers');
+  const jump = $('authPageJump');
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / authPageSize)
+  );
+
+  authCurrentPage = Math.min(
+    Math.max(1, authCurrentPage),
+    totalPages
+  );
+
+  footer.hidden = total === 0;
+  if (!total) return;
+
+  const start = (authCurrentPage - 1) * authPageSize + 1;
+  const end = Math.min(
+    authCurrentPage * authPageSize,
+    total
+  );
+
+  info.textContent = `${start}-${end} of ${total} items`;
+  jump.max = totalPages;
+  jump.value = '';
+
+  numbers.replaceChildren();
+
+  function addButton(label, page, disabled = false, active = false) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'auth-page-btn';
+    button.textContent = label;
+    button.disabled = disabled;
+
+    if (active) {
+      button.classList.add('active');
+      button.setAttribute('aria-current', 'page');
+    }
+
+    button.addEventListener('click', () => {
+      authSetPage(page);
+    });
+
+    numbers.append(button);
+  }
+
+  function addDots() {
+    const dots = document.createElement('span');
+    dots.className = 'auth-page-dots';
+    dots.textContent = '…';
+    numbers.append(dots);
+  }
+
+  addButton(
+    '‹',
+    authCurrentPage - 1,
+    authCurrentPage === 1
+  );
+
+  const visible = new Set([1, totalPages]);
+
+  for (
+    let p = Math.max(1, authCurrentPage - 2);
+    p <= Math.min(totalPages, authCurrentPage + 2);
+    p++
+  ) {
+    visible.add(p);
+  }
+
+  const pages = [...visible].sort((a, b) => a - b);
+  let previous = 0;
+
+  pages.forEach(page => {
+    if (page - previous > 1) addDots();
+
+    addButton(
+      String(page),
+      page,
+      false,
+      page === authCurrentPage
+    );
+
+    previous = page;
+  });
+
+  addButton(
+    '›',
+    authCurrentPage + 1,
+    authCurrentPage === totalPages
+  );
+}
+
+// Pilih jumlah row
+$('authPageSize').addEventListener('change', e => {
+  authPageSize = Number(e.target.value) || 10;
+  authCurrentPage = 1;
+  render();
+});
+
+// Go to page apabila tekan Enter atau keluar input
+function authJumpToPage() {
+  const input = $('authPageJump');
+  if (input.value.trim() === '') return;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(authFilteredCount / authPageSize)
+  );
+
+  const page = Number(input.value);
+  if (!Number.isFinite(page)) return;
+
+  authSetPage(
+    Math.min(totalPages, Math.max(1, Math.floor(page)))
+  );
+}
+
+let authFilteredCount = 0;
+
+$('authPageJump').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    authJumpToPage();
+  }
+});
+
+$('authPageJump').addEventListener('change', authJumpToPage);
+
 function render(){
   const q=searchInput.value.toLowerCase().trim(),rows=$('rows');rows.replaceChildren();
   $('total').textContent=users.length;
@@ -1180,8 +1467,27 @@ function render(){
   return getTime(b) - getTime(a);
 });
 
-  if(!filtered.length){emptyRow(users.length?'No Data':'No data');return}
-  for(const u of filtered){
+
+  // Jumlah data selepas Search + Status Filter
+  authFilteredCount = filtered.length;
+
+  // Paparkan pagination
+  authRenderPagination(authFilteredCount);
+
+  if (!filtered.length) {
+    emptyRow(users.length ? 'No Data' : 'No data');
+    return;
+  }
+
+  // Ambil hanya data untuk halaman semasa
+  const startIndex = (authCurrentPage - 1) * authPageSize;
+  const pageUsers = filtered.slice(
+    startIndex,
+    startIndex + authPageSize
+  );
+
+  for (const u of pageUsers) {
+
     const tr=document.createElement('tr');
     const userTd=document.createElement('td');userTd.className='auth-user-cell';
     const avatar=document.createElement('span');avatar.className='auth-avatar';avatar.textContent=(u.username||'?').slice(0,1).toUpperCase();
@@ -1703,7 +2009,10 @@ if (wasEdit) {
 }catch(err){toast('Save failed: '+err.message,'error')}
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
 });
-searchInput.addEventListener('input',render);
+searchInput.addEventListener('input', () => {
+  authCurrentPage = 1;
+  render();
+});
 $('create').addEventListener('click',create);
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
