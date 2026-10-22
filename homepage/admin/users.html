@@ -774,7 +774,7 @@
       </div>
     </div>
     <div id="modalActions" class="auth-modal-actions">
-      <button class="btn-cancel-new" type="button" id="deleteInManage" hidden>Delete</button><button class="btn-cancel-new" type="button" id="cancel">Cancel</button>
+      <button class="btn-cancel-new" type="button" id="cancel">Cancel</button>
       <button class="btn-primary-new" id="save" type="submit" form="userForm">Create Username</button>
     </div>
   </form>
@@ -975,7 +975,45 @@ function render(){
     const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
     cell(tr,date(u.createdAt),'auth-date');
     const td=document.createElement('td'),wrap=document.createElement('div');wrap.className='actions-cell';
-    if(u.role==='siteadmin'){tr.classList.add('auth-clickable');tr.tabIndex=0;tr.setAttribute('aria-label','Open '+u.username+' account actions');tr.addEventListener('click',e=>{if(e.target.closest('button'))return;openAccount(u)});tr.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===tr){e.preventDefault();openAccount(u)}});wrap.append(btn('Open','auth-manage',()=>openAccount(u)))}
+
+if (u.role === 'siteadmin') {
+  tr.classList.add('auth-clickable');
+  tr.tabIndex = 0;
+
+  tr.setAttribute(
+    'aria-label',
+    'Manage ' + u.username
+  );
+
+  // Klik row untuk buka Manage Account
+  tr.addEventListener('click', e => {
+    if (e.target.closest('button')) return;
+    openAccount(u);
+  });
+
+  tr.addEventListener('keydown', e => {
+    if (
+      (e.key === 'Enter' || e.key === ' ') &&
+      e.target === tr
+    ) {
+      e.preventDefault();
+      openAccount(u);
+    }
+  });
+
+  // Delete berada di column ACTION sahaja
+  wrap.append(
+    btn(
+      'Delete',
+      'auth-delete',
+      e => {
+        e.stopPropagation();
+        removeUser(u, e.currentTarget);
+      },
+      'Delete ' + u.username
+    )
+  );
+}
     else{const protectedLabel=document.createElement('span');protectedLabel.className='auth-protected';protectedLabel.textContent='Protected';wrap.append(protectedLabel)}
     td.append(wrap);tr.append(td);rows.append(tr);
   }
@@ -1147,7 +1185,7 @@ function create(){
   editing=null;$('userForm').reset();$('uidWrap').hidden=true;$('username').disabled=false;
   $('password').required=true;$('secondPassword').required=true;
   $('passwordHint').textContent='At least 6 characters';$('pinHint').textContent='Exactly 6 digits';
-  $('deleteInManage').hidden=true;$('save').textContent='Create Username';syncSwitch();showModal();
+  $('save').textContent='Create Username';syncSwitch();showModal();
 }
 function manage(u){
   editing=u;$('userForm').reset();$('uidWrap').hidden=false;$('uid').value=u.uid;
@@ -1155,7 +1193,7 @@ function manage(u){
   $('password').required=false;$('secondPassword').required=false;
   $('passwordHint').textContent='Leave blank to keep current password';
   $('pinHint').textContent='Leave blank to keep current PIN';
-  $('deleteInManage').hidden=false;$('save').textContent='Save Changes';syncSwitch();showModal();
+  $('save').textContent='Save Changes';syncSwitch();showModal();
 }
 async function removeUser(u,target){
   if(u.role!=='siteadmin')return;
@@ -1224,7 +1262,6 @@ searchInput.addEventListener('input',render);
 $('create').addEventListener('click',create);
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
-$('deleteInManage').addEventListener('click',()=>{const u=editing;if(!u)return;closeModal();removeUser(u,$('deleteInManage'))});
 if(window.NewUI?.syncSearch){
   NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
 }
