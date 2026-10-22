@@ -390,110 +390,7 @@
   }
 }
 
-/* ==========================================
-   MODULE PERMISSIONS - AUTO MORE DROPDOWN
-   ========================================== */
 
-.auth-permission-tabbar {
-  display: flex;
-  align-items: stretch;
-  width: 100%;
-  min-width: 0;
-  position: relative;
-}
-
-.auth-permission-tabbar .auth-permission-tabs {
-  display: flex !important;
-  flex: 1 1 auto;
-  width: 0;
-  min-width: 0;
-  max-width: none !important;
-  overflow: hidden !important;
-  flex-wrap: nowrap !important;
-  gap: 0 !important;
-}
-
-.auth-permission-tabbar .auth-permission-tab {
-  flex: 0 0 auto !important;
-  white-space: nowrap;
-}
-
-.auth-permission-tabbar .auth-permission-tab[hidden] {
-  display: none !important;
-}
-
-.auth-permission-more {
-  position: relative;
-  flex: 0 0 38px;
-  margin-left: auto;
-}
-
-.auth-permission-more[hidden] {
-  display: none !important;
-}
-
-.auth-permission-more-btn {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 100%;
-  min-height: 35px;
-  padding: 0;
-  border: 1px solid #344158;
-  border-radius: 8px 8px 0 0;
-  background: #172131;
-  color: #c5d4e8;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.auth-permission-more-btn:hover {
-  color: #78b2ff;
-  background: #20314a;
-}
-
-.auth-permission-more-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 9999;
-  min-width: 180px;
-  width: max-content;
-  max-width: min(280px, calc(100vw - 40px));
-  max-height: 280px;
-  overflow-y: auto;
-  padding: 5px;
-  border: 1px solid #344158;
-  border-radius: 8px;
-  background: #172131;
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
-}
-
-.auth-permission-more:hover .auth-permission-more-menu,
-.auth-permission-more:focus-within .auth-permission-more-menu,
-.auth-permission-more.is-open .auth-permission-more-menu {
-  display: block;
-}
-
-.auth-permission-more-menu button {
-  display: block;
-  width: 100%;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: #c5d4e8;
-  font-size: 12px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.auth-permission-more-menu button:hover,
-.auth-permission-more-menu button.active {
-  color: #78b2ff;
-  background: rgba(52,140,255,.15);
-}
 
 /* USERS + PERMISSIONS — scoped responsive layout */
 .auth-table tbody tr.auth-clickable{cursor:pointer}
@@ -767,23 +664,126 @@
   display: none !important;
 }
 
-/* FINAL OVERRIDE - MORE DROPDOWN */
-.auth-permission-tabbar .auth-permission-tabs {
-  overflow: hidden !important;
-  scroll-behavior: auto !important;
+
+/* ==========================================
+   AUTH USERS - SCROLL TABS + NEWUI MORE
+   ========================================== */
+
+.auth-permission-tabbar {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  border-bottom: 1px solid var(--tx-border, #344158);
 }
 
-.auth-permission-tabbar .auth-permission-tab[hidden] {
+.auth-permission-tabbar .auth-permission-tabs {
+  display: flex !important;
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  scroll-behavior: auto !important;
+  overscroll-behavior-x: contain;
+}
+
+.auth-permission-tabbar .auth-permission-tabs::-webkit-scrollbar {
   display: none !important;
 }
 
-.auth-unified-pane:has(.auth-permission-tabbar) {
+.auth-permission-tabbar .auth-permission-tab {
+  display: block !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap;
+}
+
+.auth-permission-more {
+  position: relative;
+  flex: 0 0 38px;
+  width: 38px;
+  margin-left: 0;
+  z-index: 30;
+}
+
+.auth-permission-more[hidden] {
+  display: none !important;
+}
+
+.auth-permission-more-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 100%;
+  min-height: 36px;
+  padding: 0;
+  border: 1px solid var(--tab-border, #344158);
+  border-radius: 8px 8px 0 0;
+  background: var(--tx-surface, #172131);
+  color: var(--text, #eaf0fb);
+  font-size: 21px;
+  cursor: pointer;
+}
+
+.auth-permission-more-btn:hover,
+.auth-permission-more.is-open .auth-permission-more-btn {
+  color: var(--blue, #1677ff);
+  background: var(--tx-hover, #20314a);
+}
+
+/* Dropdown uses existing NewUI dropdown classes */
+.auth-permission-more-menu.shared-dropdown-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 3px);
+  left: auto;
+  right: 0;
+  z-index: 99999;
+  width: 200px;
+  min-width: 180px;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--dropdown-bg, #1f1f1f);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+
+.auth-permission-more:hover .auth-permission-more-menu,
+.auth-permission-more:focus-within .auth-permission-more-menu,
+.auth-permission-more.is-open .auth-permission-more-menu {
+  display: block;
+}
+
+.auth-permission-more-options.shared-dropdown-options {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143,155,172,.30) transparent;
+}
+
+.auth-permission-more-options .shared-dropdown-option {
+  width: 100%;
+  min-height: 32px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Let dropdown extend outside permission tabbar */
+#authPermissionPane,
+#authPermissionPane .auth-permission-form {
   overflow: visible !important;
 }
 
-.auth-permission-form:has(.auth-permission-tabbar) {
-  overflow: visible !important;
-}
 
 </style>
 </head>
@@ -1194,20 +1194,56 @@ function openAccount(u){
  if(u.role!=='siteadmin')return;
  manage(u);
 }
-
-
    
 
+/* ==========================================
+   MODULE PERMISSIONS - SCROLL + MORE
+   ========================================== */
+
+/* ==========================================
+   MODULE TABS - MOUSE WHEEL SCROLL
+   ========================================== */
+
+document.addEventListener('wheel', function(e) {
+  const tabs = e.target.closest?.('#permissionTabs');
+
+  if (!tabs) return;
+
+  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+
+  if (maxScroll <= 0) return;
+
+  const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
+    ? e.deltaX
+    : e.deltaY;
+
+  if (!delta) return;
+
+  const oldScroll = tabs.scrollLeft;
+
+  const nextScroll = Math.max(
+    0,
+    Math.min(maxScroll, oldScroll + delta * 2.2)
+  );
+
+  if (Math.abs(nextScroll - oldScroll) < 0.5) return;
+
+  e.preventDefault();
+  tabs.scrollLeft = nextScroll;
+
+}, { passive: false });
+
 let permissionOverflowObserver = null;
+let permissionTabScroll = 0;
 
 function renderPermissionTabs() {
   const bar = document.getElementById('permissionTabbar');
   const host = document.getElementById('permissionTabs');
   const more = document.getElementById('permissionMore');
-  const menu = document.getElementById('permissionMoreMenu');
   const moreBtn = document.getElementById('permissionMoreBtn');
+  const options = document.getElementById('permissionMoreOptions');
 
-  if (!bar || !host || !more || !menu || !moreBtn) return;
+  if (!bar || !host || !more || !moreBtn || !options) return;
 
   permissionOverflowObserver?.disconnect();
   permissionOverflowObserver = null;
@@ -1215,12 +1251,91 @@ function renderPermissionTabs() {
   const modules = getPermissionModules();
 
   host.replaceChildren();
-  menu.replaceChildren();
+  options.replaceChildren();
+
+  function updateOverflow() {
+    if (!bar.isConnected || !bar.clientWidth) return;
+
+    // Measure full tab width with More temporarily hidden.
+    more.hidden = true;
+
+    const needsMore = host.scrollWidth > host.clientWidth + 1;
+
+    more.hidden = !needsMore;
+
+    if (!needsMore) {
+      options.replaceChildren();
+      more.classList.remove('is-open');
+      moreBtn.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    const viewport = host.getBoundingClientRect();
+
+    options.replaceChildren();
+
+    for (const button of host.children) {
+      const rect = button.getBoundingClientRect();
+
+      const fullyVisible =
+        rect.left >= viewport.left - 1 &&
+        rect.right <= viewport.right + 1;
+
+      if (fullyVisible) continue;
+
+      const key = button.dataset.module;
+      const module = modules.find(m => m[0] === key);
+
+      if (!module) continue;
+
+      const item = document.createElement('button');
+
+      item.type = 'button';
+      item.className = 'shared-dropdown-option';
+      item.textContent = module[1];
+      item.setAttribute('role', 'menuitem');
+
+      if (key === activePermissionModule) {
+        item.classList.add('active');
+      }
+
+      item.addEventListener('click', () => {
+        more.classList.remove('is-open');
+        moreBtn.setAttribute('aria-expanded', 'false');
+        selectModule(key);
+      });
+
+      options.appendChild(item);
+    }
+  }
 
   function selectModule(key) {
+    permissionTabScroll = host.scrollLeft;
     activePermissionModule = key;
+
     renderPermissionTabs();
     renderPermissionPanel();
+
+    const nextHost = document.getElementById('permissionTabs');
+
+    if (!nextHost) return;
+
+    const active = [...nextHost.children].find(
+      button => button.dataset.module === key
+    );
+
+    if (active) {
+      const viewport = nextHost.getBoundingClientRect();
+      const rect = active.getBoundingClientRect();
+
+      if (rect.left < viewport.left) {
+        nextHost.scrollLeft += rect.left - viewport.left;
+      } else if (rect.right > viewport.right) {
+        nextHost.scrollLeft += rect.right - viewport.right;
+      }
+    }
+
+    permissionTabScroll = nextHost.scrollLeft;
   }
 
   for (const [key, label] of modules) {
@@ -1239,77 +1354,17 @@ function renderPermissionTabs() {
       String(key === activePermissionModule)
     );
 
-    button.onclick = () => selectModule(key);
+    button.addEventListener('click', () => selectModule(key));
 
     host.appendChild(button);
   }
 
-  function updateOverflow() {
-    if (!bar.isConnected || !bar.clientWidth) return;
+  host.scrollLeft = permissionTabScroll;
 
-    const buttons = [...host.children];
-
-    // Reset tab supaya boleh diukur semula.
-    buttons.forEach(button => {
-      button.hidden = false;
-    });
-
-    more.hidden = true;
-    menu.replaceChildren();
-
-    const widths = buttons.map(button =>
-      button.getBoundingClientRect().width
-    );
-
-    const totalWidth = widths.reduce(
-      (sum, width) => sum + width, 0
-    );
-
-    const availableWidth = bar.clientWidth;
-
-    if (totalWidth <= availableWidth) {
-      more.classList.remove('is-open');
-      moreBtn.setAttribute('aria-expanded', 'false');
-      return;
-    }
-
-    more.hidden = false;
-
-    const moreWidth = more.getBoundingClientRect().width;
-    const limit = Math.max(0, availableWidth - moreWidth);
-
-    let usedWidth = 0;
-
-    buttons.forEach((button, index) => {
-      const width = widths[index];
-
-      if (usedWidth + width <= limit) {
-        usedWidth += width;
-        return;
-      }
-
-      button.hidden = true;
-
-      const [key, label] = modules[index];
-
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.textContent = label;
-
-      if (key === activePermissionModule) {
-        item.classList.add('active');
-      }
-
-      item.onclick = () => {
-        more.classList.remove('is-open');
-        selectModule(key);
-      };
-
-      menu.appendChild(item);
-    });
-
-    more.hidden = menu.children.length === 0;
-  }
+  host.onscroll = () => {
+    permissionTabScroll = host.scrollLeft;
+    updateOverflow();
+  };
 
   moreBtn.onclick = () => {
     const opened = more.classList.toggle('is-open');
@@ -1339,6 +1394,8 @@ function renderPermissionTabs() {
     permissionOverflowObserver.observe(bar);
   }
 }
+
+
 
 function renderPermissionPanel(){
  const title=document.getElementById('permissionModuleTitle'),a=document.getElementById('permissionAvailable'),g=document.getElementById('permissionGiven');
@@ -1378,8 +1435,12 @@ async function openPermissionEditor(u,container){
             aria-haspopup="true"
             aria-expanded="false">⋯</button>
 
-    <div class="auth-permission-more-menu"
-         id="permissionMoreMenu"></div>
+<div class="auth-permission-more-menu shared-dropdown-panel"
+     id="permissionMoreMenu">
+  <div class="auth-permission-more-options shared-dropdown-options"
+       id="permissionMoreOptions"
+       role="menu"></div>
+</div>
   </div>
 </div>
 
