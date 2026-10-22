@@ -470,7 +470,7 @@
 }
 /* One custom modal with two independently selectable tab panels */
 .auth-unified-shell{width:100%;min-width:0}
-.auth-unified-tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--tx-border,#344158);margin-bottom:16px;padding-bottom:8px}
+.auth-unified-tabs{display:flex;overflow-x:auto;border-radius: 8px 8px 0 0;}
 .auth-unified-tab{flex:0 0 auto;border:1px solid var(--tx-border,#344158);background:#172131;color:#aebed4;border-radius:8px;padding:9px 16px;font:inherit;font-size:12px;cursor:pointer}
 .auth-unified-tab.active{background:rgba(22,104,220,.2);border-color:#357fe7;color:#89baff}
 .auth-unified-pane[hidden]{display:none!important}
@@ -479,7 +479,10 @@
   width: 100%;
   max-height: none;
   overflow: visible;
-  padding: 2px 3px 12px;
+  padding:12px;
+  border:1px solid var(--input-line);
+  border-radius:8px;
+  background:var(--input);
 }
 .auth-unified-pane .auth-permission-form{max-height:none;overflow:visible}
 .auth-unified-pane .auth-permission-tabs{max-width:100%}
