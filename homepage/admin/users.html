@@ -785,27 +785,44 @@
 }
 
 
+
 .auth-permission-more-options.shared-dropdown-options {
-  max-height: 240px;
-  overflow-y: auto;
+  max-height: min(500px, calc(100dvh - 160px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   padding: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(143,155,172,.30) transparent;
 }
 
+
 .auth-permission-more-options .shared-dropdown-option {
   width: 100%;
   min-height: 32px;
-  font-size: 12px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+   padding:5px 12px;
 }
 
 /* Let dropdown extend outside permission tabbar */
 #authPermissionPane,
 #authPermissionPane .auth-permission-form {
   overflow: visible !important;
+}
+
+/* Allow More dropdown to extend outside module area */
+.auth-permission-tabbar,
+.auth-permission-more,
+#authPermissionPane,
+#authPermissionPane .auth-permission-form {
+  overflow: visible !important;
+}
+
+.auth-permission-more-menu.shared-dropdown-panel {
+  max-height: none !important;
+  z-index: 99999 !important;
 }
 
 
