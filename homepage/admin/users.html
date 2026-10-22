@@ -1012,7 +1012,7 @@ function showModal(){
     shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
     formModal=NewUI.modal.open({
   title:'Site Admin · '+u.username,
-  width:'980px',
+  width:'1800px',
   content:shell,
   onClose(){
       destroyPermissionChips();permissionUser=null;
