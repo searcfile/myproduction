@@ -1015,7 +1015,7 @@ function createShell() {
 
 <div
   id="headerSiteCustom"
-  class="header-site-custom"
+  class="header-site-custom admin-site-selector"
   aria-label="Select Site">
 </div>
 
@@ -3807,97 +3807,39 @@ mobileBtn?.setAttribute("title", "Select Site");
     }));
   }
 
-
 function updateInput() {
   const selected = selectedIds
     .map(id => availableSites.find(site => site.id === id))
     .filter(Boolean);
 
-  let chips = document.getElementById("headerSiteChips");
+  // Sync pilihan ke custom NewUI.
+  customSiteDropdown?.setValue(selectedIds, false);
 
-  if (!chips) {
-    chips = document.createElement("div");
-    chips.id = "headerSiteChips";
-    chips.className = "header-site-chips";
+  // Kekalkan status pilihan untuk fungsi asal.
+  wrap.classList.toggle(
+    "has-selected",
+    selected.length > 0
+  );
 
-    input.parentElement.insertBefore(chips, input);
-  }
+  // Input lama digunakan untuk mobile / fallback.
+  input.value = selected.length
+    ? selected[0].name
+    : "";
 
-  chips.replaceChildren();
-  
-customSiteDropdown?.setValue(selectedIds, false);
+  input.placeholder = selected.length
+    ? ""
+    : "🏢 🔍 Search";
 
-  wrap.classList.toggle("has-selected", selected.length > 0);
-
-  input.value = "";
-  input.placeholder = selected.length ? "" : "🏢 🔍 Search";
+  input.title = selected
+    .map(site => site.name)
+    .join(", ");
 
   mobileInput.placeholder = selected.length
     ? selected.map(site => site.name).join(", ")
     : "🏢 🔍 Search";
-
-  if (!selected.length) return;
-
-  const createChip = site => {
-    const chip = document.createElement("span");
-    chip.className = "header-site-chip";
-
-    const label = document.createElement("span");
-    label.className = "header-site-chip-label";
-    label.textContent = site.name;
-
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "header-site-chip-remove";
-    remove.textContent = "×";
-    remove.title = "Remove " + site.name;
-
-    remove.addEventListener("pointerdown", e => {
-      e.stopPropagation();
-    });
-
-    remove.addEventListener("click", e => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      selectedIds = selectedIds.filter(id => id !== site.id);
-      saveSelection();
-      updateInput();
-
-      if (list.style.display === "block") {
-        renderOptions("");
-      }
-    });
-
-    chip.append(label, remove);
-    return chip;
-  };
-
-  const first = selected[0];
-  chips.appendChild(createChip(first));
-
-  if (selected.length > 1) {
-    const more = document.createElement("span");
-    more.className = "header-site-chip-more";
-    more.textContent = "+" + (selected.length - 1);
-    more.tabIndex = 0;
-    more.title = selected.slice(1)
-      .map(site => site.name)
-      .join("\n");
-
-    const tooltip = document.createElement("span");
-    tooltip.className = "header-site-chip-tooltip";
-
-    selected.slice(1).forEach(site => {
-      const line = document.createElement("span");
-      line.textContent = site.name;
-      tooltip.appendChild(line);
-    });
-
-    more.appendChild(tooltip);
-    chips.appendChild(more);
-  }
 }
+
+
 
 
 function closeDropdown() {
