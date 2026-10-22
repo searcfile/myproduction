@@ -3048,12 +3048,14 @@ padding:12px;
 /* Wrapper Select Site desktop */
 @media (min-width: 816px) {
 
-  #headerTabSearch {
-    width: 220px;
-    min-width: 150px;
-    max-width: 220px;
-    flex: 0 1 220px;
-  }
+
+#headerTabSearch {
+  width: 170px;
+  min-width: 150px;
+  max-width: 170px;
+  flex: 0 0 170px;
+}
+
 
   /* Sembunyikan input lama pada desktop */
   #headerTabSearchForm,
@@ -3143,8 +3145,8 @@ padding:12px;
 
 /* Dropdown options */
 #headerSiteCustom .shared-chip-dropdown-panel {
-  min-width: 150px;
-  max-width: 220px;
+min-width: 150px;
+max-width: 170px;
   max-height: 260px;
 
   overflow-y: auto;
