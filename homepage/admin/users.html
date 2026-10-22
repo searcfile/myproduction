@@ -629,10 +629,34 @@
   padding: 0 15px !important;
 }
 
+
 /* ==========================================
-   AUTH USERS - REMOVE NESTED SCROLL
+   AUTH USERS - SINGLE MODAL PAGE SCROLL
    ========================================== */
 
+/* Scroll pada lapisan luar modal */
+.shared-modal-backdrop:has(.auth-unified-shell) {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overscroll-behavior-y: contain;
+  padding: 16px !important;
+}
+
+/* Semua kandungan modal ikut tinggi sebenar */
+.shared-modal-backdrop:has(.auth-unified-shell)
+.shared-modal,
+.shared-modal-backdrop:has(.auth-unified-shell)
+.shared-modal-content,
+.shared-modal-backdrop:has(.auth-unified-shell)
+.shared-modal-body {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Tiada scrollbar tambahan dalam form */
 .auth-unified-shell,
 .auth-unified-pane,
 #authManagePane,
@@ -643,27 +667,13 @@
   overflow: visible !important;
 }
 
-/* Modal body tidak membuat scrollbar kedua */
-.shared-modal-body:has(.auth-unified-shell) {
-  height: auto !important;
-  max-height: none !important;
+/* Dropdown tidak terpotong */
+#authPermissionPane .auth-permission-panel,
+#authPermissionPane .auth-permission-chips {
   overflow: visible !important;
 }
 
-/* Kekalkan card permissions */
-#authPermissionPane .auth-permission-panel {
-  overflow: visible !important;
-}
-
-/* Footer kekal di luar card */
-#authPermissionPane .auth-permission-footer {
-  position: relative !important;
-  margin-top: 16px !important;
-  padding: 16px 0 0 !important;
-  background: transparent !important;
-}
-
-/* Module tabs: boleh scroll tanpa nampak scrollbar */
+/* Module tabs kekal boleh scroll kiri kanan */
 .auth-permission-tabs {
   overflow-x: auto !important;
   overflow-y: hidden !important;
