@@ -1013,6 +1013,12 @@ function createShell() {
       class="header-tab-search"
       id="headerTabSearch">
 
+<div
+  id="headerSiteCustom"
+  class="header-site-custom"
+  aria-label="Select Site">
+</div>
+
 <form
   id="headerTabSearchForm"
   autocomplete="off"
@@ -3744,6 +3750,27 @@ function setupHeaderSearch() {
   let loading = false;
   let ready = false;
 
+const customSiteEl = document.getElementById("headerSiteCustom");
+let customSiteDropdown = null;
+
+if (customSiteEl && window.NewUI?.chips) {
+  customSiteDropdown = NewUI.chips(customSiteEl, {
+    placeholder: "Select Site",
+    options: [],
+    value: [],
+    onChange(values) {
+      if (!ready) return;
+
+      selectedIds = values.filter(id =>
+        availableSites.some(site => site.id === id)
+      );
+
+      saveSelection();
+      updateInput();
+    }
+  });
+}
+
   form?.addEventListener("submit", e => e.preventDefault());
 
   // Tukar label sahaja, bukan struktur input.
@@ -3797,6 +3824,8 @@ function updateInput() {
   }
 
   chips.replaceChildren();
+  
+customSiteDropdown?.setValue(selectedIds, false);
 
   wrap.classList.toggle("has-selected", selected.length > 0);
 
@@ -4000,6 +4029,14 @@ renderOptions("");
       }
 
       availableSites = normalizeSites(data);
+       
+customSiteDropdown?.setOptions(
+  availableSites.map(site => ({
+    value: site.id,
+    label: site.name
+  }))
+);
+
 
       let stored = [];
       try {
@@ -5342,9 +5379,6 @@ function updateChangePwVisibility() {
       if (event.target === modal2) closePw2();
     });
   }
-/* ==========================================
-   5G88 SMART CONTENT LOADING
-   ========================================== */
 
 /* ==========================================
    5G88 SMART CONTENT LOADING V2
@@ -5378,7 +5412,6 @@ function initSmartContentLoading() {
 
   if (!shouldLoad) return;
 
-  // Letak loader terus pada body supaya
   // semua halaman boleh menggunakannya.
   let loader = document.getElementById(
     "smartContentLoader"
