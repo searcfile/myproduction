@@ -471,7 +471,13 @@
 .auth-unified-tab{flex:0 0 auto;border:1px solid var(--tx-border,#344158);background:#172131;color:#aebed4;border-radius:8px;padding:9px 16px;font:inherit;font-size:12px;cursor:pointer}
 .auth-unified-tab.active{background:rgba(22,104,220,.2);border-color:#357fe7;color:#89baff}
 .auth-unified-pane[hidden]{display:none!important}
-.auth-unified-pane{min-width:0;max-height:min(67dvh,620px);overflow-y:auto;overflow-x:hidden;padding:2px 3px 12px;scrollbar-width:thin}
+.auth-unified-pane {
+  min-width: 0;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 2px 3px 12px;
+}
 .auth-unified-pane .auth-permission-form{max-height:none;overflow:visible}
 .auth-unified-pane .auth-permission-tabs{max-width:100%}
 
@@ -550,7 +556,86 @@
   max-height: calc(100dvh - 120px) !important;
 }
 
-@media(max-width:650px){.auth-unified-tab{flex:1;padding:9px 10px}.auth-unified-pane{max-height:calc(100dvh - 185px)}}
+@media (max-width:650px) {
+  .auth-unified-tab {
+    flex: 1;
+    padding: 9px 10px;
+  }
+
+  .auth-unified-pane {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* ==========================================
+   AUTH USERS - FINAL PERMISSION LAYOUT
+   ========================================== */
+
+/* Tiada scrollbar kedua dalam pane */
+#authPermissionPane,
+#authPermissionPane .auth-permission-form {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Modal menjadi kawasan scroll utama */
+.shared-modal-body:has(#permissionProfileForm) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100dvh - 110px) !important;
+  scrollbar-width: thin;
+}
+
+/* Panel dan dropdown tidak clip antara satu sama lain */
+#authPermissionPane .auth-permission-panel,
+#authPermissionPane .auth-permission-chips,
+#authPermissionPane .auth-permission-chips > div,
+#authPermissionPane .shared-chip-dropdown {
+  overflow: visible !important;
+}
+
+#authPermissionPane .auth-permission-panel {
+  position: relative;
+  z-index: 2;
+}
+
+#authPermissionPane .shared-chip-dropdown-panel {
+  z-index: 99999 !important;
+  max-height: 220px !important;
+  overflow-y: auto !important;
+}
+
+/* Ruang di bawah panel untuk dropdown */
+#authPermissionPane .auth-permission-form {
+  padding-bottom: 230px !important;
+}
+
+/* Footer berada di luar card biru */
+#authPermissionPane .auth-permission-footer {
+  position: relative;
+  z-index: 1;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin-top: 14px !important;
+  padding: 16px 0 0 !important;
+  border-top: 1px solid #344158;
+  background: transparent !important;
+}
+
+#authPermissionPane .auth-permission-footer button {
+  width: auto !important;
+  min-width: 105px !important;
+  height: 34px !important;
+  padding: 0 15px !important;
+}
+
 </style>
 </head>
 <body>
@@ -978,8 +1063,12 @@ async function openPermissionEditor(u,container){
  <div class="auth-permission-panel"><h3 id="permissionModuleTitle"></h3><div class="auth-permission-chips">
  <div><label>Available Functions</label><div id="permissionAvailable" class="auth-readonly-chips"></div></div>
  <div><label>Given Permissions</label><div id="permissionGiven"></div></div></div>
- <p class="auth-permission-note">Permissions must also be enforced by the backend and database rules.</p>
- <div class="auth-permission-footer"><button type="button" class="btn-cancel-new" id="permissionCancel">Cancel</button><button type="submit" class="btn-primary-new" id="permissionSave">Save Permissions</button></div>`;
+<p class="auth-permission-note">Permissions must also be enforced by the backend and database rules.</p>
+</div>
+<div class="auth-permission-footer">
+  <button type="button" class="btn-cancel-new" id="permissionCancel">Cancel</button>
+  <button type="submit" class="btn-primary-new" id="permissionSave">Save Permissions</button>
+</div>`;
  container.replaceChildren(root);
  root.querySelector('#permissionUsername').value=u.username;
  root.querySelector('#permissionUid').value=u.uid;
