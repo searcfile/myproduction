@@ -626,39 +626,30 @@
   padding: 0 15px !important;
 }
 
-
-
-
 /* ==========================================
-   AUTH USERS - NO NESTED FORM SCROLL
+   AUTH USERS - SINGLE OUTER SCROLL
    ========================================== */
 
-/* Form dan pane ikut tinggi kandungan */
 .auth-unified-shell,
 .auth-unified-pane,
 #authManagePane,
 #authPermissionPane,
 #userForm,
-#permissionProfileForm {
+#permissionProfileForm,
+.auth-permission-form {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-/* Jangan cipta scrollbar tambahan pada form */
-.auth-unified-pane .auth-permission-form {
+/* Modal body tidak membuat scrollbar sendiri */
+.shared-modal-body:has(.auth-unified-shell) {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-/* Dropdown dan card */
-#authPermissionPane .auth-permission-panel,
-#authPermissionPane .auth-permission-chips {
-  overflow: visible !important;
-}
-
-/* Tabs module sahaja boleh bergerak kiri-kanan */
+/* Horizontal module tabs */
 .auth-permission-tabs {
   overflow-x: auto !important;
   overflow-y: hidden !important;
