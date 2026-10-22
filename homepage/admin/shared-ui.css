@@ -3039,169 +3039,23 @@ padding:12px;
   }
 }
 
-/* ==========================================
-   HEADER SELECT SITE - CHIPS + N
-   ========================================== */
 
-.header-tab-search {
-  min-width: 150px;
-  max-width: 220px;
-  flex: 0 1 220px;
-}
-
-.header-tab-search-input-wrap {
-  position: relative;
-  min-width: 0;
-}
-
-.header-site-chips {
-  position: absolute;
-  left: 6px;
-  right: 29px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 27px;
-  overflow: visible;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.header-site-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 25px;
-  max-width: calc(100% - 39px);
-  padding: 0 5px 0 8px;
-  border-radius: 5px;
-  background: rgba(255,255,255,.17);
-  border: 1px solid rgba(255,255,255,.15);
-  color: #fff;
-  font-size: 11px;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.header-site-chip:only-child {
-  max-width: 100%;
-}
-
-.header-site-chip-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.header-site-chip-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 15px;
-  height: 15px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: rgba(255,255,255,.65);
-  font-size: 17px;
-  line-height: 1;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.header-site-chip-remove:hover {
-  color: #fff;
-  background: rgba(255,255,255,.15);
-}
-
-.header-site-chip-more {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  height: 25px;
-  padding: 0 7px;
-  border-radius: 5px;
-  background: rgba(255,255,255,.17);
-  border: 1px solid rgba(255,255,255,.15);
-  color: #fff;
-  font-size: 11px;
-  cursor: help;
-  pointer-events: auto;
-}
-
-.header-site-chip-tooltip {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: none;
-  flex-direction: column;
-  gap: 7px;
-  width: max-content;
-  max-width: 220px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: #303030;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 400;
-  box-shadow: 0 5px 15px rgba(0,0,0,.3);
-  z-index: 100000;
-  pointer-events: none;
-}
-
-.header-site-chip-more:hover .header-site-chip-tooltip,
-.header-site-chip-more:focus .header-site-chip-tooltip {
-  display: flex;
-}
-
-.header-tab-search.has-selected:not(.site-is-searching)
-.header-tab-search-input {
-  color: transparent;
-  caret-color: transparent;
-}
-
-.header-tab-search.site-is-searching .header-site-chips {
-  display: none;
-}
-
-.header-tab-search.site-is-searching
-.header-tab-search-input {
-  color: #fff;
-  caret-color: #fff;
-}
-
-@media (max-width: 815px) {
-  .header-site-chips {
-    display: none;
-  }
-}
 
 /* ==========================================
    HEADER ONLY - CUSTOM SELECT SITE
    ========================================== */
 
-.header-tab-search {
-  min-width: 150px !important;
-  max-width: 220px !important;
-  width: 220px;
-  flex: 0 1 220px !important;
-}
-
-.header-site-custom {
-  width: 100%;
-  min-width: 0;
-}
-
-/* Gunakan custom NewUI untuk desktop */
+/* Wrapper Select Site desktop */
 @media (min-width: 816px) {
+
+  #headerTabSearch {
+    width: 220px;
+    min-width: 150px;
+    max-width: 220px;
+    flex: 0 1 220px;
+  }
+
+  /* Sembunyikan input lama pada desktop */
   #headerTabSearchForm,
   #headerTabSearchList {
     display: none !important;
@@ -3212,46 +3066,94 @@ padding:12px;
   }
 }
 
-/* Kekalkan Select Site mobile asal */
+/* Mobile kekalkan Select Site asal */
 @media (max-width: 815px) {
+
   #headerSiteCustom {
     display: none !important;
   }
 }
 
-/* Input custom */
+/* Container custom NewUI */
+#headerSiteCustom {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
 #headerSiteCustom .shared-chip-dropdown {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
 }
 
+/* Trigger satu baris */
 #headerSiteCustom .shared-chip-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap !important;
+
   width: 100%;
   min-width: 0;
+
   height: 32px;
-  overflow: visible;
+  min-height: 32px;
+  max-height: 32px;
+
+  overflow: hidden;
 }
 
-/* Dropdown custom */
-#headerSiteCustom .shared-chip-dropdown-panel {
-  min-width: 180px;
-  max-width: 280px;
-  max-height: 260px;
-  overflow-y: auto;
-}
-
-/* Chips dalam input */
+/* Susunan chips */
 #headerSiteCustom .shared-chip-dropdown-values {
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
+
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-/* +N khusus header */
+/* Chip individu */
+#headerSiteCustom .shared-chip-dropdown-chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+
+  white-space: nowrap;
+}
+
+/* Nama site yang panjang */
+#headerSiteCustom .shared-chip-dropdown-chip-content {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* +N jika disediakan oleh NewUI */
 #headerSiteCustom .shared-chip-dropdown-overflow {
-  flex-shrink: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Dropdown options */
+#headerSiteCustom .shared-chip-dropdown-panel {
+  min-width: 150px;
+  max-width: 220px;
+  max-height: 260px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Popup nama site tersembunyi */
 #headerSiteCustom .shared-chip-dropdown-overflow-popup {
   z-index: 100000;
 }
+
 
