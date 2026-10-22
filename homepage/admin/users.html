@@ -1054,7 +1054,38 @@ async function check(){
 }
 function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}
 function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
-function date(ts){return ts?new Date(ts).toLocaleString('en-MY'):'—'}
+
+function getCreatedTime(value) {
+  if (value == null || value === '') return 0;
+
+  // Firebase timestamp dalam seconds atau milliseconds
+  if (typeof value === 'number' || /^\d+$/.test(String(value))) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return n < 1e12 ? n * 1000 : n;
+  }
+
+  // Firebase ServerValue.TIMESTAMP object, jika ada
+  if (typeof value === 'object') {
+    if (typeof value.seconds === 'number') {
+      return value.seconds * 1000 +
+        Math.floor((value.nanoseconds || 0) / 1e6);
+    }
+    return 0;
+  }
+
+  // ISO date atau format tarikh yang boleh dibaca JavaScript
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function date(ts) {
+  const time = getCreatedTime(ts);
+  return time
+    ? new Date(time).toLocaleString('en-MY')
+    : '—';
+}
+
 function emptyRow(message, kind = 'empty') {
   const rows = $('rows');
   rows.replaceChildren();
