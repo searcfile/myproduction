@@ -4008,6 +4008,8 @@ siteChipObserver.observe(siteInputWrap);
 window.addEventListener("resize", scheduleSiteChipOverflow);
 
   function closeDropdown() {
+     chipsBox.style.display = "";
+    updateInput();
     list.style.display = "none";
     wrap.classList.remove("search-mode");
   }
