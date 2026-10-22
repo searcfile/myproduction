@@ -844,12 +844,22 @@ function showModal(){
       if(!isManage&&!shell.querySelector('#permissionProfileForm'))await openPermissionEditor(u,shell.querySelector('#authPermissionPane'));
     };
     shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
-    formModal=NewUI.modal.open({title:'Site Admin · '+u.username,width:'980px',content:shell,onClose(){
+    formModal=NewUI.modal.open({
+  title:'Site Admin · '+u.username,
+  width:'980px',
+  content:shell,
+  closeOnBackdrop:false,
+  onClose(){
       destroyPermissionChips();permissionUser=null;
       home.append(form);home.hidden=true;formModal=null;editing=null;
     }});
   }else{
-    formModal=NewUI.modal.open({title:'Create Username',width:'720px',content:form,onClose(){
+    formModal=NewUI.modal.open({
+  title:'Create Username',
+  width:'720px',
+  content:form,
+  closeOnBackdrop:false,
+  onClose(){
       home.append(form);home.hidden=true;formModal=null;editing=null;
     }});
   }
