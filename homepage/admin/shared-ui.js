@@ -4169,9 +4169,21 @@ window.addEventListener("resize", scheduleSiteChipOverflow);
     }
   });
 
-  input.addEventListener("input", () => {
-    renderOptions(input.value);
-  });
+
+input.addEventListener("input", () => {
+  chipsBox.style.display = input.value ? "none" : "";
+  renderOptions(input.value);
+});
+
+input.addEventListener("focus", () => {
+  chipsBox.style.display = "none";
+});
+
+input.addEventListener("blur", () => {
+  chipsBox.style.display = "";
+  updateInput();
+});
+
 
   arrow?.addEventListener("click", e => {
     e.stopPropagation();
