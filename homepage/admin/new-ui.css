@@ -2288,3 +2288,67 @@ input[type="checkbox"]:disabled
 html.new-ui-modal-open {
   overflow: hidden !important;
 }
+
+/* =====================================================
+   GLOBAL DROPDOWN - MAXIMUM 8 ROWS
+   Single dropdown + Chips dropdown
+===================================================== */
+
+:root {
+  --dropdown-visible-rows: 8;
+  --dropdown-row-height: 36px;
+}
+
+/* SINGLE SELECT DROPDOWN */
+.shared-dropdown-options {
+  max-height: calc(
+    var(--dropdown-visible-rows) *
+    var(--dropdown-row-height) + 8px
+  ) !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* SINGLE SELECT OPTION */
+.shared-dropdown-option {
+  height: var(--dropdown-row-height);
+  min-height: var(--dropdown-row-height);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* MULTI SELECT / CHIPS DROPDOWN */
+.shared-chip-dropdown-panel {
+  max-height: calc(
+    var(--dropdown-visible-rows) *
+    var(--dropdown-row-height) + 8px
+  ) !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* CHIPS OPTION */
+.shared-chip-dropdown-option {
+  height: var(--dropdown-row-height);
+  min-height: var(--dropdown-row-height);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* SCROLLBAR STYLE */
+.shared-dropdown-options::-webkit-scrollbar,
+.shared-chip-dropdown-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shared-dropdown-options::-webkit-scrollbar-thumb,
+.shared-chip-dropdown-panel::-webkit-scrollbar-thumb {
+  background: rgba(143,155,172,.35);
+  border-radius: 999px;
+}
