@@ -38,11 +38,7 @@
   name: "Site Management",
   group: "main"
 },
-     {
-  file: "admin-users.html",
-  name: "Admin Users",
-  group: "main"
-},
+
     {
       file: "livechat.html",
       name: "Live Chat",
