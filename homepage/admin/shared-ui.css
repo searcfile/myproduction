@@ -3184,3 +3184,74 @@ padding:12px;
   }
 }
 
+/* ==========================================
+   HEADER ONLY - CUSTOM SELECT SITE
+   ========================================== */
+
+.header-tab-search {
+  min-width: 150px !important;
+  max-width: 220px !important;
+  width: 220px;
+  flex: 0 1 220px !important;
+}
+
+.header-site-custom {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Gunakan custom NewUI untuk desktop */
+@media (min-width: 816px) {
+  #headerTabSearchForm,
+  #headerTabSearchList {
+    display: none !important;
+  }
+
+  #headerSiteCustom {
+    display: block;
+  }
+}
+
+/* Kekalkan Select Site mobile asal */
+@media (max-width: 815px) {
+  #headerSiteCustom {
+    display: none !important;
+  }
+}
+
+/* Input custom */
+#headerSiteCustom .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+#headerSiteCustom .shared-chip-dropdown-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  overflow: visible;
+}
+
+/* Dropdown custom */
+#headerSiteCustom .shared-chip-dropdown-panel {
+  min-width: 180px;
+  max-width: 280px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* Chips dalam input */
+#headerSiteCustom .shared-chip-dropdown-values {
+  min-width: 0;
+}
+
+/* +N khusus header */
+#headerSiteCustom .shared-chip-dropdown-overflow {
+  flex-shrink: 0;
+}
+
+/* Popup nama site tersembunyi */
+#headerSiteCustom .shared-chip-dropdown-overflow-popup {
+  z-index: 100000;
+}
+
