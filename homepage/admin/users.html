@@ -424,6 +424,17 @@
 .auth-permission-footer button{height:34px;padding:0 15px}
 .auth-account-actions{margin-top:6px}
 @media(max-width:650px){.auth-permission-grid,.auth-permission-chips{grid-template-columns:1fr}.auth-permission-form{max-height:calc(100dvh - 140px);overflow-y:auto}.auth-account-actions{flex-direction:column}.auth-account-actions button{width:100%}}
+
+/* One custom modal with two independently selectable tab panels */
+.auth-unified-shell{width:100%;min-width:0}
+.auth-unified-tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--tx-border,#344158);margin-bottom:16px;padding-bottom:8px}
+.auth-unified-tab{flex:0 0 auto;border:1px solid var(--tx-border,#344158);background:#172131;color:#aebed4;border-radius:8px;padding:9px 16px;font:inherit;font-size:12px;cursor:pointer}
+.auth-unified-tab.active{background:rgba(22,104,220,.2);border-color:#357fe7;color:#89baff}
+.auth-unified-pane[hidden]{display:none!important}
+.auth-unified-pane{min-width:0;max-height:min(67dvh,620px);overflow-y:auto;overflow-x:hidden;padding:2px 3px 12px;scrollbar-width:thin}
+.auth-unified-pane .auth-permission-form{max-height:none;overflow:visible}
+.auth-unified-pane .auth-permission-tabs{max-width:100%}
+@media(max-width:650px){.auth-unified-tab{flex:1;padding:9px 10px}.auth-unified-pane{max-height:calc(100dvh - 185px)}}
 </style>
 </head>
 <body>
@@ -591,20 +602,33 @@ function showModal(){
   if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
   const form=$('userForm'),home=$('formSource');
   home.hidden=false;
-  formModal=NewUI.modal.open({
-    title:editing?'Manage Username':'Create Username',
-    width:'720px',
-    content:form,
-    onClose(){
-      home.append(form);
-      home.hidden=true;
-      formModal=null;
-      editing=null;
-    }
-  });
+  if(editing){
+    const u=editing;
+    const shell=document.createElement('div');shell.className='auth-unified-shell';
+    shell.innerHTML=`<div class="auth-unified-tabs" role="tablist" aria-label="Site Admin settings">
+      <button type="button" class="auth-unified-tab active" role="tab" aria-selected="true" data-view="manage">Manage Account</button>
+      <button type="button" class="auth-unified-tab" role="tab" aria-selected="false" data-view="permissions">Edit Permissions</button>
+    </div><div class="auth-unified-pane" id="authManagePane"></div><div class="auth-unified-pane" id="authPermissionPane" hidden></div>`;
+    shell.querySelector('#authManagePane').append(form);
+    const switchView=async view=>{
+      const isManage=view==='manage';
+      shell.querySelector('#authManagePane').hidden=!isManage;
+      shell.querySelector('#authPermissionPane').hidden=isManage;
+      shell.querySelectorAll('.auth-unified-tab').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
+      if(!isManage&&!shell.querySelector('#permissionProfileForm'))await openPermissionEditor(u,shell.querySelector('#authPermissionPane'));
+    };
+    shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+    formModal=NewUI.modal.open({title:'Site Admin · '+u.username,width:'980px',content:shell,onClose(){
+      destroyPermissionChips();permissionUser=null;
+      home.append(form);home.hidden=true;formModal=null;editing=null;
+    }});
+  }else{
+    formModal=NewUI.modal.open({title:'Create Username',width:'720px',content:form,onClose(){
+      home.append(form);home.hidden=true;formModal=null;editing=null;
+    }});
+  }
   NewUI.init?.(form);
   NewUI.activeSwitch?.init?.(form);
-  setTimeout(()=>($('username').disabled?$('password'):$('username')).focus(),80);
 }
 function closeModal(){if(formModal)formModal.close();}
 async function api(path,opts={}){
@@ -772,13 +796,7 @@ function permissionActions(key){return PERMISSION_DEFINITIONS[key]||PERMISSION_D
 function destroyPermissionChips(){for(const a of [siteChipApi,availableChipApi,givenChipApi]){try{a?.destroy?.()}catch(e){console.warn(e)}}siteChipApi=availableChipApi=givenChipApi=null}
 function openAccount(u){
  if(u.role!=='siteadmin')return;
- const root=document.createElement('div');
- root.innerHTML='<div class="auth-account-head"><span class="auth-avatar"></span><div><strong></strong><small>Site Admin · Select an action</small></div></div><div class="auth-account-actions"><button type="button" class="auth-manage-action">Manage Account</button><button type="button" class="auth-permission-action">Edit Permissions</button></div>';
- root.querySelector('.auth-avatar').textContent=(u.username||'?')[0].toUpperCase();
- root.querySelector('strong').textContent=u.username;
- root.querySelector('.auth-manage-action').onclick=()=>{accountModal?.close();manage(u)};
- root.querySelector('.auth-permission-action').onclick=()=>{accountModal?.close();openPermissionEditor(u)};
- accountModal=NewUI.modal.open({title:'Site Admin',width:'450px',content:root,onClose(){accountModal=null}});
+ manage(u);
 }
 function renderPermissionTabs(){
  const host=document.getElementById('permissionTabs');if(!host)return;host.replaceChildren();
@@ -797,7 +815,7 @@ function renderPermissionPanel(){
  availableChipApi=NewUI.chips(a,{placeholder:'Available Functions',options,value:actions});
  givenChipApi=NewUI.chips(g,{placeholder:'Select Permissions',options,value:[...(permissionDraft[key]||new Set())],onChange(v){permissionDraft[key]=new Set(v)}});
 }
-async function openPermissionEditor(u){
+async function openPermissionEditor(u,container){
  if(!window.NewUI?.chips||!window.NewUI?.modal?.open){toast('Custom components unavailable','error');return}
  permissionUser=u;destroyPermissionChips();
  const root=document.createElement('form');root.className='auth-permission-form';root.id='permissionProfileForm';
@@ -814,15 +832,15 @@ async function openPermissionEditor(u){
  <div><label>Given Permissions</label><div id="permissionGiven"></div></div></div>
  <p class="auth-permission-note">Permissions must also be enforced by the backend and database rules.</p>
  <div class="auth-permission-footer"><button type="button" class="btn-cancel-new" id="permissionCancel">Cancel</button><button type="submit" class="btn-primary-new" id="permissionSave">Save Permissions</button></div>`;
- permissionModal=NewUI.modal.open({title:'Edit Permissions · '+u.username,width:'980px',content:root,onClose(){destroyPermissionChips();permissionModal=null;permissionUser=null}});
+ container.replaceChildren(root);
  root.querySelector('#permissionUsername').value=u.username;
  root.querySelector('#permissionUid').value=u.uid;
  root.querySelector('#permissionDisplayName').value=u.displayName||u.username;
  NewUI.init?.(root);
- root.querySelector('#permissionCancel').onclick=()=>permissionModal?.close();
+ root.querySelector('#permissionCancel').onclick=()=>container.closest('.auth-unified-shell')?.querySelector('[data-view=manage]')?.click();
  try{
   const response=await api('/api/sites');
-  if(permissionUser?.uid!==u.uid||!permissionModal)return;
+  if(permissionUser?.uid!==u.uid||!root.isConnected)return;
   sites=response.sites||[];
   const visible=sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id));
   siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
@@ -849,7 +867,7 @@ async function openPermissionEditor(u){
    }
    await api('/api/admin-profiles/'+encodeURIComponent(u.uid),{method:'PATCH',body:JSON.stringify({displayName:root.querySelector('#permissionDisplayName').value.trim(),siteIds,permissions})});
    await NewUI.setButtonLoading(save,false,{minDuration:850});
-   permissionModal?.close();await load();toast('Permissions saved successfully.');
+   await load();toast('Permissions saved successfully.');
   }catch(err){toast('Save permissions failed: '+err.message,'error')}
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
  });
