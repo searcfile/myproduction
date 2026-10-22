@@ -2684,45 +2684,67 @@ closeButton.addEventListener('click', close);
    MODAL - PREVENT SCROLLBAR AUTO CLOSE
    ========================================== */
 
-let backdropMouseDown = false;
+
+/* ==========================================
+   MODAL - OUTSIDE CLICK & SCROLLBAR FIX
+   ========================================== */
+
+let backdropPress = null;
+
+function isBackdropScrollbar(event) {
+  const rect = backdrop.getBoundingClientRect();
+
+  // Lebar scrollbar sebenar, jika ada.
+  const scrollbarWidth =
+    backdrop.offsetWidth - backdrop.clientWidth;
+
+  if (scrollbarWidth <= 0) return false;
+
+  return event.clientX >=
+    rect.right - scrollbarWidth;
+}
 
 backdrop.addEventListener('pointerdown', event => {
-  backdropMouseDown = false;
+  backdropPress = null;
 
   if (event.target !== backdrop) return;
   if (event.button !== 0) return;
   if (options.closeOnBackdrop === false) return;
 
-  // Abaikan klik pada scrollbar sebelah kanan.
-  const scrollbarWidth =
-    backdrop.offsetWidth - backdrop.clientWidth;
+  // Klik scrollbar bukan klik luar modal.
+  if (isBackdropScrollbar(event)) return;
 
-  const rect = backdrop.getBoundingClientRect();
-
-  if (
-    scrollbarWidth > 0 &&
-    event.clientX >= rect.right - scrollbarWidth
-  ) {
-    return;
-  }
-
-  backdropMouseDown = true;
+  backdropPress = {
+    pointerId: event.pointerId,
+    x: event.clientX,
+    y: event.clientY
+  };
 });
 
 backdrop.addEventListener('pointerup', event => {
-  const shouldClose =
-    backdropMouseDown &&
-    event.target === backdrop &&
-    options.closeOnBackdrop !== false;
+  const press = backdropPress;
+  backdropPress = null;
 
-  backdropMouseDown = false;
+  if (!press) return;
+  if (event.pointerId !== press.pointerId) return;
+  if (event.target !== backdrop) return;
+  if (options.closeOnBackdrop === false) return;
+  if (isBackdropScrollbar(event)) return;
 
-  if (shouldClose) close();
+  // Jangan tutup modal selepas drag.
+  const moved =
+    Math.abs(event.clientX - press.x) > 5 ||
+    Math.abs(event.clientY - press.y) > 5;
+
+  if (moved) return;
+
+  close();
 });
 
 backdrop.addEventListener('pointercancel', () => {
-  backdropMouseDown = false;
+  backdropPress = null;
 });
+
 
   const api={element:backdrop,dialog,body,footer,open,close,destroy,
     setTitle(value){heading.textContent=String(value);},
