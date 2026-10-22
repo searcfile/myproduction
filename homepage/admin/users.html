@@ -1187,6 +1187,45 @@
   border: none !important;
 }
 
+/* ==========================================
+   AUTH USERS - LOADING BEFORE ACCOUNT MODAL
+   ========================================== */
+
+.auth-open-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  animation: authOpenFadeIn .18s ease forwards;
+}
+
+.auth-open-loading .auth-loading-dots {
+  display: grid;
+  grid-template-columns: repeat(2, 6px);
+  grid-template-rows: repeat(2, 6px);
+  gap: 4px;
+}
+
+.auth-open-loading.is-closing {
+  animation: authOpenFadeOut .18s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes authOpenFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes authOpenFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 </style>
 </head>
 <body>
@@ -1927,19 +1966,54 @@ function getPermissionModules(){
 }
 function permissionActions(key){return PERMISSION_DEFINITIONS[key]||PERMISSION_DEFINITIONS.default}
 function destroyPermissionChips(){for(const a of [siteChipApi,availableChipApi,givenChipApi]){try{a?.destroy?.()}catch(e){console.warn(e)}}siteChipApi=availableChipApi=givenChipApi=null}
-function openAccount(u){
- if(u.role!=='siteadmin')return;
- manage(u);
+
+/* ==========================================
+   AUTH USERS - SMOOTH ACCOUNT OPENING
+   ========================================== */
+
+let authOpeningAccount = false;
+
+async function openAccount(u) {
+  if (u.role !== 'siteadmin') return;
+  if (authOpeningAccount) return;
+
+  authOpeningAccount = true;
+
+  const loading = document.createElement('div');
+  loading.className = 'auth-open-loading';
+
+  loading.innerHTML = `
+    <span class="auth-loading-dots" aria-label="Loading">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  `;
+
+  document.body.appendChild(loading);
+
+  try {
+    // Loading sekejap sebelum popup
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Buka modal asal bro
+    manage(u);
+
+    // Smooth fade-out selepas modal dibuka
+    loading.classList.add('is-closing');
+
+    await new Promise(resolve => setTimeout(resolve, 180));
+
+  } catch (error) {
+    toast('Unable to open account: ' + error.message, 'error');
+  } finally {
+    loading.remove();
+    authOpeningAccount = false;
+  }
 }
+
    
-
-/* ==========================================
-   MODULE PERMISSIONS - SCROLL + MORE
-   ========================================== */
-
-/* ==========================================
-   MODULE TABS - MOUSE WHEEL SCROLL
-   ========================================== */
 
 document.addEventListener('wheel', function(e) {
   const tabs = e.target.closest?.('#permissionTabs');
