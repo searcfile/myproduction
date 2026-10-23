@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LiveChat - User</title>
+  <title>LiveChat · Admin Support</title>
   <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
   <link rel="stylesheet" href="./new-ui.css">
@@ -1034,6 +1034,63 @@ select:focus-visible{
   background-color: transparent;
   transition: all .2s ease;
 }
+
+/* === LIVECHAT MODERN UI — EMBEDDED === */
+/* 5G88 LiveChat — Modern UI skin. Load AFTER existing inline styles. */
+:root{--lc-bg:#080f1d;--lc-surface:#101b2c;--lc-surface2:#17253b;--lc-border:#293c59;--lc-muted:#91a8c8;--lc-text:#eaf2ff;--lc-accent:#2478ee;--lc-glow:rgba(36,120,238,.18)}
+*{box-sizing:border-box}
+html,body{min-height:100%;background:#080f1d!important;color:var(--lc-text)!important}
+body{font-family:Inter,'Segoe UI',system-ui,sans-serif!important}
+main{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2vw,28px);background:radial-gradient(circle at 10% 0%,#132a4a 0,transparent 40%),radial-gradient(circle at 100% 90%,#101f39 0,transparent 38%),#080f1d}
+.chat-wrapper{width:min(100%,1060px)!important;max-width:1060px!important;height:min(880px,calc(100dvh - 40px))!important;min-height:400px;margin:0 auto!important;padding:0!important;background:var(--lc-bg)!important;border:1px solid #2b4265!important;border-radius:20px!important;box-shadow:0 24px 80px #0008,0 0 0 1px #ffffff05!important;isolation:isolate}
+.chat-header{background:linear-gradient(110deg,#182d4b,#101d30)!important;border:0!important;border-bottom:1px solid var(--lc-border)!important;border-radius:0!important;padding:18px 22px!important;gap:20px!important;min-height:88px;flex-wrap:nowrap!important}
+.chat-header .profile{min-width:0;gap:13px}
+.chat-header .profile img{width:48px!important;height:48px!important;object-fit:cover;border:2px solid #4b91fb!important;box-shadow:0 0 0 4px #2676ef24;background:#0e1c32!important}
+.chat-header .profile span{display:block;font-size:16px!important;letter-spacing:.1px;color:#f5f9ff!important;white-space:nowrap}
+.support-agent-name{color:#a5b9d4;font-size:11px;line-height:1.5;margin-top:2px}
+#typingStatus{display:inline-flex;color:#5be0b4!important;font-size:11px!important;align-items:center;gap:5px}
+#typingStatus:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.search-wrapper{width:min(330px,42%)!important;flex:0 1 330px!important;min-width:120px;justify-content:flex-end}
+.search-input-wrap{max-width:330px!important}
+#searchChat{height:40px;background:#0b1728!important;border:1px solid #32445e!important;border-radius:10px!important;color:#eaf2ff!important;padding-left:38px!important}
+#searchChat::placeholder{color:#8da1bd}
+#searchChat:focus{border-color:#438efa!important;box-shadow:0 0 0 3px #2377f222!important}
+.search-icon{color:#9ab2d2!important}
+.chat-box{flex:1!important;height:auto!important;min-height:0!important;padding:22px clamp(12px,3vw,32px)!important;background:linear-gradient(180deg,#0b1525,#0a1220)!important;border:0!important;border-radius:0!important;scrollbar-color:#385374 transparent!important}
+.message{margin:14px 0!important}
+.msg-row{gap:10px!important;align-items:flex-end!important}
+.msg-avatar-outside{width:30px!important;height:30px!important;border:1px solid #395274!important;background:#15263d!important}
+.mine .msg-bubble-wrap,.theirs .msg-bubble-wrap{min-width:70px;max-width:min(76%,550px)!important;padding:12px 15px!important;border:1px solid transparent!important;border-radius:16px!important;box-shadow:0 5px 18px #0002!important}
+.mine .msg-bubble-wrap{background:linear-gradient(135deg,#2168d4,#1754ad)!important;border-bottom-right-radius:5px!important;color:white!important}
+.theirs .msg-bubble-wrap{background:#1a2a41!important;border:1px solid #2a4160!important;border-bottom-left-radius:5px!important;color:#eaf2ff!important}
+.mine .msg-bubble-wrap::after,.theirs .msg-bubble-wrap::after{display:none!important}
+.msg-info{font-size:11px!important;color:#a8caff!important;margin-bottom:4px}
+.msg-text{font-size:13px!important;line-height:1.6!important;color:#f1f6ff!important;font-weight:400!important}
+.msg-time{color:#bed0e9!important;font-size:10px!important;margin-top:6px!important}
+.date-label{margin:14px 0 22px!important}
+.date-label-inner{background:#1b304d!important;border:1px solid #324b70!important;border-radius:999px!important;padding:5px 18px!important;box-shadow:none!important;color:#dce9fc!important}
+.send-box{background:#101d30!important;border:0!important;border-top:1px solid var(--lc-border)!important;border-radius:0!important;padding:15px 20px!important;gap:12px!important;align-items:center!important;flex-wrap:nowrap!important;box-shadow:none!important}
+.send-box:focus-within{box-shadow:none!important;border-top-color:#345984!important}
+#msg{min-width:0!important;min-height:24px!important;padding:8px 3px!important;color:#f3f7ff!important;line-height:1.5!important;font-size:14px!important;background:transparent!important}
+#msg::placeholder{color:#8196b5!important}
+.send-actions{gap:8px!important}
+.send-tool-btn{width:35px!important;height:35px!important;border-radius:9px!important;color:#a9c0df!important;transition:background .15s,color .15s!important;flex:0 0 auto}
+.send-tool-btn:hover{background:#233b5d!important;color:white!important}
+.send-main-btn{width:42px!important;height:42px!important;background:#2478ee!important;border-radius:12px!important;box-shadow:0 4px 14px #145fd444!important}
+.send-main-btn:hover{background:#3d8afa!important}
+#toBottomBtn{background:#2478ee!important;border-radius:12px!important;right:22px!important;box-shadow:0 6px 20px #0006!important}
+#startMessage{color:#9fb3d0!important;font-size:13px!important;padding:35px 12px!important}
+#noResults{background:#19283f!important;border:1px solid #3b5273!important;color:#dbeaff!important}
+.image-preview-wrap{background:transparent!important}
+.image-preview-card,.image-add-card{border-radius:12px!important;border-color:#3b5373!important;background:#182a42!important}
+.chat-image-wrap{border-radius:12px!important;background:#0d1a2b!important}
+.emoji-picker-wrap{border:1px solid #334967;border-radius:14px!important;box-shadow:0 20px 60px #0009!important}
+.image-lightbox-backdrop{background:#030814ee!important}
+:where(button,input,textarea):focus-visible{outline:2px solid #68a5ff!important;outline-offset:2px}
+@media(max-width:700px){main{padding:0!important}.chat-wrapper{height:100dvh!important;min-height:0!important;width:100%!important;border:0!important;border-radius:0!important}.chat-header{padding:14px 14px!important;min-height:78px;gap:10px!important;flex-direction:row!important;align-items:center!important}.chat-header .profile img{width:42px!important;height:42px!important}.chat-header .profile span{font-size:14px!important}.search-wrapper{width:min(180px,42%)!important;flex:0 1 180px!important;margin:0!important}.search-input-wrap{width:100%!important}#searchChat{height:36px;font-size:12px!important}.chat-box{padding:15px 12px!important}.mine .msg-bubble-wrap,.theirs .msg-bubble-wrap{max-width:min(85%,420px)!important}.send-box{padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;gap:6px!important;flex-wrap:wrap!important}.send-tool-btn{width:32px!important;height:32px!important}.send-main-btn{width:38px!important;height:38px!important}#toBottomBtn{right:12px!important}}
+@media(max-width:390px){.chat-header{flex-wrap:wrap!important}.chat-header .profile{width:100%}.search-wrapper{width:100%!important;flex:1 1 100%!important}.search-input-wrap{max-width:none!important}.chat-header{padding:10px 12px!important}.send-actions{gap:3px!important}.send-box{gap:4px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
 </style>
 </head>
 <body>
@@ -1042,9 +1099,9 @@ select:focus-visible{
     <!-- CHAT HEADER -->
     <div class="chat-header">
       <div class="profile">
-        <img id="headerUserPhoto" src="https://i.pravatar.cc/40" alt="User" />
+        <img id="headerUserPhoto" src="./logo.svg" alt="Support" />
         <div>
-          <span id="headerUserName">Unknown</span><br />
+          <span id="headerUserName">Admin Support</span><div id="supportAgentName" class="support-agent-name">Support team</div>
           <small id="typingStatus" style="font-size: 12px; font-weight: normal; color: white;">Offline</small>
         </div>
       </div>
@@ -1060,7 +1117,7 @@ select:focus-visible{
 
 <div class="chat-box" id="chatBox">
   <div id="startMessage" style="text-align:center; color:white; opacity:0.6; margin-top:10px; font-size:14px;">
-    No messages yet. Start the conversation!
+    Welcome to Live Support. Send us a message to get started.
   </div>
 </div>
 <button id="toBottomBtn" aria-label="Scroll to latest" title="Go to latest">
@@ -1589,8 +1646,8 @@ function updateAdminHeader(name, photo) {
   const nameEl = document.getElementById("headerUserName");
   const photoEl = document.getElementById("headerUserPhoto");
 
-  const finalName = "Admin";
-  const finalPhoto = photo || "https://i.imgur.com/qiZFOs9.png";
+  const finalName = "Admin Support";
+  const finalPhoto = photo || "./logo.svg";
 
   if (nameEl) nameEl.textContent = finalName;
   if (photoEl) photoEl.src = finalPhoto;
@@ -1646,9 +1703,15 @@ function bindAdminHeaderPresence(){
     const data = snap.val() || {};
 
     updateAdminHeader(
-    "Admin",
-    data.photoURL || "https://i.imgur.com/qiZFOs9.png"
-   );
+      "Admin Support",
+      data.photoURL || "./logo.svg"
+    );
+    // Nama operator hanya daripada rekod presence admin, bukan identiti pelanggan.
+    const agentEl = document.getElementById("supportAgentName");
+    if (agentEl) {
+      const agent = typeof data.username === "string" ? data.username.trim() : "";
+      agentEl.textContent = agent || "Support team";
+    }
 
     if (!typingEl) return;
 
@@ -1741,7 +1804,7 @@ if (toBottomBtn) {
 }
 
 chatInitialized = true;
-updateAdminHeader("Admin", "https://i.imgur.com/qiZFOs9.png");
+updateAdminHeader("Admin Support", "./logo.svg");
 if (typingEl) typingEl.textContent = "Offline";
 bindAdminHeaderPresence();
 bindUserTyping();
@@ -2432,11 +2495,11 @@ function renderChats(chatGroup, today) {
 
      const senderLabel = (c.from === 'user')
      ? nameOnly(cleanDuplicateName(rawName))
-     : 'Admin';
+     : 'Admin Support';
 
 const senderPhoto = (c.from === 'user')
   ? (c.photoURL || 'https://i.pravatar.cc/40')
-  : 'https://i.imgur.com/qiZFOs9.png';
+  : './logo.svg';
 
     // header bubble tanpa src (src diset via property biar aman)
 let bubbleHtml = `
