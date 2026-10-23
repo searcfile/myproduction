@@ -3750,6 +3750,144 @@ function setupHeaderSearch() {
   let loading = false;
   let ready = false;
 
+/* MOBILE SITE CHIPS - INPUT ASAL DIKEKALKAN */
+const mobileInputWrap = mobileInput.parentElement;
+
+const mobileChips = document.createElement("div");
+mobileChips.id = "mobileSiteSelectedChips";
+mobileInputWrap.appendChild(mobileChips);
+
+let mobileHiddenSitesOpen = false;
+
+function updateMobileChips() {
+  const sites = selectedIds
+    .map(id => availableSites.find(s => s.id === id))
+    .filter(Boolean);
+
+  mobileChips.replaceChildren();
+
+  const searching =
+    document.activeElement === mobileInput &&
+    mobileInput.value.trim().length > 0;
+
+  mobileInputWrap.classList.toggle(
+    "mobile-site-has-chips",
+    sites.length > 0 && !searching
+  );
+
+  if (!sites.length || searching) {
+    mobileChips.hidden = true;
+    return;
+  }
+
+  mobileChips.hidden = false;
+
+  const maxWidth = Math.max(
+    60,
+    mobileInputWrap.clientWidth - 48
+  );
+
+  let usedWidth = 0;
+  let visibleCount = 0;
+
+  // Simpan ruang untuk +N apabila perlu.
+  const reserve = sites.length > 1 ? 45 : 0;
+
+  for (const site of sites) {
+    const chip = document.createElement("span");
+    chip.className = "mobile-site-chip";
+
+    const name = document.createElement("span");
+    name.textContent = site.name;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `Remove ${site.name}`);
+
+    remove.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      selectedIds = selectedIds.filter(id => id !== site.id);
+      saveSelection();
+      updateInput();
+      if (!panel.hidden) renderOptions(mobileInput.value);
+    });
+
+    chip.append(name, remove);
+    mobileChips.appendChild(chip);
+
+    const chipWidth = chip.getBoundingClientRect().width + 4;
+
+    if (usedWidth + chipWidth + reserve > maxWidth) {
+      chip.remove();
+      break;
+    }
+
+    usedWidth += chipWidth;
+    visibleCount++;
+  }
+
+  // Jika site pertama panjang, ringkaskan dengan +N.
+  const hiddenCount = sites.length - visibleCount;
+
+  if (hiddenCount > 0) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "mobile-site-more";
+    more.textContent = `+${hiddenCount}`;
+    more.title = sites
+      .slice(visibleCount)
+      .map(s => s.name)
+      .join("\n");
+
+    more.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      mobileHiddenSitesOpen = !mobileHiddenSitesOpen;
+
+      const oldPopup =
+        mobileInputWrap.querySelector(".mobile-site-more-popup");
+
+      oldPopup?.remove();
+
+      if (!mobileHiddenSitesOpen) return;
+
+      const popup = document.createElement("div");
+      popup.className = "mobile-site-more-popup";
+
+      sites.slice(visibleCount).forEach(site => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.textContent = `${site.name.toUpperCase()} ×`;
+
+        item.addEventListener("click", event => {
+          event.stopPropagation();
+          selectedIds = selectedIds.filter(id => id !== site.id);
+          mobileHiddenSitesOpen = false;
+          saveSelection();
+          updateInput();
+          if (!panel.hidden) renderOptions(mobileInput.value);
+        });
+
+        popup.appendChild(item);
+      });
+
+      mobileInputWrap.appendChild(popup);
+    });
+
+    mobileChips.appendChild(more);
+  }
+
+  mobileInputWrap.querySelector(
+    ".mobile-site-more-popup"
+  )?.remove();
+
+  mobileHiddenSitesOpen = false;
+}
+
 const customSiteEl = document.getElementById("headerSiteCustom");
 let customSiteDropdown = null;
 
@@ -3834,9 +3972,8 @@ function updateInput() {
     .map(site => site.name)
     .join(", ");
 
-  mobileInput.placeholder = selected.length
-    ? selected.map(site => site.name).join(", ")
-    : "🏢 🔍 Search";
+mobileInput.placeholder = "🏢 🔍 Search";
+updateMobileChips();
 }
 
 
@@ -3876,6 +4013,71 @@ function closeDropdown() {
   }
 
   function renderOptions(keyword = "") {
+   
+/* MOBILE: CUSTOM OPTIONS, BUKAN CHECKBOX LAMA */
+if (isMobile()) {
+  list.replaceChildren();
+
+  const search = String(keyword).trim().toLowerCase();
+
+  const filtered = availableSites.filter(site =>
+    site.name.toLowerCase().includes(search) ||
+    site.id.toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    const empty = document.createElement("div");
+    empty.className = "shared-dropdown-empty";
+    empty.textContent = loading
+      ? "Loading sites..."
+      : "No available sites";
+    list.appendChild(empty);
+  }
+
+  filtered.forEach(site => {
+    const active = selectedIds.includes(site.id);
+
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className =
+      "shared-chip-dropdown-option" +
+      (active ? " active" : "");
+
+    option.setAttribute("aria-selected", String(active));
+
+    const name = document.createElement("span");
+    name.textContent = site.name;
+
+    const check = document.createElement("span");
+    check.className = "shared-chip-dropdown-option-check";
+    check.textContent = "✓";
+
+    option.append(name, check);
+
+    option.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (selectedIds.includes(site.id)) {
+        selectedIds = selectedIds.filter(id => id !== site.id);
+      } else {
+        selectedIds.push(site.id);
+      }
+
+      saveSelection();
+      updateInput();
+      renderOptions(mobileInput.value);
+    });
+
+    list.appendChild(option);
+  });
+
+  positionDropdown();
+  list.style.display = "block";
+  wrap.classList.add("search-mode");
+  return;
+}
+
     list.replaceChildren();
 
     const filtered = availableSites.filter(site =>
@@ -4070,10 +4272,19 @@ input.addEventListener("input", () => {
     renderOptions();
   });
 
-  mobileInput.addEventListener("focus", () => renderOptions());
-  mobileInput.addEventListener("input", () => {
-    renderOptions(mobileInput.value);
-  });
+mobileInput.addEventListener("focus", () => {
+  updateMobileChips();
+  renderOptions(mobileInput.value);
+});
+
+mobileInput.addEventListener("input", () => {
+  updateMobileChips();
+  renderOptions(mobileInput.value);
+});
+
+mobileInput.addEventListener("blur", () => {
+  requestAnimationFrame(updateMobileChips);
+});
 
   document.addEventListener("pointerdown", e => {
     if (
