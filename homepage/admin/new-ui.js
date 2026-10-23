@@ -3641,3 +3641,65 @@ if (document.readyState === 'loading') {
   initSharedActiveSwitches();
 }
 })();
+/* 5G88 reusable pagination. Load after new-ui.js */
+(() => {
+  'use strict';
+  window.NewUI = window.NewUI || {};
+  const SVG = {
+    prev: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z"/></svg>',
+    next: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"/></svg>',
+    back5: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M272.9 512l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L186.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H532c6.7 0 10.4-7.7 6.3-12.9L272.9 512zm304 0l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L490.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H836c6.7 0 10.4-7.7 6.3-12.9L576.9 512z"/></svg>',
+    forward5: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z"/></svg>'
+  };
+  const down = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>';
+  const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+  window.NewUI.pagination = function(target, config = {}) {
+    const root = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!(root instanceof HTMLElement)) throw new Error('NewUI.pagination: target not found');
+    if (root.__newUIPagination) return root.__newUIPagination;
+    let total = Math.max(0, Number(config.total) || 0);
+    let pageSize = Math.max(1, Number(config.pageSize) || 10);
+    let page = Math.max(1, Number(config.page) || 1);
+    const sizes = Array.isArray(config.pageSizes) && config.pageSizes.length ? config.pageSizes.filter(n => Number.isInteger(n) && n > 0) : [10,20,50,100];
+    const onChange = typeof config.onChange === 'function' ? config.onChange : () => {};
+    root.classList.add('new-ui-pagination');
+    root.innerHTML = '<span class="new-ui-pagination-info"></span><div class="new-ui-pagination-numbers"></div><div class="new-ui-pagination-size"><button class="new-ui-pagination-size-trigger" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>'+down+'</button><div class="new-ui-pagination-size-panel" role="listbox" hidden></div></div><div class="new-ui-pagination-goto"><span>Go to</span><input class="new-ui-pagination-jump" type="number" min="1" aria-label="Go to page"><span>Page</span></div>';
+    const info = root.querySelector('.new-ui-pagination-info');
+    const nums = root.querySelector('.new-ui-pagination-numbers');
+    const trigger = root.querySelector('.new-ui-pagination-size-trigger');
+    const sizeText = trigger.querySelector('span');
+    const panel = root.querySelector('.new-ui-pagination-size-panel');
+    const jump = root.querySelector('.new-ui-pagination-jump');
+    const pages = () => Math.max(1, Math.ceil(total / pageSize));
+    function closeMenu(){panel.hidden = true; trigger.setAttribute('aria-expanded','false');}
+    function notify(){onChange({page,pageSize,total,totalPages:pages(),start:total?(page-1)*pageSize:0,end:Math.min(total,page*pageSize)});}
+    function go(p){const next=clamp(Math.floor(Number(p)||1),1,pages()); if(next===page)return;page=next;render();notify();}
+    function btn(label,p,disabled=false,active=false,kind=''){
+      const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-btn'+(kind?' '+kind:'')+(active?' active':'');b.disabled=disabled;
+      if(kind==='new-ui-pagination-arrow'){b.innerHTML=SVG[label];b.setAttribute('aria-label',label==='prev'?'Previous page':'Next page');}
+      else b.textContent=String(label);
+      if(active)b.setAttribute('aria-current','page');b.addEventListener('click',()=>go(p));nums.append(b);
+    }
+    function dots(dir){const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-dots';b.title=dir==='prev'?'Jump back 5 pages':'Jump forward 5 pages';b.setAttribute('aria-label',b.title);b.innerHTML='<span class="new-ui-pagination-dots-text" aria-hidden="true">•••</span><span class="new-ui-pagination-dots-icon" aria-hidden="true">'+SVG[dir==='prev'?'back5':'forward5']+'</span>';b.addEventListener('click',()=>go(page+(dir==='prev'?-5:5)));nums.append(b);}
+    function render(){
+      page=clamp(page,1,pages());root.hidden=total===0;if(!total){closeMenu();return;}
+      info.textContent=`${(page-1)*pageSize+1}-${Math.min(total,page*pageSize)} of ${total} items`;
+      sizeText.textContent=pageSize+' / page';jump.max=String(pages());jump.value='';nums.replaceChildren();
+      btn('prev',page-1,page===1,false,'new-ui-pagination-arrow');
+      const visible=new Set([1,pages()]);for(let p=Math.max(1,page-2);p<=Math.min(pages(),page+2);p++)visible.add(p);
+      let previous=0;[...visible].sort((a,b)=>a-b).forEach(p=>{if(p-previous>1)dots(p<=page?'prev':'next');btn(p,p,false,p===page);previous=p;});
+      btn('next',page+1,page===pages(),false,'new-ui-pagination-arrow');
+      panel.replaceChildren();sizes.forEach(n=>{const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-size-option'+(n===pageSize?' active':'');b.textContent=n+' / page';b.setAttribute('role','option');b.setAttribute('aria-selected',String(n===pageSize));b.addEventListener('click',()=>{closeMenu();if(n===pageSize)return;pageSize=n;page=1;render();notify();});panel.append(b);});
+    }
+    trigger.addEventListener('click',()=>{const open=panel.hidden;panel.hidden=!open;trigger.setAttribute('aria-expanded',String(open));});
+    function outside(e){if(!root.contains(e.target))closeMenu();}
+    function escape(e){if(e.key==='Escape')closeMenu();}
+    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
+    function jumpNow(){if(jump.value.trim()==='')return;go(jump.value);jump.value='';}
+    jump.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();jumpNow();}});
+    jump.addEventListener('change',jumpNow);
+    const api={setTotal(n){total=Math.max(0,Number(n)||0);render();},setPage(p){go(p);},setPageSize(n){const v=Math.floor(Number(n));if(v<1||!Number.isFinite(v))return;pageSize=v;page=1;render();notify();},update(opts={}){if(opts.total!==undefined)total=Math.max(0,Number(opts.total)||0);if(opts.pageSize!==undefined)pageSize=Math.max(1,Number(opts.pageSize)||10);if(opts.page!==undefined)page=Math.max(1,Number(opts.page)||1);render();},getState(){return{page,pageSize,total,totalPages:pages()};},destroy(){document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);root.replaceChildren();root.classList.remove('new-ui-pagination');delete root.__newUIPagination;}};
+    root.__newUIPagination=api;render();return api;
+  };
+})();
