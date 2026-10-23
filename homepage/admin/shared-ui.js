@@ -3756,6 +3756,10 @@ function setupHeaderSearch() {
 
 const customSiteEl = document.getElementById("headerSiteCustom");
 let customSiteDropdown = null;
+   const customMobileSiteEl =
+  document.getElementById("headerSiteCustomMobile");
+
+let customMobileSiteDropdown = null;
 
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
@@ -3773,6 +3777,28 @@ if (customSiteEl && window.NewUI?.chips) {
       updateInput();
     }
   });
+}
+
+/* MOBILE SELECT SITE - CUSTOM CHIPS */
+if (customMobileSiteEl && window.NewUI?.chips) {
+  customMobileSiteDropdown = NewUI.chips(
+    customMobileSiteEl,
+    {
+      placeholder: "🏢 🔍 Search",
+      options: [],
+      value: [],
+      onChange(values) {
+        if (!ready) return;
+
+        selectedIds = values.filter(id =>
+          availableSites.some(site => site.id === id)
+        );
+
+        saveSelection();
+        updateInput();
+      }
+    }
+  );
 }
 
   form?.addEventListener("submit", e => e.preventDefault());
@@ -3818,7 +3844,7 @@ function updateInput() {
 
   // Sync pilihan ke custom NewUI.
   customSiteDropdown?.setValue(selectedIds, false);
-
+  customMobileSiteDropdown?.setValue(selectedIds, false);
   // Kekalkan status pilihan untuk fungsi asal.
   wrap.classList.toggle(
     "has-selected",
@@ -3983,7 +4009,12 @@ customSiteDropdown?.setOptions(
   }))
 );
 
-
+customMobileSiteDropdown?.setOptions(
+  availableSites.map(site => ({
+    value: site.id,
+    label: site.name
+  }))
+);
       let stored = [];
       try {
         stored = JSON.parse(
