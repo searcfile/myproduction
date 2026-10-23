@@ -1306,9 +1306,49 @@
 }
 
 </style>
+
+<style>
+.manage-main-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:0 12px}
+.manage-main-tab{border:1px solid #424242;background:#1f1f1f;color:inherit;border-radius:8px;padding:10px 18px;cursor:pointer}
+.manage-main-tab.active{background:#1668dc;border-color:#1668dc;color:#fff}
+.manage-pane[hidden]{display:none!important}
+.site-manager{padding:0 12px 24px}
+.site-manager .auth-top-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.site-manager .auth-top-toolbar input{width:min(100%,400px);height:34px}
+.site-manager .site-create{margin-left:auto}
+.site-manager .auth-table{min-width:700px}
+.site-manager .site-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.site-manager .site-stat-grid .card{padding:16px;border:1px solid #383838;border-radius:12px}
+.site-manager .site-stat-grid strong{display:block;font-size:26px;margin-top:8px}
+.site-manager .site-stat-grid small{color:#9aaac0}
+.site-manager .site-table-card{border:1px solid #383838;border-radius:12px;overflow:hidden;background:#1f1f1f}
+.site-manager .site-toolbar{padding:12px}
+.site-manager .site-status{padding:12px;color:#9aaac0;font-size:12px}
+.site-manager .site-badge{padding:5px 9px;border-radius:20px;background:rgba(29,194,143,.12);color:#49ddb0}
+.site-manager .site-badge.off{background:rgba(234,92,111,.12);color:#ff8a9b}
+.site-manager .site-pagination{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border-top:1px solid #383838}
+.site-manager .site-pagination button{padding:6px 10px}
+.site-manager .site-pagination select{width:100px}
+.site-manager .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.site-manager .site-form label{display:block;font-size:12px;margin-bottom:7px}
+.site-manager .site-form input{width:100%;height:34px}
+.site-form-modal{width:100%}
+.site-form-modal .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.site-form-modal .site-field{min-width:0}
+.site-form-modal label{display:block;font-size:12px;margin-bottom:7px}
+.site-form-modal input{width:100%;height:34px}
+.site-form-modal .site-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+.site-form-modal .site-hint{font-size:11px;color:#9aaac0;margin-top:6px}
+@media(max-width:650px){.site-manager .site-stat-grid{grid-template-columns:1fr 1fr}.site-manager .site-stat-grid .card:last-child{grid-column:1/-1}.site-form-modal .site-form{grid-template-columns:1fr}.site-manager .site-create{margin-left:0}}
+</style>
 </head>
 <body>
 <main class="workspace auth-workspace">
+<nav class="manage-main-tabs" aria-label="Management sections">
+<button type="button" class="manage-main-tab active" data-manage-tab="users">Admin Users</button>
+<button type="button" class="manage-main-tab" data-manage-tab="sites">Site Management</button>
+</nav>
+<div id="manageUsersPane" class="manage-pane">
 <!-- AUTH USERS - TOOLBAR CARD -->
 <div class="auth-toolbar-card">
 
@@ -1450,6 +1490,31 @@
       <span>Page</span>
     </div>
   </div>
+</section>
+</div>
+<section id="manageSitesPane" class="manage-pane site-manager" hidden>
+ <div class="site-stat-grid">
+  <div class="card"><small>Total sites</small><strong id="smTotal">—</strong></div>
+  <div class="card"><small>Active sites</small><strong id="smActive">—</strong></div>
+  <div class="card"><small>Inactive sites</small><strong id="smInactive">—</strong></div>
+ </div>
+ <div class="site-table-card">
+  <div class="site-toolbar auth-top-toolbar">
+   <input id="smSearch" type="search" placeholder="Search site name or ID" aria-label="Search sites">
+   <button type="button" id="smRefresh" class="auth-mini-btn">↻ Refresh</button>
+   <button type="button" id="smCreate" class="btn-primary-new site-create" disabled>+ Add Site</button>
+  </div>
+  <div class="auth-tablewrap"><table class="auth-table">
+   <thead><tr><th>SITE NAME</th><th>SITE ID</th><th>WALLET GROUP</th><th>STATUS</th><th>ACTION</th></tr></thead>
+   <tbody id="smRows"><tr><td colspan="5" class="auth-empty-cell">Open Site Management to load sites.</td></tr></tbody>
+  </table></div>
+  <div class="site-pagination"><span id="smPageInfo"></span>
+   <button id="smPrev" class="auth-mini-btn" type="button">Previous</button>
+   <button id="smNext" class="auth-mini-btn" type="button">Next</button>
+   <select id="smPageSize" aria-label="Sites per page"><option value="10">10 / page</option><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select>
+  </div>
+  <div class="site-status" id="smStatus" role="status"></div>
+ </div>
 </section>
 </main>
 
@@ -2549,6 +2614,124 @@ if(window.NewUI?.syncSearch){
     status('Authorization error: ' + e.message, true);
     toast('Authorization error: ' + e.message, 'error');
   }
+})();
+</script>
+
+<script>
+/* Site Management: isolated integration; reuses users.html api(), auth and NewUI */
+(function(){
+  'use strict';
+  const el=id=>document.getElementById(id);
+  let records=[], editingId=null, currentPage=1, pageSize=10, loaded=false, busy=false, siteModal=null;
+  const paneUsers=el('manageUsersPane'), paneSites=el('manageSitesPane');
+  const tabs=document.querySelectorAll('[data-manage-tab]');
+  function setStatus(message){el('smStatus').textContent=message;}
+  function notify(message,type='success'){
+    if(window.NewUI?.showToast)NewUI.showToast(message,type);
+    else if(type==='error')console.error(message);
+  }
+  function switchTab(which){
+    const showSites=which==='sites';
+    paneSites.hidden=!showSites;paneUsers.hidden=showSites;
+    tabs.forEach(t=>{const active=t.dataset.manageTab===which;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));});
+    if(showSites&&!loaded&&typeof ready!=='undefined'&&ready)loadSites();
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
+  function normalize(data){
+    const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);
+    return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}));
+  }
+  function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td);return td;}
+  function render(){
+    const query=el('smSearch').value.trim().toLowerCase();
+    const matches=records.filter(x=>String(x.id||'').toLowerCase().includes(query)||String(x.name||'').toLowerCase().includes(query));
+    const maxPage=Math.max(1,Math.ceil(matches.length/pageSize));
+    currentPage=Math.min(currentPage,maxPage);
+    const tbody=el('smRows');tbody.replaceChildren();
+    const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);
+    if(!shown.length){
+      const tr=document.createElement('tr'),td=makeCell(tr,'No matching sites');
+      td.colSpan=5;td.className='auth-empty-cell';tbody.append(tr);
+    }
+    for(const site of shown){
+      const tr=document.createElement('tr');
+      makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');
+      const td=makeCell(tr,'');td.textContent='';
+      const tag=document.createElement('span');tag.className='site-badge'+(site.active===true?'':' off');
+      tag.textContent=site.active===true?'Active':'Inactive';td.append(tag);
+      const actions=makeCell(tr,'');actions.textContent='';
+      const editBtn=document.createElement('button');editBtn.type='button';editBtn.className='auth-mini-btn';
+      editBtn.textContent='Edit';editBtn.addEventListener('click',()=>openEditor(site));actions.append(editBtn);
+      tbody.append(tr);
+    }
+    el('smTotal').textContent=records.length;
+    el('smActive').textContent=records.filter(x=>x.active===true).length;
+    el('smInactive').textContent=records.filter(x=>x.active!==true).length;
+    el('smPageInfo').textContent=matches.length?`${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,matches.length)} of ${matches.length}`:'0 sites';
+    el('smPrev').disabled=currentPage<=1;el('smNext').disabled=currentPage>=maxPage;
+  }
+  async function loadSites(){
+    if(busy)return;
+    busy=true;el('smCreate').disabled=true;setStatus('Loading sites…');
+    try{
+      records=normalize(await api('/api/sites'));loaded=true;render();
+      el('smCreate').disabled=false;setStatus(`Loaded ${records.length} sites.`);
+    }catch(error){
+      loaded=false;setStatus('Cannot load sites: '+error.message);
+      notify('Cannot load sites: '+error.message,'error');
+    }finally{busy=false;}
+  }
+  function openEditor(site=null){
+    if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return;}
+    editingId=site?.id||null;
+    const root=document.createElement('div');root.className='site-form-modal';
+    root.innerHTML=`<form id="smForm" class="site-form">
+      <div class="site-field"><label for="smName">Site Name</label><input id="smName" required maxlength="100" placeholder="e.g. 5G88"></div>
+      <div class="site-field"><label for="smId">Site ID</label><input id="smId" required maxlength="48" pattern="[a-z0-9_-]+" placeholder="e.g. 5g88"><div class="site-hint">Site ID cannot be changed later.</div></div>
+      <div class="site-field"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" maxlength="60" placeholder="e.g. group-a"></div>
+      <div class="site-field"><label for="smEnabled">Status</label><select id="smEnabled" data-shared-dropdown data-placeholder="Status"><option value="true">Active</option><option value="false">Inactive</option></select></div>
+      <div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div>
+    </form>`;
+    root.querySelector('#smName').value=site?.name||'';
+    root.querySelector('#smId').value=site?.id||'';
+    root.querySelector('#smId').disabled=!!site;
+    root.querySelector('#smWallet').value=site?.walletGroupId||'';
+    root.querySelector('#smEnabled').value=String(site?.active!==false);
+    siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null;}});
+    NewUI.init?.(root);
+    const statusSelect=root.querySelector('#smEnabled');
+    statusSelect._sharedDropdown?.refresh?.();
+    root.querySelector('#smCancel').onclick=()=>siteModal?.close();
+    root.querySelector('#smForm').onsubmit=async event=>{
+      event.preventDefault();
+      const save=root.querySelector('#smSave');if(save.disabled)return;
+      const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();
+      if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return;}
+      const payload={name:root.querySelector('#smName').value.trim(),
+        walletGroupId:root.querySelector('#smWallet').value.trim()||null,
+        active:statusSelect.value==='true'};
+      if(!payload.name){notify('Site name required','error');return;}
+      save.disabled=true;
+      try{
+        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});
+        if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});
+        else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});
+        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});
+        siteModal?.close();notify('Site saved successfully.');
+        await loadSites();
+      }catch(error){notify('Save failed: '+error.message,'error');}
+      finally{
+        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});
+        save.disabled=false;
+      }
+    };
+  }
+  el('smSearch').addEventListener('input',()=>{currentPage=1;render();});
+  el('smRefresh').addEventListener('click',loadSites);
+  el('smCreate').addEventListener('click',()=>openEditor());
+  el('smPrev').addEventListener('click',()=>{currentPage--;render();});
+  el('smNext').addEventListener('click',()=>{currentPage++;render();});
+  el('smPageSize').addEventListener('change',e=>{pageSize=Number(e.target.value)||10;currentPage=1;render();});
 })();
 </script>
 </body></html>
