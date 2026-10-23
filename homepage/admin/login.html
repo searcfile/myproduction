@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="stylesheet" href="./new-ui.css">
   <title>Back Office Editor 5G88</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta property="og:site_name" content="5G88">
@@ -1173,6 +1174,96 @@ body.light-theme .login-security-card {
     font-size: 11px;
   }
 }
+  /* ==========================================
+   LOGIN + 2FA INVALID INPUT
+========================================== */
+
+.backoffice-auth .input.invalid,
+.backoffice-auth .input.invalid:hover,
+.backoffice-auth .input.invalid:focus,
+.backoffice-auth .input.invalid:-webkit-autofill {
+  border-color: #ff4d4f !important;
+}
+
+.backoffice-auth .input.invalid:focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, .12) !important;
+}
+
+.backoffice-auth .otp-input.invalid,
+.backoffice-auth .otp-input.invalid:hover,
+.backoffice-auth .otp-input.invalid:focus {
+  border-color: #ff4d4f !important;
+  box-shadow: none !important;
+}
+
+/* Ruang ikon X di sebelah kanan */
+.backoffice-auth .field-user .input.invalid {
+  padding-right: 38px !important;
+}
+
+.backoffice-auth .field-pass .input.invalid {
+  padding-right: 72px !important;
+}
+
+/* Ikon error SVG */
+.login-error-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: #ff4d4f;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.login-error-icon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.field-pass .login-error-icon {
+  right: 38px;
+}
+
+.field:has(.input.invalid) > .login-error-icon {
+  display: flex;
+}
+
+/* Error message */
+.backoffice-auth .login-error {
+  color: #ff4d4f;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.backoffice-auth .group:has(.login-error[style*="block"]) {
+  margin-bottom: 30px;
+}
+
+/* 2FA error di bawah keenam-enam kotak */
+.backoffice-auth #twofaErr {
+  color: #ff4d4f;
+  bottom: -21px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .backoffice-auth .otp-wrap {
+    gap: 7px;
+  }
+
+  .backoffice-auth .otp-input {
+    min-width: 0;
+    padding: 4px;
+  }
+}
 </style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
@@ -1466,6 +1557,11 @@ body.light-theme .login-security-card {
                placeholder="Username"
                required>
       </div>
+      <span class="login-error-icon" aria-hidden="true">
+  <svg viewBox="64 64 896 896">
+    <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm176.5 582.2a8 8 0 010 11.3l-31 31a8 8 0 01-11.3 0L512 554.3 377.8 688.5a8 8 0 01-11.3 0l-31-31a8 8 0 010-11.3L469.7 512 335.5 377.8a8 8 0 010-11.3l31-31a8 8 0 0111.3 0L512 469.7l134.2-134.2a8 8 0 0111.3 0l31 31a8 8 0 010 11.3L554.3 512l134.2 134.2z"/>
+  </svg>
+</span>
       <div id="usernameErr" class="login-error"></div>
     </div>
 <div class="group password-wrap">
@@ -1502,8 +1598,15 @@ body.light-theme .login-security-card {
   </svg>
 
 </button>
-  </div>
-  <div id="passwordErr" class="login-error"></div>
+
+<span class="login-error-icon" aria-hidden="true">
+  <svg viewBox="64 64 896 896">
+    <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm176.5 582.2a8 8 0 010 11.3l-31 31a8 8 0 01-11.3 0L512 554.3 377.8 688.5a8 8 0 01-11.3 0l-31-31a8 8 0 010-11.3L469.7 512 335.5 377.8a8 8 0 010-11.3l31-31a8 8 0 0111.3 0L512 469.7l134.2-134.2a8 8 0 0111.3 0l31 31a8 8 0 010 11.3L554.3 512l134.2 134.2z"/>
+  </svg>
+</span>
+
+</div>
+<div id="passwordErr" class="login-error"></div>
 </div>
 
   <div class="turnstile-wrap">
@@ -1643,6 +1746,7 @@ body.light-theme .login-security-card {
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="../firebase.js"></script>
+<script src="./new-ui.js"></script>
 <script type="module">
   let FP_PROMISE = null;
 
@@ -2295,55 +2399,86 @@ async function sha256Hex(text){
   const buf = await crypto.subtle.digest('SHA-256', enc);
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
 }
-function clearLoginErrors(){
-  const username = document.getElementById('username');
-  const password = document.getElementById('password');
-  const usernameErr = document.getElementById('usernameErr');
-  const passwordErr = document.getElementById('passwordErr');
+/* ==========================================
+   LOGIN + 2FA ERROR HANDLING
+========================================== */
 
-  username?.classList.remove('invalid');
-  password?.classList.remove('invalid');
-
-  if (usernameErr){
-    usernameErr.textContent = '';
-    usernameErr.style.display = 'none';
+function loginErrorToast(message) {
+  if (typeof window.showToast === "function") {
+    window.showToast(message, "error");
   }
+}
 
-  if (passwordErr){
-    passwordErr.textContent = '';
-    passwordErr.style.display = 'none';
-  }
+function clearLoginErrors() {
+  ["username", "password"].forEach(id => {
+    const input = document.getElementById(id);
+    const err = document.getElementById(id + "Err");
+
+    input?.classList.remove("invalid");
+    input?.removeAttribute("aria-invalid");
+
+    if (err) {
+      err.textContent = "";
+      err.style.display = "none";
+    }
+  });
+
   clearTwofaError();
 }
 
-function showLoginError(type, message){
+function showLoginError(type, message, toast = true) {
   const input = document.getElementById(type);
-  const err = document.getElementById(type + 'Err');
+  const err = document.getElementById(type + "Err");
 
-  input?.classList.add('invalid');
+  if (input) {
+    input.classList.add("invalid");
+    input.setAttribute("aria-invalid", "true");
+  }
 
-  if (err){
+  if (err) {
     err.textContent = message;
-    err.style.display = 'block';
+    err.style.display = "block";
+  }
+
+  if (toast) {
+    loginErrorToast(message);
   }
 }
-function showTwofaError(message){
-  const err = document.getElementById('twofaErr');
-  document.querySelectorAll('.otp-input').forEach(i => i.classList.add('invalid'));
 
-  if (err){
-    err.textContent = message;
-    err.style.display = 'block';
-  }
+/* Username + Password sama-sama merah */
+function showCredentialError(message) {
+  showLoginError("username", "", false);
+  showLoginError("password", message, false);
+  loginErrorToast(message);
 }
 
-function clearTwofaError(){
-  const err = document.getElementById('twofaErr');
-  document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('invalid'));
+function showTwofaError(message) {
+  const err = document.getElementById("twofaErr");
 
-  if (err){
-    err.textContent = '';
-    err.style.display = 'none';
+  document.querySelectorAll(".otp-input").forEach(input => {
+    input.classList.add("invalid");
+    input.setAttribute("aria-invalid", "true");
+  });
+
+  if (err) {
+    err.textContent = message;
+    err.style.display = "block";
+  }
+
+  loginErrorToast(message);
+}
+
+function clearTwofaError() {
+  const err = document.getElementById("twofaErr");
+
+  document.querySelectorAll(".otp-input").forEach(input => {
+    input.classList.remove("invalid");
+    input.removeAttribute("aria-invalid");
+  });
+
+  if (err) {
+    err.textContent = "";
+    err.style.display = "none";
   }
 }
 
@@ -2530,8 +2665,11 @@ function setupTwofaInputs(){
   document.getElementById('twofaVerify')?.addEventListener('click', verifyTwofa);
   document.getElementById('twofaChange')?.addEventListener('click', closeTwofaPage);
 }
-document.getElementById('username')?.addEventListener('input', clearLoginErrors);
-document.getElementById('password')?.addEventListener('input', clearLoginErrors);
+["username", "password"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", () => {
+    clearLoginErrors();
+  });
+});
 // --- LOGIN VIA REALTIME DB ---
 
 async function loginWithUsername() {
@@ -2582,12 +2720,16 @@ async function loginWithUsername() {
 
     passwordInput.value = "";
 
-  } catch (error) {
+} catch (error) {
     console.error("Login error:", error);
-    showLoginError(
-      "password",
-      error.message || "Login failed. Please try again."
-    );
+
+    const message = error.message || "Login failed. Please try again.";
+
+    if (/invalid credentials|incorrect|wrong password|invalid username|invalid password/i.test(message)) {
+      showCredentialError("Username/Password is incorrect.");
+    } else {
+      showLoginError("password", message);
+    }
   } finally {
     setLoading(false, "userpass");
   }
