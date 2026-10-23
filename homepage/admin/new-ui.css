@@ -2353,10 +2353,8 @@ html.new-ui-modal-open {
   border-radius: 999px;
 }
 
-/* ==========================================
-   HEADER SELECT SITE - FIX PLACEHOLDER
-   ========================================== */
 
+/* HEADER SELECT SITE - LEFT ALIGN */
 @media (min-width: 816px) {
 
   #headerSiteCustom .shared-chip-dropdown-trigger {
@@ -2364,32 +2362,36 @@ html.new-ui-modal-open {
     align-items: center !important;
     justify-content: flex-start !important;
     flex-wrap: nowrap !important;
-
-    width: 100% !important;
-    height: 32px !important;
-
     padding: 1px 25px 1px 5px !important;
-  }
-
-  #headerSiteCustom .shared-chip-dropdown-placeholder {
-    flex: 1 1 auto !important;
-    width: auto !important;
-    min-width: 0 !important;
-
-    padding-left: 6px !important;
-    margin: 0 !important;
-
-    text-align: left !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-
-    line-height: 20px !important;
+    height: 32px !important;
   }
 
   #headerSiteCustom .shared-chip-dropdown-values {
-    flex-wrap: nowrap !important;
+    flex: 0 1 auto !important;
+    width: auto !important;
     min-width: 0 !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
   }
+
+  #headerSiteCustom .shared-chip-dropdown-placeholder {
+    display: block;
+    flex: 0 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-left: 5px !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    line-height: 20px !important;
+  }
+
+  #headerSiteCustom .shared-chip-dropdown-values:not(:empty)
+    + .shared-chip-dropdown-placeholder {
+    display: none !important;
+  }
+}
+
 
 }
