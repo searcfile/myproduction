@@ -33,11 +33,6 @@
   name: "Auth Users",
   group: "main"
 },
-{
-  file: "site-management.html",
-  name: "Site Management",
-  group: "main"
-},
 
     {
       file: "livechat.html",
