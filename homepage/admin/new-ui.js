@@ -1698,20 +1698,27 @@ if (isHeaderSite) {
     });
   };
 
-  headerSiteSearch.addEventListener("focus", () => {
-    open();
-    filterHeaderSites();
-  });
 
-  headerSiteSearch.addEventListener("click", event => {
-    event.stopPropagation();
-    open();
-  });
+headerSiteSearch.addEventListener("focus", () => {
+  // Focus sahaja, jangan buka dropdown automatik.
+});
 
-  headerSiteSearch.addEventListener("input", () => {
-    open();
+headerSiteSearch.addEventListener("click", event => {
+  event.stopPropagation();
+
+  // Klik pertama buka, klik kedua tutup.
+  toggle();
+
+  if (container.classList.contains("open")) {
     filterHeaderSites();
-  });
+  }
+});
+
+headerSiteSearch.addEventListener("input", () => {
+  open();
+  filterHeaderSites();
+});
+
 
   headerSiteSearch.addEventListener("keydown", event => {
     if (event.key === "Escape") {
@@ -2007,30 +2014,50 @@ if (
      TRIGGER CLICK
   ===================================================== */
 
+
 trigger.addEventListener("click", event => {
-  if (
-    event.target.closest(
-      ".shared-chip-dropdown-chip-remove"
-    )
-  ) return;
+  const target = event.target;
 
   if (
-    event.target.closest(
-      ".shared-chip-dropdown-icon-btn"
-    )
-  ) return;
+    target.closest(".shared-chip-dropdown-chip-remove") ||
+    target.closest(".shared-chip-dropdown-icon-btn") ||
+    target.closest(".shared-chip-dropdown-overflow")
+  ) {
+    return;
+  }
 
-  if (
-    event.target.closest(
-      ".shared-chip-dropdown-overflow"
-    )
-  ) return;
+  // Input search mempunyai handler toggle sendiri.
+  if (target.closest(".header-site-search-input")) {
+    return;
+  }
 
   event.stopPropagation();
 
-  // Klik pertama buka, klik kedua tutup.
+  if (isHeaderSite && headerSiteSearch) {
+    headerSiteSearch.focus();
+  }
+
   toggle();
+
+  if (
+    isHeaderSite &&
+    container.classList.contains("open")
+  ) {
+    const keyword = headerSiteSearch.value
+      .trim()
+      .toLowerCase();
+
+    panel.querySelectorAll(
+      ".shared-chip-dropdown-option"
+    ).forEach(option => {
+      option.hidden = !option.textContent
+        .trim()
+        .toLowerCase()
+        .includes(keyword);
+    });
+  }
 });
+
 
   /* =====================================================
      OPTION CLICK
