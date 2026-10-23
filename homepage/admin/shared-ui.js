@@ -1090,7 +1090,11 @@ function createShell() {
   id="headerTabSearchMobilePanel"
   class="header-tab-search-mobile-panel"
   hidden>
-
+<div
+  id="headerSiteCustomMobile"
+  class="header-site-custom admin-site-selector"
+  aria-label="Select Site Mobile">
+</div>
   <div class="header-tab-search-mobile-input-wrap">
     <input
       id="headerTabSearchMobileInput"
