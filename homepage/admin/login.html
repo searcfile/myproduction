@@ -1100,7 +1100,6 @@ body::before{left:20%}body::after{right:28%}
 .backoffice-auth .login-title{grid-column:2;grid-row:1;margin:0;font-size:23px;line-height:1.2}
 .backoffice-auth .login-sub{grid-column:2;grid-row:2;margin:5px 0 0;font-size:12px;line-height:1.4}
 .backoffice-auth .login-content{padding:30px 32px 32px}
-.backoffice-auth .login-content::before{content:"⚡  Operator console     •     2FA protected";display:block;margin-bottom:24px;padding:13px 12px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.065);color:#bac8dd;text-align:center;font-size:12px;font-weight:600}
 .backoffice-auth .input{height:44px;border-radius:9px;background:#141414;border-color:#424242}
 .backoffice-auth .group{margin-bottom:19px}
 .backoffice-auth .label{font-size:13px;font-weight:650}
@@ -1112,12 +1111,68 @@ body::before{left:20%}body::after{right:28%}
 body.light-theme::before,body.light-theme::after{display:none}
 body.light-theme .backoffice-layout .command-panel{color:#f7fbff}
 body.light-theme .backoffice-auth .login-box,body.light-theme .backoffice-auth .twofa-box{background:#fff}
-body.light-theme .backoffice-auth .login-content::before{color:#536780;background:#f5f8fc;border-color:#dce5f0}
 body.light-theme .backoffice-auth .input{background:#fff;border-color:#d9d9d9}
 @media(max-width:900px){body{padding:30px 18px}.backoffice-layout{grid-template-columns:1fr;max-width:none;width:100%;min-height:calc(100svh - 60px)}.backoffice-layout .command-panel{display:none}}
 @media(max-width:480px){body{padding:16px 12px}.backoffice-layout{min-height:calc(100svh - 32px)}.backoffice-auth .login-header{padding:22px 20px;grid-template-columns:46px 1fr;gap:0 12px}.backoffice-auth .login-icon{width:46px;height:46px}.backoffice-auth .login-title{font-size:21px}.backoffice-auth .login-content{padding:24px 20px}.backoffice-auth .login-content::before{font-size:11px}.backoffice-auth .login-box,.backoffice-auth .twofa-box{border-radius:14px}}
 @media(prefers-reduced-motion:reduce){.backoffice-layout *, .backoffice-layout *::before,.backoffice-layout *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* =========================================
+   LOGIN SECURITY CARDS
+   ========================================= */
 
+.login-security-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.login-security-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 62px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,.075);
+  color: #bac8dd;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.login-security-card svg {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  flex-shrink: 0;
+  fill: #f0b429;
+  display: block;
+}
+
+.login-security-card span {
+  min-width: 0;
+}
+
+body.light-theme .login-security-card {
+  background: #f5f8fc;
+  border-color: #dce5f0;
+  color: #536780;
+}
+
+@media (max-width: 360px) {
+  .login-security-cards {
+    gap: 8px;
+  }
+
+  .login-security-card {
+    padding: 10px 8px;
+    gap: 7px;
+    font-size: 11px;
+  }
+}
 </style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
@@ -1356,6 +1411,33 @@ body.light-theme .backoffice-auth .input{background:#fff;border-color:#d9d9d9}
   <p class="login-sub">Welcome back! Please sign in to continue.</p>
 </div>
 <div class="login-content">
+
+  <!-- SECURITY CARDS -->
+  <div class="login-security-cards">
+
+    <!-- 2FA PROTECTED -->
+    <div class="login-security-card">
+
+      <svg viewBox="0 0 1024 1024" aria-hidden="true">
+        <path d="M866.9 169.9L527.1 54.1C523 52.7 517.5 52 512 52s-11 .7-15.1 2.1L157.1 169.9c-8.3 2.8-15.1 12.4-15.1 21.2v482.4c0 8.8 5.7 20.4 12.6 25.9L499.3 968c3.5 2.7 8 4.1 12.6 4.1s9.2-1.4 12.6-4.1l344.7-268.6c6.9-5.4 12.6-17 12.6-25.9V191.1c.2-8.8-6.6-18.3-14.9-21.2zM810 654.3L512 886.5 214 654.3V226.7l298-101.6 298 101.6v427.6zm-405.8-201c-3-4.1-7.8-6.6-13-6.6H336c-6.5 0-10.3 7.4-6.5 12.7l126.4 174a16.1 16.1 0 0026 0l212.6-292.7c3.8-5.3 0-12.7-6.5-12.7h-55.2c-5.1 0-10 2.5-13 6.6L468.9 542.4l-64.7-89.1z"/>
+      </svg>
+
+      <span>2FA protected</span>
+
+    </div>
+
+    <!-- OPERATOR CONSOLE -->
+    <div class="login-security-card">
+
+      <svg viewBox="0 0 1024 1024" aria-hidden="true">
+        <path d="M848 359.3H627.7L825.8 109c4.1-5.3.4-13-6.3-13H436c-2.8 0-5.5 1.5-6.9 4L170 547.5c-3.1 5.3.7 12 6.9 12h174.4l-89.4 357.6c-1.9 7.8 7.5 13.3 13.3 7.7L853.5 373c5.2-4.9 1.7-13.7-5.5-13.7zM378.2 732.5l60.3-241H281.1l189.6-327.4h224.6L487 427.4h211L378.2 732.5z"/>
+      </svg>
+
+      <span>Operator console</span>
+
+    </div>
+
+  </div>
 
   <div class="label-row">
     <label class="label" for="username">Username</label>
