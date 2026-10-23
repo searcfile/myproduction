@@ -3455,9 +3455,9 @@ max-width: 170px;
   #headerSiteCustom .header-site-search-input {
     position: relative;
     z-index: 2;
-    flex: 1 1 48px !important;
-    width: 48px !important;
-    min-width: 36px !important;
+    flex: 1 1 0px !important;
+    width: 0 !important;
+    min-width: 0 !important;
     cursor: text;
   }
 }
