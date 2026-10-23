@@ -1514,9 +1514,21 @@
   <button type="button" id="smCreate" class="btn-primary-new site-create" disabled>+ Add Site</button>
  </div></div>
  <div class="stats auth-stats site-stat-grid">
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><small>Total sites</small><strong id="smTotal">—</strong><span class="stat-note">Registered sites</span></div>
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5L20 6"/></svg></span><small>Active sites</small><strong id="smActive">—</strong><span class="stat-note">Currently enabled</span></div>
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg></span><small>Inactive sites</small><strong id="smInactive">—</strong><span class="stat-note">Currently disabled</span></div>
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><small>Total sites</small><strong id="smTotal">
+  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+    <span></span><span></span><span></span><span></span>
+  </span>
+</strong><span class="stat-note">Registered sites</span></div>
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5L20 6"/></svg></span><small>Active sites</small><strong id="smActive">
+  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+    <span></span><span></span><span></span><span></span>
+  </span>
+</strong><span class="stat-note">Currently enabled</span></div>
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg></span><small>Inactive sites</small><strong id="smInactive">
+  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
+    <span></span><span></span><span></span><span></span>
+  </span>
+</strong><span class="stat-note">Currently disabled</span></div>
  </div>
  <section class="card auth-list site-table-card">
   <div class="auth-section-heading"><h2>Site accounts</h2></div>
