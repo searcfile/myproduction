@@ -2429,3 +2429,15 @@ html.new-ui-modal-open {
   display: none !important;
 }
 
+/* SELECT SITE - CLEAR ICON HOVER */
+#headerSiteCustom.has-value:hover
+.shared-chip-dropdown-icon-clear {
+  display: block !important;
+  fill: currentColor;
+}
+
+#headerSiteCustom.has-value:hover
+.shared-chip-dropdown-icon-btn {
+  cursor: pointer;
+}
+
