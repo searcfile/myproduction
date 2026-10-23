@@ -2644,11 +2644,59 @@ tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
 const filter=window.NewUI?.chips?.('#smStatusChips',{placeholder:'All Status',options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],value:[],onChange(values){selectedStatuses=Array.isArray(values)?values:filter.getValue();currentPage=1;render()}});
 function normalize(data){const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}))}
 function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td);return td}
-function loadingRow(message=dotLoading){const tbody=el('smRows');tbody.innerHTML='<tr><td colspan="5" class="auth-empty-cell"></td></tr>';tbody.firstElementChild.firstElementChild.innerHTML=message}
+
+function loadingRow(message = 'Please wait while fetching...') {
+  const tbody = el('smRows');
+  tbody.replaceChildren();
+
+  const tr = document.createElement('tr');
+  const td = document.createElement('td');
+
+  td.colSpan = 5;
+  td.className = 'auth-empty-cell';
+
+  if (typeof window.createLoadingState === 'function') {
+    td.innerHTML = window.createLoadingState(message, 'large');
+  } else {
+    td.innerHTML = dotLoading;
+  }
+
+  tr.appendChild(td);
+  tbody.appendChild(tr);
+}
 const icons={prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m13 6-6 6 6 6m6-12-6 6 6 6"/></svg>',forward:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 6 6 6-6 6m0-12 6 6-6 6"/></svg>'};
 function pagination(total){const footer=el('smPagination');footer.hidden=total===0;if(!total)return;const pages=Math.max(1,Math.ceil(total/pageSize));currentPage=Math.min(currentPage,pages);el('smPageInfo').textContent=`${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,total)} of ${total} items`;const holder=el('smPageNumbers');holder.replaceChildren();function button(label,target,active=false,kind='',disabled=false){const b=document.createElement('button');b.type='button';b.className='sm-page-btn '+kind+(active?' active':'');b.disabled=disabled;b.innerHTML=label;b.setAttribute('aria-label',kind==='sm-page-arrow'?(target<currentPage?'Previous page':'Next page'):'Page '+target);if(active)b.setAttribute('aria-current','page');b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,target));render()};holder.append(b)}function dots(back){const b=document.createElement('button');b.type='button';b.className='sm-page-btn sm-page-dots';b.innerHTML='<span class="sm-dots-text">•••</span><span class="sm-dots-icon">'+(back?icons.back:icons.forward)+'</span>';b.title=back?'Jump back 5 pages':'Jump forward 5 pages';b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,currentPage+(back?-5:5)));render()};holder.append(b)}button(icons.prev,currentPage-1,false,'sm-page-arrow',currentPage===1);const nums=new Set([1,pages]);for(let i=Math.max(1,currentPage-2);i<=Math.min(pages,currentPage+2);i++)nums.add(i);let last=0;for(const n of [...nums].sort((a,b)=>a-b)){if(last&&n-last>1){if(n-last===2)button(String(last+1),last+1);else dots(n<=currentPage)}button(String(n),n,n===currentPage);last=n}button(icons.next,currentPage+1,false,'sm-page-arrow',currentPage===pages);el('smPageJump').max=String(pages)}
-function render(){if(!loaded)return;const query=el('smSearch').value.trim().toLowerCase();const matches=records.filter(x=>(String(x.id||'').toLowerCase().includes(query)||String(x.name||'').toLowerCase().includes(query))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive')));const pages=Math.max(1,Math.ceil(matches.length/pageSize));currentPage=Math.max(1,Math.min(currentPage,pages));const tbody=el('smRows');tbody.replaceChildren();const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);if(!shown.length){const tr=document.createElement('tr'),td=makeCell(tr,'No matching sites');td.colSpan=5;td.className='auth-empty-cell';tbody.append(tr)}for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);const actions=makeCell(tr,'');actions.textContent='';const edit=document.createElement('button');edit.type='button';edit.className='auth-mini-btn';edit.textContent='Edit';edit.onclick=()=>openEditor(site);actions.append(edit);tbody.append(tr)}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
-async function loadSites(){if(busy)return;busy=true;el('smCreate').disabled=true;el('smTotal').innerHTML=el('smActive').innerHTML=el('smInactive').innerHTML='<span class="auth-loading-dots auth-stat-dots"><span></span><span></span><span></span><span></span></span>';loadingRow();el('smPagination').hidden=true;setStatus('');try{records=normalize(await api('/api/sites'));loaded=true;render();el('smCreate').disabled=false;setStatus('')}catch(error){loaded=false;el('smTotal').textContent=el('smActive').textContent=el('smInactive').textContent='—';loadingRow('<span>Cannot load sites. Please try again.</span>');setStatus('Cannot load sites: '+error.message,true);notify('Cannot load sites: '+error.message,'error')}finally{busy=false}}
+function render(){if(!loaded)return;const query=el('smSearch').value.trim().toLowerCase();const matches=records.filter(x=>(String(x.id||'').toLowerCase().includes(query)||String(x.name||'').toLowerCase().includes(query))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive')));const pages=Math.max(1,Math.ceil(matches.length/pageSize));currentPage=Math.max(1,Math.min(currentPage,pages));const tbody=el('smRows');tbody.replaceChildren();const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);
+if (!shown.length) {
+  const tr = document.createElement('tr');
+  const td = document.createElement('td');
+
+  td.colSpan = 5;
+  td.className = 'auth-empty-cell';
+
+  const message = records.length === 0 && !query && !selectedStatuses.length
+    ? 'No sites available'
+    : 'No matching sites';
+
+  if (typeof window.createEmptyState === 'function') {
+    td.innerHTML = window.createEmptyState(
+      message,
+      'large',
+      'center'
+    );
+  } else {
+    td.textContent = message;
+  }
+
+  tr.appendChild(td);
+  tbody.appendChild(tr);
+}
+for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);const actions=makeCell(tr,'');actions.textContent='';const edit=document.createElement('button');edit.type='button';edit.className='auth-mini-btn';edit.textContent='Edit';edit.onclick=()=>openEditor(site);actions.append(edit);tbody.append(tr)}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
+async function loadSites(){if(busy)return;busy=true;el('smCreate').disabled=true;el('smTotal').innerHTML=el('smActive').innerHTML=el('smInactive').innerHTML='<span class="auth-loading-dots auth-stat-dots"><span></span><span></span><span></span><span></span></span>';loadingRow();el('smPagination').hidden=true;setStatus('');const loadingStarted = performance.now();try{records=normalize(await api('/api/sites'));const remaining = 700 - (performance.now() - loadingStarted);
+if (remaining > 0) {
+  await new Promise(resolve => setTimeout(resolve, remaining));
+}
+                                                                                                                                                                                                                                                                                                                                                                                 loaded=true;render();el('smCreate').disabled=false;setStatus('')}catch(error){loaded=false;el('smTotal').textContent=el('smActive').textContent=el('smInactive').textContent='—';loadingRow('<span>Cannot load sites. Please try again.</span>');setStatus('Cannot load sites: '+error.message,true);notify('Cannot load sites: '+error.message,'error')}finally{busy=false}}
 function openEditor(site=null){if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return}const editingId=site?.id||null;const root=document.createElement('div');root.className='site-form-modal';root.innerHTML=`<form id="smForm" class="site-form"><div class="site-field"><label for="smName">Site Name</label><input id="smName" data-new-ui-input required maxlength="100" placeholder="e.g. 5G88"></div><div class="site-field"><label for="smId">Site ID</label><input id="smId" data-new-ui-input required maxlength="48" pattern="[a-z0-9_-]+" placeholder="e.g. 5g88"><div class="site-hint">Site ID cannot be changed later.</div></div><div class="site-field full"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" data-new-ui-input maxlength="60" placeholder="e.g. group-a"></div><div class="site-field full"><label class="site-switch-row"><span><strong>Active site</strong><small>Allow this site to remain enabled</small></span><span class="shared-active-switch"><input id="smEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div><div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div></form>`;root.querySelector('#smName').value=site?.name||'';root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}const payload={name:root.querySelector('#smName').value.trim(),walletGroupId:root.querySelector('#smWallet').value.trim()||null,active:root.querySelector('#smEnabled').checked};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();notify('Site saved successfully.');await loadSites()}catch(error){notify('Save failed: '+error.message,'error')}finally{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});save.disabled=false}}}
 
 const search = el('smSearch');
