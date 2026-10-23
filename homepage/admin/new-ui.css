@@ -2362,7 +2362,7 @@ html.new-ui-modal-open {
     align-items: center !important;
     justify-content: flex-start !important;
     flex-wrap: nowrap !important;
-    padding: 1px 25px 1px 5px !important;
+    padding: 1px 22px 1px 3px !important;
     height: 32px !important;
   }
 
