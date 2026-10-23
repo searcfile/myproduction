@@ -1205,39 +1205,62 @@ body.light-theme .login-security-card {
   padding-right: 72px !important;
 }
 
+
 /* ==========================================
-   LOGIN CLEAR ERROR BUTTON
+   LOGIN CLEAR ERROR BUTTON - FIXED
 ========================================== */
 
 .backoffice-auth .field-user,
 .backoffice-auth .field-pass {
   position: relative;
+  width: 100%;
+  min-width: 0;
 }
 
-/* X di hujung kanan */
+/* Username */
+.backoffice-auth .field-user .input.invalid {
+  padding-right: 42px !important;
+}
+
+/* Password normal: ruang untuk eye sahaja */
+.backoffice-auth .field-pass .input {
+  padding-right: 42px !important;
+}
+
+/* Password error: ruang untuk eye + clear */
+.backoffice-auth .field-pass .input.invalid {
+  padding-right: 76px !important;
+}
+
+/* Clear button */
 .backoffice-auth .login-error-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: absolute !important;
+  top: 50% !important;
+  right: 12px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 16px;
 
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  margin: 0;
-
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #ff4d4f;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent !important;
+  color: #ff4d4f !important;
 
   cursor: pointer;
-  z-index: 20;
   line-height: 0;
+  z-index: 30 !important;
+  overflow: visible !important;
 }
 
 .backoffice-auth .login-error-icon[hidden] {
@@ -1245,45 +1268,64 @@ body.light-theme .login-security-card {
 }
 
 .backoffice-auth .login-error-icon svg {
-  width: 14px;
-  height: 14px;
-  display: block;
-  fill: currentColor;
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px;
+  min-height: 14px;
+  fill: currentColor !important;
+  overflow: visible !important;
   pointer-events: none;
 }
 
 .backoffice-auth .login-error-icon:hover {
-  color: #ff7875;
+  color: #ff7875 !important;
 }
 
 .backoffice-auth .login-error-icon:focus-visible {
-  outline: 2px solid #ff7875;
-  outline-offset: 4px;
-  border-radius: 50%;
+  outline: 2px solid #ff7875 !important;
+  outline-offset: 3px;
 }
 
-/* Username: X di kanan */
-.backoffice-auth .field-user .input.invalid {
-  padding-right: 38px !important;
-}
-
-/* Password: eye dahulu, X paling kanan */
+/* Eye normal: kanan */
 .backoffice-auth .field-pass .toggle-eye {
-  right: 38px !important;
-  z-index: 15 !important;
-}
-
-.backoffice-auth .field-pass .login-error-icon {
+  position: absolute !important;
+  top: 50% !important;
   right: 12px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 18px !important;
+  height: 18px !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 20 !important;
 }
 
-.backoffice-auth .field-pass .input {
-  padding-right: 72px !important;
+/* Eye bergeser hanya bila clear X muncul */
+.backoffice-auth .field-pass:has(
+  .login-error-icon:not([hidden])
+) .toggle-eye {
+  right: 40px !important;
 }
 
-/* Jangan hilangkan border merah semasa hover */
-.backoffice-auth .field:has(.toggle-eye:hover) .input.invalid,
-.backoffice-auth .group:has(.label:hover) .input.invalid {
+.backoffice-auth .field-pass .toggle-eye svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Border merah kekal semasa hover */
+.backoffice-auth .field:has(.toggle-eye:hover)
+.input.invalid,
+.backoffice-auth .group:has(.label:hover)
+.input.invalid {
   border-color: #ff4d4f !important;
 }
 
@@ -1294,15 +1336,18 @@ body.light-theme .login-security-card {
   line-height: 1.4;
 }
 
-.backoffice-auth .group:has(.login-error[style*="block"]) {
+.backoffice-auth .group:has(
+  .login-error[style*="block"]
+) {
   margin-bottom: 30px;
 }
 
-/* 2FA error di bawah keenam-enam kotak */
+/* 2FA error */
 .backoffice-auth #twofaErr {
   color: #ff4d4f;
   bottom: -21px;
 }
+
 
 /* Mobile */
 @media (max-width: 480px) {
@@ -2489,20 +2534,38 @@ function updateLoginClearButtons() {
   });
 }
 
+
 document.querySelectorAll("[data-clear-login]").forEach(button => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+
     const id = button.dataset.clearLogin;
     const input = document.getElementById(id);
 
     if (!input) return;
 
     input.value = "";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.focus();
+    input.classList.remove("invalid");
+    input.removeAttribute("aria-invalid");
 
+    const err = document.getElementById(id + "Err");
+
+    if (err) {
+      err.textContent = "";
+      err.style.display = "none";
+    }
+
+    button.hidden = true;
+
+    input.dispatchEvent(
+      new Event("input", { bubbles: true })
+    );
+
+    input.focus();
     updateLoginClearButtons();
   });
 });
+
 function clearLoginErrors() {
   ["username", "password"].forEach(id => {
     const input = document.getElementById(id);
