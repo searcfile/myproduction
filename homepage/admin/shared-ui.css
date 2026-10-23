@@ -3256,3 +3256,8 @@ max-width: 170px;
 .shared-chip-dropdown-option {
   text-transform: uppercase !important;
 }
+
+/* HEADER SELECT SITE - UPPERCASE CHIPS ONLY */
+#headerSiteCustom .shared-chip-dropdown-chip {
+  text-transform: uppercase !important;
+}
