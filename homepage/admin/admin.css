@@ -2360,6 +2360,7 @@ body.tab-dragging-active *{
     background:#ffffff1f;
     color:#fff;
     cursor:pointer;
+    margin-top:4px;
     transition: background-color .18s ease, color .18s ease;
   }
 .header-tab-search-mobile-btn:hover{
