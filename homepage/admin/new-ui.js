@@ -2007,35 +2007,30 @@ if (
      TRIGGER CLICK
   ===================================================== */
 
-
 trigger.addEventListener("click", event => {
   if (
     event.target.closest(
       ".shared-chip-dropdown-chip-remove"
     )
-  ) {
-    return;
-  }
+  ) return;
 
   if (
     event.target.closest(
       ".shared-chip-dropdown-icon-btn"
     )
-  ) {
-    return;
-  }
+  ) return;
 
-  if (isHeaderSite && headerSiteSearch) {
-    event.stopPropagation();
-    headerSiteSearch.focus();
-    open();
-    return;
-  }
+  if (
+    event.target.closest(
+      ".shared-chip-dropdown-overflow"
+    )
+  ) return;
 
+  event.stopPropagation();
+
+  // Klik pertama buka, klik kedua tutup.
   toggle();
 });
-
-
 
   /* =====================================================
      OPTION CLICK
@@ -2224,40 +2219,26 @@ overflowPopup.addEventListener(
      RIGHT ICON
   ===================================================== */
 
-  iconButton.addEventListener(
-    "click",
-    event => {
 
-      event.stopPropagation();
+iconButton.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
 
+  // Ada chips + hover = clear semua pilihan.
+  if (
+    selectedValues.size > 0 &&
+    container.matches(":hover")
+  ) {
+    selectedValues.clear();
+    render();
+    notifyChange();
+    close();
+    return;
+  }
 
-      /*
-        Closed + has chip + hover
-        = clear all.
-      */
-
-      if (
-        selectedValues.size &&
-        !container.classList.contains(
-          "open"
-        )
-      ) {
-
-        selectedValues.clear();
-
-        render();
-
-        notifyChange();
-
-        return;
-
-      }
-
-
-      toggle();
-
-    }
-  );
+  // Tiada chips = toggle dropdown.
+  toggle();
+});
 
 
   /* =====================================================
