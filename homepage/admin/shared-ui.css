@@ -3261,3 +3261,161 @@ max-width: 170px;
 #headerSiteCustom .shared-chip-dropdown-chip {
   text-transform: uppercase !important;
 }
+
+/* ==========================================
+   MOBILE SITE - ORIGINAL INPUT + CUSTOM CHIPS
+   ========================================== */
+
+@media (max-width:815px) {
+
+  #headerTabSearchMobilePanel
+  .header-tab-search-mobile-input-wrap {
+    position: relative;
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Input asal tidak ditukar */
+  #headerTabSearchMobileInput {
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Chips duduk dalam kotak input asal */
+  #mobileSiteSelectedChips {
+    position: absolute;
+    left: 8px;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px;
+
+    overflow: visible;
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  #mobileSiteSelectedChips[hidden] {
+    display: none !important;
+  }
+
+  .mobile-site-chip,
+  .mobile-site-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+
+    height: 23px;
+    max-width: 100%;
+    padding: 0 6px;
+
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 5px;
+
+    color: var(--text-soft);
+    font-size: 12px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .mobile-site-chip > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-site-chip button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  .mobile-site-more {
+    cursor: pointer;
+    text-transform: none;
+  }
+
+  /* Placeholder disembunyikan jika ada chips */
+  .mobile-site-has-chips
+  #headerTabSearchMobileInput::placeholder {
+    color: transparent !important;
+  }
+
+  /* Semasa menaip, tunjuk teks search */
+  .mobile-site-has-chips
+  #headerTabSearchMobileInput:not(:placeholder-shown) {
+    position: relative;
+    z-index: 3;
+  }
+
+  /* Dropdown custom sama gaya header */
+  #headerTabSearchList .shared-chip-dropdown-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-soft);
+    text-align: left;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  #headerTabSearchList .shared-chip-dropdown-option:hover {
+    background: var(--list-hover);
+  }
+
+  #headerTabSearchList
+  .shared-chip-dropdown-option-check {
+    visibility: hidden;
+  }
+
+  #headerTabSearchList
+  .shared-chip-dropdown-option.active
+  .shared-chip-dropdown-option-check {
+    visibility: visible;
+    color: #1677ff;
+  }
+
+  .mobile-site-more-popup {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    z-index: 1000000;
+    min-width: 150px;
+    max-width: 100%;
+    padding: 4px;
+    background: var(--backgrounddrop);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  .mobile-site-more-popup button {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    border: 0;
+    background: transparent;
+    color: var(--text-soft);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobile-site-more-popup button:hover {
+    background: var(--list-hover);
+  }
+}
