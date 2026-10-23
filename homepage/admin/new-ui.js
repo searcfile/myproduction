@@ -2247,25 +2247,38 @@ overflowPopup.addEventListener(
   ===================================================== */
 
 
+
 iconButton.addEventListener("click", event => {
   event.preventDefault();
   event.stopPropagation();
 
-  // Ada chips + hover = clear semua pilihan.
-  if (
+  const shouldClear =
     selectedValues.size > 0 &&
-    container.matches(":hover")
-  ) {
+    container.matches(":hover");
+
+  if (shouldClear) {
     selectedValues.clear();
+
+    if (headerSiteSearch) {
+      headerSiteSearch.value = "";
+    }
+
     render();
     notifyChange();
     close();
     return;
   }
 
-  // Tiada chips = toggle dropdown.
   toggle();
+
+  if (
+    headerSiteSearch &&
+    container.classList.contains("open")
+  ) {
+    headerSiteSearch.focus();
+  }
 });
+
 
 
   /* =====================================================
