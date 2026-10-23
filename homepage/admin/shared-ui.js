@@ -4325,19 +4325,60 @@ mobileClearIcon?.addEventListener("click", e => {
   mobileInputWrap.classList.remove("has-value");
 });
 
+
+/* MOBILE SELECT SITE - FOCUS & TOGGLE */
+
+// Focus sahaja tidak membuka dropdown.
 mobileInput.addEventListener("focus", () => {
+  mobileInputWrap.classList.add("is-focused");
   updateMobileChips();
-  renderOptions(mobileInput.value);
 });
 
+// Klik input atau kawasan chips:
+// pertama buka, kedua tutup.
+mobileInputWrap.addEventListener("click", e => {
+  // Jangan ganggu tombol X, +N dan SVG clear.
+  if (
+    e.target.closest("button") ||
+    e.target.closest(".mobile-icon-clear") ||
+    e.target.closest(".mobile-site-more-popup")
+  ) {
+    return;
+  }
+
+  e.stopPropagation();
+
+  const wasOpen = list.style.display === "block";
+
+  if (wasOpen) {
+    list.style.display = "none";
+    wrap.classList.remove(
+      "search-mode",
+      "site-is-searching"
+    );
+  } else {
+    renderOptions(mobileInput.value);
+  }
+
+  // Fokus input supaya boleh terus menaip.
+  mobileInput.focus();
+});
+
+// Bila menaip, buka dropdown dan filter site.
 mobileInput.addEventListener("input", () => {
   updateMobileChips();
   renderOptions(mobileInput.value);
 });
 
+// Bila keluar daripada input, kemas kini chips.
 mobileInput.addEventListener("blur", () => {
-  requestAnimationFrame(updateMobileChips);
+  mobileInputWrap.classList.remove("is-focused");
+
+  requestAnimationFrame(() => {
+    updateMobileChips();
+  });
 });
+
 
   document.addEventListener("pointerdown", e => {
     if (
