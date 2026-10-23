@@ -3261,3 +3261,104 @@ max-width: 170px;
 #headerSiteCustom .shared-chip-dropdown-chip {
   text-transform: uppercase !important;
 }
+
+/* ==========================================
+   MOBILE SELECT SITE - CUSTOM CHIPS
+   ========================================== */
+
+@media (max-width: 815px) {
+
+  /* Sembunyikan input mobile lama */
+  #headerTabSearchMobilePanel
+  .header-tab-search-mobile-input-wrap {
+    display: none !important;
+  }
+
+  /* Custom dropdown memenuhi panel mobile */
+  #headerSiteCustomMobile {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap !important;
+
+    width: 100%;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+
+    padding: 1px 28px 1px 6px;
+    overflow: hidden;
+    cursor: text;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown-values {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown-placeholder {
+    display: none !important;
+  }
+
+  #headerSiteCustomMobile .header-site-search-input {
+    flex: 1 1 20px;
+    width: 20px;
+    min-width: 12px;
+    height: 26px;
+    padding: 0 2px;
+    margin: 0;
+
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+    background: transparent;
+
+    color: inherit;
+    caret-color: currentColor;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  #headerSiteCustomMobile .header-site-search-input::placeholder {
+    color: rgba(255,255,255,.85);
+    opacity: 1;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  /* Uppercase hanya untuk nama site */
+  #headerSiteCustomMobile .shared-chip-dropdown-option,
+  #headerSiteCustomMobile .shared-chip-dropdown-chip {
+    text-transform: uppercase !important;
+  }
+
+  #headerSiteCustomMobile .shared-chip-dropdown-option[hidden] {
+    display: none !important;
+  }
+}
