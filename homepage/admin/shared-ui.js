@@ -3755,7 +3755,7 @@ let customSiteDropdown = null;
 
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
-    placeholder: "Select Site",
+    placeholder: "🏢 🔍 Search",
     options: [],
     value: [],
     onChange(values) {
