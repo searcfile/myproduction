@@ -1090,11 +1090,7 @@ function createShell() {
   id="headerTabSearchMobilePanel"
   class="header-tab-search-mobile-panel"
   hidden>
-<div
-  id="headerSiteCustomMobile"
-  class="header-site-custom admin-site-selector"
-  aria-label="Select Site Mobile">
-</div>
+
   <div class="header-tab-search-mobile-input-wrap">
     <input
       id="headerTabSearchMobileInput"
@@ -3756,10 +3752,6 @@ function setupHeaderSearch() {
 
 const customSiteEl = document.getElementById("headerSiteCustom");
 let customSiteDropdown = null;
-   const customMobileSiteEl =
-  document.getElementById("headerSiteCustomMobile");
-
-let customMobileSiteDropdown = null;
 
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
@@ -3777,28 +3769,6 @@ if (customSiteEl && window.NewUI?.chips) {
       updateInput();
     }
   });
-}
-
-/* MOBILE SELECT SITE - CUSTOM CHIPS */
-if (customMobileSiteEl && window.NewUI?.chips) {
-  customMobileSiteDropdown = NewUI.chips(
-    customMobileSiteEl,
-    {
-      placeholder: "🏢 🔍 Search",
-      options: [],
-      value: [],
-      onChange(values) {
-        if (!ready) return;
-
-        selectedIds = values.filter(id =>
-          availableSites.some(site => site.id === id)
-        );
-
-        saveSelection();
-        updateInput();
-      }
-    }
-  );
 }
 
   form?.addEventListener("submit", e => e.preventDefault());
@@ -3844,7 +3814,7 @@ function updateInput() {
 
   // Sync pilihan ke custom NewUI.
   customSiteDropdown?.setValue(selectedIds, false);
-  customMobileSiteDropdown?.setValue(selectedIds, false);
+
   // Kekalkan status pilihan untuk fungsi asal.
   wrap.classList.toggle(
     "has-selected",
@@ -4009,12 +3979,7 @@ customSiteDropdown?.setOptions(
   }))
 );
 
-customMobileSiteDropdown?.setOptions(
-  availableSites.map(site => ({
-    value: site.id,
-    label: site.name
-  }))
-);
+
       let stored = [];
       try {
         stored = JSON.parse(
@@ -4082,40 +4047,28 @@ input.addEventListener("input", () => {
   });
 
   // Mobile: kekalkan butang dan panel asal.
- 
-/* MOBILE - OPEN CUSTOM SELECT SITE */
-mobileBtn?.addEventListener("click", async e => {
-  e.stopPropagation();
+  mobileBtn?.addEventListener("click", e => {
+    e.stopPropagation();
 
-  if (!panel.hidden) {
-    closePanel();
-    return;
-  }
+    if (!panel.hidden) {
+      closePanel();
+      return;
+    }
 
-  panel.hidden = false;
-  mobileBtn.setAttribute("aria-expanded", "true");
-  mobileBtn.classList.add("is-open");
+    panel.hidden = false;
+    mobileBtn.setAttribute("aria-expanded", "true");
 
-  const rect = mobileBtn.getBoundingClientRect();
-  const width = Math.min(345, window.innerWidth - 16);
+    const rect = mobileBtn.getBoundingClientRect();
+    panel.style.width = "min(345px, calc(100vw - 16px))";
+    panel.style.left = `${Math.max(
+      8,
+      Math.min(rect.left, window.innerWidth - 353)
+    )}px`;
+    panel.style.top = `${rect.bottom + 8}px`;
 
-  panel.style.width = `${width}px`;
-  panel.style.left = `${Math.max(
-    8,
-    Math.min(rect.left, window.innerWidth - width - 8)
-  )}px`;
-  panel.style.top = `${rect.bottom + 8}px`;
-
-  // Jangan buka dropdown checkbox lama.
-  list.style.display = "none";
-
-  if (!ready && !loading) {
-    await loadSites();
-  }
-
-  updateInput();
-});
-
+    mobileInput.value = "";
+    renderOptions();
+  });
 
   mobileInput.addEventListener("focus", () => renderOptions());
   mobileInput.addEventListener("input", () => {
