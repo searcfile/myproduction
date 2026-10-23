@@ -2413,31 +2413,27 @@ html.new-ui-modal-open {
   z-index: 5;
 }
 
-/* Arrow menjadi clear bila hover dan ada chips */
+/* HEADER SITE - ARROW / CLEAR HOVER */
 #headerSiteCustom.has-value:hover
-.shared-chip-dropdown-icon-arrow {
-  display: none !important;
-}
-
-#headerSiteCustom.has-value:hover
-.shared-chip-dropdown-icon-clear {
-  display: block !important;
-}
-
+.shared-chip-dropdown-icon-arrow,
 #headerSiteCustom.has-value:hover
 .shared-chip-dropdown-icon-search {
   display: none !important;
 }
 
-/* SELECT SITE - CLEAR ICON HOVER */
 #headerSiteCustom.has-value:hover
 .shared-chip-dropdown-icon-clear {
   display: block !important;
   fill: currentColor;
 }
 
-#headerSiteCustom.has-value:hover
+#headerSiteCustom.has-value
 .shared-chip-dropdown-icon-btn {
   cursor: pointer;
 }
+
+#headerSiteCustom .shared-chip-dropdown-icon-btn svg {
+  pointer-events: none;
+}
+
 
