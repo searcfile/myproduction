@@ -1664,8 +1664,7 @@ container.appendChild(
 /* HEADER SITE - SEARCH DIRECTLY IN TRIGGER */
 
 const isHeaderSite =
-  container.id === "headerSiteCustom" ||
-  container.id === "headerSiteCustomMobile";
+  container.id === "headerSiteCustom";
 
 let headerSiteSearch = null;
 
