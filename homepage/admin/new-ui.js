@@ -1661,6 +1661,66 @@ container.appendChild(
     );
 
 
+/* HEADER SITE - SEARCH DIRECTLY IN TRIGGER */
+
+const isHeaderSite =
+  container.id === "headerSiteCustom";
+
+let headerSiteSearch = null;
+
+if (isHeaderSite) {
+  headerSiteSearch = document.createElement("input");
+
+  headerSiteSearch.type = "text";
+  headerSiteSearch.className = "header-site-search-input";
+  headerSiteSearch.placeholder = config.placeholder;
+  headerSiteSearch.autocomplete = "off";
+  headerSiteSearch.setAttribute(
+    "aria-label",
+    "Search sites"
+  );
+
+  trigger.insertBefore(headerSiteSearch, iconButton);
+
+  const filterHeaderSites = () => {
+    const keyword = headerSiteSearch.value
+      .trim()
+      .toLowerCase();
+
+    panel.querySelectorAll(
+      ".shared-chip-dropdown-option"
+    ).forEach(option => {
+      const label = option.textContent
+        .trim()
+        .toLowerCase();
+
+      option.hidden = !label.includes(keyword);
+    });
+  };
+
+  headerSiteSearch.addEventListener("focus", () => {
+    open();
+    filterHeaderSites();
+  });
+
+  headerSiteSearch.addEventListener("click", event => {
+    event.stopPropagation();
+    open();
+  });
+
+  headerSiteSearch.addEventListener("input", () => {
+    open();
+    filterHeaderSites();
+  });
+
+  headerSiteSearch.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      close();
+      headerSiteSearch.blur();
+    }
+  });
+}
+
   /* =====================================================
      GET OPTION
   ===================================================== */
@@ -1947,36 +2007,34 @@ if (
      TRIGGER CLICK
   ===================================================== */
 
-  trigger.addEventListener(
-    "click",
-    event => {
 
-      if (
-        event.target.closest(
-          ".shared-chip-dropdown-chip-remove"
-        )
-      ) {
+trigger.addEventListener("click", event => {
+  if (
+    event.target.closest(
+      ".shared-chip-dropdown-chip-remove"
+    )
+  ) {
+    return;
+  }
 
-        return;
+  if (
+    event.target.closest(
+      ".shared-chip-dropdown-icon-btn"
+    )
+  ) {
+    return;
+  }
 
-      }
+  if (isHeaderSite && headerSiteSearch) {
+    event.stopPropagation();
+    headerSiteSearch.focus();
+    open();
+    return;
+  }
 
+  toggle();
+});
 
-      if (
-        event.target.closest(
-          ".shared-chip-dropdown-icon-btn"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      toggle();
-
-    }
-  );
 
 
   /* =====================================================
