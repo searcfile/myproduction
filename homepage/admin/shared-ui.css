@@ -3160,4 +3160,29 @@ max-width: 170px;
   z-index: 100000;
 }
 
+/* HEADER SELECT SITE - COMPACT WIDTH */
+@media (min-width: 816px) {
+  #headerTabSearch {
+    width: fit-content;
+    min-width: 150px;
+    max-width: 170px;
+    flex: 0 0 auto;
+  }
+
+  #headerSiteCustom,
+  #headerSiteCustom .shared-chip-dropdown {
+    width: fit-content;
+    min-width: 150px;
+    max-width: 170px;
+  }
+
+  #headerSiteCustom .shared-chip-dropdown-trigger {
+    width: 100%;
+    min-width: 150px;
+    max-width: 170px;
+    padding-left: 5px;
+    padding-right: 25px;
+  }
+}
+
 
