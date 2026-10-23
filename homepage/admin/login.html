@@ -1205,35 +1205,86 @@ body.light-theme .login-security-card {
   padding-right: 72px !important;
 }
 
-/* Ikon error SVG */
-.login-error-icon {
+/* ==========================================
+   LOGIN CLEAR ERROR BUTTON
+========================================== */
+
+.backoffice-auth .field-user,
+.backoffice-auth .field-pass {
+  position: relative;
+}
+
+/* X di hujung kanan */
+.backoffice-auth .login-error-icon {
   position: absolute;
-  top: 50%;
   right: 12px;
+  top: 50%;
   transform: translateY(-50%);
-  display: none;
+
+  display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #ff4d4f;
+
+  cursor: pointer;
+  z-index: 20;
+  line-height: 0;
+}
+
+.backoffice-auth .login-error-icon[hidden] {
+  display: none !important;
+}
+
+.backoffice-auth .login-error-icon svg {
   width: 14px;
   height: 14px;
-  color: #ff4d4f;
-  z-index: 12;
+  display: block;
+  fill: currentColor;
   pointer-events: none;
 }
 
-.login-error-icon svg {
-  display: block;
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
+.backoffice-auth .login-error-icon:hover {
+  color: #ff7875;
 }
 
-.field-pass .login-error-icon {
-  right: 38px;
+.backoffice-auth .login-error-icon:focus-visible {
+  outline: 2px solid #ff7875;
+  outline-offset: 4px;
+  border-radius: 50%;
 }
 
-.field:has(.input.invalid) > .login-error-icon {
-  display: flex;
+/* Username: X di kanan */
+.backoffice-auth .field-user .input.invalid {
+  padding-right: 38px !important;
+}
+
+/* Password: eye dahulu, X paling kanan */
+.backoffice-auth .field-pass .toggle-eye {
+  right: 38px !important;
+  z-index: 15 !important;
+}
+
+.backoffice-auth .field-pass .login-error-icon {
+  right: 12px !important;
+}
+
+.backoffice-auth .field-pass .input {
+  padding-right: 72px !important;
+}
+
+/* Jangan hilangkan border merah semasa hover */
+.backoffice-auth .field:has(.toggle-eye:hover) .input.invalid,
+.backoffice-auth .group:has(.label:hover) .input.invalid {
+  border-color: #ff4d4f !important;
 }
 
 /* Error message */
@@ -1556,14 +1607,20 @@ body.light-theme .login-security-card {
                spellcheck="false"
                placeholder="Username"
                required>
-      </div>
-      <span class="login-error-icon" aria-hidden="true">
-  <svg viewBox="64 64 896 896">
+        <button
+  type="button"
+  class="login-error-icon"
+  data-clear-login="username"
+  aria-label="Clear username"
+  title="Clear username"
+  hidden
+>
+  <svg viewBox="64 64 896 896" aria-hidden="true">
     <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm176.5 582.2a8 8 0 010 11.3l-31 31a8 8 0 01-11.3 0L512 554.3 377.8 688.5a8 8 0 01-11.3 0l-31-31a8 8 0 010-11.3L469.7 512 335.5 377.8a8 8 0 010-11.3l31-31a8 8 0 0111.3 0L512 469.7l134.2-134.2a8 8 0 0111.3 0l31 31a8 8 0 010 11.3L554.3 512l134.2 134.2z"/>
   </svg>
-</span>
-      <div id="usernameErr" class="login-error"></div>
-    </div>
+</button>
+      </div>
+
 <div class="group password-wrap">
   <label class="label" for="password">Password</label>
 
@@ -1599,12 +1656,18 @@ body.light-theme .login-security-card {
 
 </button>
 
-<span class="login-error-icon" aria-hidden="true">
-  <svg viewBox="64 64 896 896">
-    <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm176.5 582.2a8 8 0 010 11.3l-31 31a8 8 0 01-11.3 0L512 554.3 377.8 688.5a8 8 0 01-11.3 0l-31-31a8 8 0 010-11.3L469.7 512 335.5 377.8a8 8 0 010-11.3l31-31a8 8 0 0111.3 0L512 469.7l134.2-134.2a8 8 0 0111.3 0l31 31a8 8 0 010 11.3L554.3 512l134.2 134.2z"/>
+<button
+  type="button"
+  class="login-error-icon"
+  data-clear-login="password"
+  aria-label="Clear password"
+  title="Clear password"
+  hidden
+>
+  <svg viewBox="64 64 896 896" aria-hidden="true">
+    <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448 448-200.6 448-448S759.4 64 512 64zm176.5 582.2a8 8 0 010 11.3l-31 31a8 8 0 01-11.3 0L512 554.3 377.8 688.5a8 8 0 01-11.3 0l-31-31a8 8 0 010-11.3L469.7 512l134.2-134.2a8 8 0 0111.3 0l31 31a8 8 0 010 11.3L554.3 512l134.2 134.2z"/>
   </svg>
-</span>
-
+</button>
 </div>
 <div id="passwordErr" class="login-error"></div>
 </div>
@@ -2408,7 +2471,38 @@ function loginErrorToast(message) {
     window.showToast(message, "error");
   }
 }
+/* ==========================================
+   LOGIN INPUT CLEAR BUTTON
+========================================== */
 
+function updateLoginClearButtons() {
+  document.querySelectorAll("[data-clear-login]").forEach(button => {
+    const id = button.dataset.clearLogin;
+    const input = document.getElementById(id);
+
+    if (!input) return;
+
+    button.hidden = !(
+      input.classList.contains("invalid") &&
+      input.value.length > 0
+    );
+  });
+}
+
+document.querySelectorAll("[data-clear-login]").forEach(button => {
+  button.addEventListener("click", () => {
+    const id = button.dataset.clearLogin;
+    const input = document.getElementById(id);
+
+    if (!input) return;
+
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+
+    updateLoginClearButtons();
+  });
+});
 function clearLoginErrors() {
   ["username", "password"].forEach(id => {
     const input = document.getElementById(id);
@@ -2424,6 +2518,7 @@ function clearLoginErrors() {
   });
 
   clearTwofaError();
+  updateLoginClearButtons();
 }
 
 function showLoginError(type, message, toast = true) {
@@ -2443,6 +2538,8 @@ function showLoginError(type, message, toast = true) {
   if (toast) {
     loginErrorToast(message);
   }
+
+  updateLoginClearButtons();
 }
 
 /* Username + Password sama-sama merah */
@@ -2450,6 +2547,7 @@ function showCredentialError(message) {
   showLoginError("username", "", false);
   showLoginError("password", message, false);
   loginErrorToast(message);
+  updateLoginClearButtons();
 }
 
 function showTwofaError(message) {
