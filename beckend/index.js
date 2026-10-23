@@ -594,6 +594,12 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
 });
 
 // PATCH — Edit site
+
+/* =====================================================
+   PATCH — EDIT SITE / ACTIVE / INACTIVE
+   SUPERADMIN ONLY
+   ===================================================== */
+
 app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
   try {
     const id = String(req.params.id || "").trim().toLowerCase();
@@ -605,27 +611,42 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
     const data = validateSite(req.body);
     const siteRef = db.ref(`sites/${id}`);
 
+    // Read first so an existing site is not mistaken
+    // for a missing site during transaction initialization.
+    const snapshot = await siteRef.once("value");
+
+    if (!snapshot.exists()) {
+      return fail(res, 404, "Site not found");
+    }
+
     const result = await siteRef.transaction(
-      current => current === null
-        ? undefined
-        : {
-            ...current,
-            ...data,
-            updatedAt: now(),
-            updatedBy: req.admin.uid
-          },
+      current => {
+        // Preserve existing data and prevent recreating
+        // a site that has been deleted.
+        if (current === null) return;
+
+        return {
+          ...current,
+          ...data,
+          updatedAt: now(),
+          updatedBy: req.admin.uid
+        };
+      },
       undefined,
       false
     );
 
     if (!result.committed) {
-      return fail(res, 404, "Site not found");
+      return fail(res, 409, "Site changed or was deleted. Please refresh.");
     }
 
     return res.json({
       ok: true,
-      message: "Site updated"
+      message: "Site updated",
+      id,
+      site: result.snapshot.val()
     });
+
   } catch (error) {
     if (
       error.message.startsWith("Site name") ||
@@ -639,5 +660,6 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
     return fail(res, 500, "Cannot update site");
   }
 });
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
