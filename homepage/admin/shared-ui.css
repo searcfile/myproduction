@@ -3461,3 +3461,51 @@ max-width: 170px;
     cursor: text;
   }
 }
+
+/* MOBILE SELECT SITE - CHIPS HOVER CLEAR */
+@media (max-width: 815px) {
+
+  .header-tab-search-mobile-input-wrap.has-value:hover
+  > svg.mobile-icon-arrow,
+  .header-tab-search-mobile-input-wrap.has-value:hover
+  > svg.mobile-icon-search {
+    display: none !important;
+  }
+
+  .header-tab-search-mobile-input-wrap.has-value:hover
+  > svg.mobile-icon-clear {
+    display: block !important;
+    pointer-events: auto !important;
+    cursor: pointer;
+    z-index: 20;
+  }
+
+  .header-tab-search-mobile-input-wrap
+  > svg.mobile-icon-clear {
+    width: 14px;
+    height: 14px;
+    fill: var(--close);
+  }
+
+  .header-tab-search-mobile-input-wrap
+  > svg.mobile-icon-clear:hover {
+    fill: var(--text-main);
+  }
+
+  /* Peranti touch yang tiada hover */
+  @media (hover: none) {
+    .header-tab-search-mobile-input-wrap.has-value
+    > svg.mobile-icon-arrow,
+    .header-tab-search-mobile-input-wrap.has-value
+    > svg.mobile-icon-search {
+      display: none !important;
+    }
+
+    .header-tab-search-mobile-input-wrap.has-value
+    > svg.mobile-icon-clear {
+      display: block !important;
+      pointer-events: auto !important;
+      z-index: 20;
+    }
+  }
+}
