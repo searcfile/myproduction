@@ -3186,3 +3186,67 @@ max-width: 170px;
 }
 
 
+
+/* ==========================================
+   HEADER SELECT SITE - INLINE SEARCH
+   ========================================== */
+
+#headerSiteCustom .shared-chip-dropdown-trigger {
+  height: 32px;
+  min-height: 32px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  cursor: text;
+}
+
+#headerSiteCustom .shared-chip-dropdown-values {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#headerSiteCustom .shared-chip-dropdown-placeholder {
+  display: none !important;
+}
+
+#headerSiteCustom .header-site-search-input {
+  flex: 1 1 20px;
+  width: 20px;
+  min-width: 12px;
+  height: 26px;
+  padding: 0 2px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: inherit;
+  caret-color: currentColor;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+#headerSiteCustom .header-site-search-input:focus,
+#headerSiteCustom .header-site-search-input:hover {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+#headerSiteCustom .header-site-search-input::placeholder {
+  color: rgba(255,255,255,.85);
+  opacity: 1;
+}
+
+#headerSiteCustom.has-value
+.header-site-search-input::placeholder {
+  color: transparent;
+}
+
+#headerSiteCustom .shared-chip-dropdown-option[hidden] {
+  display: none !important;
+}
