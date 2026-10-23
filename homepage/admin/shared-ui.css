@@ -3049,12 +3049,14 @@ padding:12px;
 @media (min-width: 816px) {
 
 
+
 #headerTabSearch {
-  width: 170px;
+  width: fit-content;
   min-width: 150px;
   max-width: 170px;
-  flex: 0 0 170px;
+  flex: 0 0 auto;
 }
+
 
 
   /* Sembunyikan input lama pada desktop */
