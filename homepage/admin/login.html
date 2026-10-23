@@ -1196,130 +1196,6 @@ body.light-theme .login-security-card {
   box-shadow: none !important;
 }
 
-/* Ruang ikon X di sebelah kanan */
-.backoffice-auth .field-user .input.invalid {
-  padding-right: 38px !important;
-}
-
-.backoffice-auth .field-pass .input.invalid {
-  padding-right: 72px !important;
-}
-
-
-/* ==========================================
-   LOGIN CLEAR ERROR BUTTON - FIXED
-========================================== */
-
-.backoffice-auth .field-user,
-.backoffice-auth .field-pass {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-}
-
-/* Username */
-.backoffice-auth .field-user .input.invalid {
-  padding-right: 42px !important;
-}
-
-/* Password normal: ruang untuk eye sahaja */
-.backoffice-auth .field-pass .input {
-  padding-right: 42px !important;
-}
-
-/* Password error: ruang untuk eye + clear */
-.backoffice-auth .field-pass .input.invalid {
-  padding-right: 76px !important;
-}
-
-/* Clear button */
-.backoffice-auth .login-error-icon {
-  position: absolute !important;
-  top: 50% !important;
-  right: 12px !important;
-  left: auto !important;
-  transform: translateY(-50%) !important;
-
-  width: 16px !important;
-  height: 16px !important;
-  min-width: 16px !important;
-  min-height: 16px !important;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 16px;
-
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 50%;
-  background: transparent !important;
-  color: #ff4d4f !important;
-
-  cursor: pointer;
-  line-height: 0;
-  z-index: 30 !important;
-  overflow: visible !important;
-}
-
-.backoffice-auth .login-error-icon[hidden] {
-  display: none !important;
-}
-
-.backoffice-auth .login-error-icon svg {
-  display: block !important;
-  width: 14px !important;
-  height: 14px !important;
-  min-width: 14px;
-  min-height: 14px;
-  fill: currentColor !important;
-  overflow: visible !important;
-  pointer-events: none;
-}
-
-.backoffice-auth .login-error-icon:hover {
-  color: #ff7875 !important;
-}
-
-.backoffice-auth .login-error-icon:focus-visible {
-  outline: 2px solid #ff7875 !important;
-  outline-offset: 3px;
-}
-
-/* Eye normal: kanan */
-.backoffice-auth .field-pass .toggle-eye {
-  position: absolute !important;
-  top: 50% !important;
-  right: 12px !important;
-  left: auto !important;
-  transform: translateY(-50%) !important;
-
-  width: 18px !important;
-  height: 18px !important;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0 !important;
-  margin: 0 !important;
-  z-index: 20 !important;
-}
-
-/* Eye bergeser hanya bila clear X muncul */
-.backoffice-auth .field-pass:has(
-  .login-error-icon:not([hidden])
-) .toggle-eye {
-  right: 40px !important;
-}
-
-.backoffice-auth .field-pass .toggle-eye svg {
-  width: 16px !important;
-  height: 16px !important;
-  flex-shrink: 0;
-  display: block;
-}
 
 /* Border merah kekal semasa hover */
 .backoffice-auth .field:has(.toggle-eye:hover)
@@ -1360,6 +1236,134 @@ body.light-theme .login-security-card {
     padding: 4px;
   }
 }
+    
+/* ==========================================
+   LOGIN INPUT ICON - CLEAN VERSION
+========================================== */
+
+.backoffice-auth .field-user,
+.backoffice-auth .field-pass {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.backoffice-auth .field-user .input,
+.backoffice-auth .field-pass .input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.backoffice-auth .field-user .input.invalid {
+  padding-right: 42px !important;
+}
+
+.backoffice-auth .field-pass .input {
+  padding-right: 46px !important;
+}
+
+.backoffice-auth .field-pass .input.invalid {
+  padding-right: 76px !important;
+}
+
+/* Error X button */
+.backoffice-auth .login-error-icon {
+  position: absolute !important;
+  top: 50% !important;
+  right: 12px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 20px !important;
+  height: 28px !important;
+  min-width: 20px !important;
+  min-height: 28px !important;
+  flex: 0 0 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+
+  color: #ff4d4f !important;
+  cursor: pointer;
+  line-height: 0;
+  z-index: 30 !important;
+  overflow: visible !important;
+}
+
+.backoffice-auth .login-error-icon[hidden] {
+  display: none !important;
+}
+
+.backoffice-auth .login-error-icon svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px;
+  min-height: 14px;
+  flex-shrink: 0;
+  fill: currentColor !important;
+  overflow: visible !important;
+  pointer-events: none;
+}
+
+.backoffice-auth .login-error-icon:hover {
+  color: #ff7875 !important;
+}
+
+.backoffice-auth .login-error-icon:focus-visible {
+  outline: 2px solid #ff7875;
+  outline-offset: 2px;
+}
+
+/* Password eye */
+.backoffice-auth .field-pass .toggle-eye {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px;
+  min-height: 32px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  z-index: 20 !important;
+}
+
+/* Alihkan mata bila X muncul */
+.backoffice-auth .field-pass:has(
+  .login-error-icon:not([hidden])
+) .toggle-eye {
+  right: 30px !important;
+}
+
+.backoffice-auth .field-pass .toggle-eye svg {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
 </style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
@@ -1665,6 +1669,7 @@ body.light-theme .login-security-card {
   </svg>
 </button>
       </div>
+    </div>
 
 <div class="group password-wrap">
   <label class="label" for="password">Password</label>
