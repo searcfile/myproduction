@@ -3509,3 +3509,30 @@ max-width: 170px;
     }
   }
 }
+
+/* MOBILE SELECT SITE - FOCUS & CLICK FIX */
+@media (max-width: 815px) {
+
+  /* Input tetap boleh menerima fokus */
+  #headerTabSearchMobileInput {
+    position: relative;
+    z-index: 1;
+    cursor: text;
+  }
+
+  /* Lapisan chips tidak menghalang klik input */
+  #mobileSiteSelectedChips {
+    pointer-events: none;
+  }
+
+  /* Tombol remove dan +N tetap boleh diklik */
+  #mobileSiteSelectedChips .mobile-site-chip-remove,
+  #mobileSiteSelectedChips .mobile-site-more {
+    pointer-events: auto;
+  }
+
+  /* Seluruh kawasan input boleh diklik */
+  .header-tab-search-mobile-input-wrap {
+    cursor: text;
+  }
+}
