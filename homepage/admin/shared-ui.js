@@ -4248,29 +4248,48 @@ input.addEventListener("input", () => {
     }
   });
 
-  // Mobile: kekalkan butang dan panel asal.
-  mobileBtn?.addEventListener("click", e => {
-    e.stopPropagation();
 
-    if (!panel.hidden) {
-      closePanel();
-      return;
-    }
+/* MOBILE SELECT SITE - OPEN INPUT FIRST */
+mobileBtn?.addEventListener("click", e => {
+  e.stopPropagation();
 
-    panel.hidden = false;
-    mobileBtn.setAttribute("aria-expanded", "true");
+  // Kalau panel sudah terbuka, tutup semuanya.
+  if (!panel.hidden) {
+    closePanel();
+    return;
+  }
 
-    const rect = mobileBtn.getBoundingClientRect();
-    panel.style.width = "min(345px, calc(100vw - 16px))";
-    panel.style.left = `${Math.max(
-      8,
-      Math.min(rect.left, window.innerWidth - 353)
-    )}px`;
-    panel.style.top = `${rect.bottom + 8}px`;
+  // Buka panel mobile sahaja.
+  panel.hidden = false;
 
-    mobileInput.value = "";
-    renderOptions();
-  });
+  mobileBtn.setAttribute("aria-expanded", "true");
+  mobileBtn.classList.add("is-open");
+
+  const rect = mobileBtn.getBoundingClientRect();
+  const width = Math.min(345, window.innerWidth - 16);
+
+  panel.style.width = `${width}px`;
+
+  panel.style.left = `${Math.max(
+    8,
+    Math.min(rect.left, window.innerWidth - width - 8)
+  )}px`;
+
+  panel.style.top = `${rect.bottom + 8}px`;
+
+  // Reset search tanpa membuka dropdown.
+  mobileInput.value = "";
+
+  // Pastikan dropdown kekal tertutup.
+  list.style.display = "none";
+  wrap.classList.remove("search-mode");
+
+  // Kemas kini chips yang sudah dipilih.
+  updateMobileChips();
+
+  // Jangan panggil renderOptions() di sini.
+});
+
 
 mobileInput.addEventListener("focus", () => {
   updateMobileChips();
