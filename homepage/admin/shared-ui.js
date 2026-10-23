@@ -170,11 +170,10 @@
      ADMIN TAB PERMISSIONS
      ========================================================== */
 
-  const SUPERADMIN_ONLY_PAGES = new Set([
-    "users.html",
-    "site-management.html",
-    "admin-users.html"
-  ]);
+const SUPERADMIN_ONLY_PAGES = new Set([
+  "users.html",
+  "admin-users.html"
+]);
 
   let currentAdminProfile = null;
 
