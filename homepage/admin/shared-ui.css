@@ -3192,8 +3192,8 @@ max-width: 170px;
    ========================================== */
 
 #headerSiteCustom .shared-chip-dropdown-trigger {
-  height: 32px;
-  min-height: 32px;
+  height: 36px;
+  min-height: 36px;
   flex-wrap: nowrap;
   overflow: hidden;
   cursor: text;
@@ -3212,11 +3212,11 @@ max-width: 170px;
 }
 
 #headerSiteCustom .header-site-search-input {
-  flex: 1 1 20px;
-  width: 20px;
+  flex: 1 1 0;
+  width: 0;
   min-width: 12px;
-  height: 26px;
-  padding: 0 2px;
+  height: 100%;
+  padding: 0 3px;
   margin: 0;
   border: 0;
   border-radius: 0;
@@ -3226,7 +3226,7 @@ max-width: 170px;
   color: inherit;
   caret-color: currentColor;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   text-align: left;
 }
 
