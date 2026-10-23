@@ -3775,6 +3775,12 @@ function updateMobileChips() {
     sites.length > 0 && !searching
   );
 
+  // Aktifkan SVG clear apabila ada chips atau teks search.
+  mobileInputWrap.classList.toggle(
+    "has-value",
+    sites.length > 0 || mobileInput.value.trim().length > 0
+  );
+
   if (!sites.length || searching) {
     mobileChips.hidden = true;
     return;
@@ -4294,6 +4300,30 @@ mobileBtn?.addEventListener("click", e => {
   // Jangan panggil renderOptions() di sini.
 });
 
+
+/* MOBILE SELECT SITE - CLEAR ALL */
+const mobileClearIcon =
+  mobileInputWrap.querySelector(".mobile-icon-clear");
+
+mobileClearIcon?.addEventListener("click", e => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Kosongkan semua pilihan site.
+  selectedIds = [];
+  mobileInput.value = "";
+
+  // Simpan perubahan dan kemas kini chips.
+  saveSelection();
+  updateInput();
+
+  // Tutup senarai dropdown.
+  list.style.display = "none";
+  wrap.classList.remove("search-mode");
+
+  // Pulangkan icon kepada arrow.
+  mobileInputWrap.classList.remove("has-value");
+});
 
 mobileInput.addEventListener("focus", () => {
   updateMobileChips();
