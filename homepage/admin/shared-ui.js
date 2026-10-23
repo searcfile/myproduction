@@ -3800,10 +3800,14 @@ function updateMobileChips() {
     const name = document.createElement("span");
     name.textContent = site.name;
 
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", `Remove ${site.name}`);
+
+const remove = document.createElement("button");
+remove.type = "button";
+remove.className = "mobile-site-chip-remove";
+remove.innerHTML = ICON_CLOSE;
+remove.setAttribute("aria-label", `Remove ${site.name}`);
+remove.title = `Remove ${site.name}`;
+
 
     remove.addEventListener("click", e => {
       e.preventDefault();
