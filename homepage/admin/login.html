@@ -1006,7 +1006,295 @@ transition: all 0.3s;
   height:14px;
   display:block;
 }
-  </style>
+  
+/* 5G88 Backoffice Command Center — login.html visual-only upgrade */
+:root{--bo-panel:#0b1d35;--bo-border:rgba(255,255,255,.12);--bo-gold:#f5b942;--bo-muted:rgba(255,255,255,.62);--gold:#f5b942;--green:#34d399;--muted:rgba(255,255,255,.62);--border:rgba(255,255,255,.12)}
+html,body{min-height:100%;height:auto}
+body:not(.light-theme){background:radial-gradient(circle at 16% 12%,rgba(240,180,41,.24),transparent 24%),radial-gradient(circle at 82% 18%,rgba(22,119,255,.24),transparent 28%),radial-gradient(circle at 58% 88%,rgba(13,180,185,.14),transparent 34%),linear-gradient(135deg,#06101f 0%,#071426 46%,#071b2f 100%);color:#f7fbff}
+body{display:block;padding:48px 24px 30px;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;z-index:-1;width:18px;height:150vh;top:-25vh;background:rgba(255,255,255,.055);transform:rotate(29deg);pointer-events:none}
+body::before{left:20%}body::after{right:28%}
+.backoffice-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,390px);gap:24px;align-items:center;width:min(1240px,100%);margin:0 auto;min-height:min(760px,calc(100svh - 80px))}
+.backoffice-auth{min-width:0;width:100%;align-self:center}
+    /* LEFT PANEL */
+
+    .command-panel{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 520px;
+    max-height: 760px;
+    padding: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 18px;
+    box-shadow: 0 24px 80px #0000003d;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    background: linear-gradient(150deg, rgba(22, 119, 255, .22), transparent 42%), linear-gradient(330deg, rgba(240, 180, 41, .18), transparent 36%), #081626bd;
+    }
+.command-panel:before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+    z-index: -1;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent 38%);
+    opacity: .55;
+}
+.eyebrow{
+  margin-bottom:0;
+  color:var(--gold);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:1.4px;
+  text-transform:uppercase;
+}
+
+.command-title{
+  margin:8px 0 0;
+  max-width:680px;
+  font-size:clamp(34px,4vw,48px);
+  line-height:1.02;
+  letter-spacing:0;
+  font-weight:600;
+}
+
+.command-subtitle{
+  display:block;
+  max-width:680px;
+  margin:14px 0 0;
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.7;
+}
+
+    .security-summary{
+      margin: 22px 0 14px;
+      position: relative;
+      padding:16px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .12), transparent), #040e1b85;
+      overflow: hidden;
+      box-shadow: inset 0 1px #ffffff14;
+    }
+
+    .online-badge{
+      width:max-content;
+      margin-bottom:12px;
+      padding:6px 11px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+      border:1px solid rgba(52,211,153,.35);
+      border-radius:999px;
+      background:rgba(52,211,153,.12);
+      color:#78f2bd;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .online-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 0 5px rgba(52,211,153,.12);
+    }
+
+    .security-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap: 8px;
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .security-item{
+      display: grid;
+      align-content: center;
+      min-height: 62px;
+      padding:10px 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      box-sizing:content-box;
+      background: #ffffff0f;
+    }
+
+    .security-item span{
+      display:block;
+      margin-bottom:10px;
+      color:#f7fbffa3;
+      font-size:12px;
+      font-weight:650;
+    }
+
+    .security-item strong{
+      display:block;
+      overflow:hidden;
+      color:#f7fbff;
+      font-size:18px;
+      text-overflow:ellipsis;
+      line-height: 1;
+      white-space:nowrap;
+    }
+
+.operations-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+
+    .operation-card{
+  min-width:0;
+  min-height:70px;
+
+  padding:12px;
+
+  display:flex;
+  align-items:center;
+
+  gap:12px;
+
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+
+  background:#ffffff12;
+  color:#f7fbff;
+
+  box-sizing:content-box;
+
+  transition:
+    transform .2s,
+    border-color .2s,
+    background .2s;
+}
+
+
+    .operation-card.featured{
+     border-color: #f0b42961;
+     background: linear-gradient(135deg, #f0b4292e, #ffffff12);
+    }
+
+    .operation-icon{
+      width:34px;
+      height:34px;
+      min-width:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:12px;
+      background:#f0b42921;
+      color:#f0b429;
+      font-size: 18px;
+    }
+
+    .operation-icon svg{
+      width:18px;
+      height:18px;
+      fill:currentColor;
+    }
+
+    .operation-text{
+      min-width:0;
+    }
+
+    .operation-text strong{
+      display:block;
+      overflow:hidden;
+      font-size:13px;
+      font-weight:750;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .operation-text span{
+      display:block;
+      margin-top:3px;
+      color:#f7fbffa3;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+.command-footer{
+  margin-top:18px;
+  padding-top:0;
+}
+
+.command-footer-box{
+  padding:12px 14px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:12px;
+
+  border:1px solid var(--border);
+  border-radius:12px;
+
+  background:rgba(0,0,0,.16);
+
+  color:var(--muted);
+
+  font-size:13px;
+}
+
+    .command-footer-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+
+    .command-footer-item svg{
+      width:13px;
+      height:13px;
+      min-width:13px;
+      flex:none;
+      fill:#f0b429;
+    }
+
+
+.backoffice-layout .command-panel{min-width:0;min-height:680px;max-height:none;justify-content:space-between;gap:24px}
+.backoffice-layout .command-title{font-size:clamp(32px,3.6vw,46px);line-height:1.1}
+.backoffice-layout .command-subtitle{margin-top:12px}
+.backoffice-layout .security-summary{margin:0}
+.backoffice-layout .security-item,.backoffice-layout .operation-card{box-sizing:border-box}
+.backoffice-layout .security-item{min-width:0;min-height:78px}
+.backoffice-layout .operation-card{min-height:90px}
+.backoffice-layout .operation-text strong{white-space:normal}
+.backoffice-auth .login-box,.backoffice-auth .twofa-box{width:100%;max-width:none;margin:0;border:1px solid var(--bo-border);border-radius:18px;background:rgba(12,25,43,.93);box-shadow:0 24px 80px rgba(0,0,0,.24);overflow:hidden;backdrop-filter:blur(18px)}
+.backoffice-auth .login-header{display:grid;grid-template-columns:54px 1fr;column-gap:15px;align-items:center;text-align:left;padding:28px 30px;background:linear-gradient(135deg,#1677ff,#0c4684);border-bottom:1px solid rgba(255,255,255,.12)}
+.backoffice-auth .login-icon{grid-column:1;grid-row:1/3;width:54px;height:54px;margin:0;border-radius:15px;background:rgba(255,255,255,.16)}
+.backoffice-auth .login-title{grid-column:2;grid-row:1;margin:0;font-size:23px;line-height:1.2}
+.backoffice-auth .login-sub{grid-column:2;grid-row:2;margin:5px 0 0;font-size:12px;line-height:1.4}
+.backoffice-auth .login-content{padding:30px 32px 32px}
+.backoffice-auth .login-content::before{content:"⚡  Operator console     •     2FA protected";display:block;margin-bottom:24px;padding:13px 12px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.065);color:#bac8dd;text-align:center;font-size:12px;font-weight:600}
+.backoffice-auth .input{height:44px;border-radius:9px;background:#141414;border-color:#424242}
+.backoffice-auth .group{margin-bottom:19px}
+.backoffice-auth .label{font-size:13px;font-weight:650}
+.backoffice-auth .btn,.backoffice-auth .login-btn{height:46px;border-radius:9px;background:#1668dc;box-shadow:0 12px 25px rgba(22,119,255,.17)}
+.backoffice-auth .btn:hover,.backoffice-auth .login-btn:hover{background:#3c89e8}
+.backoffice-auth .turnstile-wrap{max-width:100%}
+.backoffice-auth .twofa-box{display:none}
+.backoffice-auth .otp-wrap{max-width:100%}
+body.light-theme::before,body.light-theme::after{display:none}
+body.light-theme .backoffice-layout .command-panel{color:#f7fbff}
+body.light-theme .backoffice-auth .login-box,body.light-theme .backoffice-auth .twofa-box{background:#fff}
+body.light-theme .backoffice-auth .login-content::before{color:#536780;background:#f5f8fc;border-color:#dce5f0}
+body.light-theme .backoffice-auth .input{background:#fff;border-color:#d9d9d9}
+@media(max-width:950px){body{padding:30px 18px}.backoffice-layout{grid-template-columns:1fr;max-width:460px;min-height:calc(100svh - 60px)}.backoffice-layout .command-panel{display:none}}
+@media(max-width:480px){body{padding:16px 12px}.backoffice-layout{min-height:calc(100svh - 32px)}.backoffice-auth .login-header{padding:22px 20px;grid-template-columns:46px 1fr;gap:0 12px}.backoffice-auth .login-icon{width:46px;height:46px}.backoffice-auth .login-title{font-size:21px}.backoffice-auth .login-content{padding:24px 20px}.backoffice-auth .login-content::before{font-size:11px}.backoffice-auth .login-box,.backoffice-auth .twofa-box{border-radius:14px}}
+@media(prefers-reduced-motion:reduce){.backoffice-layout *, .backoffice-layout *::before,.backoffice-layout *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+</style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
   <svg id="loginThemeLightIcon" viewBox="64 64 896 896" aria-hidden="true">
@@ -1044,6 +1332,193 @@ transition: all 0.3s;
     </div>
   </div>
 
+<main class="backoffice-layout">
+  <section class="command-panel">
+
+    <div class="eyebrow">
+      Casino Operations
+    </div>
+
+    <h1 class="command-title">
+      Backoffice Command Center
+    </h1>
+
+    <p class="command-subtitle">
+      Secure access for player operations,
+      finance monitoring, reporting,
+      and live support workflows.
+    </p>
+
+
+    <div class="security-summary">
+
+      <div class="online-badge">
+        <span class="online-dot"></span>
+        Online
+      </div>
+
+      <div class="security-grid">
+
+        <div class="security-item">
+          <span>Role-Based Access</span>
+          <strong>Controlled</strong>
+        </div>
+
+        <div class="security-item">
+          <span>2FA Verification</span>
+          <strong>Required</strong>
+        </div>
+
+        <div class="security-item">
+          <span>Cloudflare Check</span>
+          <strong>Enabled</strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="operations-grid">
+
+      <div class="operation-card featured">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896">
+            <path d="M888 792H200V168c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h752c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm-600-80h56c4.4 0 8-3.6 8-8V560c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v144c0 4.4 3.6 8 8 8zm152 0h56c4.4 0 8-3.6 8-8V384c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v320c0 4.4 3.6 8 8 8zm152 0h56c4.4 0 8-3.6 8-8V462c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v242c0 4.4 3.6 8 8 8zm152 0h56c4.4 0 8-3.6 8-8V304c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v400c0 4.4 3.6 8 8 8z"/>
+          </svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Real-time Reports</strong>
+          <span>Updated now</span>
+        </div>
+
+      </div>
+
+
+      <div class="operation-card">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896">
+            <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372zm47.7-395.2l-25.4-5.9V348.6c38 5.2 61.5 29 65.5 58.2.5 4 3.9 6.9 7.9 6.9h44.9c4.7 0 8.4-4.1 8-8.8-6.1-62.3-57.4-102.3-125.9-109.2V263c0-4.4-3.6-8-8-8h-28.1c-4.4 0-8 3.6-8 8v33c-70.8 6.9-126.2 46-126.2 119 0 67.6 49.8 100.2 102.1 112.7l24.7 6.3v142.7c-44.2-5.9-69-29.5-74.1-61.3-.6-3.8-4-6.6-7.9-6.6H363c-4.7 0-8.4 4-8 8.7 4.5 55 46.2 105.6 135.2 112.1V761c0 4.4 3.6 8 8 8h28.4c4.4 0 8-3.6 8-8.1l-.2-31.7c78.3-6.9 134.3-48.8 134.3-124-.1-69.4-44.2-100.4-109-116.4zm-68.6-16.2c-5.6-1.6-10.3-3.1-15-5-33.8-12.2-49.5-31.9-49.5-57.3 0-36.3 27.5-57 64.5-61.7v124zM534.3 677V543.3c3.1.9 5.9 1.6 8.8 2.2 47.3 14.4 63.2 34.4 63.2 65.1 0 39.1-29.4 62.6-72 66.4z"/>
+          </svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Broadcast</strong>
+          <span>Message</span>
+        </div>
+
+      </div>
+
+
+      <div class="operation-card">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896">
+            <path d="M824.2 699.9a301.55 301.55 0 00-86.4-60.4C783.1 602.8 812 546.8 812 484c0-110.8-92.4-201.7-203.2-200-109.1 1.7-197 90.6-197 200 0 62.8 29 118.8 74.2 155.5a300.95 300.95 0 00-86.4 60.4C345 754.6 314 826.8 312 903.8a8 8 0 008 8.2h56c4.3 0 7.9-3.4 8-7.7 1.9-58 25.4-112.3 66.7-153.5A226.62 226.62 0 01612 684c60.9 0 118.2 23.7 161.3 66.8C814.5 792 838 846.3 840 904.3c.1 4.3 3.7 7.7 8 7.7h56a8 8 0 008-8.2c-2-77-33-149.2-87.8-203.9zM612 612c-34.2 0-66.4-13.3-90.5-37.5a126.86 126.86 0 01-37.5-91.8c.3-32.8 13.4-64.5 36.3-88 24-24.6 56.1-38.3 90.4-38.7 33.9-.3 66.8 12.9 91 36.6 24.8 24.3 38.4 56.8 38.4 91.4 0 34.2-13.3 66.3-37.5 90.5A127.3 127.3 0 01612 612zM361.5 510.4c-.9-8.7-1.4-17.5-1.4-26.4 0-15.9 1.5-31.4 4.3-46.5.7-3.6-1.2-7.3-4.5-8.8-13.6-6.1-26.1-14.5-36.9-25.1a127.54 127.54 0 01-38.7-95.4c.9-32.1 13.8-62.6 36.3-85.6 24.7-25.3 57.9-39.1 93.2-38.7 31.9.3 62.7 12.6 86 34.4 7.9 7.4 14.7 15.6 20.4 24.4 2 3.1 5.9 4.4 9.3 3.2 17.6-6.1 36.2-10.4 55.3-12.4 5.6-.6 8.8-6.6 6.3-11.6-32.5-64.3-98.9-108.7-175.7-109.9-110.9-1.7-203.3 89.2-203.3 199.9 0 62.8 28.9 118.8 74.2 155.5-31.8 14.7-61.1 35-86.5 60.4-54.8 54.7-85.8 126.9-87.8 204a8 8 0 008 8.2h56.1c4.3 0 7.9-3.4 8-7.7 1.9-58 25.4-112.3 66.7-153.5 29.4-29.4 65.4-49.8 104.7-59.7 3.9-1 6.5-4.7 6-8.7z"/>
+          </svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Player Ops</strong>
+          <span>Monitored</span>
+        </div>
+
+      </div>
+
+
+      <div class="operation-card">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896">
+            <path d="M296 250c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H296zm184 144H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm-48 458H208V148h560v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h264c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm440-88H728v-36.6c46.3-13.8 80-56.6 80-107.4 0-61.9-50.1-112-112-112s-112 50.1-112 112c0 50.7 33.7 93.6 80 107.4V764H520c-8.8 0-16 7.2-16 16v152c0 8.8 7.2 16 16 16h352c8.8 0 16-7.2 16-16V780c0-8.8-7.2-16-16-16zM646 620c0-27.6 22.4-50 50-50s50 22.4 50 50-22.4 50-50 50-50-22.4-50-50zm180 266H566v-60h260v60z"/>
+          </svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Audit Trail</strong>
+          <span>Immutable</span>
+        </div>
+
+      </div>
+
+
+      <div class="operation-card">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896">
+            <path d="M848 359.3H627.7L825.8 109c4.1-5.3.4-13-6.3-13H436c-2.8 0-5.5 1.5-6.9 4L170 547.5c-3.1 5.3.7 12 6.9 12h174.4l-89.4 357.6c-1.9 7.8 7.5 13.3 13.3 7.7L853.5 373c5.2-4.9 1.7-13.7-5.5-13.7zM378.2 732.5l60.3-241H281.1l189.6-327.4h224.6L487 427.4h211L378.2 732.5z"/>
+          </svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Risk Alerts</strong>
+          <span>Priority</span>
+        </div>
+
+      </div>
+
+
+      <div class="operation-card">
+
+        <div class="operation-icon">
+          <svg viewBox="64 64 896 896" focusable="false" data-icon="fund-projection-screen" width="1em" height="1em" fill="currentColor" aria-hidden="true"><defs><style></style></defs><path d="M312.1 591.5c3.1 3.1 8.2 3.1 11.3 0l101.8-101.8 86.1 86.2c3.1 3.1 8.2 3.1 11.3 0l226.3-226.5c3.1-3.1 3.1-8.2 0-11.3l-36.8-36.8a8.03 8.03 0 00-11.3 0L517 485.3l-86.1-86.2a8.03 8.03 0 00-11.3 0L275.3 543.4a8.03 8.03 0 000 11.3l36.8 36.8z"></path><path d="M904 160H548V96c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H120c-17.7 0-32 14.3-32 32v520c0 17.7 14.3 32 32 32h356.4v32L311.6 884.1a7.92 7.92 0 00-2.3 11l30.3 47.2v.1c2.4 3.7 7.4 4.7 11.1 2.3L512 838.9l161.3 105.8c3.7 2.4 8.7 1.4 11.1-2.3v-.1l30.3-47.2a8 8 0 00-2.3-11L548 776.3V744h356c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 512H160V232h704v440z"></path></svg>
+        </div>
+
+        <div class="operation-text">
+          <strong>Revenue Pulse</strong>
+          <span>Live</span>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="command-footer">
+
+      <div class="command-footer-box">
+
+<div class="command-footer-item">
+
+  <svg
+    class="command-footer-icon"
+    viewBox="0 0 1024 1024"
+    aria-hidden="true"
+  >
+    <path
+      d="M866.9 169.9L527.1 54.1C523 52.7 517.5 52 512 52s-11 .7-15.1 2.1L157.1 169.9c-8.3 2.8-15.1 12.4-15.1 21.2v482.4c0 8.8 5.7 20.4 12.6 25.9L499.3 968c3.5 2.7 8 4.1 12.6 4.1s9.2-1.4 12.6-4.1l344.7-268.6c6.9-5.4 12.6-17 12.6-25.9V191.1c.2-8.8-6.6-18.3-14.9-21.2zM810 654.3L512 886.5 214 654.3V226.7l298-101.6 298 101.6v427.6zm-405.8-201c-3-4.1-7.8-6.6-13-6.6H336c-6.5 0-10.3 7.4-6.5 12.7l126.4 174a16.1 16.1 0 0026 0l212.6-292.7c3.8-5.3 0-12.7-6.5-12.7h-55.2c-5.1 0-10 2.5-13 6.6L468.9 542.4l-64.7-89.1z"
+    />
+  </svg>
+
+  <span>2FA secured</span>
+
+</div>
+
+<div class="command-footer-item">
+
+  <svg
+    class="command-footer-icon"
+    viewBox="0 0 1024 1024"
+    aria-hidden="true"
+  >
+    <path
+      d="M917 211.1l-199.2 24c-6.6.8-9.4 8.9-4.7 13.6l59.3 59.3-226 226-101.8-101.7c-6.3-6.3-16.4-6.2-22.6 0L100.3 754.1a8.03 8.03 0 000 11.3l45 45.2c3.1 3.1 8.2 3.1 11.3 0L433.3 534 535 635.7c6.3 6.2 16.4 6.2 22.6 0L829 364.5l59.3 59.3a8.01 8.01 0 0013.6-4.7l24-199.2c.7-5.1-3.7-9.5-8.9-8.8z"
+    />
+  </svg>
+
+  <span>Operator analytics ready</span>
+
+</div>
+
+      </div>
+
+    </div>
+
+  </section>
+<section class="backoffice-auth">
   <div class="login-box">
   <div class="login-header">
   <div class="login-icon">
@@ -1229,6 +1704,8 @@ transition: all 0.3s;
     <button type="button" class="btn" id="twofaVerify">Verify</button>
   </div>
 </div>
+</section>
+</main>
 <!-- FORGOT PASSWORD POPUP -->
 <div id="forgotOverlay" class="blocked-overlay" aria-hidden="true">
   <div class="blocked-box forgot-box zoom-in" role="dialog" aria-modal="true">
