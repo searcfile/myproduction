@@ -1308,38 +1308,11 @@
 </style>
 
 <style>
-.manage-main-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:0 12px}
-.manage-main-tab{border:1px solid #424242;background:#1f1f1f;color:inherit;border-radius:8px;padding:10px 18px;cursor:pointer}
-.manage-main-tab.active{background:#1668dc;border-color:#1668dc;color:#fff}
-.manage-pane[hidden]{display:none!important}
-.site-manager{padding:0 12px 24px}
-.site-manager .auth-top-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.site-manager .auth-top-toolbar input{width:min(100%,400px);height:34px}
-.site-manager .site-create{margin-left:auto}
-.site-manager .auth-table{min-width:700px}
-.site-manager .site-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
-.site-manager .site-stat-grid .card{padding:16px;border:1px solid #383838;border-radius:12px}
-.site-manager .site-stat-grid strong{display:block;font-size:26px;margin-top:8px}
-.site-manager .site-stat-grid small{color:#9aaac0}
-.site-manager .site-table-card{border:1px solid #383838;border-radius:12px;overflow:hidden;background:#1f1f1f}
-.site-manager .site-toolbar{padding:12px}
-.site-manager .site-status{padding:12px;color:#9aaac0;font-size:12px}
-.site-manager .site-badge{padding:5px 9px;border-radius:20px;background:rgba(29,194,143,.12);color:#49ddb0}
-.site-manager .site-badge.off{background:rgba(234,92,111,.12);color:#ff8a9b}
-.site-manager .site-pagination{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border-top:1px solid #383838}
-.site-manager .site-pagination button{padding:6px 10px}
-.site-manager .site-pagination select{width:100px}
-.site-manager .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.site-manager .site-form label{display:block;font-size:12px;margin-bottom:7px}
-.site-manager .site-form input{width:100%;height:34px}
-.site-form-modal{width:100%}
-.site-form-modal .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.site-form-modal .site-field{min-width:0}
-.site-form-modal label{display:block;font-size:12px;margin-bottom:7px}
-.site-form-modal input{width:100%;height:34px}
-.site-form-modal .site-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
-.site-form-modal .site-hint{font-size:11px;color:#9aaac0;margin-top:6px}
-@media(max-width:650px){.site-manager .site-stat-grid{grid-template-columns:1fr 1fr}.site-manager .site-stat-grid .card:last-child{grid-column:1/-1}.site-form-modal .site-form{grid-template-columns:1fr}.site-manager .site-create{margin-left:0}}
+/* Site Management — same visual system as Admin Users */
+.manage-main-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:0 12px}.manage-main-tab{border:1px solid #424242;background:#1f1f1f;color:inherit;border-radius:8px;padding:10px 18px;cursor:pointer}.manage-main-tab.active{background:#1668dc;border-color:#1668dc;color:#fff}.manage-pane[hidden]{display:none!important}
+.site-manager{padding:0 12px 24px;min-width:0}.site-manager *{box-sizing:border-box}.site-manager .auth-toolbar-card{margin-bottom:12px}.site-manager .auth-top-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.site-manager .sm-search-holder{flex:0 1 400px;max-width:400px;min-width:0;width:100%}.site-manager .sm-search-holder input{width:100%;height:32px}.site-manager .sm-filter-holder{flex:0 1 400px;width:100%;max-width:400px;min-width:0;position:relative;z-index:20}.site-manager .sm-filter-holder .shared-chip-dropdown{width:100%}.site-manager .site-create{margin-left:auto!important;width:auto!important;flex:none!important;height:32px!important;padding:0 15px!important}.site-manager .site-stat-grid{margin-bottom:12px}.site-manager .site-table-card{overflow:visible!important}.site-manager .site-table-card .auth-tablewrap{overflow-x:auto}.site-manager .auth-table{min-width:750px}.site-manager .site-status{font-size:11px;color:#9aaac0;padding:10px 16px}.site-manager .site-status:empty{display:none}.site-manager .site-status.is-error{color:#ff8a9b}.site-manager .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.site-manager .site-badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;background:rgba(29,194,143,.10);color:#49ddb0;font-size:11px;font-weight:650;padding:5px 9px}.site-manager .site-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.site-manager .site-badge.off{background:rgba(234,92,111,.11);color:#ff8a9b}.site-form-modal{width:100%;min-width:0}.site-form-modal .site-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.site-form-modal .site-field{min-width:0}.site-form-modal .site-field.full{grid-column:1/-1}.site-form-modal label:not(.site-switch-row){display:block;font-size:12px;font-weight:600;margin-bottom:7px}.site-form-modal input:not([type=checkbox]){width:100%;height:34px;min-width:0}.site-form-modal .site-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:12px;padding-top:16px;border-top:1px solid #344158}.site-form-modal .site-form-actions button{width:auto!important;height:34px!important;min-width:105px}.site-form-modal .site-hint{font-size:11px;color:#9aaac0;margin-top:6px}.site-switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--tx-border,#2b3e5b);border-radius:9px;padding:13px 14px}.site-switch-row>span:first-child{display:flex;flex-direction:column;gap:5px}.site-switch-row strong{font-size:12px}.site-switch-row small{font-size:11px;color:#9aaac0}
+.site-manager .sm-pagination{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--tx-border,#2b3e5b);background:var(--tx-surface,#152237);font-size:12px;position:relative;z-index:10}.site-manager .sm-pagination[hidden]{display:none!important}.site-manager .sm-page-info{color:#a2b0c5;white-space:nowrap;margin-right:4px}.site-manager .sm-page-numbers{display:inline-flex;align-items:center;gap:4px}.site-manager .sm-page-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;width:32px;height:32px;padding:0;border:1px solid transparent;border-radius:6px;background:#141414;color:#eaf0fb;cursor:pointer;font:inherit}.site-manager .sm-page-btn:hover:not(:disabled){color:#4096ff;border-color:#4096ff}.site-manager .sm-page-btn.active{color:#4096ff;border-color:#1677ff;background:rgba(22,119,255,.12)}.site-manager .sm-page-btn:disabled{opacity:.35;cursor:not-allowed}.site-manager .sm-page-arrow{background:transparent;border:0;width:22px;min-width:22px}.site-manager .sm-page-arrow svg{width:12px;height:12px}.site-manager .sm-page-dots{width:24px;min-width:24px;background:transparent;border:0;color:#a2b0c5}.site-manager .sm-page-dots .sm-dots-icon{display:none}.site-manager .sm-page-dots:hover .sm-dots-text,.site-manager .sm-page-dots:focus-visible .sm-dots-text{display:none}.site-manager .sm-page-dots:hover .sm-dots-icon,.site-manager .sm-page-dots:focus-visible .sm-dots-icon{display:inline-flex}.site-manager .sm-page-dots svg{width:12px;height:12px}.site-manager .sm-page-size{flex:0 0 105px;width:105px}.site-manager .sm-page-size .shared-dropdown-trigger{height:32px;min-height:32px}.site-manager .sm-page-size .shared-dropdown-panel{top:auto!important;bottom:calc(100% + 5px)!important;z-index:99999!important;max-height:200px;overflow:auto}.site-manager .sm-page-goto{display:inline-flex;align-items:center;gap:7px;color:#a2b0c5;white-space:nowrap}.site-manager .sm-page-goto input{width:45px!important;min-width:45px!important;max-width:45px!important;height:28px!important;text-align:center;padding:0 5px!important}.site-manager .sm-page-goto input::-webkit-inner-spin-button{-webkit-appearance:none}.site-manager .sm-page-goto input{appearance:textfield;-moz-appearance:textfield}
+@media(max-width:900px){.site-manager .auth-top-toolbar{flex-direction:column;align-items:stretch}.site-manager .sm-search-holder,.site-manager .sm-filter-holder{flex:auto;width:100%;max-width:none}.site-manager .site-create{align-self:flex-end;margin-left:0!important}}@media(max-width:650px){.site-manager{padding:0 0 16px}.site-manager .auth-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.site-manager .auth-stats .stat:last-child{grid-column:1/-1}.site-form-modal .site-form{grid-template-columns:1fr}.site-form-modal .site-field{grid-column:1/-1}.site-manager .sm-pagination{justify-content:center;padding:12px 8px}.site-manager .sm-page-info{flex-basis:100%;text-align:center}}
 </style>
 </head>
 <body>
@@ -1493,28 +1466,25 @@
 </section>
 </div>
 <section id="manageSitesPane" class="manage-pane site-manager" hidden>
- <div class="site-stat-grid">
-  <div class="card"><small>Total sites</small><strong id="smTotal">—</strong></div>
-  <div class="card"><small>Active sites</small><strong id="smActive">—</strong></div>
-  <div class="card"><small>Inactive sites</small><strong id="smInactive">—</strong></div>
+ <div class="auth-toolbar-card"><div class="auth-top-toolbar">
+  <div class="sm-search-holder"><input id="smSearch" type="search" placeholder="Search" aria-label="Search sites"></div>
+  <div class="sm-filter-holder"><div id="smStatusChips"></div></div>
+  <button type="button" id="smCreate" class="btn-primary-new site-create" disabled>+ Add Site</button>
+ </div></div>
+ <div class="stats auth-stats site-stat-grid">
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><small>Total sites</small><strong id="smTotal">—</strong><span class="stat-note">Registered sites</span></div>
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5L20 6"/></svg></span><small>Active sites</small><strong id="smActive">—</strong><span class="stat-note">Currently enabled</span></div>
+  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg></span><small>Inactive sites</small><strong id="smInactive">—</strong><span class="stat-note">Currently disabled</span></div>
  </div>
- <div class="site-table-card">
-  <div class="site-toolbar auth-top-toolbar">
-   <input id="smSearch" type="search" placeholder="Search site name or ID" aria-label="Search sites">
-   <button type="button" id="smRefresh" class="auth-mini-btn">↻ Refresh</button>
-   <button type="button" id="smCreate" class="btn-primary-new site-create" disabled>+ Add Site</button>
-  </div>
-  <div class="auth-tablewrap"><table class="auth-table">
-   <thead><tr><th>SITE NAME</th><th>SITE ID</th><th>WALLET GROUP</th><th>STATUS</th><th>ACTION</th></tr></thead>
-   <tbody id="smRows"><tr><td colspan="5" class="auth-empty-cell">Open Site Management to load sites.</td></tr></tbody>
-  </table></div>
-  <div class="site-pagination"><span id="smPageInfo"></span>
-   <button id="smPrev" class="auth-mini-btn" type="button">Previous</button>
-   <button id="smNext" class="auth-mini-btn" type="button">Next</button>
-   <select id="smPageSize" aria-label="Sites per page"><option value="10">10 / page</option><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select>
-  </div>
+ <section class="card auth-list site-table-card">
+  <div class="auth-section-heading"><h2>Site accounts</h2></div>
+  <div class="auth-tablewrap"><table class="auth-table"><thead><tr><th>SITE NAME</th><th>SITE ID</th><th>WALLET GROUP</th><th>STATUS</th><th>ACTION</th></tr></thead>
+  <tbody id="smRows"><tr><td colspan="5" class="auth-empty-cell"><div class="auth-loading-center"><span class="auth-loading-dots"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div></td></tr></tbody></table></div>
+  <div id="smPagination" class="sm-pagination" hidden><span id="smPageInfo" class="sm-page-info"></span><div id="smPageNumbers" class="sm-page-numbers"></div>
+  <div class="sm-page-size"><select id="smPageSize" data-shared-dropdown data-placeholder="Rows per page" aria-label="Sites per page"><option value="10">10 / page</option><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select></div>
+  <div class="sm-page-goto"><span>Go to</span><input id="smPageJump" type="number" min="1" aria-label="Go to site page"><span>Page</span></div></div>
   <div class="site-status" id="smStatus" role="status"></div>
- </div>
+ </section>
 </section>
 </main>
 
@@ -2618,120 +2588,27 @@ if(window.NewUI?.syncSearch){
 </script>
 
 <script>
-/* Site Management: isolated integration; reuses users.html api(), auth and NewUI */
+/* Site Management — same components and layout as Admin Users; existing /api/sites endpoints retained */
 (function(){
-  'use strict';
-  const el=id=>document.getElementById(id);
-  let records=[], editingId=null, currentPage=1, pageSize=10, loaded=false, busy=false, siteModal=null;
-  const paneUsers=el('manageUsersPane'), paneSites=el('manageSitesPane');
-  const tabs=document.querySelectorAll('[data-manage-tab]');
-  function setStatus(message){el('smStatus').textContent=message;}
-  function notify(message,type='success'){
-    if(window.NewUI?.showToast)NewUI.showToast(message,type);
-    else if(type==='error')console.error(message);
-  }
-  function switchTab(which){
-    const showSites=which==='sites';
-    paneSites.hidden=!showSites;paneUsers.hidden=showSites;
-    tabs.forEach(t=>{const active=t.dataset.manageTab===which;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));});
-    if(showSites&&!loaded&&typeof ready!=='undefined'&&ready)loadSites();
-  }
-  tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
-  function normalize(data){
-    const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);
-    return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}));
-  }
-  function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td);return td;}
-  function render(){
-    const query=el('smSearch').value.trim().toLowerCase();
-    const matches=records.filter(x=>String(x.id||'').toLowerCase().includes(query)||String(x.name||'').toLowerCase().includes(query));
-    const maxPage=Math.max(1,Math.ceil(matches.length/pageSize));
-    currentPage=Math.min(currentPage,maxPage);
-    const tbody=el('smRows');tbody.replaceChildren();
-    const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);
-    if(!shown.length){
-      const tr=document.createElement('tr'),td=makeCell(tr,'No matching sites');
-      td.colSpan=5;td.className='auth-empty-cell';tbody.append(tr);
-    }
-    for(const site of shown){
-      const tr=document.createElement('tr');
-      makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');
-      const td=makeCell(tr,'');td.textContent='';
-      const tag=document.createElement('span');tag.className='site-badge'+(site.active===true?'':' off');
-      tag.textContent=site.active===true?'Active':'Inactive';td.append(tag);
-      const actions=makeCell(tr,'');actions.textContent='';
-      const editBtn=document.createElement('button');editBtn.type='button';editBtn.className='auth-mini-btn';
-      editBtn.textContent='Edit';editBtn.addEventListener('click',()=>openEditor(site));actions.append(editBtn);
-      tbody.append(tr);
-    }
-    el('smTotal').textContent=records.length;
-    el('smActive').textContent=records.filter(x=>x.active===true).length;
-    el('smInactive').textContent=records.filter(x=>x.active!==true).length;
-    el('smPageInfo').textContent=matches.length?`${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,matches.length)} of ${matches.length}`:'0 sites';
-    el('smPrev').disabled=currentPage<=1;el('smNext').disabled=currentPage>=maxPage;
-  }
-  async function loadSites(){
-    if(busy)return;
-    busy=true;el('smCreate').disabled=true;setStatus('Loading sites…');
-    try{
-      records=normalize(await api('/api/sites'));loaded=true;render();
-      el('smCreate').disabled=false;setStatus(`Loaded ${records.length} sites.`);
-    }catch(error){
-      loaded=false;setStatus('Cannot load sites: '+error.message);
-      notify('Cannot load sites: '+error.message,'error');
-    }finally{busy=false;}
-  }
-  function openEditor(site=null){
-    if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return;}
-    editingId=site?.id||null;
-    const root=document.createElement('div');root.className='site-form-modal';
-    root.innerHTML=`<form id="smForm" class="site-form">
-      <div class="site-field"><label for="smName">Site Name</label><input id="smName" required maxlength="100" placeholder="e.g. 5G88"></div>
-      <div class="site-field"><label for="smId">Site ID</label><input id="smId" required maxlength="48" pattern="[a-z0-9_-]+" placeholder="e.g. 5g88"><div class="site-hint">Site ID cannot be changed later.</div></div>
-      <div class="site-field"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" maxlength="60" placeholder="e.g. group-a"></div>
-      <div class="site-field"><label for="smEnabled">Status</label><select id="smEnabled" data-shared-dropdown data-placeholder="Status"><option value="true">Active</option><option value="false">Inactive</option></select></div>
-      <div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div>
-    </form>`;
-    root.querySelector('#smName').value=site?.name||'';
-    root.querySelector('#smId').value=site?.id||'';
-    root.querySelector('#smId').disabled=!!site;
-    root.querySelector('#smWallet').value=site?.walletGroupId||'';
-    root.querySelector('#smEnabled').value=String(site?.active!==false);
-    siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null;}});
-    NewUI.init?.(root);
-    const statusSelect=root.querySelector('#smEnabled');
-    statusSelect._sharedDropdown?.refresh?.();
-    root.querySelector('#smCancel').onclick=()=>siteModal?.close();
-    root.querySelector('#smForm').onsubmit=async event=>{
-      event.preventDefault();
-      const save=root.querySelector('#smSave');if(save.disabled)return;
-      const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();
-      if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return;}
-      const payload={name:root.querySelector('#smName').value.trim(),
-        walletGroupId:root.querySelector('#smWallet').value.trim()||null,
-        active:statusSelect.value==='true'};
-      if(!payload.name){notify('Site name required','error');return;}
-      save.disabled=true;
-      try{
-        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});
-        if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});
-        else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});
-        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});
-        siteModal?.close();notify('Site saved successfully.');
-        await loadSites();
-      }catch(error){notify('Save failed: '+error.message,'error');}
-      finally{
-        if(window.NewUI?.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});
-        save.disabled=false;
-      }
-    };
-  }
-  el('smSearch').addEventListener('input',()=>{currentPage=1;render();});
-  el('smRefresh').addEventListener('click',loadSites);
-  el('smCreate').addEventListener('click',()=>openEditor());
-  el('smPrev').addEventListener('click',()=>{currentPage--;render();});
-  el('smNext').addEventListener('click',()=>{currentPage++;render();});
-  el('smPageSize').addEventListener('change',e=>{pageSize=Number(e.target.value)||10;currentPage=1;render();});
+'use strict';
+const el=id=>document.getElementById(id);
+let records=[],currentPage=1,pageSize=10,loaded=false,busy=false,siteModal=null,selectedStatuses=[];
+const paneUsers=el('manageUsersPane'),paneSites=el('manageSitesPane'),tabs=document.querySelectorAll('[data-manage-tab]');
+const dotLoading='<div class="auth-loading-center"><span class="auth-loading-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div>';
+function notify(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else if(type==='error')console.error(message)}
+function setStatus(message,error=false){el('smStatus').textContent=message;el('smStatus').classList.toggle('is-error',error)}
+function switchTab(which){const showSites=which==='sites';paneSites.hidden=!showSites;paneUsers.hidden=showSites;tabs.forEach(t=>{const active=t.dataset.manageTab===which;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active))});if(showSites&&!loaded&&ready)loadSites()}
+tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
+const filter=window.NewUI?.chips?.('#smStatusChips',{placeholder:'All Status',options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],value:[],onChange(values){selectedStatuses=Array.isArray(values)?values:filter.getValue();currentPage=1;render()}});
+function normalize(data){const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}))}
+function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td);return td}
+function loadingRow(message=dotLoading){const tbody=el('smRows');tbody.innerHTML='<tr><td colspan="5" class="auth-empty-cell"></td></tr>';tbody.firstElementChild.firstElementChild.innerHTML=message}
+const icons={prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m13 6-6 6 6 6m6-12-6 6 6 6"/></svg>',forward:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 6 6 6-6 6m0-12 6 6-6 6"/></svg>'};
+function pagination(total){const footer=el('smPagination');footer.hidden=total===0;if(!total)return;const pages=Math.max(1,Math.ceil(total/pageSize));currentPage=Math.min(currentPage,pages);el('smPageInfo').textContent=`${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,total)} of ${total} items`;const holder=el('smPageNumbers');holder.replaceChildren();function button(label,target,active=false,kind='',disabled=false){const b=document.createElement('button');b.type='button';b.className='sm-page-btn '+kind+(active?' active':'');b.disabled=disabled;b.innerHTML=label;b.setAttribute('aria-label',kind==='sm-page-arrow'?(target<currentPage?'Previous page':'Next page'):'Page '+target);if(active)b.setAttribute('aria-current','page');b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,target));render()};holder.append(b)}function dots(back){const b=document.createElement('button');b.type='button';b.className='sm-page-btn sm-page-dots';b.innerHTML='<span class="sm-dots-text">•••</span><span class="sm-dots-icon">'+(back?icons.back:icons.forward)+'</span>';b.title=back?'Jump back 5 pages':'Jump forward 5 pages';b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,currentPage+(back?-5:5)));render()};holder.append(b)}button(icons.prev,currentPage-1,false,'sm-page-arrow',currentPage===1);const nums=new Set([1,pages]);for(let i=Math.max(1,currentPage-2);i<=Math.min(pages,currentPage+2);i++)nums.add(i);let last=0;for(const n of [...nums].sort((a,b)=>a-b)){if(last&&n-last>1){if(n-last===2)button(String(last+1),last+1);else dots(n<=currentPage)}button(String(n),n,n===currentPage);last=n}button(icons.next,currentPage+1,false,'sm-page-arrow',currentPage===pages);el('smPageJump').max=String(pages)}
+function render(){if(!loaded)return;const query=el('smSearch').value.trim().toLowerCase();const matches=records.filter(x=>(String(x.id||'').toLowerCase().includes(query)||String(x.name||'').toLowerCase().includes(query))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive')));const pages=Math.max(1,Math.ceil(matches.length/pageSize));currentPage=Math.max(1,Math.min(currentPage,pages));const tbody=el('smRows');tbody.replaceChildren();const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);if(!shown.length){const tr=document.createElement('tr'),td=makeCell(tr,'No matching sites');td.colSpan=5;td.className='auth-empty-cell';tbody.append(tr)}for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);const actions=makeCell(tr,'');actions.textContent='';const edit=document.createElement('button');edit.type='button';edit.className='auth-mini-btn';edit.textContent='Edit';edit.onclick=()=>openEditor(site);actions.append(edit);tbody.append(tr)}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
+async function loadSites(){if(busy)return;busy=true;el('smCreate').disabled=true;el('smTotal').innerHTML=el('smActive').innerHTML=el('smInactive').innerHTML='<span class="auth-loading-dots auth-stat-dots"><span></span><span></span><span></span><span></span></span>';loadingRow();el('smPagination').hidden=true;setStatus('');try{records=normalize(await api('/api/sites'));loaded=true;render();el('smCreate').disabled=false;setStatus('')}catch(error){loaded=false;el('smTotal').textContent=el('smActive').textContent=el('smInactive').textContent='—';loadingRow('<span>Cannot load sites. Please try again.</span>');setStatus('Cannot load sites: '+error.message,true);notify('Cannot load sites: '+error.message,'error')}finally{busy=false}}
+function openEditor(site=null){if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return}const editingId=site?.id||null;const root=document.createElement('div');root.className='site-form-modal';root.innerHTML=`<form id="smForm" class="site-form"><div class="site-field"><label for="smName">Site Name</label><input id="smName" data-new-ui-input required maxlength="100" placeholder="e.g. 5G88"></div><div class="site-field"><label for="smId">Site ID</label><input id="smId" data-new-ui-input required maxlength="48" pattern="[a-z0-9_-]+" placeholder="e.g. 5g88"><div class="site-hint">Site ID cannot be changed later.</div></div><div class="site-field full"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" data-new-ui-input maxlength="60" placeholder="e.g. group-a"></div><div class="site-field full"><label class="site-switch-row"><span><strong>Active site</strong><small>Allow this site to remain enabled</small></span><span class="shared-active-switch"><input id="smEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div><div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div></form>`;root.querySelector('#smName').value=site?.name||'';root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}const payload={name:root.querySelector('#smName').value.trim(),walletGroupId:root.querySelector('#smWallet').value.trim()||null,active:root.querySelector('#smEnabled').checked};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();notify('Site saved successfully.');await loadSites()}catch(error){notify('Save failed: '+error.message,'error')}finally{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});save.disabled=false}}}
+const search=el('smSearch');if(window.NewUI?.syncSearch)NewUI.syncSearch(search,{onSearch:()=>{currentPage=1;render()}});search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onclick=()=>openEditor();el('smPageSize').addEventListener('change',e=>{pageSize=Number(e.target.value)||10;currentPage=1;render()});el('smPageJump').addEventListener('keydown',e=>{if(e.key==='Enter'){const n=Number(e.target.value);const total=records.filter(x=>(String(x.id||'').toLowerCase().includes(search.value.trim().toLowerCase())||String(x.name||'').toLowerCase().includes(search.value.trim().toLowerCase()))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive'))).length;currentPage=Math.min(Math.max(1,Math.ceil(total/pageSize)),Math.max(1,Math.floor(n)||1));render();e.target.value=''}});
 })();
 </script>
 </body></html>
