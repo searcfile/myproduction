@@ -595,28 +595,41 @@ transition: all 0.3s;
 
 #twofaChange:hover{ color:var(--blue-hover); }
 
-.otp-wrap{
-  display:grid;
-  grid-template-columns:repeat(6, 1fr);
-  gap:8px;
-  margin-bottom:24px;
-  position:relative;
+
+.otp-wrap {
+  display: grid;
+  grid-template-columns: repeat(6, 42px);
+  justify-content: start;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 24px;
+  position: relative;
 }
 
-.otp-input{
-  width:100%;
-  border-radius:8px;
-  border:1px solid var(--border-input);
-  background:var(--page-input);
-  color:var(--page-text);
-  outline:none;
-  text-align:center;
-  font-size:16px;
-  font-weight:400;
-  padding:4px 11px;
-  height:40px;
-  transition:all .3s;
+
+
+.otp-input {
+  width: 42px;
+  height: 46px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #424242;
+  border-radius: 10px;
+  outline: none;
+  background: #141414;
+  color: rgba(255, 255, 255, .85);
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 46px;
+  text-align: center;
+  transition:
+    border-color .2s,
+    background .2s,
+    box-shadow .2s,
+    transform .2s;
 }
+
 
 .otp-input:focus{
   border-color:var(--blue);
@@ -1226,16 +1239,32 @@ body.light-theme .login-security-card {
 
 
 /* Mobile */
+
 @media (max-width: 480px) {
   .backoffice-auth .otp-wrap {
+    grid-template-columns: repeat(6, 42px);
     gap: 7px;
+    justify-content: start;
   }
 
   .backoffice-auth .otp-input {
-    min-width: 0;
-    padding: 4px;
+    width: 42px;
+    height: 46px;
+    padding: 0;
   }
 }
+
+@media (max-width: 360px) {
+  .backoffice-auth .otp-wrap {
+    grid-template-columns: repeat(6, minmax(0, 42px));
+    gap: 6px;
+  }
+
+  .backoffice-auth .otp-input {
+    width: 100%;
+  }
+}
+
     
 /* ==========================================
    LOGIN INPUT ICON - CLEAN VERSION
