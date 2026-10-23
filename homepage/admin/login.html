@@ -1350,11 +1350,33 @@ body.light-theme .login-security-card {
 }
 
 /* Alihkan mata bila X muncul */
+
+/* Alihkan ikon mata supaya tidak bertindih dengan X */
 .backoffice-auth .field-pass:has(
   .login-error-icon:not([hidden])
 ) .toggle-eye {
-  right: 30px !important;
+  right: 40px !important;
 }
+
+/* Tetapkan posisi X password */
+.backoffice-auth .field-pass .login-error-icon {
+  right: 12px !important;
+  width: 20px !important;
+  height: 28px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Pastikan SVG X sentiasa penuh */
+.backoffice-auth .field-pass .login-error-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  display: block !important;
+  fill: currentColor !important;
+  flex-shrink: 0 !important;
+}
+
 
 .backoffice-auth .field-pass .toggle-eye svg {
   display: block;
