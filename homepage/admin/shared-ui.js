@@ -4082,28 +4082,40 @@ input.addEventListener("input", () => {
   });
 
   // Mobile: kekalkan butang dan panel asal.
-  mobileBtn?.addEventListener("click", e => {
-    e.stopPropagation();
+ 
+/* MOBILE - OPEN CUSTOM SELECT SITE */
+mobileBtn?.addEventListener("click", async e => {
+  e.stopPropagation();
 
-    if (!panel.hidden) {
-      closePanel();
-      return;
-    }
+  if (!panel.hidden) {
+    closePanel();
+    return;
+  }
 
-    panel.hidden = false;
-    mobileBtn.setAttribute("aria-expanded", "true");
+  panel.hidden = false;
+  mobileBtn.setAttribute("aria-expanded", "true");
+  mobileBtn.classList.add("is-open");
 
-    const rect = mobileBtn.getBoundingClientRect();
-    panel.style.width = "min(345px, calc(100vw - 16px))";
-    panel.style.left = `${Math.max(
-      8,
-      Math.min(rect.left, window.innerWidth - 353)
-    )}px`;
-    panel.style.top = `${rect.bottom + 8}px`;
+  const rect = mobileBtn.getBoundingClientRect();
+  const width = Math.min(345, window.innerWidth - 16);
 
-    mobileInput.value = "";
-    renderOptions();
-  });
+  panel.style.width = `${width}px`;
+  panel.style.left = `${Math.max(
+    8,
+    Math.min(rect.left, window.innerWidth - width - 8)
+  )}px`;
+  panel.style.top = `${rect.bottom + 8}px`;
+
+  // Jangan buka dropdown checkbox lama.
+  list.style.display = "none";
+
+  if (!ready && !loading) {
+    await loadSites();
+  }
+
+  updateInput();
+});
+
 
   mobileInput.addEventListener("focus", () => renderOptions());
   mobileInput.addEventListener("input", () => {
