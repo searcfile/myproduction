@@ -3212,9 +3212,9 @@ max-width: 170px;
 }
 
 #headerSiteCustom .header-site-search-input {
-  flex: 1 1 0;
-  width: 0;
-  min-width: 12px;
+  flex: 1 1 48px;
+  width: 48px;
+  min-width: 36px;
   height: 100%;
   padding: 0 3px;
   margin: 0;
@@ -3438,5 +3438,26 @@ max-width: 170px;
 
   .mobile-site-more-popup button:hover {
     background: var(--list-hover);
+  }
+}
+
+/* HEADER SELECT SITE - CLICK & FOCUS FIX */
+@media (min-width: 816px) {
+  #headerSiteCustom .shared-chip-dropdown-trigger {
+    cursor: text !important;
+  }
+
+  #headerSiteCustom .shared-chip-dropdown-values {
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+  }
+
+  #headerSiteCustom .header-site-search-input {
+    position: relative;
+    z-index: 2;
+    flex: 1 1 48px !important;
+    width: 48px !important;
+    min-width: 36px !important;
+    cursor: text;
   }
 }
