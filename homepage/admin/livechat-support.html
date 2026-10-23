@@ -1619,6 +1619,72 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
 @media(max-width:768px) {.livechat-layout {display:block!important;height:100dvh!important;}.user-list-panel,.chat-detail-panel {height:100dvh!important;width:100%!important;}.livechat-layout.mobile-chat-open .user-list-panel {display:none!important;}.livechat-layout.mobile-chat-open .chat-detail-panel {display:block!important;}.livechat-layout:not(.mobile-chat-open) .user-list-panel {display:flex!important;}.livechat-layout:not(.mobile-chat-open) .chat-detail-panel {display:none!important;}.chat-detail-panel {padding:0!important;}#containerChatBox {height:100%!important;border-radius:0!important;border:0!important;}#chatHeader {padding:10px 12px!important;min-height:66px!important;}#searchMessage {width:clamp(100px,30vw,165px)!important;}.chat-box {padding:12px!important;}.send-box {padding:10px 9px calc(10px + env(safe-area-inset-bottom))!important;gap:6px!important;grid-template-columns:32px minmax(0,1fr) auto!important;}.send-box .attach-btn {width:32px!important;height:34px!important;}.send-box .send-actions {gap:2px!important;}.send-box .send-tool-btn {width:26px!important;height:32px!important;}.send-main-btn {width:36px!important;height:36px!important;min-width:36px!important;}.emoji-picker-wrap {right:8px!important;left:8px!important;bottom:75px!important;}}
 @media(max-width:390px) {.chat-header-right {gap:5px!important;}#searchMessage {max-width:115px!important;padding-left:29px!important;background-position:8px center!important;}#chatUserName {max-width:120px!important;}.send-box .send-actions {gap:0!important;}}
 
+
+/* ===== 5G88 LIVECHAT SUPPORT V3 — scoped modern refinements ===== */
+:root {--lc-blue:#2878ef;--lc-radius:14px}
+body.dark-theme {--lc-blue:#5b9bff}
+.livechat-layout {grid-template-columns:clamp(260px,26vw,350px) minmax(0,1fr)!important}
+.user-list-header {padding:18px 16px 15px!important}
+.user-list-header::before {content:'Inbox'!important;font-size:21px!important;letter-spacing:-.65px!important;margin-bottom:13px!important}
+.user-scroll-box {padding:9px 10px 16px!important}
+.user-item {border-radius:13px!important;padding:12px 11px!important;margin:3px 0!important}
+.user-item.active {box-shadow:inset 3px 0 0 var(--lc-blue)!important}
+.user-item:hover {transform:translateY(-1px)}
+.user-top-left,.user-top-row,.user-top-right {min-width:0}
+.user-top-left .label-text {overflow-wrap:anywhere}
+.user-top-time {max-width:98px;overflow:hidden}
+.user-top-date,.user-top-clock {font-size:10px!important}
+#filterAll,#filterUnread,#filterOnline {border-radius:8px!important}
+#filterAll:hover,#filterUnread:hover,#filterOnline:hover {border-color:var(--lc-blue)!important}
+/* Shared new-ui.js search wrapper: SVG search/clear stays inside input */
+.user-list-header>.new-ui-input-wrap {display:flex!important;width:100%!important}
+.chat-header-right>.new-ui-input-wrap {display:flex!important;width:clamp(140px,22vw,260px)!important;min-width:0!important;flex:0 1 auto!important}
+#searchUser.new-ui-input,#searchMessage.new-ui-input {width:100%!important;max-width:none!important;min-width:0!important;background-image:none!important;padding:0 37px 0 13px!important;height:39px!important;border-radius:10px!important;border:1px solid var(--lc-border)!important;background-color:var(--lc-elevated)!important;color:var(--lc-ink)!important;box-shadow:none!important}
+#searchUser.new-ui-input:focus,#searchMessage.new-ui-input:focus {border-color:var(--lc-blue)!important;box-shadow:0 0 0 3px rgba(49,119,236,.12)!important}
+.new-ui-input-wrap .new-ui-input-icon {right:9px!important;color:var(--lc-muted)!important;z-index:2}
+.new-ui-input-wrap .new-ui-input-icon:hover {color:var(--lc-blue)!important}
+.chat-detail-panel {padding:12px!important}
+#containerChatBox {border-radius:15px!important}
+#chatHeader {min-height:70px!important;padding:11px 17px!important}
+.chat-header-user,.chat-header-left,.chat-header-right {min-width:0}
+.chat-header-right {gap:8px!important}
+.chat-box {padding:20px clamp(12px,2.5vw,32px)!important;overscroll-behavior:contain}
+/* Fix broken chat ears: remove the legacy ::after triangles completely. */
+.mine .msg-bubble-wrap::after,.theirs .msg-bubble-wrap::after {content:none!important;display:none!important;clip-path:none!important}
+.msg-row {gap:9px!important;align-items:flex-end!important;min-width:0}
+.message {max-width:100%!important;margin:10px 0!important}
+.msg-row-mine {justify-content:flex-end!important}
+.msg-row-theirs {justify-content:flex-start!important}
+.message .msg-bubble-wrap {width:max-content!important;max-width:min(460px,calc(100% - 42px))!important;min-width:0!important;min-height:0!important;box-sizing:border-box!important;padding:10px 13px!important;overflow-wrap:anywhere!important;white-space:normal!important;position:relative!important;isolation:isolate}
+.mine .msg-bubble-wrap {border-radius:15px 15px 5px 15px!important;background:linear-gradient(145deg,#2879ef,#1856bf)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 3px 12px rgba(17,80,179,.14)!important}
+.theirs .msg-bubble-wrap {border-radius:15px 15px 15px 5px!important;background:var(--lc-panel)!important;border:1px solid var(--lc-border)!important;box-shadow:0 3px 12px rgba(0,0,0,.05)!important}
+.msg-avatar-outside {width:28px!important;height:28px!important;align-self:flex-end!important;border:1px solid var(--lc-border)!important;box-shadow:0 0 0 2px var(--lc-elevated)!important}
+.msg-info {font-size:11px!important;line-height:1.3!important}
+.msg-text {font-size:13px!important;line-height:1.5!important;overflow-wrap:anywhere!important}
+.msg-time {font-size:10px!important;margin-top:5px!important;line-height:1.2!important}
+.send-box {max-height:min(34dvh,260px)!important;overflow-y:auto!important;grid-template-columns:38px minmax(0,1fr) auto!important;padding:11px 15px!important;align-items:center!important}
+.send-box .image-preview-wrap:not([hidden]) {grid-column:1/-1!important;max-height:126px!important;overflow:auto!important;flex-shrink:0!important}
+.send-box #msg {min-width:0!important;max-height:86px!important}
+.send-box .send-actions {display:flex!important;visibility:visible!important;flex-shrink:0!important;align-self:center!important}
+.send-main-btn {display:inline-flex!important;visibility:visible!important;flex-shrink:0!important;position:relative!important;z-index:1!important}
+.image-preview-card,.image-add-card {width:62px!important;height:62px!important;flex-basis:62px!important}
+.chat-empty-inner {font-size:14px!important}
+@media (max-width:900px) and (min-width:769px) {.livechat-layout{grid-template-columns:270px minmax(0,1fr)!important}.chat-header-right>.new-ui-input-wrap{width:170px!important}}
+@media (max-width:768px) {
+.livechat-layout{display:block!important;height:100dvh!important}
+.user-list-panel,.chat-detail-panel{height:100dvh!important}
+.chat-detail-panel{padding:0!important}
+#containerChatBox{border:0!important;border-radius:0!important}
+#chatHeader{padding:10px 11px!important;min-height:64px!important}
+.chat-header-right>.new-ui-input-wrap{width:clamp(95px,28vw,170px)!important}
+.chat-box{padding:12px!important}
+.message .msg-bubble-wrap{max-width:min(390px,calc(100% - 38px))!important}
+.send-box{grid-template-columns:32px minmax(0,1fr) auto!important;gap:5px!important;padding:9px 9px calc(9px + env(safe-area-inset-bottom,0px))!important}
+.send-box .send-actions{gap:2px!important}
+}
+@media(max-width:390px){.chat-header-right>.new-ui-input-wrap{width:100px!important}#searchMessage.new-ui-input{padding-left:8px!important;font-size:11px!important}.send-tool-btn{width:25px!important}.send-main-btn{width:34px!important;min-width:34px!important;height:34px!important}}
+@media(prefers-reduced-motion:reduce){.user-item{transform:none!important}}
+
   </style>
 </head>
 <body>
@@ -1626,7 +1692,7 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
   <!-- LEFT -->
   <aside id="userList" class="user-list-panel">
     <div class="user-list-header">
-      <input type="text" id="searchUser" placeholder="Search user..." />
+      <input type="text" id="searchUser" data-ui="search" placeholder="Search user..." />
 
 <div class="top-filter-row">
   <button id="filterAll" class="active-filter">All</button>
@@ -1690,6 +1756,7 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
               <input
                 type="text"
                 id="searchMessage"
+                data-ui="search"
                 placeholder="Search messages..."
               />
               <button id="closeChatBtn" type="button" class="close-chat-btn" title="Close">
@@ -1771,6 +1838,7 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
 <script src="./shared-ui.js"></script>
+<script>document.addEventListener("DOMContentLoaded",()=>{if(typeof window.initNewUI==="function")window.initNewUI(document);});</script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <script>
 "use strict";
