@@ -596,10 +596,11 @@ transition: all 0.3s;
 #twofaChange:hover{ color:var(--blue-hover); }
 
 
+
 .otp-wrap {
   display: grid;
   grid-template-columns: repeat(6, 42px);
-  justify-content: start;
+  justify-content: center;
   gap: 8px;
   width: 100%;
   max-width: 100%;
@@ -1239,12 +1240,11 @@ body.light-theme .login-security-card {
 
 
 /* Mobile */
-
 @media (max-width: 480px) {
   .backoffice-auth .otp-wrap {
     grid-template-columns: repeat(6, 42px);
     gap: 7px;
-    justify-content: start;
+    justify-content: center;
   }
 
   .backoffice-auth .otp-input {
@@ -1253,6 +1253,7 @@ body.light-theme .login-security-card {
     padding: 0;
   }
 }
+
 
 @media (max-width: 360px) {
   .backoffice-auth .otp-wrap {
