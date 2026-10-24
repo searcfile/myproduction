@@ -3009,19 +3009,48 @@ function initWorkspaceTabDrag(tabList) {
     event.preventDefault();
   });
 }
+function saveVerifiedWorkspacePreview(tabs) {
+  try {
+    const user = typeof auth !== "undefined"
+      ? auth.currentUser
+      : null;
 
+    if (!user || !currentAdminProfile) return;
+
+    const marker = sessionStorage.getItem("5g88.adminSession");
+
+    if (marker !== user.uid) return;
+
+    const cacheKey =
+      "5g88.workspacePreview." + user.uid;
+
+    const safeTabs = tabs.map(tab => ({
+      file: String(tab.file || ""),
+      name: String(tab.name || tab.file || "")
+    }));
+
+    sessionStorage.setItem(
+      cacheKey,
+      JSON.stringify(safeTabs)
+    );
+
+  } catch (error) {
+    console.warn("[5G88] Save workspace preview:", error);
+  }
+}
 function renderTabs() {
   const tabBar = document.getElementById("tabBar");
   if (!tabBar) return;
 
-  // Tunggu profil dan permission sebenar siap.
+  // Jangan bina tab sebenar sebelum profil Firebase siap.
   if (!currentAdminProfile) return;
 
-  tabBar.innerHTML = "";
+  const tabs = getTabs().filter(tab =>
+    canShowAdminPage(tab.file)
+  );
 
-    const tabs = getTabs().filter(tab =>
-  canShowAdminPage(tab.file)
-);
+  // Cache tab yang sudah ditapis mengikut profil admin.
+  saveVerifiedWorkspacePreview(tabs);
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -3111,7 +3140,7 @@ function renderTabs() {
       tabList.appendChild(element);
     });
 
-    tabBar.append(tabList, moreWrap);
+    tabBar.replaceChildren(tabList, moreWrap);
 
     // Search lama tetap digunakan, tetapi kekal di kiri.
     initTabBarSearch();
