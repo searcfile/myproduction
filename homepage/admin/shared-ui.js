@@ -3283,13 +3283,6 @@ initWorkspaceTabDrag(tabList);
 
 updateOpenIndicators();
 
-// Tab sebenar sudah siap.
-// Sekarang baru buang paparan sementara.
-const initialShell = document.getElementById("adminInitialShell");
-
-if (initialShell) {
-  initialShell.remove();
-}
   }
 
 
