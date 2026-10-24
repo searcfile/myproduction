@@ -5922,22 +5922,14 @@ window.initTabBarSearch =
      START
      ========================================================== */
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      init,
-      {
-        once: true
-      }
-    );
-
-  } else {
-
-    init();
-  }
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    init,
+    { once: true }
+  );
+} else {
+  init();
+}
 
 })();
