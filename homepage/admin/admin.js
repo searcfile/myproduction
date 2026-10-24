@@ -1,3 +1,63 @@
+/* =============================================================
+   5G88 Shared Admin Page Guard (integrated in admin.js)
+   Generator/utility pages use only this lightweight branch.
+   Dashboard keeps its existing admin.js behavior unchanged.
+   ============================================================= */
+(function(){
+  const isChildAdminPage = !!document.querySelector('meta[name="5g88-admin-child"][content="protected"]');
+  if (!isChildAdminPage) return;
+  let allowed = false;
+  let navigating = false;
+  const redirect = () => {
+    if (navigating) return;
+    navigating = true;
+    allowed = false;
+    document.documentElement.style.visibility = 'hidden';
+    window.currentAdmin = null;
+    window.location.replace('./login.html');
+  };
+  const reveal = () => {
+    document.getElementById('admin-page-pending')?.remove();
+    document.documentElement.style.visibility = '';
+  };
+  try {
+    if (!window.firebase || !firebase.apps.length) { redirect(); return; }
+    const pageAuth = firebase.auth();
+    const pageDb = firebase.database();
+    let sequence = 0;
+    pageAuth.onAuthStateChanged(async user => {
+      const thisRun = ++sequence;
+      if (!user || user.isAnonymous) { redirect(); return; }
+      try {
+        const token = await user.getIdTokenResult(true);
+        if (thisRun !== sequence || navigating) return;
+        if (token.claims.secondVerified !== true ||
+            !Number.isSafeInteger(token.claims.pinVersion)) { redirect(); return; }
+        const snapshot = await pageDb.ref('adminUsers/' + user.uid).once('value');
+        if (thisRun !== sequence || navigating) return;
+        const profile = snapshot.val();
+        if (!profile || profile.active !== true ||
+            profile.secondPasswordEnabled !== true ||
+            !['superadmin','siteadmin'].includes(profile.role) ||
+            token.claims.pinVersion !== profile.pinVersion) { redirect(); return; }
+        window.currentAdmin = {
+          uid: user.uid, username: profile.username, email: profile.email,
+          name: profile.displayName || profile.username, role: profile.role
+        };
+        allowed = true;
+        reveal();
+      } catch (err) {
+        console.error('Admin page verification failed:', err);
+        redirect();
+      }
+    }, err => { console.error('Auth listener failed:',err); redirect(); });
+    window.addEventListener('pageshow', e => {
+      if (e.persisted) window.location.reload();
+    });
+  } catch(err) { console.error('Admin guard initialization failed:',err); redirect(); }
+})();
+
+if (!document.querySelector('meta[name="5g88-admin-child"][content="protected"]')) {
 
 function setBtnLoading(btn, state, text){
   if (!btn) return;
@@ -1062,3 +1122,4 @@ if (loadingScreen) {
     }
   });
 })();
+}
