@@ -1002,17 +1002,16 @@ function createShell() {
 
   <div class="header-links">
 
-<!-- SELECT SITE - LEFT HEADER -->
+    <!-- HEADER TAB SEARCH -->
+    <div
+      class="header-tab-search"
+      id="headerTabSearch">
+
 <div
   id="headerSiteCustom"
   class="header-site-custom admin-site-selector"
   aria-label="Select Site">
 </div>
-
-<!-- HEADER TAB SEARCH -->
-<div
-  class="header-tab-search"
-  id="headerTabSearch">
 
 <form
   id="headerTabSearchForm"
