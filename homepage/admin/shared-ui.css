@@ -3536,3 +3536,20 @@ max-width: 170px;
     cursor: text;
   }
 }
+/* =========================================
+   5G88 ADMIN - AUTH PENDING
+   Jangan sembunyikan seluruh halaman
+========================================= */
+
+html.admin-auth-pending #mainContainer {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Header dan tabbar tidak boleh digunakan
+   sebelum session disahkan */
+html.admin-auth-pending .admin-header,
+html.admin-auth-pending .admin-nav,
+html.admin-auth-pending .admin-workspace-tabs {
+  pointer-events: none !important;
+}
