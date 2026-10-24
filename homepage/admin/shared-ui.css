@@ -3553,3 +3553,7 @@ html.admin-auth-pending .admin-nav,
 html.admin-auth-pending .admin-workspace-tabs {
   pointer-events: none !important;
 }
+#homepageSharedShell .header,
+#homepageSharedShell #tabBar {
+  transition: none;
+}
