@@ -3631,8 +3631,31 @@ html.admin-auth-pending #homepageSharedShell {
 ========================================== */
 
 #adminInitialShell {
+  position: relative;
   z-index: 2000;
   pointer-events: none;
+}
+
+/* Bila header sebenar sudah ada, sembunyikan header sementara */
+body:has(#homepageSharedShell .header)
+#adminInitialShell .admin-nav {
+  display: none !important;
+}
+
+/* Bila tab sebenar sudah dibina, sembunyikan tab sementara */
+body:has(#tabBar .admin-workspace-tabs-list)
+#adminInitialShell .admin-initial-tabs {
+  display: none !important;
+}
+
+/* Tab sementara hanya kelihatan ketika tab sebenar belum siap */
+#adminInitialShell .admin-initial-tabs {
+  z-index: 2001;
+}
+
+/* Kekalkan ketinggian tab sebenar */
+#homepageSharedShell #tabBar {
+  min-height: 52px;
 }
 
 #adminInitialShell .admin-initial-tabs {
