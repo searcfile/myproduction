@@ -3557,3 +3557,56 @@ html.admin-auth-pending .admin-workspace-tabs {
 #homepageSharedShell #tabBar {
   transition: none;
 }
+/* =========================================
+   5G88 INITIAL STATIC NAVIGATION
+========================================= */
+
+#adminInitialShell {
+  position: relative;
+  z-index: 1003;
+  pointer-events: none;
+}
+
+#adminInitialShell .admin-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: #001529;
+  color: rgba(255,255,255,.85);
+}
+
+#adminInitialShell .admin-nav-inner {
+  height: 100%;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#adminInitialShell .admin-nav-left,
+#adminInitialShell .admin-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#adminInitialShell .admin-nav-menu {
+  font-size: 22px;
+}
+
+#adminInitialShell .admin-nav-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#adminInitialShell .admin-initial-tabs {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: 52px;
+  background: var(--tab2, #141414);
+  border-bottom: 1px solid var(--tab-border, #303030);
+}
