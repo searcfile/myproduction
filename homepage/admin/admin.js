@@ -688,6 +688,53 @@ const user = await new Promise(resolve => {
 
   return window.currentAdmin;
 }
+
+/* ===== ADMIN AUTH STATE GUARD ===== */
+(function () {
+  let initialized = false;
+  let redirecting = false;
+
+  function redirectToLogin() {
+    if (redirecting) return;
+    redirecting = true;
+
+    window.currentAdmin = null;
+    window.location.replace("./login.html");
+  }
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!initialized) {
+      initialized = true;
+      return;
+    }
+
+    if (!user || user.isAnonymous) {
+      redirectToLogin();
+      return;
+    }
+
+    try {
+      const admin = await verifyAdminSession();
+
+      if (!admin) {
+        redirectToLogin();
+      }
+    } catch (error) {
+      console.error("Admin session check failed:", error);
+      redirectToLogin();
+    }
+  }, (error) => {
+    console.error("Firebase Auth error:", error);
+    redirectToLogin();
+  });
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+})();
+
 // ⬇️ GANTI seluruh blok ini
 document.addEventListener("DOMContentLoaded", async () => {
   const forceLogout = sessionStorage.getItem("forceLogout");
