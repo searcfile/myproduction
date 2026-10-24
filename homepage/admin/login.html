@@ -2900,7 +2900,10 @@ const result = await loginAuth.signInWithCustomToken(
 
 // Penanda sesi selepas PIN berjaya
 sessionStorage.setItem("5g88.adminSession", result.user.uid);
-
+localStorage.setItem(
+  "autoLogout.expireAt",
+  String(Date.now() + 24 * 60 * 60 * 1000)
+);
     const user = result.user;
     if (!user) throw new Error("Firebase session unavailable.");
 
