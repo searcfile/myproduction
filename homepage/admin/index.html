@@ -20,28 +20,19 @@
   <meta name="twitter:title" content="Home Editor">
   <meta name="twitter:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
   <meta name="twitter:image" content="https://searcfile.github.io/myproduction/homepage/admin/logo.svg">
+  <style>html{visibility:hidden}</style>
 </head>
 <body>
-
 <div class="container" id="mainContainer">
   <div id="emptyState" class="empty-state hidden" role="status" aria-live="polite">
     <h3 class="empty-title">Click menu open sidebar!</h3>
-
     <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"/>
-      <path d="M3 13h5l2 3h4l2-3h5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"/>
+      <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M3 13h5l2 3h4l2-3h5" fill="none" stroke="currentColor" stroke-width="1.5"/>
     </svg>
-
     <p class="empty-desc">No data</p>
   </div>
 </div>
-
 <audio id="notifSound" src="./audio/audio.wav" preload="auto"></audio>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -49,55 +40,37 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="../firebase.js"></script>
 <script>
-  document.documentElement.style.visibility = "hidden";
-
-  firebase.auth().onAuthStateChanged(async (user) => {
-    try {
-      if (!user || user.isAnonymous) {
-        location.replace("./login.html");
-        return;
-      }
-
-      const token = await user.getIdTokenResult(true);
-
-      if (
-        token.claims.secondVerified !== true ||
-        !Number.isSafeInteger(token.claims.pinVersion)
-      ) {
-        await firebase.auth().signOut();
-        location.replace("./login.html");
-        return;
-      }
-
-      const snap = await firebase.database()
-        .ref("adminUsers/" + user.uid)
-        .once("value");
-
-      const profile = snap.val();
-
-      if (
-        !profile ||
-        profile.active !== true ||
-        profile.secondPasswordEnabled !== true ||
-        !["superadmin", "siteadmin"].includes(profile.role) ||
-        token.claims.pinVersion !== profile.pinVersion
-      ) {
-        await firebase.auth().signOut();
-        location.replace("./login.html");
-        return;
-      }
-
-      document.documentElement.style.visibility = "";
-
-    } catch (error) {
-      console.error("Access verification failed:", error);
-      location.replace("./login.html");
-    }
-  });
+(function(){
+  let sequence=0, redirecting=false;
+  function deny(){
+    if(redirecting)return;
+    redirecting=true;
+    window.location.replace('./login.html');
+  }
+  try {
+    firebase.auth().onAuthStateChanged(async user=>{
+      const run=++sequence;
+      if(!user || user.isAnonymous)return deny();
+      try {
+        const token=await user.getIdTokenResult(true);
+        if(run!==sequence || redirecting || firebase.auth().currentUser?.uid!==user.uid)return;
+        if(token.claims.secondVerified!==true || !Number.isSafeInteger(token.claims.pinVersion))return deny();
+        const snap=await firebase.database().ref('adminUsers/'+user.uid).once('value');
+        if(run!==sequence || redirecting || firebase.auth().currentUser?.uid!==user.uid)return;
+        const profile=snap.val();
+        if(!profile || profile.active!==true || profile.secondPasswordEnabled!==true ||
+          !['superadmin','siteadmin'].includes(profile.role) ||
+          token.claims.pinVersion!==profile.pinVersion)return deny();
+        document.documentElement.style.visibility='';
+      }catch(err){console.error('Access verification failed:',err);deny();}
+    },deny);
+  }catch(err){console.error('Admin guard initialization failed:',err);deny();}
+})();
 </script>
-<script>window.renderMobileUserBtn = window.renderMobileUserBtn || function(){};</script>
+<script>window.renderMobileUserBtn=window.renderMobileUserBtn||function(){};</script>
 <audio id="christmasMusic" loop>
-<source src="https://5g88-main.vercel.app/main/merrychristmas/" type="audio/mpeg"></audio>
+  <source src="https://5g88-main.vercel.app/main/merrychristmas/" type="audio/mpeg">
+</audio>
 <script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 </body>
