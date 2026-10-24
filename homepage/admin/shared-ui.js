@@ -1908,7 +1908,7 @@ if (staticTabBar) {
 // Masukkan shell lengkap ke halaman.
 document.body.prepend(shell);
 
-// Buang header sementara setelah header sebenar dimasukkan.
+
 if (initialShell) {
   initialShell.remove();
 }
