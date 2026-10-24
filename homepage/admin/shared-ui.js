@@ -3141,7 +3141,32 @@ function renderTabs() {
       tabList.appendChild(element);
     });
 
+    
+const oldPreview = tabBar.querySelector(
+  ".admin-static-tab-preview"
+);
+
+if (oldPreview) {
+  // Siapkan tab sebenar dahulu sebelum membuang preview.
+  tabBar.replaceChildren(tabList, moreWrap);
+} else {
+  // Kemas kini tab biasa tanpa menggantikan container.
+  const oldList = tabBar.querySelector(
+    ".admin-workspace-tabs-list"
+  );
+
+  const oldMore = tabBar.querySelector(
+    ".admin-workspace-more"
+  );
+
+  if (oldList && oldMore) {
+    oldList.replaceWith(tabList);
+    oldMore.replaceWith(moreWrap);
+  } else {
     tabBar.replaceChildren(tabList, moreWrap);
+  }
+}
+
 
     // Search lama tetap digunakan, tetapi kekal di kiri.
     initTabBarSearch();
