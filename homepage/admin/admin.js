@@ -737,6 +737,18 @@ const user = await new Promise(resolve => {
 });
 
   if (!user || user.isAnonymous) return null;
+   const marker = sessionStorage.getItem("5g88.adminSession");
+const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expireAt = Number(expiryRaw);
+
+if (
+  marker !== user.uid ||
+  !expiryRaw ||
+  !Number.isFinite(expireAt) ||
+  expireAt <= Date.now()
+) {
+  return null;
+}
 
   const token = await user.getIdTokenResult(true);
 
