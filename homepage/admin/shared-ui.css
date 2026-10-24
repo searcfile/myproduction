@@ -3626,3 +3626,39 @@ html.admin-auth-pending .admin-workspace-tabs {
 html.admin-auth-pending #homepageSharedShell {
   pointer-events: none;
 }
+/* ==========================================
+   5G88 WORKSPACE TAB REFRESH STABILITY
+========================================== */
+
+#adminInitialShell {
+  z-index: 2000;
+  pointer-events: none;
+}
+
+#adminInitialShell .admin-initial-tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  overflow: hidden;
+}
+
+.admin-initial-tab-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.admin-initial-tab {
+  display: block;
+  flex: 0 0 130px;
+  height: 34px;
+  border-radius: 6px;
+  background: var(--tab-bg, rgba(255,255,255,.04));
+  border: 1px solid var(--tab-border, #303030);
+}
+
+#homepageSharedShell #tabBar {
+  min-height: 52px;
+}
