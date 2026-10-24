@@ -1008,10 +1008,6 @@ function createShell() {
       id="headerTabSearch">
 
 <div
-  id="headerSiteCustom"
-  class="header-site-custom admin-site-selector"
-  aria-label="Select Site">
-</div>
 
 <form
   id="headerTabSearchForm"
@@ -1358,7 +1354,10 @@ function createShell() {
     <div class="user-text">
 
       <div class="header-right-meta">
-
+  id="headerSiteCustom"
+  class="header-site-custom admin-site-selector"
+  aria-label="Select Site">
+</div>
         <div
           id="notificationBell"
           style="
