@@ -411,9 +411,6 @@ const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
     expireAt = v ? Number(v) : null;
   }
 async function doLogout(reason="timeout"){
-  if (window.__5g88LogoutRunning) return;
-  window.__5g88LogoutRunning = true;
-  sessionStorage.setItem("5g88.adminLoggingOut", "1");
   try { clearInterval(checkTimer); } catch {}
 
   try { await auth.signOut(); } catch(_) {}
@@ -429,9 +426,7 @@ async function doLogout(reason="timeout"){
   try { sessionStorage.removeItem("autoOpenTab"); } catch(_) {}
   try { sessionStorage.removeItem("queryUserAppliedOnce"); } catch(_) {}
 
-  if (reason !== "multi-tab") {
-    try { bc && bc.postMessage({ t:"logout", reason }); } catch {}
-  }
+  try { bc && bc.postMessage({ t:"logout", reason }); } catch {}
   try { window.google?.accounts?.id?.disableAutoSelect(); } catch(_){}
 
   window.location.replace(LOGIN_URL);
@@ -471,7 +466,7 @@ async function doLogout(reason="timeout"){
           expireAt = Number(d.expireAt || 0) || expireAt;
           localStorage.setItem(STORAGE_EXPIRE, String(expireAt));
         } else if (d.t === "logout") {
-          if (!window.__5g88LogoutRunning) doLogout("multi-tab");
+          doLogout("multi-tab");
         }
       };
     } catch { bc = null; }
