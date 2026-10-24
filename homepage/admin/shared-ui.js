@@ -925,8 +925,7 @@ currentFile !== "index.html" &&
    ========================================================== */
 
 function createShell() {
-  const initialShell =
-    document.getElementById("adminInitialShell");
+
 
   if (document.getElementById("homepageSharedShell")) {
     return;
@@ -934,8 +933,7 @@ function createShell() {
 
   const shell = document.createElement("div");
   shell.id = "homepageSharedShell";
-// Ambil tabbar yang sudah diwujudkan dalam index.html.
-const staticTabBar = document.getElementById("tabBar");
+
   shell.innerHTML = `
 <div class="sidebar-overlay" id="overlay"></div>
 
@@ -1896,23 +1894,8 @@ const staticTabBar = document.getElementById("tabBar");
 </div>
   `;
 
-// Gunakan tabbar asal dari HTML, bukan tabbar baru.
-if (staticTabBar) {
-  const generatedTabBar = shell.querySelector("#tabBar");
-
-  if (generatedTabBar) {
-    generatedTabBar.replaceWith(staticTabBar);
-  }
-}
-
 // Masukkan shell lengkap ke halaman.
 document.body.prepend(shell);
-
-if (initialShell) {
-  requestAnimationFrame(() => {
-    initialShell.remove();
-  });
-}
 }
   /* ==========================================================
      DROPDOWN MENU CONTENT
@@ -3040,18 +3023,79 @@ function saveVerifiedWorkspacePreview(tabs) {
   }
 }
 function renderTabs() {
-  const tabBar = document.getElementById("tabBar");
-  if (!tabBar) return;
 
-  // Jangan bina tab sebenar sebelum profil Firebase siap.
-  if (!currentAdminProfile) return;
+const tabBar = document.getElementById("tabBar");
+if (!tabBar) return;
 
-  const tabs = getTabs().filter(tab =>
+const verifiedProfileReady = !!currentAdminProfile;
+let tabs = [];
+
+if (verifiedProfileReady) {
+  // Selepas Firebase siap, guna permission sebenar.
+  tabs = getTabs().filter(tab =>
     canShowAdminPage(tab.file)
   );
 
-  // Cache tab yang sudah ditapis mengikut profil admin.
   saveVerifiedWorkspacePreview(tabs);
+
+} else {
+  // Sebelum Firebase siap, pulihkan tab daripada
+  // cache yang disimpan selepas pengesahan terdahulu.
+  try {
+    const uid = sessionStorage.getItem(
+      "5g88.adminSession"
+    );
+
+    const expiryRaw = localStorage.getItem(
+      "autoLogout.expireAt"
+    );
+
+    const expireAt = Number(expiryRaw);
+
+    if (
+      uid &&
+      expiryRaw &&
+      Number.isFinite(expireAt) &&
+      expireAt > Date.now()
+    ) {
+      const cacheKey =
+        "5g88.workspacePreview." + uid;
+
+      const cached = JSON.parse(
+        sessionStorage.getItem(cacheKey) || "[]"
+      );
+
+      if (Array.isArray(cached)) {
+        tabs = cached
+          .filter(tab =>
+            tab &&
+            typeof tab.file === "string" &&
+            ADMIN_PAGES.some(page =>
+              page.file === tab.file.toLowerCase()
+            )
+          )
+          .slice(0, 20)
+          .map(tab => {
+            const page = findPageByFile(
+              tab.file.toLowerCase()
+            );
+
+            return {
+              file: page.file,
+              name: page.name,
+              group: page.group
+            };
+          });
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "[5G88] Workspace restore failed:",
+      error
+    );
+  }
+}
+
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
@@ -3080,6 +3124,7 @@ function renderTabs() {
       } else {
         navigateToTab(tab);
       }
+    if (!verifiedProfileReady) return;
     }
 
     function createTabActions(tab) {
@@ -3109,6 +3154,7 @@ function renderTabs() {
       close.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
+         if (!verifiedProfileReady) return;
         closeTab(tab.file);
       });
 
@@ -3134,6 +3180,7 @@ function renderTabs() {
       element.append(title, createTabActions(tab));
 
       element.addEventListener("click", event => {
+         if (!verifiedProfileReady) return;
         if (event.target.closest("button")) return;
         navigateToTab(tab);
       });
@@ -5835,6 +5882,9 @@ function initSmartContentLoading() {
 
 function init() {
   createShell();
+
+  // Render komponen tab asli terus daripada cache.
+  renderTabs();
   initSmartContentLoading();
   initFloatingFab();
   setupHeaderMore();
