@@ -478,8 +478,7 @@ function start() {
   setupChannel();
   loadExpire();
 
-  // Jangan cipta sesi baru jika storage dipadam
-  if (!expireAt) {
+  if (!expireAt || !Number.isFinite(expireAt)) {
     doLogout("session-cleared");
     return;
   }
@@ -492,13 +491,8 @@ function start() {
   bindActivityReset();
   checkTimer = setInterval(heartbeat, TICK);
 }
-  setAbsoluteExpireFromNow();
-  heartbeat();
-  if (shouldLogout()) return;
-  bindActivityReset();
-  checkTimer = setInterval(heartbeat, TICK);
-}
-  window.AutoLogout = {
+
+window.AutoLogout = {
     start,
     reset: setExpireFromNow,
     setMinutes: (m)=> {
