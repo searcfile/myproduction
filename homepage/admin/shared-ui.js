@@ -1908,9 +1908,10 @@ if (staticTabBar) {
 // Masukkan shell lengkap ke halaman.
 document.body.prepend(shell);
 
-
 if (initialShell) {
-  initialShell.remove();
+  requestAnimationFrame(() => {
+    initialShell.remove();
+  });
 }
 }
   /* ==========================================================
