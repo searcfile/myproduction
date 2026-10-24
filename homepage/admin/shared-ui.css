@@ -3610,3 +3610,19 @@ html.admin-auth-pending .admin-workspace-tabs {
   background: var(--tab2, #141414);
   border-bottom: 1px solid var(--tab-border, #303030);
 }
+/* 5G88 SHELL STABILITY */
+
+#homepageSharedShell .header {
+  min-height: 64px;
+  transition: none !important;
+}
+
+#homepageSharedShell #tabBar {
+  min-height: 52px;
+  transition: none !important;
+}
+
+/* Semasa Firebase sedang mengesahkan admin */
+html.admin-auth-pending #homepageSharedShell {
+  pointer-events: none;
+}
