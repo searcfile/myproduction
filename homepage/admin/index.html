@@ -75,8 +75,27 @@ if (
     list.className =
       "admin-workspace-tabs-list admin-static-tab-preview";
 
-    const currentFile =
-      location.pathname.split("/").pop().toLowerCase();
+const login = JSON.parse(
+  localStorage.getItem("gmailLogin") || "{}"
+);
+
+const email = String(login.email || "")
+  .trim()
+  .toLowerCase();
+
+const suffix = email
+  ? email.replace(/[^a-z0-9]/g, "_")
+  : "guest";
+
+const activeKey = "activeTabUrl_" + suffix;
+
+const savedActive = String(
+  localStorage.getItem(activeKey) || ""
+);
+
+const currentFile = savedActive
+  ? savedActive.split(/[?#]/)[0].split("/").pop().toLowerCase()
+  : "";
 
     tabs.slice(0, 20).forEach(tab => {
       if (!tab || typeof tab !== "object") return;
