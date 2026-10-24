@@ -1394,6 +1394,96 @@ body.light-theme .login-security-card {
   overflow: visible;
 }
 
+  /* Livechat floating widget */
+ .lc-wrap{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  z-index:9999;
+  font-family:inherit;
+}
+.lc-btn{
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  min-height:40px;
+  padding:2px 4px;
+  border-radius:999px;
+  border:1px solid transparent;
+  background:var(--blue);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+.lc-btn:hover{
+  background:var(--blue-hover);
+}
+.lc-btn:active{
+  background:var(--blue-active);
+}
+.lc-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  pointer-events:none;
+  flex:0 0 auto;
+}
+.lc-badge{
+  position:absolute;
+  top:-5px;
+  left:-7px;
+  min-width:14px;
+  height:14px;
+  padding:0 2px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:#d32029;
+  color:#fff;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1;
+  box-shadow: 0 0 8px rgba(255, 43, 43, 0.45);
+  pointer-events:none;
+}
+.lc-badge.show{
+  display:flex;
+}
+.lc-panel{
+  position:absolute;
+  right:0;
+  bottom:56px;
+  width:min(420px, 92vw);
+  height:620px;
+
+  background:var(--page-bg2);
+  border:1px solid var(--border-input);
+  border-radius:6px;
+  overflow:hidden;
+
+  /* penting */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px) scale(0.98);
+  transition: opacity .2s ease, transform .2s ease;
+
+  will-change: transform, opacity;
+}
+
+.lc-panel.active{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.lc-iframe{
+  width:100%;
+  height:100%;
+  border:0;
+}
 </style>
 <body>
   <button id="loginThemeBtn" class="login-theme-btn" type="button" aria-label="Toggle theme">
@@ -1889,6 +1979,27 @@ body.light-theme .login-security-card {
       <button id="createCancel" class="btn-cfp" type="button">Cancel</button>
       <button id="createNow" class="btn-req" type="button">Create Now</button>
     </div>
+  </div>
+</div>
+
+<!-- Live Chat floating widget -->
+<div class="lc-wrap" id="lcWrap">
+  <button class="lc-btn" id="lcToggle" aria-label="Open live chat" aria-expanded="false" type="button">
+    <svg id="lcIcon" class="lc-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path id="lcIconPath" fill="currentColor"
+        d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10S6.486 2 12 2zm0-2C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-.001 5.75c.69 0 1.251.56 1.251 1.25s-.561 1.25-1.251 1.25-1.249-.56-1.249-1.25.559-1.25 1.249-1.25zm2.001 12.25h-4v-1c.484-.179 1-.201 1-.735v-4.467c0-.534-.516-.618-1-.797v-1h3v6.265c0 .535.517.558 1 .735v.999z">
+      </path>
+    </svg>
+
+    <span class="lc-badge" id="lcBadge">0</span>
+  </button>
+
+  <div class="lc-panel" id="lcPanel" aria-hidden="true">
+    <iframe id="lcFrame" class="lc-iframe"
+      title="Live Chat"
+      sandbox="allow-scripts allow-same-origin allow-popups"
+      referrerpolicy="no-referrer">
+    </iframe>
   </div>
 </div>
 
