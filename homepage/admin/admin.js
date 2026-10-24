@@ -411,6 +411,9 @@ const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
     expireAt = v ? Number(v) : null;
   }
 async function doLogout(reason="timeout"){
+   try {
+  sessionStorage.removeItem("5g88.adminSession");
+} catch (_) {}
   try { clearInterval(checkTimer); } catch {}
 
   try { await auth.signOut(); } catch(_) {}
