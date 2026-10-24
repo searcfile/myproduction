@@ -3534,28 +3534,48 @@ window.addEventListener("message", (e) => {
     return;
   }
 });
-// ===== LOGIN PAGE GUARD =====
-(function loginPageGuard(){
 
-  const path = location.pathname;
+/* ===== LOGIN PAGE GUARD ===== */
+(function loginPageGuard() {
+  auth.onAuthStateChanged(async (user) => {
+    if (!user || user.isAnonymous) {
+      return;
+    }
 
-  // Guard hanya untuk halaman login admin
-  if (!path.endsWith("/homepage/admin/login.html")) {
-    return;
-  }
+    try {
+      const token = await user.getIdTokenResult(true);
 
-  let gl = null;
+      if (
+        token.claims.secondVerified !== true ||
+        !Number.isSafeInteger(token.claims.pinVersion)
+      ) {
+        return;
+      }
 
-  try {
-    gl = JSON.parse(
-      localStorage.getItem("gmailLogin") || "null"
-    );
-  } catch {}
+      const profileSnap = await db
+        .ref(`adminUsers/${user.uid}`)
+        .once("value");
 
-// Kalau sudah login, terus masuk Admin Homepage
-if (gl?.email) {
-  location.replace(MAIN_PATH);
-}
+      const profile = profileSnap.val();
+
+      if (
+        !profile ||
+        profile.active !== true ||
+        profile.secondPasswordEnabled !== true ||
+        !["superadmin", "siteadmin"].includes(profile.role) ||
+        token.claims.pinVersion !== profile.pinVersion
+      ) {
+        return;
+      }
+
+      window.location.replace(MAIN_PATH);
+
+    } catch (error) {
+      console.warn("Login guard verification failed:", error);
+    }
+  });
+})();
+
 
 })();
 (function () {
