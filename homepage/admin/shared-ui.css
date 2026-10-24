@@ -3627,3 +3627,27 @@ html.admin-auth-pending #tabBar {
   min-height: 64px;
   transition: none !important;
 }
+
+/* ==========================================
+   5G88 TAB RESTORE - STABLE RENDER
+   ========================================== */
+
+#tabBar {
+  min-height: 52px;
+  contain: layout;
+}
+
+#tabBar .admin-workspace-tabs-list {
+  min-height: 52px;
+}
+
+#tabBar .admin-static-tab-preview {
+  min-height: 52px;
+  opacity: 1;
+  visibility: visible;
+}
+
+#tabBar .admin-workspace-tab {
+  transition: background-color .15s ease,
+              color .15s ease;
+}
