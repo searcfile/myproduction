@@ -925,7 +925,8 @@ currentFile !== "index.html" &&
    ========================================================== */
 
 function createShell() {
-
+  const initialShell =
+    document.getElementById("adminInitialShell");
   // Elak duplicate kalau shell sudah dibuat
   if (document.getElementById("homepageSharedShell")) {
     return;
@@ -933,7 +934,10 @@ function createShell() {
 
   const shell = document.createElement("div");
   shell.id = "homepageSharedShell";
-
+  // Sembunyikan rangka sementara apabila shell sebenar siap
+  if (initialShell) {
+    initialShell.remove();
+  }
   shell.innerHTML = `
 <div class="sidebar-overlay" id="overlay"></div>
 
