@@ -3536,31 +3536,22 @@ max-width: 170px;
     cursor: text;
   }
 }
-/* =========================================
-   5G88 ADMIN - AUTH PENDING
-   Jangan sembunyikan seluruh halaman
-========================================= */
+/* ==================================================
+   5G88 WORKSPACE - CACHED TAB RESTORE
+   ================================================== */
 
+/* Kandungan dashboard tunggu pengesahan */
 html.admin-auth-pending #mainContainer {
   visibility: hidden !important;
   pointer-events: none !important;
 }
 
-/* Header dan tabbar tidak boleh digunakan
-   sebelum session disahkan */
-html.admin-auth-pending .admin-header,
-html.admin-auth-pending .admin-nav,
-html.admin-auth-pending .admin-workspace-tabs {
+/* Tab preview tidak boleh digunakan untuk navigasi */
+html.admin-auth-pending #tabBar {
   pointer-events: none !important;
 }
-#homepageSharedShell .header,
-#homepageSharedShell #tabBar {
-  transition: none;
-}
-/* =========================================
-   5G88 INITIAL STATIC NAVIGATION
-========================================= */
 
+/* Static header sementara */
 #adminInitialShell {
   position: relative;
   z-index: 1003;
@@ -3601,98 +3592,19 @@ html.admin-auth-pending .admin-workspace-tabs {
   font-weight: 600;
 }
 
-#adminInitialShell .admin-initial-tabs {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  width: 100%;
-  height: 52px;
-  background: var(--tab2, #141414);
-  border-bottom: 1px solid var(--tab-border, #303030);
-}
-/* 5G88 SHELL STABILITY */
-
-#homepageSharedShell .header {
-  min-height: 64px;
-  transition: none !important;
-}
-
-#homepageSharedShell #tabBar {
-  min-height: 52px;
-  transition: none !important;
-}
-
-/* Semasa Firebase sedang mengesahkan admin */
-html.admin-auth-pending #homepageSharedShell {
-  pointer-events: none;
-}
-/* ==========================================
-   5G88 WORKSPACE TAB REFRESH STABILITY
-========================================== */
-
-#adminInitialShell {
-  position: relative;
-  z-index: 2000;
-  pointer-events: none;
-}
-
-/* Bila header sebenar sudah ada, sembunyikan header sementara */
+/* Sembunyikan header sementara selepas header sebenar wujud */
 body:has(#homepageSharedShell .header)
 #adminInitialShell .admin-nav {
   display: none !important;
 }
 
-/* Bila tab sebenar sudah dibina, sembunyikan tab sementara */
-body:has(#tabBar .admin-workspace-tabs-list)
-#adminInitialShell .admin-initial-tabs {
-  display: none !important;
-}
-
-/* Tab sementara hanya kelihatan ketika tab sebenar belum siap */
-#adminInitialShell .admin-initial-tabs {
-  z-index: 2001;
-}
-
-/* Kekalkan ketinggian tab sebenar */
-#homepageSharedShell #tabBar {
-  min-height: 52px;
-}
-
-#adminInitialShell .admin-initial-tabs {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  overflow: hidden;
-}
-
-.admin-initial-tab-list {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.admin-initial-tab {
-  display: block;
-  flex: 0 0 130px;
-  height: 34px;
-  border-radius: 6px;
-  background: var(--tab-bg, rgba(255,255,255,.04));
-  border: 1px solid var(--tab-border, #303030);
-}
-
-#homepageSharedShell #tabBar {
-  min-height: 52px;
-}
-/* ==========================================
-   5G88 STATIC WORKSPACE TABS
-========================================== */
-
+/* Tabbar sentiasa mempunyai ruang */
 #tabBar {
   min-height: 52px;
+  transition: none !important;
 }
 
+/* Preview yang dipulihkan daripada cache */
 #tabBar .admin-static-tab-preview {
   display: flex;
   align-items: center;
@@ -3702,15 +3614,20 @@ body:has(#tabBar .admin-workspace-tabs-list)
 }
 
 #tabBar .admin-static-tab-preview .admin-workspace-tab {
-  cursor: default;
   flex-shrink: 0;
+  cursor: default;
 }
 
 #tabBar .admin-static-tab-preview .admin-workspace-tab-name {
   white-space: nowrap;
 }
 
-/* Preview tidak boleh digunakan sebagai navigation */
 #tabBar .admin-static-tab-preview * {
   pointer-events: none !important;
+}
+
+/* Header sebenar tidak perlu animation ketika refresh */
+#homepageSharedShell .header {
+  min-height: 64px;
+  transition: none !important;
 }
