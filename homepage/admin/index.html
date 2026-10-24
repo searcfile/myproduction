@@ -155,11 +155,17 @@
     logoutToLogin();
   });
 
-  // Semak apabila browser kembali aktif
-  window.addEventListener("focus", checkSession);
+  // Semak semula hanya selepas Firebase Auth sudah siap
+  window.addEventListener("focus", () => {
+    if (verified && !redirecting) {
+      checkSession();
+    }
+  });
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) checkSession();
+    if (!document.hidden && verified && !redirecting) {
+      checkSession();
+    }
   });
 
 window.addEventListener("pageshow", event => {
