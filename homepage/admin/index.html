@@ -179,18 +179,19 @@ window.addEventListener("pageshow", event => {
     if (verified && !redirecting) {
       const user = auth.currentUser;
       const marker = sessionStorage.getItem("5g88.adminSession");
-      const expireAt = Number(
-        localStorage.getItem("autoLogout.expireAt")
+      const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+      const expireAt = Number(expiryRaw);
       );
 
-      if (
-        !user ||
-        marker !== user.uid ||
-        !Number.isFinite(expireAt) ||
-        expireAt <= Date.now()
-      ) {
-        logoutToLogin();
-      }
+if (
+  !user ||
+  marker !== user.uid ||
+  !expiryRaw ||
+  !Number.isFinite(expireAt) ||
+  expireAt <= Date.now()
+) {
+  logoutToLogin();
+}
     }
   }, 5000);
 
