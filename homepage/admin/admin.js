@@ -447,12 +447,35 @@ async function doLogout(reason="timeout"){
 
   window.location.replace(LOGIN_URL);
 }
-  function shouldLogout(){
-    const t = now();
-    if (expireAt && t >= expireAt) return true;
-    if (absoluteExpireAt && t >= absoluteExpireAt) return true;
-    return false;
+function shouldLogout() {
+  const t = now();
+
+  if (!expireAt || !Number.isFinite(expireAt)) {
+    return true;
   }
+
+  if (t >= expireAt) {
+    return true;
+  }
+
+  if (absoluteExpireAt && t >= absoluteExpireAt) {
+    return true;
+  }
+
+  const user = auth.currentUser;
+
+  if (!user || user.isAnonymous) {
+    return true;
+  }
+
+  const marker = sessionStorage.getItem("5g88.adminSession");
+
+  if (marker !== user.uid) {
+    return true;
+  }
+
+  return false;
+}
   function heartbeat(){
     loadExpire();
     if (shouldLogout()) doLogout("timeout");
@@ -805,7 +828,7 @@ if (!adminSession) {
   window.location.replace("./login.html");
   return;
 }
-
+document.documentElement.classList.remove("admin-auth-pending");
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
 
