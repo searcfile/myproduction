@@ -1895,10 +1895,7 @@ function createShell() {
 </div>
   `;
 
-  document.body.prepend(shell);
-   if (initialShell) {
-  initialShell.remove();
-}
+document.body.prepend(shell);
 }
   /* ==========================================================
      DROPDOWN MENU CONTENT
@@ -3285,6 +3282,14 @@ requestAnimationFrame(updateMoreTabs);
 initWorkspaceTabDrag(tabList);
 
 updateOpenIndicators();
+
+// Tab sebenar sudah siap.
+// Sekarang baru buang paparan sementara.
+const initialShell = document.getElementById("adminInitialShell");
+
+if (initialShell) {
+  initialShell.remove();
+}
   }
 
 
