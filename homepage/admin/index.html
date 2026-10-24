@@ -23,9 +23,9 @@
   <meta name="twitter:image" content="https://searcfile.github.io/myproduction/homepage/admin/logo.svg">
 </head>
 <body>
-
-<!-- 5G88 INITIAL HEADER -->
+<!-- 5G88 STATIC NAVIGATION -->
 <div id="adminInitialShell" aria-hidden="true">
+
   <nav class="admin-nav">
     <div class="admin-nav-inner">
       <div class="admin-nav-left">
@@ -39,15 +39,68 @@
     </div>
   </nav>
 
-  <div class="admin-initial-tabs">
-  <div class="admin-initial-tab-list" aria-hidden="true">
-    <span class="admin-initial-tab"></span>
-    <span class="admin-initial-tab"></span>
-    <span class="admin-initial-tab"></span>
-  </div>
-</div>
 </div>
 
+<!-- TABBAR SEBENAR: WUJUD TERUS DALAM HTML -->
+<div id="tabBar" class="tab-bar"></div>
+
+<script>
+(() => {
+  const tabBar = document.getElementById("tabBar");
+  if (!tabBar) return;
+
+  try {
+    const login = JSON.parse(
+      localStorage.getItem("gmailLogin") || "{}"
+    );
+
+    const email = String(login.email || "")
+      .trim()
+      .toLowerCase();
+
+    // Jangan paparkan tab cache jika identiti tidak diketahui.
+    if (!email) return;
+
+    const suffix = email.replace(/[^a-z0-9]/g, "_");
+    const key = "openTabs_" + suffix;
+
+    const saved = JSON.parse(
+      localStorage.getItem(key) || "[]"
+    );
+
+    if (!Array.isArray(saved)) return;
+
+    const list = document.createElement("div");
+    list.className =
+      "admin-workspace-tabs-list admin-static-tab-preview";
+
+    saved.slice(0, 20).forEach(tab => {
+      if (!tab || typeof tab !== "object") return;
+
+      const name = String(
+        tab.name || tab.label || tab.file || ""
+      ).trim();
+
+      if (!name) return;
+
+      const element = document.createElement("div");
+      element.className = "tab admin-workspace-tab";
+
+      const title = document.createElement("span");
+      title.className = "admin-workspace-tab-name";
+      title.textContent = name;
+
+      element.appendChild(title);
+      list.appendChild(element);
+    });
+
+    tabBar.appendChild(list);
+
+  } catch (error) {
+    console.warn("[5G88] Tab preview:", error);
+  }
+})();
+</script>
 <div class="container" id="mainContainer">
   <div id="emptyState" class="empty-state hidden" role="status" aria-live="polite">
     <h3 class="empty-title">Click menu open sidebar!</h3>
