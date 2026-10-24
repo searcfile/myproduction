@@ -51,7 +51,7 @@
 <script src="../firebase.js"></script>
 <script>
 (() => {
-  document.documentElement.style.visibility = "hidden";
+  document.documentElement.classList.add("admin-auth-pending");
 
   const auth = firebase.auth();
   const db = firebase.database();
@@ -135,6 +135,7 @@ const expireAt = Number(expiryRaw);
       }
 
       verified = true;
+      document.documentElement.classList.remove("admin-auth-pending");
       document.documentElement.style.visibility = "";
 
     } catch (error) {
