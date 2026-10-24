@@ -2888,7 +2888,6 @@ showLoginLoading();
     }
 
     // Firebase Auth sebenar selepas kedua-dua langkah berjaya.
-    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
     const result = await firebase.auth().signInWithCustomToken(
       data.customToken
     );
@@ -3540,10 +3539,8 @@ window.addEventListener("message", (e) => {
 (function loginPageGuard() {
   auth.onAuthStateChanged(async (user) => {
     if (!user || user.isAnonymous) {
-      sessionStorage.removeItem("5g88.adminLoggingOut");
       return;
     }
-    if (sessionStorage.getItem("5g88.adminLoggingOut") === "1") return;
 
     try {
       const token = await user.getIdTokenResult(true);
@@ -3571,10 +3568,7 @@ window.addEventListener("message", (e) => {
         return;
       }
 
-      if (auth.currentUser?.uid === user.uid &&
-          sessionStorage.getItem("5g88.adminLoggingOut") !== "1") {
-        window.location.replace(MAIN_PATH);
-      }
+      window.location.replace(MAIN_PATH);
 
     } catch (error) {
       console.warn("Login guard verification failed:", error);
