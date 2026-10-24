@@ -4566,9 +4566,9 @@ renderDropdown("gameLinksDropdown", "list");
 syncCurrentPageTab();
 renderTabs();
 
-if (initDefaultWorkspace()) {
-  return;
-}
+// DEBUG: Jangan pindah ke Livechat secara automatik dahulu.
+// Kekalkan dashboard supaya kita boleh sahkan login stabil.
+console.log("[5G88] Default Livechat navigation paused");
   } catch (error) {
     console.warn("[Header User]", error);
   }
