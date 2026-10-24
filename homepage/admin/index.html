@@ -162,13 +162,11 @@
     if (!document.hidden) checkSession();
   });
 
-  window.addEventListener("pageshow", event => {
-    if (event.persisted) {
-      location.reload();
-    } else {
-      checkSession();
-    }
-  });
+window.addEventListener("pageshow", event => {
+  if (event.persisted) {
+    location.reload();
+  }
+});
 
   // Semak setiap 5 saat untuk storage yang dipadam
   setInterval(() => {
