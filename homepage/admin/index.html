@@ -49,9 +49,19 @@
   if (!tabBar) return;
 
   try {
-    // Identiti sesi yang digunakan oleh login admin.
-    const uid = sessionStorage.getItem("5g88.adminSession");
-    if (!uid) return;
+const uid = sessionStorage.getItem("5g88.adminSession");
+
+const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expireAt = Number(expiryRaw);
+
+if (
+  !uid ||
+  !expiryRaw ||
+  !Number.isFinite(expireAt) ||
+  expireAt <= Date.now()
+) {
+  return;
+}
 
     const cacheKey = "5g88.workspacePreview." + uid;
 
