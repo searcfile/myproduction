@@ -3685,3 +3685,32 @@ body:has(#tabBar .admin-workspace-tabs-list)
 #homepageSharedShell #tabBar {
   min-height: 52px;
 }
+/* ==========================================
+   5G88 STATIC WORKSPACE TABS
+========================================== */
+
+#tabBar {
+  min-height: 52px;
+}
+
+#tabBar .admin-static-tab-preview {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#tabBar .admin-static-tab-preview .admin-workspace-tab {
+  cursor: default;
+  flex-shrink: 0;
+}
+
+#tabBar .admin-static-tab-preview .admin-workspace-tab-name {
+  white-space: nowrap;
+}
+
+/* Preview tidak boleh digunakan sebagai navigation */
+#tabBar .admin-static-tab-preview * {
+  pointer-events: none !important;
+}
