@@ -471,12 +471,24 @@ async function doLogout(reason="timeout"){
       };
     } catch { bc = null; }
   }
-function start(){
+function start() {
   setupChannel();
   loadExpire();
+
+  // Jangan cipta sesi baru jika storage dipadam
   if (!expireAt) {
-    setExpireFromNow();
+    doLogout("session-cleared");
+    return;
   }
+
+  setAbsoluteExpireFromNow();
+  heartbeat();
+
+  if (shouldLogout()) return;
+
+  bindActivityReset();
+  checkTimer = setInterval(heartbeat, TICK);
+}
   setAbsoluteExpireFromNow();
   heartbeat();
   if (shouldLogout()) return;
