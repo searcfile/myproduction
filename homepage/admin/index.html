@@ -43,48 +43,45 @@
 
 <!-- TABBAR SEBENAR: WUJUD TERUS DALAM HTML -->
 <div id="tabBar" class="tab-bar"></div>
-
 <script>
 (() => {
   const tabBar = document.getElementById("tabBar");
   if (!tabBar) return;
 
   try {
-    const login = JSON.parse(
-      localStorage.getItem("gmailLogin") || "{}"
+    // Identiti sesi yang digunakan oleh login admin.
+    const uid = sessionStorage.getItem("5g88.adminSession");
+    if (!uid) return;
+
+    const cacheKey = "5g88.workspacePreview." + uid;
+
+    const tabs = JSON.parse(
+      sessionStorage.getItem(cacheKey) || "[]"
     );
 
-    const email = String(login.email || "")
-      .trim()
-      .toLowerCase();
-
-    // Jangan paparkan tab cache jika identiti tidak diketahui.
-    if (!email) return;
-
-    const suffix = email.replace(/[^a-z0-9]/g, "_");
-    const key = "openTabs_" + suffix;
-
-    const saved = JSON.parse(
-      localStorage.getItem(key) || "[]"
-    );
-
-    if (!Array.isArray(saved)) return;
+    if (!Array.isArray(tabs) || !tabs.length) return;
 
     const list = document.createElement("div");
     list.className =
       "admin-workspace-tabs-list admin-static-tab-preview";
 
-    saved.slice(0, 20).forEach(tab => {
+    const currentFile =
+      location.pathname.split("/").pop().toLowerCase();
+
+    tabs.slice(0, 20).forEach(tab => {
       if (!tab || typeof tab !== "object") return;
 
-      const name = String(
-        tab.name || tab.label || tab.file || ""
-      ).trim();
+      const file = String(tab.file || "").toLowerCase();
+      const name = String(tab.name || "").trim();
 
-      if (!name) return;
+      if (!file || !name) return;
 
       const element = document.createElement("div");
       element.className = "tab admin-workspace-tab";
+
+      if (file === currentFile) {
+        element.classList.add("active");
+      }
 
       const title = document.createElement("span");
       title.className = "admin-workspace-tab-name";
@@ -97,7 +94,7 @@
     tabBar.appendChild(list);
 
   } catch (error) {
-    console.warn("[5G88] Tab preview:", error);
+    console.warn("[5G88] Restore workspace preview:", error);
   }
 })();
 </script>
