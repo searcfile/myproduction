@@ -28,6 +28,19 @@
     pageAuth.onAuthStateChanged(async user => {
       const thisRun = ++sequence;
       if (!user || user.isAnonymous) { redirect(); return; }
+       const marker = sessionStorage.getItem("5g88.adminSession");
+const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expireAt = Number(expiryRaw);
+
+if (
+  marker !== user.uid ||
+  !expiryRaw ||
+  !Number.isFinite(expireAt) ||
+  expireAt <= Date.now()
+) {
+  redirect();
+  return;
+}
       try {
         const token = await user.getIdTokenResult(true);
         if (thisRun !== sequence || navigating) return;
