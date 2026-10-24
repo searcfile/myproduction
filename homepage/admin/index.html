@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+<style>
+  html.admin-auth-pending #mainContainer {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+</style>
+<script>
+  document.documentElement.classList.add("admin-auth-pending");
+</script>
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="./admin.css" />
@@ -59,154 +68,5 @@
 <script src="./new-ui.js"></script>
 <script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
-<script>
-(() => {
-  document.documentElement.classList.add("admin-auth-pending");
-
-  const auth = firebase.auth();
-  const db = firebase.database();
-
-  let checking = false;
-  let redirecting = false;
-  let verified = false;
-
-  async function logoutToLogin() {
-    if (redirecting) return;
-    redirecting = true;
-
-    document.documentElement.style.visibility = "hidden";
-
-    try {
-      sessionStorage.removeItem("5g88.adminSession");
-      localStorage.removeItem("autoLogout.expireAt");
-    } catch (_) {}
-
-    try {
-      await auth.signOut();
-    } catch (error) {
-      console.warn("Sign out failed:", error);
-    }
-
-    location.replace("./login.html");
-  }
-
-  async function checkSession() {
-    if (checking || redirecting) return;
-
-    checking = true;
-
-    try {
-      const user = auth.currentUser;
-
-      if (!user || user.isAnonymous) {
-        await logoutToLogin();
-        return;
-      }
-
-const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = localStorage.getItem("autoLogout.expireAt");
-const expireAt = Number(expiryRaw);
-
-      if (
-        marker !== user.uid ||
-        !expiryRaw ||
-        !Number.isFinite(expireAt) ||
-        expireAt <= Date.now()
-      ) {
-        await logoutToLogin();
-        return;
-      }
-
-      const token = await user.getIdTokenResult(true);
-
-      if (
-        token.claims.secondVerified !== true ||
-        !Number.isSafeInteger(token.claims.pinVersion)
-      ) {
-        await logoutToLogin();
-        return;
-      }
-
-      const snap = await db
-        .ref("adminUsers/" + user.uid)
-        .once("value");
-
-      const profile = snap.val();
-
-      if (
-        !profile ||
-        profile.active !== true ||
-        profile.secondPasswordEnabled !== true ||
-        !["superadmin", "siteadmin"].includes(profile.role) ||
-        token.claims.pinVersion !== profile.pinVersion
-      ) {
-        await logoutToLogin();
-        return;
-      }
-
-      verified = true;
-      document.documentElement.classList.remove("admin-auth-pending");
-      document.documentElement.style.visibility = "";
-
-    } catch (error) {
-      console.error("Admin session verification failed:", error);
-      await logoutToLogin();
-    } finally {
-      checking = false;
-    }
-  }
-
-  auth.onAuthStateChanged(user => {
-    if (!user || user.isAnonymous) {
-      logoutToLogin();
-    } else {
-      checkSession();
-    }
-  }, error => {
-    console.error("Auth listener failed:", error);
-    logoutToLogin();
-  });
-
-  // Semak semula hanya selepas Firebase Auth sudah siap
-  window.addEventListener("focus", () => {
-    if (verified && !redirecting) {
-      checkSession();
-    }
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && verified && !redirecting) {
-      checkSession();
-    }
-  });
-
-window.addEventListener("pageshow", event => {
-  if (event.persisted) {
-    location.reload();
-  }
-});
-
-  // Semak setiap 5 saat untuk storage yang dipadam
-  setInterval(() => {
-    if (verified && !redirecting) {
-      const user = auth.currentUser;
-      const marker = sessionStorage.getItem("5g88.adminSession");
-      const expiryRaw = localStorage.getItem("autoLogout.expireAt");
-      const expireAt = Number(expiryRaw);
-
-if (
-  !user ||
-  marker !== user.uid ||
-  !expiryRaw ||
-  !Number.isFinite(expireAt) ||
-  expireAt <= Date.now()
-) {
-  logoutToLogin();
-}
-    }
-  }, 5000);
-
-})();
-</script>
 </body>
 </html>
