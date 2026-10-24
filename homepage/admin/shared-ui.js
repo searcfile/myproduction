@@ -4595,42 +4595,53 @@ console.log("[5G88] Default Livechat navigation paused");
   }
 
 
-  /* ==========================================================
-     LOGOUT
-     ========================================================== */
+function handleLogout() {
+  if (window.__adminLoggingOut) return;
+  window.__adminLoggingOut = true;
 
-  function handleLogout() {
-    const event =
-      new CustomEvent(
-        "homepage-admin-logout",
-        {
-          cancelable: true
-        }
-      );
-
-
-    const allowed =
-      document.dispatchEvent(
-        event
-      );
-
-
-    if (!allowed) {
-      return;
+  (async () => {
+    try {
+      // Hentikan single-session listener dahulu
+      if (typeof window.stopSingleSession === "function") {
+        await window.stopSingleSession();
+      }
+    } catch (error) {
+      console.warn("Stop session failed:", error);
     }
 
+    // Padam penanda sesi sebelum signOut
+    try {
+      sessionStorage.removeItem("5g88.adminSession");
+      sessionStorage.removeItem("justLoggedIn");
+      sessionStorage.removeItem("forceLogout");
+      sessionStorage.removeItem("autoOpenTab");
 
-    /*
-     * Fallback jika page tidak load admin.js.
-     */
-    localStorage.removeItem(
-      "gmailLogin"
-    );
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith("5g88.singleSession.")) {
+          sessionStorage.removeItem(key);
+        }
+      });
 
-    window.location.href =
-      "./login.html";
-  }
+      localStorage.removeItem("autoLogout.expireAt");
+      localStorage.removeItem("gmailLogin");
+      localStorage.removeItem("useremail");
+    } catch (error) {
+      console.warn("Clear session failed:", error);
+    }
 
+    // Logout Firebase sebenar
+    try {
+      if (window.firebase && firebase.apps.length) {
+        await firebase.auth().signOut();
+      }
+    } catch (error) {
+      console.error("Firebase logout failed:", error);
+    }
+
+    // Kembali ke halaman login
+    window.location.replace("./login.html");
+  })();
+}
 
   /* ==========================================================
      DIRECT HEADER BUTTONS
