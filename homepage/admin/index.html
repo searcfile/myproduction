@@ -92,13 +92,13 @@
         return;
       }
 
-      const marker = sessionStorage.getItem("5g88.adminSession");
-      const expireAt = Number(
-        localStorage.getItem("autoLogout.expireAt")
-      );
+const marker = sessionStorage.getItem("5g88.adminSession");
+const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expireAt = Number(expiryRaw);
 
       if (
         marker !== user.uid ||
+        !expiryRaw ||
         !Number.isFinite(expireAt) ||
         expireAt <= Date.now()
       ) {
