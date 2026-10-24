@@ -3592,11 +3592,7 @@ html.admin-auth-pending #tabBar {
   font-weight: 600;
 }
 
-/* Sembunyikan header sementara selepas header sebenar wujud */
-body:has(#homepageSharedShell .header)
-#adminInitialShell .admin-nav {
-  display: none !important;
-}
+
 
 /* Tabbar sentiasa mempunyai ruang */
 #tabBar {
