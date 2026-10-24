@@ -934,7 +934,8 @@ function createShell() {
 
   const shell = document.createElement("div");
   shell.id = "homepageSharedShell";
-
+// Ambil tabbar yang sudah diwujudkan dalam index.html.
+const staticTabBar = document.getElementById("tabBar");
   shell.innerHTML = `
 <div class="sidebar-overlay" id="overlay"></div>
 
@@ -1895,7 +1896,22 @@ function createShell() {
 </div>
   `;
 
+// Gunakan tabbar asal dari HTML, bukan tabbar baru.
+if (staticTabBar) {
+  const generatedTabBar = shell.querySelector("#tabBar");
+
+  if (generatedTabBar) {
+    generatedTabBar.replaceWith(staticTabBar);
+  }
+}
+
+// Masukkan shell lengkap ke halaman.
 document.body.prepend(shell);
+
+// Buang header sementara setelah header sebenar dimasukkan.
+if (initialShell) {
+  initialShell.remove();
+}
 }
   /* ==========================================================
      DROPDOWN MENU CONTENT
