@@ -21,7 +21,7 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 const origins = process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim());
 app.use(cors({origin(origin,cb){ if(!origin || origins.includes(origin)) return cb(null,true); cb(new Error('Origin not allowed')); }, methods:['GET','POST','PATCH','DELETE'], allowedHeaders:['Content-Type','Authorization']}));
-app.use(express.json({limit:'12kb'}));
+app.use(express.json({limit:'1mb'}));
 app.use('/api',rateLimit({windowMs:60_000,limit:45,standardHeaders:'draft-8',legacyHeaders:false}));
 app.get('/health',(req,res)=>res.json({ok:true,service:'5g88-admin-backend'}));
 const usernameOK = s => /^[a-z0-9._-]{3,40}$/.test(s);
@@ -585,14 +585,14 @@ function validateTipsPayload(body) {
   }
 
   if (
-    !Array.isArray(games) ||
-    games.length < 1 ||
-    games.length > 500 ||
-    !games.every(g =>
-      typeof g === "string" &&
-      g.trim().length > 0 &&
-      g.length <= 120
-    )
+!Array.isArray(games) ||
+games.length < 1 ||
+games.length > 3000 ||
+!games.every(g =>
+  typeof g === "string" &&
+  g.trim().length > 0 &&
+  g.length <= 150
+)
   ) {
     throw Error("Invalid games list");
   }
