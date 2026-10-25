@@ -2,6 +2,100 @@
    No Firebase, authentication, sidebar, navigation or permissions are changed. */
 (function () {
   "use strict";
+
+   
+/* =========================================================
+   5G88 GLOBAL CUSTOM OVERLAY LOADING
+   ========================================================= */
+
+let globalLoadingTimer = null;
+
+function getGlobalLoadingElement() {
+  let overlay = document.getElementById(
+    "globalPageLoading"
+  );
+
+  if (!overlay) {
+    overlay = document.createElement("div");
+
+    overlay.id = "globalPageLoading";
+    overlay.className = "login-loading";
+    overlay.hidden = true;
+
+    overlay.setAttribute("role", "status");
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-label", "Loading");
+
+    overlay.innerHTML = `
+      <div class="loading-box">
+        <div class="loading-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="loading-text">
+          Please wait while fetching...
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  return overlay;
+}
+
+/* SHOW LOADING */
+
+function showGlobalLoading(
+  text = "Please wait while fetching...",
+  delay = 150
+) {
+  clearTimeout(globalLoadingTimer);
+
+  const show = () => {
+    const overlay = getGlobalLoadingElement();
+
+    const label = overlay.querySelector(
+      ".loading-text"
+    );
+
+    if (label) {
+      label.textContent = String(text);
+    }
+
+    overlay.hidden = false;
+  };
+
+  if (delay > 0) {
+    globalLoadingTimer = setTimeout(show, delay);
+  } else {
+    show();
+  }
+}
+
+/* HIDE LOADING */
+
+function hideGlobalLoading() {
+  clearTimeout(globalLoadingTimer);
+  globalLoadingTimer = null;
+
+  const overlay = document.getElementById(
+    "globalPageLoading"
+  );
+
+  if (overlay) {
+    overlay.hidden = true;
+  }
+}
+
+/* GLOBAL FUNCTIONS */
+
+window.showGlobalLoading = showGlobalLoading;
+window.hideGlobalLoading = hideGlobalLoading;
+
   function escapeSharedText(
     value
   ) {
