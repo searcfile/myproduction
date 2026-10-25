@@ -366,7 +366,7 @@ async function start(){
 if (can('create') || can('edit')) {
 const tokenString = await user.getIdToken(true);
 const response = await fetch(
-"https://fiveg88-admin-backend-v2.onrender.com/api/link-download/sites"
+"https://fiveg88-admin-backend-v2.onrender.com/api/link-download/sites",
   {
     method: "GET",
     headers: {
