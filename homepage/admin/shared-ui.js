@@ -6068,11 +6068,96 @@ function initSmartContentLoading() {
   /* ==========================================================
      INITIALIZE
      ========================================================== */
+/* ==========================================================
+   5G88 WHITE RELOAD SHIELD
+   Tunggu header + tabbar + Firebase profile siap
+   ========================================================== */
 
+function initHardReloadReveal() {
+  const root = document.documentElement;
+
+  if (!root.classList.contains("fiveg88-hard-reload")) {
+    return;
+  }
+
+  let pageLoaded = document.readyState === "complete";
+  let profileLoaded = !!currentAdminProfile;
+  let revealed = false;
+
+  function tryReveal() {
+    if (revealed || !pageLoaded || !profileLoaded) {
+      return;
+    }
+
+    const shell = document.getElementById(
+      "homepageSharedShell"
+    );
+
+    const header = shell?.querySelector(".header");
+
+    const tabbar = document.getElementById("tabBar");
+
+    if (!shell || !header || !tabbar) {
+      return;
+    }
+
+    if (!header.isConnected || !tabbar.isConnected) {
+      return;
+    }
+
+    revealed = true;
+
+    window.removeEventListener(
+      "5g88-admin-profile-ready",
+      onProfileReady
+    );
+
+    // Tunggu layout header dan tabbar selesai.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        root.classList.remove("fiveg88-hard-reload");
+      });
+    });
+  }
+
+  function onProfileReady() {
+    profileLoaded = !!currentAdminProfile;
+    tryReveal();
+  }
+
+  window.addEventListener(
+    "5g88-admin-profile-ready",
+    onProfileReady
+  );
+
+  if (!pageLoaded) {
+    window.addEventListener(
+      "load",
+      () => {
+        pageLoaded = true;
+        tryReveal();
+      },
+      { once: true }
+    );
+  }
+
+  tryReveal();
+
+  setTimeout(() => {
+    if (!revealed) {
+      console.warn(
+        "[5G88] White Reload Shield: waiting for shell or Firebase profile."
+      );
+    }
+  }, 15000);
+}
 function init() {
   createShell();
 
   renderTabs();
+
+  // White Shield untuk refresh browser.
+  initHardReloadReveal();
 
   // Refresh halaman menggunakan Global Overlay.
   initAdminRefreshOverlay();
