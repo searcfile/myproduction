@@ -5957,7 +5957,7 @@ function initSmartContentLoading() {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#101010",
+    background: "#000",
     pointerEvents: "auto"
   });
 
