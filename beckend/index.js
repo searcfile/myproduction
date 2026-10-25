@@ -527,6 +527,30 @@ function validateSite(body) {
   return { name, walletGroupId, active: body.active };
 }
 
+app.get(
+  "/api/link-download/sites",
+  requireAdmin,
+  requirePermission("linkdownload.html", "view"),
+  async (req, res) => {
+    try {
+      const snapshot = await db.ref("sites").once("value");
+      const allSites = snapshot.val() || {};
+
+      const sites = Object.entries(allSites)
+        .filter(([, site]) => site?.active === true)
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id,
+          active: true
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("Link Download sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
