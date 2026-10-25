@@ -3048,7 +3048,19 @@ function saveVerifiedWorkspacePreview(tabs) {
       cacheKey,
       JSON.stringify(safeTabs)
     );
+    // Cache halaman yang sudah dibenarkan oleh Firebase.
+    // Untuk mempercepat paparan tab sahaja.
+    const verifiedPages = ADMIN_PAGES
+      .filter(page =>
+        canShowAdminPage(page.file) &&
+        canViewAdminPage(page.file)
+      )
+      .map(page => page.file);
 
+    sessionStorage.setItem(
+      "5g88.verifiedPages." + user.uid,
+      JSON.stringify(verifiedPages)
+    );
   } catch (error) {
     console.warn("[5G88] Save workspace preview:", error);
   }
@@ -3126,7 +3138,59 @@ if (verifiedProfileReady) {
     );
   }
 }
+// FAST RESTORE ACTIVE TAB
+// Pulihkan tab halaman aktif daripada cache akses terdahulu.
+// Tab belum boleh diklik sehingga Firebase selesai disahkan.
+if (!verifiedProfileReady) {
+  try {
+    const uid = sessionStorage.getItem(
+      "5g88.adminSession"
+    );
 
+    const expiryRaw = localStorage.getItem(
+      "autoLogout.expireAt"
+    );
+
+    const expireAt = Number(expiryRaw);
+
+    const sessionValid =
+      !!uid &&
+      !!expiryRaw &&
+      Number.isFinite(expireAt) &&
+      expireAt > Date.now();
+
+    if (sessionValid) {
+      const activeFile = getCurrentFile();
+
+      const allowedPages = JSON.parse(
+        sessionStorage.getItem(
+          "5g88.verifiedPages." + uid
+        ) || "[]"
+      );
+
+      const alreadyExists = tabs.some(tab =>
+        tab.file.toLowerCase() === activeFile
+      );
+
+      if (
+        Array.isArray(allowedPages) &&
+        allowedPages.includes(activeFile) &&
+        !alreadyExists
+      ) {
+        const page = findPageByFile(activeFile);
+
+        if (page) {
+          tabs.push({ ...page });
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "[5G88] Fast tab restore failed:",
+      error
+    );
+  }
+}
     const currentFile = getCurrentFile();
 
     // Bahagian tengah yang boleh scroll.
