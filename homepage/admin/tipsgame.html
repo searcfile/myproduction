@@ -1182,7 +1182,6 @@ function openPlatformEditor(id=null) {
   form.innerHTML=`
     <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="Platform Name" required></div>
     <div class="tips-field">
-    <div class="tips-field">
   <label>Global Active</label>
   <label class="shared-active-switch">
     <input
@@ -1201,6 +1200,7 @@ function openPlatformEditor(id=null) {
     OFF: Gunakan Site Visibility untuk memilih site.
   </div>
 </div>
+<div class="tips-field">
   <label>Site Visibility</label>
   <div id="tipsSiteChips"
        data-placeholder="Select Sites">
@@ -1221,12 +1221,7 @@ globalActiveInput.checked =
 
 window.SharedActiveSwitch?.sync(globalActiveInput);
   const save=form.querySelector('[data-save]');
-  const selectedSites = Object.entries(tipsSites)
-  .map(([id, site]) => ({
-    value: id,
-    label: site.name || id
-  }));
-  .filter(([, site]) => site?.active === true)
+const selectedSites = Object.entries(tipsSites)
   .map(([id, site]) => ({
     value: id,
     label: site.name || id
