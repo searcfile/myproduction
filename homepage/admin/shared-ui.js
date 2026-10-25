@@ -4725,12 +4725,19 @@ renderDropdown("gameLogDropdown", "gamelog");
 renderDropdown("bankResitDropdown", "bank");
 renderDropdown("gameLinksDropdown", "list");
 
+
 syncCurrentPageTab();
 renderTabs();
 
 if (getCurrentFile() === "index.html") {
   initDefaultWorkspace();
 }
+
+// Firebase profile sudah siap dan permission sudah disemak.
+window.dispatchEvent(
+  new Event("5g88-admin-profile-ready")
+);
+
   } catch (error) {
     console.warn("[Header User]", error);
   }
