@@ -634,12 +634,12 @@ if (getCurrentFile() === targetFile) {
 
 setActiveFile(targetFile);
 
-sessionStorage.setItem(
-  "adminShowContentLoading",
-  "1"
-);
+// Tidak perlu loading automatik untuk tukar tab.
+sessionStorage.removeItem("adminShowContentLoading");
+sessionStorage.removeItem("smartForceLoading");
 
-window.location.href = `./${targetFile}`;
+// Mulakan navigasi terus.
+window.location.assign(`./${targetFile}`);
   }
 
 
@@ -718,11 +718,20 @@ if (
       };
     }
 
+// Simpan pilihan tab secara lokal.
 setActiveFile(tab.file);
-
 saveTabs(tabs);
 
-navigateToTab(tab);
+// Render tab asli sekarang, tanpa tunggu Firebase.
+renderTabs();
+renderSidebarTabs();
+updateOpenIndicators();
+updateHeaderActiveState();
+
+// Biar browser paparkan tab dahulu.
+requestAnimationFrame(() => {
+  navigateToTab(tab);
+});
   }
 
 
@@ -749,20 +758,40 @@ navigateToTab(tab);
     const wasActive =
       currentFile === target;
 
-    tabs.splice(index, 1);
+tabs.splice(index, 1);
 
-    saveTabs(tabs);
+// Jika tab aktif ditutup, tetapkan destinasi baharu
+// sebelum menyimpan supaya Firebase menerima activeTabUrl betul.
+if (wasActive) {
+  const remainingAllowed = tabs.filter(tab =>
+    canShowAdminPage(tab.file) &&
+    canViewAdminPage(tab.file)
+  );
 
-    /*
-     * Kalau close tab yang BUKAN active,
-     * jangan pindah page.
-     */
-    if (!wasActive) {
-      renderTabs();
-      renderSidebarTabs();
-      updateHeaderActiveState();
-      return;
-    }
+  if (remainingAllowed.length) {
+    const nextIndex = Math.min(
+      index,
+      remainingAllowed.length - 1
+    );
+
+    setActiveFile(remainingAllowed[nextIndex].file);
+  } else {
+    localStorage.removeItem(getActiveTabStorageKey());
+  }
+}
+
+// Simpan perubahan tanpa tunggu Firebase.
+saveTabs(tabs);
+
+// Kemas kini tabbar terus.
+renderTabs();
+renderSidebarTabs();
+updateOpenIndicators();
+updateHeaderActiveState();
+
+if (!wasActive) {
+  return;
+}
 
     if (!tabs.length) {
 
@@ -805,9 +834,9 @@ const nextTab =
 
 setActiveFile(nextTab.file);
 
-syncTabsToFirebase(tabs);
-
-navigateToTab(nextTab);
+requestAnimationFrame(() => {
+  navigateToTab(nextTab);
+});
   }
 
 
@@ -5883,9 +5912,8 @@ function initSmartContentLoading() {
 function init() {
   createShell();
 
-  // Render komponen tab asli terus daripada cache.
   renderTabs();
-  initSmartContentLoading();
+
   initFloatingFab();
   setupHeaderMore();
    
