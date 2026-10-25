@@ -5810,6 +5810,15 @@ function updateChangePwVisibility() {
 function initAdminRefreshOverlay() {
   const key = "5g88.showRefreshLoading";
 
+  if (
+    document.documentElement.classList.contains(
+      "fiveg88-hard-reload"
+    )
+  ) {
+    sessionStorage.removeItem(key);
+    return;
+  }
+
   const navigation =
     performance.getEntriesByType("navigation")[0];
 
