@@ -171,10 +171,7 @@
      ========================================================== */
 
 const SUPERADMIN_ONLY_PAGES = new Set([
-  "users.html",
-  "admin-users.html"
-]);
-
+  "users.html","livechat-support.html","notice.html"]);
   let currentAdminProfile = null;
 
   function canShowAdminPage(file) {
