@@ -5781,6 +5781,35 @@ function updateChangePwVisibility() {
     });
   }
 
+/* ==========================================================
+   5G88 SHARED GLOBAL LOADING
+   Menggunakan spinner daripada new-ui.js
+   ========================================================== */
+
+async function withAdminLoading(
+  task,
+  message = "Please wait while fetching..."
+) {
+  if (typeof task !== "function") {
+    throw new TypeError("Task must be a function");
+  }
+
+  if (typeof window.showGlobalLoading === "function") {
+    window.showGlobalLoading(message, 150);
+  }
+
+  try {
+    return await task();
+  } finally {
+    if (typeof window.hideGlobalLoading === "function") {
+      window.hideGlobalLoading();
+    }
+  }
+}
+
+// Boleh dipanggil dari semua halaman admin.
+window.withAdminLoading = withAdminLoading;
+
 /* ==========================================
    5G88 SMART CONTENT LOADING V2
    ========================================== */
