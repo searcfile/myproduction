@@ -180,7 +180,12 @@ let records={},db=null,chip=null,modal=null,upload=null,editing=null,loading=tru
  let adminProfile=null, sites={}, siteAccessReady=false;
  const isSuper=()=>adminProfile?.role==='superadmin';
  const assignedSites=()=>Array.isArray(adminProfile?.siteIds)?adminProfile.siteIds:[];
- const visibleForSite=card=>isSuper() || (card.active!==false && assignedSites().some(id=>card.siteVisibility?.[id]===true));
+const visibleForSite = card =>
+  isSuper() ||
+  card.active === true ||
+  assignedSites().some(
+    id => card.siteVisibility?.[id] === true
+  );
 const grid=$('#ldGrid'),search=$('#ldSearch');
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
 function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
@@ -247,17 +252,58 @@ function openEditor(id=null){if(!isSuper()){toast('Super Admin only','error');re
  globalInput.dataset.activeLabel='Active';globalInput.dataset.inactiveLabel='Inactive';
  const globalTrack=el('span','shared-active-track');globalTrack.append(el('span','shared-active-text'),el('span','shared-active-knob'));
  globalSwitch.append(globalInput,globalTrack);globalRow.append(globalSwitch);sitePanel.append(globalRow);
- const siteSwitches=new Map();
- for(const [siteId,site] of Object.entries(sites).filter(([,v])=>v&&v.active===true).sort((a,b)=>a[0].localeCompare(b[0]))){
-  const row=el('div','ld-site-row');row.append(el('span','',String(site.name||siteId)+' ('+siteId+')'));
-  const label=el('label','shared-active-switch');const inp=el('input');inp.type='checkbox';
-  inp.checked=old?.siteVisibility?.[siteId]===true;
-  inp.dataset.activeLabel='Visible';inp.dataset.inactiveLabel='Hidden';
-  const track=el('span','shared-active-track');track.append(el('span','shared-active-text'),el('span','shared-active-knob'));
-  label.append(inp,track);row.append(label);sitePanel.append(row);siteSwitches.set(siteId,inp);
- }
- form.append(sitePanel);
- const imageLabel=el('div','ld-label','Card Image');form.append(imageLabel);const imageHost=el('div');form.append(imageHost);const section=el('div','ld-section-heading');section.append(el('strong','','Download Links'));const add=el('button','ld-button btn-primary-new','+ Add Row');add.type='button';section.append(add);form.append(section);const rows=el('div','ld-rows');form.append(rows);const existing=Array.isArray(old?.links)?old.links:[];(existing.length?existing:[{label:'KIOSK AGENT LINK',action:'copy',enabled:true}]).forEach(x=>addRow(rows,x));add.onclick=()=>addRow(rows,{label:'',action:'copy',enabled:true});const footer=el('div','ld-footer');const cancel=el('button','ld-button btn-cancel-new','Cancel');cancel.type='button';cancel.onclick=()=>modal?.close();const save=el('button','ld-button btn-primary-new',id?'Save Changes':'Create Card');save.type='submit';footer.append(cancel,save);form.append(footer);modal=NewUI.modal.open({title:id?'Edit Download Card':'Create Download Card',content:form,width:720});upload=NewUI.imageUpload(imageHost,{maxSizeMB:5,onError:e=>toast(e.message,'error')});if(old?.image)try{upload.setUrl(old.image);}catch{}form.addEventListener('submit',async e=>{e.preventDefault();const title=clean(name.input.value),group=clean(platform.input.value),links=[...rows.children].map(r=>r._get());if(!title||!group){toast('Card name and platform are required.','warning');return;}if(!links.length){toast('Add at least one link row.','warning');return;}for(const link of links){if(!link.label){toast('Each row needs a button label.','warning');return;}if(link.enabled&&!safeUrl(link.url)){toast('Active links require a valid http(s) URL.','warning');return;}}let image = old?.image || '';try{NewUI.setButtonLoading(save,true);save.disabled=true;if(upload.getFile())image=await uploadImage(upload.getFile());if(!db)throw Error('Firebase database is unavailable');const ref=id?db.ref(PATH+'/'+id):db.ref(PATH).push();const siteVisibility={...(old?.siteVisibility||{})};for(const [siteId,inp] of siteSwitches)siteVisibility[siteId]=inp.checked;const record={name:title,platform:group,image:image||'',active:globalInput.checked,siteVisibility,order:Number(old?.order)||Date.now(),links,updatedAt:firebase.database.ServerValue.TIMESTAMP};if(!id)record.createdAt=firebase.database.ServerValue.TIMESTAMP;await ref.update(record);toast(id?'Card updated':'Card created');modal.close();}catch(err){console.error(err);toast(err.message||'Save failed','error');}finally{await NewUI.setButtonLoading(save,false);save.disabled=false;}});// Initialize semua custom input dalam modal
+const siteOptions = Object.entries(sites)
+  .filter(([, site]) => site && site.active === true)
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([siteId, site]) => ({
+    value: siteId,
+    label: `${site.name || siteId} (${siteId})`
+  }));
+
+const siteField = el('div', 'ld-field');
+siteField.append(
+  el('label', '', 'Select Visible Sites')
+);
+
+const siteChipsHost = el('div');
+siteChipsHost.id = 'ldSiteVisibilityChips';
+
+siteField.append(siteChipsHost);
+sitePanel.append(siteField);
+
+const siteChips = NewUI.chips(siteChipsHost, {
+  placeholder: 'Select Sites',
+  options: siteOptions
+});
+
+siteChips.setValue(
+  siteOptions
+    .filter(option =>
+      old?.siteVisibility?.[option.value] === true
+    )
+    .map(option => option.value)
+);
+
+function syncSiteDropdown() {
+  siteField.style.display =
+    globalInput.checked ? 'none' : '';
+}
+
+globalInput.addEventListener('change', syncSiteDropdown);
+syncSiteDropdown();
+ const imageLabel=el('div','ld-label','Card Image');form.append(imageLabel);const imageHost=el('div');form.append(imageHost);const section=el('div','ld-section-heading');section.append(el('strong','','Download Links'));const add=el('button','ld-button btn-primary-new','+ Add Row');add.type='button';section.append(add);form.append(section);const rows=el('div','ld-rows');form.append(rows);const existing=Array.isArray(old?.links)?old.links:[];(existing.length?existing:[{label:'KIOSK AGENT LINK',action:'copy',enabled:true}]).forEach(x=>addRow(rows,x));add.onclick=()=>addRow(rows,{label:'',action:'copy',enabled:true});const footer=el('div','ld-footer');const cancel=el('button','ld-button btn-cancel-new','Cancel');cancel.type='button';cancel.onclick=()=>modal?.close();const save=el('button','ld-button btn-primary-new',id?'Save Changes':'Create Card');save.type='submit';footer.append(cancel,save);form.append(footer);modal=NewUI.modal.open({title:id?'Edit Download Card':'Create Download Card',content:form,width:720});upload=NewUI.imageUpload(imageHost,{maxSizeMB:5,onError:e=>toast(e.message,'error')});if(old?.image)try{upload.setUrl(old.image);}catch{}form.addEventListener('submit',async e=>{e.preventDefault();const title=clean(name.input.value),group=clean(platform.input.value),links=[...rows.children].map(r=>r._get());if(!title||!group){toast('Card name and platform are required.','warning');return;}if(!links.length){toast('Add at least one link row.','warning');return;}for(const link of links){if(!link.label){toast('Each row needs a button label.','warning');return;}if(link.enabled&&!safeUrl(link.url)){toast('Active links require a valid http(s) URL.','warning');return;}}let image = old?.image || '';try{NewUI.setButtonLoading(save,true);save.disabled=true;if(upload.getFile())image=await uploadImage(upload.getFile());if(!db)throw Error('Firebase database is unavailable');const ref=id?db.ref(PATH+'/'+id):db.ref(PATH).push();const selectedSiteIds = new Set(
+  siteChips.getValue() || []
+);
+
+const siteVisibility = {
+  ...(old?.siteVisibility || {})
+};
+
+for (const option of siteOptions) {
+  siteVisibility[option.value] =
+    selectedSiteIds.has(option.value);
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const record={name:title,platform:group,image:image||'',active:globalInput.checked,siteVisibility,order:Number(old?.order)||Date.now(),links,updatedAt:firebase.database.ServerValue.TIMESTAMP};if(!id)record.createdAt=firebase.database.ServerValue.TIMESTAMP;await ref.update(record);toast(id?'Card updated':'Card created');modal.close();}catch(err){console.error(err);toast(err.message||'Save failed','error');}finally{await NewUI.setButtonLoading(save,false);save.disabled=false;}});// Initialize semua custom input dalam modal
 form.querySelectorAll('input[data-new-ui-input]').forEach(input => {
   window.NewUI?.input?.(input);
 });
