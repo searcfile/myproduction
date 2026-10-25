@@ -5899,8 +5899,8 @@ function initSmartContentLoading() {
     lastLoaded > 0 &&
     Date.now() - lastLoaded < cacheDuration;
 
- const shouldLoad =
-  forceLoading || !recentlyLoaded;
+const shouldLoad =
+  isReload || forceLoading || !recentlyLoaded;
 
   if (!shouldLoad) return;
 
@@ -6004,6 +6004,18 @@ function init() {
   createShell();
 
   renderTabs();
+
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  const isReload = navigation?.type === "reload";
+
+  const isTabRefresh =
+    sessionStorage.getItem("5g88.showRefreshLoading") === "1";
+
+  if (isReload || isTabRefresh) {
+    initSmartContentLoading();
+  }
 
   initAdminRefreshOverlay();
 
