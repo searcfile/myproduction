@@ -3147,14 +3147,27 @@ if (verifiedProfileReady) {
 
     moreWrap.append(moreButton, moreDropdown);
 
-    function refreshTab(tab) {
-      if (getCurrentFile() === tab.file.toLowerCase()) {
-        window.location.reload();
-      } else {
-        navigateToTab(tab);
-      }
-    if (!verifiedProfileReady) return;
-    }
+
+function refreshTab(tab) {
+  if (!verifiedProfileReady) return;
+  if (!tab?.file) return;
+
+  const targetFile = String(tab.file).toLowerCase();
+
+  if (!canViewAdminPage(targetFile)) return;
+
+  if (getCurrentFile() === targetFile) {
+    sessionStorage.setItem(
+      "5g88.showRefreshLoading",
+      "1"
+    );
+
+    window.location.reload();
+  } else {
+    navigateToTab(tab);
+  }
+}
+
 
     function createTabActions(tab) {
       const actions = document.createElement("span");
