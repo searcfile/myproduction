@@ -831,10 +831,6 @@ function createPlatform(name, tips, rowId) {
 
       <div class="timestamp" id="${timeId}">Last Updated on --</div>
       <div class="tips-card-footer">
-        <label class="shared-active-switch" title="Enable or disable platform">
-          <input type="checkbox" class="tips-platform-active" data-active-label="Active" data-inactive-label="Inactive">
-          <span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span>
-        </label>
 <div class="tips-platform-actions">
   <button
     type="button"
@@ -890,12 +886,7 @@ const deleteButton =
 
 editButton.hidden = !tipsCan('edit');
 deleteButton.hidden = !tipsCan('delete');
-  const isActive = tipsRecords[recordId]?.active !== false;
-  const activeInput = container.querySelector('.tips-platform-active');
-  activeInput.checked = isActive;
-    activeInput.disabled = !tipsCan('edit');
-  window.SharedActiveSwitch?.sync(activeInput);
-  activeInput.addEventListener('change', () => savePlatformActive(recordId, activeInput));
+const isActive = tipsRecords[recordId]?.active !== false;
   applyPlatformActive(container, isActive);
 container.querySelector('.btn-edit-new').addEventListener('click', () => {
   openPlatformEditor(platformIdByName.get(name));
@@ -1210,6 +1201,23 @@ function openPlatformEditor(id=null) {
   </div>
 </div>
 <div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
+    <div class="tips-field">
+  <label>Platform Status</label>
+
+  <label class="shared-active-switch" title="Enable or disable platform">
+    <input
+      type="checkbox"
+      id="tipsPlatformActive"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+    >
+
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
+</div>
     <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
   const gamesInput=form.querySelector('#tipsGameNames');
@@ -1220,6 +1228,13 @@ globalActiveInput.checked =
   record?.visibleToAllSites === true;
 
 window.SharedActiveSwitch?.sync(globalActiveInput);
+    const platformActiveInput =
+  form.querySelector('#tipsPlatformActive');
+
+platformActiveInput.checked =
+  record?.active !== false;
+
+window.SharedActiveSwitch?.sync(platformActiveInput);
   const save=form.querySelector('[data-save]');
 const selectedSites = Object.entries(tipsSites)
   .map(([id, site]) => ({
@@ -1274,7 +1289,7 @@ const data = {
 const payload = {
   name,
   games,
-  active: record?.active !== false,
+  active: platformActiveInput.checked,
   visibleToAllSites: globalActiveInput.checked,
   siteVisibility
 };
@@ -1417,14 +1432,7 @@ box.querySelectorAll(
   el.disabled = !active;
 });
 
-  // Toggle status mesti sentiasa boleh digunakan.
-  const activeToggle = box.querySelector('.tips-platform-active');
 
-  if (activeToggle) {
-    activeToggle.disabled = !tipsCan('edit');
-    activeToggle.checked = active;
-    window.SharedActiveSwitch?.sync(activeToggle);
-  }
 
   // Hentikan AUTO apabila platform Inactive.
   if (!active) {
