@@ -1182,6 +1182,25 @@ function openPlatformEditor(id=null) {
   form.innerHTML=`
     <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="Platform Name" required></div>
     <div class="tips-field">
+    <div class="tips-field">
+  <label>Global Active</label>
+  <label class="shared-active-switch">
+    <input
+      type="checkbox"
+      id="tipsGlobalActive"
+      data-active-label="ON"
+      data-inactive-label="OFF"
+    >
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
+  <div class="tips-help">
+    ON: Platform tersedia untuk semua site yang dibenarkan.
+    OFF: Gunakan Site Visibility untuk memilih site.
+  </div>
+</div>
   <label>Site Visibility</label>
   <div id="tipsSiteChips"
        data-placeholder="Select Sites">
@@ -1194,8 +1213,19 @@ function openPlatformEditor(id=null) {
     <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
   const gamesInput=form.querySelector('#tipsGameNames');
+    const globalActiveInput =
+  form.querySelector('#tipsGlobalActive');
+
+globalActiveInput.checked =
+  record?.visibleToAllSites === true;
+
+window.SharedActiveSwitch?.sync(globalActiveInput);
   const save=form.querySelector('[data-save]');
-const selectedSites = Object.entries(tipsSites)
+  const selectedSites = Object.entries(tipsSites)
+  .map(([id, site]) => ({
+    value: id,
+    label: site.name || id
+  }));
   .filter(([, site]) => site?.active === true)
   .map(([id, site]) => ({
     value: id,
@@ -1232,7 +1262,6 @@ const tipsSiteChips = NewUI.chips(
       const duplicate=Object.entries(tipsRecords).some(([key,r])=>key!==id && String(r.name||'').toLowerCase()===name.toLowerCase());
       if(duplicate)throw new Error('Platform name already exists.');
       NewUI.setButtonLoading(save,true,{text:id?'Updating...':'Saving...'});
-      const db=tipsDatabase();
 const siteVisibility = {};
 
 for (const site of selectedSites) {
@@ -1244,11 +1273,26 @@ const data = {
   name,
   games,
   siteVisibility,
-  visibleToAllSites: false,
+  visibleToAllSites: globalActiveInput.checked,
   updatedAt: firebase.database.ServerValue.TIMESTAMP
 };       if(!id) data.active = true;
-      if(id)await db.ref(`${TIPS_DB_PATH}/${id}`).update(data);
-      else await db.ref(TIPS_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+const payload = {
+  name,
+  games,
+  active: record?.active !== false,
+  visibleToAllSites: globalActiveInput.checked,
+  siteVisibility
+};
+
+await tipsApi(
+  id ? `/platforms/${encodeURIComponent(id)}` : '/platforms',
+  {
+    method: id ? 'PATCH' : 'POST',
+    body: JSON.stringify(payload)
+  }
+);
+
+await reloadTipsPlatforms();
       success=true;
       await NewUI.setButtonLoading(save,false);
       modal.close();tipsToast(id?'Platform updated!':'Platform created!');
@@ -1261,7 +1305,15 @@ async function deletePlatform(id,button) {
   const yes=await NewUI.confirm({target:button,title:'Delete Tips Platform?',message:`Delete "${record.name}" and its ${record.games?.length||0} game names? This cannot be undone.`,confirmText:'Delete',danger:true});
   if(!yes)return;
   // Confirm box is closed before the realtime record is deleted.
-  try {await tipsDatabase().ref(`${TIPS_DB_PATH}/${id}`).remove();tipsToast('Platform deleted!');}
+try {
+  await tipsApi(`/platforms/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+
+  await reloadTipsPlatforms();
+
+  tipsToast('Platform deleted!');
+}
   catch(err){console.error(err);tipsToast('Delete failed: '+err.message,'error');}
 }
 /* ===== Platform status + shared filters ===== */
@@ -1394,19 +1446,63 @@ box.querySelectorAll(
     }
   }
 }
-async function savePlatformActive(id,input) {
-  const next=input.checked;
-  input.disabled=true;
-  try {
-    await tipsDatabase().ref(`${TIPS_DB_PATH}/${id}`).update({active:next,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-    tipsToast(next?'Platform activated!':'Platform deactivated!');
-  }catch(error){
-    input.checked=!next;
+async function savePlatformActive(id, input) {
+  if (!tipsCan('edit')) {
+    input.checked = !input.checked;
     window.SharedActiveSwitch?.sync(input);
-    tipsToast('Cannot update platform: '+error.message,'error');
-  }finally{input.disabled=false;}
-}
+    tipsToast('Edit permission denied', 'error');
+    return;
+  }
 
+  const next = input.checked;
+  const record = tipsRecords[id];
+
+  input.disabled = true;
+
+  try {
+    await tipsApi(`/platforms/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: record.name,
+        games: record.games,
+        active: next,
+        visibleToAllSites:
+          record.visibleToAllSites === true,
+        siteVisibility: record.siteVisibility || {}
+      })
+    });
+
+    await reloadTipsPlatforms();
+
+    tipsToast(
+      next ? 'Platform activated!' : 'Platform deactivated!'
+    );
+
+  } catch (error) {
+    input.checked = !next;
+    window.SharedActiveSwitch?.sync(input);
+
+    tipsToast(
+      'Cannot update platform: ' + error.message,
+      'error'
+    );
+  } finally {
+    input.disabled = false;
+  }
+}
+async function reloadTipsPlatforms() {
+  const result = await tipsApi('/platforms');
+
+  tipsRecords = Object.fromEntries(
+    (result.platforms || []).map(record => {
+      const { id, ...data } = record;
+      return [id, data];
+    })
+  );
+
+  tipsLoaded = true;
+  renderPlatformsFromDatabase();
+}
 async function startTipsRealtime() {
   try {
     const user = await new Promise((resolve, reject) => {
