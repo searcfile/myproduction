@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+  html.fiveg88-hard-reload,
+  html.fiveg88-hard-reload body {
+    background: #ffffff !important;
+  }
+
+  html.fiveg88-hard-reload body {
+    visibility: hidden !important;
+  }
+
+  html.fiveg88-hard-reload::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 2147483647;
+    pointer-events: auto;
+  }
+</style>
+
+<script>
+(function () {
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  if (navigation?.type === "reload") {
+    document.documentElement.classList.add(
+      "fiveg88-hard-reload"
+    );
+  }
+})();
+</script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
