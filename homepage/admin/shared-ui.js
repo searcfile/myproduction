@@ -6017,7 +6017,6 @@ function init() {
     initSmartContentLoading();
   }
 
-  initAdminRefreshOverlay();
 
   initFloatingFab();
   setupHeaderMore();
