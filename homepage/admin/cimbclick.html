@@ -1,6 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+  html.fiveg88-hard-reload,
+  html.fiveg88-hard-reload body {
+    background: #ffffff !important;
+  }
+
+  html.fiveg88-hard-reload body {
+    visibility: hidden !important;
+  }
+
+  html.fiveg88-hard-reload::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 2147483647;
+    pointer-events: auto;
+  }
+</style>
+
+<script>
+(function () {
+  const KEY = "5g88.hardReloadIntent";
+
+  // Detect Ctrl + Shift + R atau Ctrl + F5
+  window.addEventListener("keydown", function (event) {
+    const hardReload =
+      (event.ctrlKey &&
+       event.shiftKey &&
+       event.key.toLowerCase() === "r") ||
+      (event.ctrlKey && event.key === "F5");
+
+    if (hardReload) {
+      sessionStorage.setItem(KEY, String(Date.now()));
+    }
+  }, true);
+
+  // Semak sama ada reload datang daripada shortcut tadi
+  const saved = Number(sessionStorage.getItem(KEY));
+  sessionStorage.removeItem(KEY);
+
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  const recentHardReload =
+    navigation?.type === "reload" &&
+    Number.isFinite(saved) &&
+    saved > 0 &&
+    Date.now() - saved < 10000;
+
+  if (recentHardReload) {
+    document.documentElement.classList.add(
+      "fiveg88-hard-reload"
+    );
+  }
+})();
+</script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
