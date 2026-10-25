@@ -57,7 +57,12 @@
 })();
 </script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="./logo.svg" type="image/svg+xml"><title>5G88 · Link Download</title><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./new-ui.css"><style>
-:root{--ld-bg:#000;--ld-surface:#1f1f1f;--ld-input:#141414;--ld-border:#424242;--ld-text:rgba(255,255,255,.88);--ld-muted:rgba(255,255,255,.46);--ld-blue:#1668dc}body.light-theme,html[data-admin-theme=light]{--ld-bg:#fff;--ld-surface:#fff;--ld-input:#fff;--ld-border:#d9d9d9;--ld-text:rgba(0,0,0,.88);--ld-muted:rgba(0,0,0,.46)}*{box-sizing:border-box}html,body{margin:0;min-width:0}body{background:var(--ld-bg);color:var(--ld-text);font:14px Arial,sans-serif}.ld-page{width:100%;padding:12px;min-width:0}.ld-toolbar{display:grid;grid-template-columns:minmax(0,400px) minmax(0,400px) 1fr;gap:10px;align-items:center;padding:12px;border:1px solid var(--ld-border);background:var(--ld-surface);border-radius:12px;margin-bottom:12px;min-width:0}.ld-search,.ld-filter{min-width:0;width:100%}.ld-toolbar .shared-sync-search,.ld-toolbar .shared-chip-dropdown{width:100%;min-width:0}.ld-create{justify-self:end}.ld-button{font:inherit;border-radius:6px;height:32px;padding:0 15px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%}.ld-primary{background:var(--ld-blue);border-color:var(--ld-blue);color:#fff}.ld-button:disabled{opacity:.55;cursor:not-allowed}
+:root{--ld-bg:#000;--ld-surface:#1f1f1f;--ld-input:#141414;--ld-border:#424242;--ld-text:rgba(255,255,255,.88);--ld-muted:rgba(255,255,255,.46);--ld-blue:#1668dc}body.light-theme,html[data-admin-theme=light]{--ld-bg:#fff;--ld-surface:#fff;--ld-input:#fff;--ld-border:#d9d9d9;--ld-text:rgba(0,0,0,.88);--ld-muted:rgba(0,0,0,.46)}*{box-sizing:border-box}html,body{margin:0;min-width:0}body{background:var(--ld-bg);color:var(--ld-text);font:14px Arial,sans-serif}.ld-page{width:100%;padding:12px;min-width:0}.ld-toolbar{display:grid;grid-template-columns:minmax(0,400px) minmax(0,400px) 1fr;gap:10px;align-items:center;padding:12px;border:1px solid var(--ld-border);background:var(--ld-surface);border-radius:12px;margin-bottom:12px;min-width:0}.ld-search,.ld-filter{min-width:0;width:100%}.ld-toolbar .shared-sync-search,.ld-toolbar .shared-chip-dropdown{width:100%;min-width:0}.ld-create{justify-self:end}
+  /* Hide Create apabila permission tiada */
+  #ldCreate[hidden] {
+   display: none !important;
+  }
+  .ld-button{font:inherit;border-radius:6px;height:32px;padding:0 15px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%}.ld-primary{background:var(--ld-blue);border-color:var(--ld-blue);color:#fff}.ld-button:disabled{opacity:.55;cursor:not-allowed}
   .ld-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));
@@ -159,7 +164,7 @@
   padding-right:8px;
 }
 </style></head><body>
-<main class="ld-page"><div class="ld-toolbar"><div class="ld-search"><input id="ldSearch" type="search" placeholder="Search"></div><div class="ld-filter"><div id="ldPlatforms"></div></div><button class="ld-button btn-primary-new ld-create" id="ldCreate" type="button">+ Create Card</button></div><div class="ld-grid" id="ldGrid"></div></main>
+<main class="ld-page"><div class="ld-toolbar"><div class="ld-search"><input id="ldSearch" type="search" placeholder="Search"></div><div class="ld-filter"><div id="ldPlatforms"></div></div><button class="ld-button btn-primary-new ld-create" id="ldCreate" type="button" hidden>+ Create Card</button></div><div class="ld-grid" id="ldGrid"></div></main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js">
 </script><script src="./admin.js"></script>
