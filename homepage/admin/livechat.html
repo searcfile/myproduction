@@ -1416,71 +1416,6 @@ function escapeHTML(s){
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[m]));
 }
-
-/* ===== 5G88 SITE ADMIN IDENTITY ===== */
-
-let verifiedSiteAdmin = null;
-
-async function verifySiteAdminIdentity() {
-  const user = await new Promise(resolve => {
-    const unsubscribe = firebase.auth()
-      .onAuthStateChanged(currentUser => {
-        unsubscribe();
-        resolve(currentUser);
-      });
-  });
-
-  if (!user || user.isAnonymous) {
-    throw new Error("Site Admin login required");
-  }
-
-  const sessionUid = sessionStorage.getItem(
-    "5g88.adminSession"
-  );
-
-  const expireAt = Number(
-    localStorage.getItem("autoLogout.expireAt")
-  );
-
-  if (
-    sessionUid !== user.uid ||
-    !Number.isFinite(expireAt) ||
-    expireAt <= Date.now()
-  ) {
-    throw new Error("Invalid admin session");
-  }
-
-  const token = await user.getIdTokenResult(true);
-
-  const snap = await firebase.database()
-    .ref("adminUsers/" + user.uid)
-    .once("value");
-
-  const profile = snap.val();
-
-  if (
-    !profile ||
-    profile.active !== true ||
-    profile.role !== "siteadmin" ||
-    profile.secondPasswordEnabled !== true ||
-    token.claims.secondVerified !== true ||
-    !Number.isSafeInteger(token.claims.pinVersion) ||
-    token.claims.pinVersion !== profile.pinVersion
-  ) {
-    throw new Error("Site Admin verification failed");
-  }
-
-  verifiedSiteAdmin = {
-    uid: user.uid,
-    name: profile.username || user.email?.split("@")[0] || "Site Admin",
-    email: user.email || "",
-    photoURL: user.photoURL || "",
-    role: "siteadmin"
-  };
-
-  return verifiedSiteAdmin;
-}
-
 let chatInitialized = false;
 let currentUserEmail = null;
 let currentActiveId  = null;
@@ -1855,7 +1790,7 @@ async function writeUserProfile(){
 
   const finalName = currentIsGuest
     ? ensureGuestDisplayName()
-      const finalName = verifiedSiteAdmin?.name || "Site Admin";
+    : (localStorage.getItem("username") || "User");
 
   const now = Date.now();
   const browser = getBrowserName();
@@ -1866,11 +1801,10 @@ async function writeUserProfile(){
     name: finalName,
     displayName: finalName,
     email: currentUserEmail || null,
-    photoURL: verifiedSiteAdmin.photoURL || null,
+    photoURL: localStorage.getItem("userphoto") || null,
     isGuest: !!currentIsGuest,
     online: true,
-    uid: verifiedSiteAdmin.uid,
-    role: "siteadmin",
+
     browser,
     deviceType,
     deviceId,
@@ -2480,15 +2414,6 @@ async function compressImage(file, maxWidth = 1280, quality = 0.72) {
 async function sendMessage() {
   if (!currentActiveId) return;
 
-  if (
-    !verifiedSiteAdmin ||
-    firebase.auth().currentUser?.uid !== verifiedSiteAdmin.uid ||
-    currentActiveId !== verifiedSiteAdmin.uid
-  ) {
-    console.warn("Site Admin verification required");
-    return;
-  }
-
   const msg = (msgInputEl?.value || '').trim();
 
   const stillUploading = pendingImages.some(item => item.uploading);
@@ -2503,8 +2428,8 @@ async function sendMessage() {
 
   if (!msg && !readyImages.length) return;
 
-  const userName = verifiedSiteAdmin.name;
-  const userPhoto = verifiedSiteAdmin.photoURL;
+  const userName = localStorage.getItem("username") || (currentIsGuest ? "Guest" : "User");
+  const userPhoto = localStorage.getItem("userphoto") || "";
   const time = Date.now();
 
   const chatPath = getChatPath();
@@ -2514,8 +2439,6 @@ async function sendMessage() {
   try {
     await chatRef.push({
       from: 'user',
-      senderUid: verifiedSiteAdmin.uid,
-      senderRole: "siteadmin",
       name: userName,
       email: currentUserEmail || null,
       photoURL: userPhoto || null,
@@ -2927,38 +2850,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("resize", setFabOffset);
   }
 
+  const email = localStorage.getItem("useremail");
 
-  try {
-    const admin = await verifySiteAdminIdentity();
-
+  if (!currentActiveId && email) {
     currentIsGuest = false;
-    currentUserEmail = admin.email;
-    currentActiveId = admin.uid;
+    currentUserEmail = email;
+    currentActiveId = sanitizeEmail(email);
+  }
 
+  if (!currentActiveId) {
+    await ensureGuestLocalIdentity();
+  } else {
     await writeUserProfile();
-
     bindPresenceAndNotif();
     initChatWithUserData();
     notifyRead();
-
-  } catch (error) {
-    console.error(
-      "[5G88] Site Admin verification failed:",
-      error
-    );
-
-    verifiedSiteAdmin = null;
-    currentActiveId = null;
-
-    const input = document.getElementById("msg");
-    const send = document.getElementById("sendBtn");
-    const file = document.getElementById("fileInput");
-
-    if (input) input.disabled = true;
-    if (send) send.disabled = true;
-    if (file) file.disabled = true;
   }
-
 });
 const imageLightbox = document.getElementById('imageLightbox');
 const lightboxImage = document.getElementById('lightboxImage');
