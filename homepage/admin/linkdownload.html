@@ -178,7 +178,21 @@ const safeUrl=(url)=>{try{const u=new URL(String(url||''));return ['http:','http
 const clean=s=>String(s??'').trim();
 let records={},db=null,chip=null,modal=null,upload=null,editing=null,loading=true;
  let adminProfile=null, sites={}, siteAccessReady=false;
- const isSuper=()=>adminProfile?.role==='superadmin';
+const isSuper=()=>adminProfile?.role==='superadmin';
+const MODULE_KEY = 'linkdownload_html';
+
+function can(action) {
+  if (isSuper()) return true;
+
+  if (adminProfile?.role !== 'siteadmin') return false;
+
+  const actions = adminProfile.permissions?.[MODULE_KEY];
+
+  return Array.isArray(actions) &&
+    actions.includes('show') &&
+    actions.includes('view') &&
+    actions.includes(action);
+}
  const assignedSites=()=>Array.isArray(adminProfile?.siteIds)?adminProfile.siteIds:[];
 const visibleForSite = card =>
   isSuper() ||
@@ -199,7 +213,18 @@ function render(){
  grid.replaceChildren();if(!entries.length){showEmpty('No Data');return;}
  for(const [id,card] of entries)grid.append(makeCard(id,card));
 }
-function makeCard(id,card){const node=el('article','ld-card');const image=el('div','ld-image');const src=safeUrl(card.image);if(src){const img=el('img');img.src=src;img.alt=card.name;img.loading='lazy';image.append(img);}else image.append(el('span','ld-image-placeholder','▧'));node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick=()=>removeCard(id);if(isSuper()){actions.append(edit,del);body.append(actions);}node.append(body);return node;}
+function makeCard(id,card){const node=el('article','ld-card');const image=el('div','ld-image');const src=safeUrl(card.image);if(src){const img=el('img');img.src=src;img.alt=card.name;img.loading='lazy';image.append(img);}else image.append(el('span','ld-image-placeholder','▧'));node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick=()=>removeCard(id);if (can('edit')) {
+  actions.append(edit);
+}
+
+if (can('delete')) {
+  actions.append(del);
+}
+
+if (actions.children.length) {
+  body.append(actions);
+}
+node.append(body);return node;}
 function field(label, value = '', placeholder = '', type = 'text') {
   const host = el('div', 'ld-field');
 
@@ -241,7 +266,14 @@ foot.append(radio, enabledLabel);
 // Sync label dengan keadaan switch
 window.SharedActiveSwitch?.init(enabledLabel);row.append(head,fields,foot);row._get=()=>({label:clean(label.input.value),url:clean(url.input.value),action:radio.querySelector('input:checked')?.value||'copy',enabled:enabled.checked});target.append(row);}
 async function uploadImage(file){if(!CLOUDINARY_CLOUD_NAME||!CLOUDINARY_UPLOAD_PRESET)throw Error('Cloudinary not configured. Use Image URL or set cloud name and unsigned upload preset in link-download.js.');const fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);const response=await fetch('https://api.cloudinary.com/v1_1/'+encodeURIComponent(CLOUDINARY_CLOUD_NAME)+'/image/upload',{method:'POST',body:fd});const result=await response.json();if(!response.ok||!safeUrl(result.secure_url))throw Error(result.error?.message||'Cloudinary upload failed');return result.secure_url;}
-function openEditor(id=null){if(!isSuper()){toast('Super Admin only','error');return;}editing=id;const old=id?records[id]:null;const form=el('form','ld-modal-form');const top=el('div','ld-form-grid');const name=field('Card Name',old?.name||'','Name Card'),platform=field('Platform / Collection',old?.platform||'','Platform Name');top.append(name.host,platform.host);form.append(top);
+function openEditor(id = null) {
+  const action = id ? 'edit' : 'create';
+
+  if (!can(action)) {
+    toast('Permission denied: ' + action, 'error');
+    return;
+  }
+ editing=id;const old=id?records[id]:null;const form=el('form','ld-modal-form');const top=el('div','ld-form-grid');const name=field('Card Name',old?.name||'','Name Card'),platform=field('Platform / Collection',old?.platform||'','Platform Name');top.append(name.host,platform.host);form.append(top);
  // Site Visibility: satu card, status berbeza mengikut Site.
  const sitePanel=el('div','ld-site-panel');
  sitePanel.append(el('strong','','Site Visibility'));
@@ -306,7 +338,12 @@ form.querySelectorAll('input[data-new-ui-input]').forEach(input => {
 
 // Initialize semua custom slider dalam modal
 window.SharedActiveSwitch?.init(form);}
-async function removeCard(id){if(!isSuper()){toast('Super Admin only','error');return;}const card=records[id];if(!card)return;const yes=window.confirm('Delete "'+card.name+'"? This cannot be undone.');if(!yes)return;try{await db.ref(PATH+'/'+id).remove();toast('Card deleted');}catch(err){toast(err.message||'Delete failed','error');}}
+async function removeCard(id) {
+  if (!can('delete')) {
+    toast('Delete permission denied', 'error');
+    return;
+  }
+const card=records[id];if(!card)return;const yes=window.confirm('Delete "'+card.name+'"? This cannot be undone.');if(!yes)return;try{await db.ref(PATH+'/'+id).remove();toast('Card deleted');}catch(err){toast(err.message||'Delete failed','error');}}
 function setupTheme(){const apply=theme=>{document.body.classList.toggle('light-theme',theme==='light');document.body.classList.toggle('dark-theme',theme!=='light');};apply(localStorage.getItem('siteTheme')==='dark'?'dark':'light');window.addEventListener('message',e=>{if(!['https://5g88-main.vercel.app','https://searcfile.github.io'].includes(e.origin))return;if(e.data?.type==='theme-change'){const t=e.data.theme==='dark'?'dark':'light';localStorage.setItem('siteTheme',t);apply(t);}});}
 async function start(){
  setupTheme();showEmpty('Loading...');window.HISTORY_TAB_NAME='LINK DOWNLOAD';
@@ -350,8 +387,13 @@ sites = Object.fromEntries(
     site
   ])
 );
-   createButton.hidden=false;
+
   }
+  if (!can('view')) {
+  throw new Error('Link Download view permission denied');
+}
+
+createButton.hidden = !can('create');
   siteAccessReady=true;
   db.ref(PATH).on('value',snap=>{records=snap.val()||{};loading=false;refreshOptions();render();},err=>{loading=false;showEmpty('Unable to load cards');toast(err.message,'error');});
  }catch(err){loading=false;showEmpty('Access unavailable');console.error(err);toast(err.message,'error');}
