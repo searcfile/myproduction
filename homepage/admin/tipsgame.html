@@ -684,6 +684,12 @@ select:focus-visible{
   margin-left: auto;
   margin-right: auto;
 }
+      #tipsCreate[hidden],
+.platform-box .btn-edit-new[hidden],
+.platform-box .btn-delete-new[hidden],
+.platform-box .tips-platform-active[hidden] {
+  display: none !important;
+}
   </style>
 <body>
   <div class="tips-admin-toolbar">
@@ -697,7 +703,7 @@ select:focus-visible{
 >
       <div id="tipsStatusFilter" data-placeholder="All Status" aria-label="Filter status"></div>
       <div id="tipsPlatformFilter" data-placeholder="All Platforms" aria-label="Filter platforms"></div>
-      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="btn-primary-new">+ Create Platform</button></div>
+      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="btn-primary-new" hidden>+ Create Platform</button></div>
     </div>
   </div>
   <div class="platform-row" id="row-1"></div>
@@ -876,9 +882,18 @@ tipsSearchInput.addEventListener('input', () => {
   refreshList(name);
 });
   const recordId = platformIdByName.get(name);
+const editButton =
+  container.querySelector('.btn-edit-new');
+
+const deleteButton =
+  container.querySelector('.btn-delete-new');
+
+editButton.hidden = !tipsCan('edit');
+deleteButton.hidden = !tipsCan('delete');
   const isActive = tipsRecords[recordId]?.active !== false;
   const activeInput = container.querySelector('.tips-platform-active');
   activeInput.checked = isActive;
+    activeInput.disabled = !tipsCan('edit');
   window.SharedActiveSwitch?.sync(activeInput);
   activeInput.addEventListener('change', () => savePlatformActive(recordId, activeInput));
   applyPlatformActive(container, isActive);
@@ -1032,6 +1047,52 @@ function togglePercent(name) {
    Starts empty; platforms are created manually and saved to Firebase.
    ========================================================= */
 const TIPS_DB_PATH = 'tips_game/platforms';
+const TIPS_MODULE = 'tipsgame_html';
+
+let tipsAdminProfile = null;
+let tipsSites = {};
+
+function tipsCan(action) {
+  if (!tipsAdminProfile) return false;
+
+  if (tipsAdminProfile.role === 'superadmin') {
+    return true;
+  }
+
+  const permissions =
+    tipsAdminProfile.permissions?.[TIPS_MODULE];
+
+  return (
+    tipsAdminProfile.role === 'siteadmin' &&
+    Array.isArray(permissions) &&
+    permissions.includes('show') &&
+    permissions.includes('view') &&
+    permissions.includes(action)
+  );
+}
+
+function tipsIsSuper() {
+  return tipsAdminProfile?.role === 'superadmin';
+}
+
+function tipsCanSeePlatform(record) {
+  if (!tipsCan('view')) return false;
+  if (tipsIsSuper()) return true;
+
+  if (record.active === false) return false;
+
+  const siteIds = Array.isArray(tipsAdminProfile.siteIds)
+    ? tipsAdminProfile.siteIds
+    : [];
+
+  if (record.visibleToAllSites === true) {
+    return siteIds.length > 0;
+  }
+
+  return siteIds.some(
+    id => record.siteVisibility?.[id] === true
+  );
+}
 const platformIdByName = new Map();
 let tipsRecords = {};
 let tipsDb = null;
@@ -1060,7 +1121,13 @@ function renderPlatformsFromDatabase() {
   document.getElementById('row-1').replaceChildren();
   platformData = {};
   platformIdByName.clear();
-  const records=Object.entries(tipsRecords).map(([id, record])=>({id,...record})).filter(r=>r.name && Array.isArray(r.games));
+  const records = Object.entries(tipsRecords)
+  .map(([id, record]) => ({ id, ...record }))
+  .filter(record =>
+    record.name &&
+    Array.isArray(record.games) &&
+    tipsCanSeePlatform(record)
+  );
   records.sort((a,b)=>(a.order??9999)-(b.order??9999)||a.name.localeCompare(b.name));
   for(const record of records) {
     const name=record.name;
@@ -1085,11 +1152,41 @@ function openPlatformEditor(id=null) {
   const form=document.createElement('form');form.className='tips-form';
   form.innerHTML=`
     <div class="tips-field"><label for="tipsPlatformName">Platform Name</label><input id="tipsPlatformName" class="shared-input" maxlength="60" placeholder="Platform Name" required></div>
-    <div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
+    <div class="tips-field">
+  <label>Site Visibility</label>
+  <div id="tipsSiteChips"
+       data-placeholder="Select Sites">
+  </div>
+  <div class="tips-help">
+    Pilih Site Admin yang boleh melihat platform ini.
+  </div>
+</div>
+<div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
     <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
   const gamesInput=form.querySelector('#tipsGameNames');
   const save=form.querySelector('[data-save]');
+const selectedSites = Object.entries(tipsSites)
+  .filter(([, site]) => site?.active === true)
+  .map(([id, site]) => ({
+    value: id,
+    label: site.name || id
+  }));
+
+const existingSites = Object.entries(
+  record?.siteVisibility || {}
+)
+  .filter(([, visible]) => visible === true)
+  .map(([id]) => id);
+
+const tipsSiteChips = NewUI.chips(
+  form.querySelector('#tipsSiteChips'),
+  {
+    placeholder: 'Select Sites',
+    options: selectedSites,
+    value: existingSites
+  }
+);
   nameInput.value=record?.name||'';
   gamesInput.value=(record?.games||[]).join('\n');
   const modal=NewUI.modal.open({title:id?'Edit Tips Platform':'Create Tips Platform',content:form,width:800});
@@ -1107,8 +1204,20 @@ function openPlatformEditor(id=null) {
       if(duplicate)throw new Error('Platform name already exists.');
       NewUI.setButtonLoading(save,true,{text:id?'Updating...':'Saving...'});
       const db=tipsDatabase();
-      const data={name,games,updatedAt:firebase.database.ServerValue.TIMESTAMP};
-       if(!id) data.active = true;
+const siteVisibility = {};
+
+for (const site of selectedSites) {
+  siteVisibility[site.value] =
+    tipsSiteChips.getValue().includes(site.value);
+}
+
+const data = {
+  name,
+  games,
+  siteVisibility,
+  visibleToAllSites: false,
+  updatedAt: firebase.database.ServerValue.TIMESTAMP
+};       if(!id) data.active = true;
       if(id)await db.ref(`${TIPS_DB_PATH}/${id}`).update(data);
       else await db.ref(TIPS_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
       success=true;
@@ -1236,7 +1345,7 @@ box.querySelectorAll(
   const activeToggle = box.querySelector('.tips-platform-active');
 
   if (activeToggle) {
-    activeToggle.disabled = false;
+    activeToggle.disabled = !tipsCan('edit');
     activeToggle.checked = active;
     window.SharedActiveSwitch?.sync(activeToggle);
   }
