@@ -2019,81 +2019,59 @@ const CLOUDINARY_CLOUD_NAME = "dqctvbenv";
 const CLOUDINARY_UPLOAD_PRESET = "chat_upload";
 const ADMIN_PRESENCE_PATH = "adminPresence/main";
 
+function bootstrapAdminIdentityFromSettings() {
+  const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
 
-/* ===== 5G88 SUPER ADMIN IDENTITY ===== */
+  if (!savedLoginUser) {
+    const fallbackName  = localStorage.getItem("username") || localStorage.getItem("adminName") || "Admin";
+    const fallbackEmail = localStorage.getItem("useremail") || localStorage.getItem("adminEmail") || "";
+    const fallbackPhoto = localStorage.getItem("userphoto") || localStorage.getItem("adminPhoto") || "https://i.imgur.com/qiZFOs9.png";
 
-let verifiedSupportAdmin = null;
+    localStorage.setItem("username", fallbackName);
+    localStorage.setItem("useremail", fallbackEmail);
+    localStorage.setItem("userphoto", fallbackPhoto);
 
-async function bootstrapAdminIdentityFromSettings() {
-  verifiedSupportAdmin = null;
-
-  const user = await new Promise(resolve => {
-    const unsubscribe = firebase.auth()
-      .onAuthStateChanged(currentUser => {
-        unsubscribe();
-        resolve(currentUser);
-      });
-  });
-
-  if (!user || user.isAnonymous) {
-    throw new Error("Super Admin login required");
+    localStorage.setItem("adminName", fallbackName);
+    localStorage.setItem("adminEmail", fallbackEmail);
+    localStorage.setItem("adminPhoto", fallbackPhoto);
+    return;
   }
 
-  const sessionUid = sessionStorage.getItem(
-    "5g88.adminSession"
-  );
+  const adminName  = savedLoginUser.username || "Admin";
+  const adminEmail = savedLoginUser.email || "";
+  const adminPhoto =
+    savedLoginUser.photoURL ||
+    localStorage.getItem("userphoto") ||
+    localStorage.getItem("adminPhoto") ||
+    "https://i.imgur.com/qiZFOs9.png";
 
-  const expireAt = Number(
-    localStorage.getItem("autoLogout.expireAt")
-  );
+  localStorage.setItem("username", adminName);
+  localStorage.setItem("useremail", adminEmail);
+  localStorage.setItem("userphoto", adminPhoto);
 
-  if (
-    sessionUid !== user.uid ||
-    !Number.isFinite(expireAt) ||
-    expireAt <= Date.now()
-  ) {
-    throw new Error("Admin session invalid");
-  }
+  localStorage.setItem("adminName", adminName);
+  localStorage.setItem("adminEmail", adminEmail);
+  localStorage.setItem("adminPhoto", adminPhoto);
+}
 
-  const token = await user.getIdTokenResult(true);
+function getAdminIdentity(){
+  bootstrapAdminIdentityFromSettings();
 
-  const snap = await firebase.database()
-    .ref("adminUsers/" + user.uid)
-    .once("value");
-
-  const profile = snap.val();
-
-  if (
-    !profile ||
-    profile.active !== true ||
-    profile.role !== "superadmin" ||
-    profile.secondPasswordEnabled !== true ||
-    token.claims.secondVerified !== true ||
-    !Number.isSafeInteger(token.claims.pinVersion) ||
-    token.claims.pinVersion !== profile.pinVersion
-  ) {
-    throw new Error("Super Admin verification failed");
-  }
-
-  verifiedSupportAdmin = {
-    uid: user.uid,
-    role: "superadmin",
-    name: "Super Admin",
-    email: user.email || "",
-    photoURL: user.photoURL || ""
+  return {
+    name:
+      localStorage.getItem("username") ||
+      localStorage.getItem("adminName") ||
+      "Admin",
+    photoURL:
+      localStorage.getItem("userphoto") ||
+      localStorage.getItem("adminPhoto") ||
+      "https://i.imgur.com/qiZFOs9.png",
+    email:
+      localStorage.getItem("useremail") ||
+      localStorage.getItem("adminEmail") ||
+      "admin@domain.com"
   };
-
-  return verifiedSupportAdmin;
 }
-
-function getAdminIdentity() {
-  if (!verifiedSupportAdmin) {
-    throw new Error("Super Admin not verified");
-  }
-
-  return verifiedSupportAdmin;
-}
-
 
 function bindAdminPresence(){
   const ref = db.ref(ADMIN_PRESENCE_PATH);
@@ -3227,12 +3205,7 @@ function updateSendButtonState(){
 
   if (!sendBtn) return;
 
-  sendBtn.disabled =
-  !verifiedSupportAdmin ||
-  firebase.auth().currentUser?.uid !== verifiedSupportAdmin.uid ||
-  !selectedUserId ||
-  !hasAnything ||
-  hasUploadingImage;
+  sendBtn.disabled = !selectedUserId || !hasAnything || hasUploadingImage;
 }
 function setImageUploadLoading(isLoading, text = "Uploading image..."){
   isUploadingImage = !!isLoading;
@@ -3470,18 +3443,6 @@ async function compressImage(file, maxWidth = 1280, quality = 0.72) {
 async function sendMessage() {
   if (!selectedUserId) return;
 
-  if (
-    !verifiedSupportAdmin ||
-    verifiedSupportAdmin.role !== "superadmin" ||
-    firebase.auth().currentUser?.uid !==
-      verifiedSupportAdmin.uid
-  ) {
-    console.warn(
-      "[5G88] Super Admin verification required"
-    );
-    return;
-  }
-
   const text = (msgInput?.value || "").trim();
 
   const stillUploading = pendingImages.some(item => item.uploading);
@@ -3502,7 +3463,6 @@ async function sendMessage() {
   try {
     await db.ref(`chats/${selectedUserId}`).push({
       from: "admin",
-      adminUid: admin.uid,
       name: admin.name || "Admin",
       email: admin.email || "",
       photoURL: admin.photoURL || "https://i.imgur.com/qiZFOs9.png",
@@ -3729,32 +3689,11 @@ if (msgInput) {
     }
   });
 }
-
-bootstrapAdminIdentityFromSettings()
-  .then(() => {
-    touchAdminPresence({
-      online: true,
-      typing: false
-    });
-
-    bindAdminPresence();
-    bindAdminTyping();
-
-    updateSendButtonState();
-  })
-  .catch(error => {
-    console.error(
-      "[5G88] Super Admin verification failed:",
-      error
-    );
-
-    verifiedSupportAdmin = null;
-
-    if (msgInput) msgInput.disabled = true;
-    if (sendBtn) sendBtn.disabled = true;
-    if (fileInput) fileInput.disabled = true;
-  });
-
+  bootstrapAdminIdentityFromSettings();
+  touchAdminPresence({ online: true, typing: false });
+  
+  bindAdminPresence();
+  bindAdminTyping();
 
 if (msgInput){
   msgInput.addEventListener("input", updateSendButtonState);
