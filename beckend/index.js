@@ -551,6 +551,258 @@ app.get(
     }
   }
 );
+
+/* =====================================================
+   TIPS GAME — SITE VISIBILITY + PERMISSIONS
+   ===================================================== */
+
+const TIPS_PATH = "tips_game/platforms";
+const TIPS_MODULE = "tipsgame.html";
+
+function tipsVisible(record, profile) {
+  if (profile.role === "superadmin") return true;
+  if (record?.active === false) return false;
+
+  const siteIds = Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+
+  if (record?.visibleToAllSites === true) {
+    return siteIds.length > 0;
+  }
+
+  return siteIds.some(id =>
+    record?.siteVisibility?.[id] === true
+  );
+}
+
+function validateTipsPayload(body) {
+  const name = String(body?.name || "").trim();
+  const games = body?.games;
+
+  if (!name || name.length > 100) {
+    throw Error("Invalid platform name");
+  }
+
+  if (
+    !Array.isArray(games) ||
+    games.length < 1 ||
+    games.length > 500 ||
+    !games.every(g =>
+      typeof g === "string" &&
+      g.trim().length > 0 &&
+      g.length <= 120
+    )
+  ) {
+    throw Error("Invalid games list");
+  }
+
+  if (
+    typeof body?.active !== "boolean" ||
+    typeof body?.visibleToAllSites !== "boolean"
+  ) {
+    throw Error("Invalid visibility settings");
+  }
+
+  const siteVisibility = body?.siteVisibility || {};
+
+  if (
+    !siteVisibility ||
+    typeof siteVisibility !== "object" ||
+    Array.isArray(siteVisibility) ||
+    Object.keys(siteVisibility).length > 100 ||
+    !Object.entries(siteVisibility).every(([id, value]) =>
+      /^[a-z0-9_-]{1,48}$/.test(id) &&
+      typeof value === "boolean"
+    )
+  ) {
+    throw Error("Invalid site visibility");
+  }
+
+  return {
+    name,
+    games: games.map(g => g.trim()),
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function validateTipsSites(siteVisibility) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  return Object.keys(siteVisibility).every(id =>
+    sites[id]?.active === true
+  );
+}
+
+// Site list for custom chips
+app.get(
+  "/api/tips-game/sites",
+  requireAdmin,
+  requirePermission(TIPS_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const sites = Object.entries(all)
+        .filter(([, s]) => s?.active === true)
+        .map(([id, s]) => ({
+          id,
+          name: s.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("Tips sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// Read platforms filtered by assigned sites
+app.get(
+  "/api/tips-game/platforms",
+  requireAdmin,
+  requirePermission(TIPS_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const records = (
+        await db.ref(TIPS_PATH).once("value")
+      ).val() || {};
+
+      const platforms = Object.entries(records)
+        .filter(([, record]) =>
+          tipsVisible(record, req.admin.profile)
+        )
+        .map(([id, record]) => ({
+          id,
+          ...record
+        }));
+
+      return res.json({ ok: true, platforms });
+    } catch (error) {
+      console.error("Tips list:", error);
+      return fail(res, 500, "Cannot load platforms");
+    }
+  }
+);
+
+// Create platform
+app.post(
+  "/api/tips-game/platforms",
+  requireAdmin,
+  requirePermission(TIPS_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = validateTipsPayload(req.body);
+
+      if (!(await validateTipsSites(data.siteVisibility))) {
+        return fail(res, 400, "Invalid site selection");
+      }
+
+      const ref = db.ref(TIPS_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+    } catch (error) {
+      console.error("Tips create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// Edit platform
+app.patch(
+  "/api/tips-game/platforms/:id",
+  requireAdmin,
+  requirePermission(TIPS_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid platform ID");
+      }
+
+      const ref = db.ref(`${TIPS_PATH}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Platform not found");
+      }
+
+      if (!tipsVisible(snapshot.val(), req.admin.profile)) {
+        return fail(res, 403, "Platform access denied");
+      }
+
+      const data = validateTipsPayload(req.body);
+
+      if (!(await validateTipsSites(data.siteVisibility))) {
+        return fail(res, 400, "Invalid site selection");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Tips edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// Delete platform
+app.delete(
+  "/api/tips-game/platforms/:id",
+  requireAdmin,
+  requirePermission(TIPS_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid platform ID");
+      }
+
+      const ref = db.ref(`${TIPS_PATH}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Platform not found");
+      }
+
+      if (!tipsVisible(snapshot.val(), req.admin.profile)) {
+        return fail(res, 403, "Platform access denied");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Tips delete:", error);
+      return fail(res, 500, "Cannot delete platform");
+    }
+  }
+);
+
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
