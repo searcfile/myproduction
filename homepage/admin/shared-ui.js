@@ -5795,6 +5795,55 @@ function updateChangePwVisibility() {
   }
 
 /* ==========================================================
+   5G88 REFRESH OVERLAY CONTROLLER
+   ========================================================== */
+
+function initAdminRefreshOverlay() {
+  const key = "5g88.showRefreshLoading";
+
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  const isBrowserRefresh =
+    navigation?.type === "reload";
+
+  const isTabRefresh =
+    sessionStorage.getItem(key) === "1";
+
+  sessionStorage.removeItem(key);
+
+  if (!isBrowserRefresh && !isTabRefresh) {
+    return;
+  }
+
+  if (typeof window.showGlobalLoading !== "function") {
+    return;
+  }
+
+  // Paparkan spinner serta-merta selepas JS tersedia.
+  window.showGlobalLoading(
+    "Please wait while fetching...",
+    0
+  );
+
+  // Ini hanya menunggu resource halaman,
+  // bukan pengesahan Firebase selesai.
+  const finish = () => {
+    window.hideGlobalLoading?.();
+  };
+
+  if (document.readyState === "complete") {
+    finish();
+  } else {
+    window.addEventListener(
+      "load",
+      finish,
+      { once: true }
+    );
+  }
+}
+
+/* ==========================================================
    5G88 SHARED GLOBAL LOADING
    Menggunakan spinner daripada new-ui.js
    ========================================================== */
@@ -5955,6 +6004,8 @@ function init() {
   createShell();
 
   renderTabs();
+
+  initAdminRefreshOverlay();
 
   initFloatingFab();
   setupHeaderMore();
