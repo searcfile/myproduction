@@ -1046,6 +1046,35 @@ function togglePercent(name) {
    Data location: tips_game/platforms/{firebasePushId}
    Starts empty; platforms are created manually and saved to Firebase.
    ========================================================= */
+const TIPS_API =
+  'https://fiveg88-admin-backend-v2.onrender.com/api/tips-game';
+
+async function tipsApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw new Error('Login required');
+  }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(TIPS_API + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.ok) {
+    throw new Error(result.message || 'API request failed');
+  }
+
+  return result;
+}
 const TIPS_DB_PATH = 'tips_game/platforms';
 const TIPS_MODULE = 'tipsgame_html';
 
@@ -1378,20 +1407,65 @@ async function savePlatformActive(id,input) {
   }finally{input.disabled=false;}
 }
 
-function startTipsRealtime() {
+async function startTipsRealtime() {
   try {
-    tipsDatabase().ref(TIPS_DB_PATH).on('value',snapshot=>{
-      tipsRecords=snapshot.val()||{};
-      tipsLoaded=true;
-      renderPlatformsFromDatabase();
-    },error=>{
-      console.error('Tips Firebase listener:',error);
-      tipsToast('Cannot load Tips Game data: '+error.message,'error');
+    const user = await new Promise((resolve, reject) => {
+      const unsubscribe = firebase.auth().onAuthStateChanged(u => {
+        unsubscribe();
+        u ? resolve(u) : reject(new Error('Login required'));
+      }, reject);
     });
-}catch(err){
-  console.error('Tips Firebase connection:', err);
-  tipsToast(err.message || 'Firebase not connected', 'error');
-}
+
+    const token = await user.getIdTokenResult(true);
+
+    if (token.claims.secondVerified !== true) {
+      throw new Error('Second password verification required');
+    }
+
+    const snapshot = await firebase.database()
+      .ref('adminUsers/' + user.uid)
+      .once('value');
+
+    tipsAdminProfile = snapshot.val();
+
+    if (!tipsAdminProfile || tipsAdminProfile.active !== true) {
+      throw new Error('Admin access denied');
+    }
+
+    if (!tipsCan('view')) {
+      throw new Error('Tips Game view permission denied');
+    }
+
+    const result = await tipsApi('/platforms');
+
+    tipsRecords = Object.fromEntries(
+      (result.platforms || []).map(record => {
+        const { id, ...data } = record;
+        return [id, data];
+      })
+    );
+
+    if (tipsCan('create') || tipsCan('edit')) {
+      const siteResult = await tipsApi('/sites');
+
+      tipsSites = Object.fromEntries(
+        (siteResult.sites || []).map(site => [site.id, site])
+      );
+    }
+
+    tipsLoaded = true;
+    tipsCreate.hidden = !tipsCan('create');
+
+    renderPlatformsFromDatabase();
+
+  } catch (error) {
+    console.error('Tips Game API:', error);
+
+    tipsToast(
+      'Cannot load Tips Game: ' + error.message,
+      'error'
+    );
+  }
 }
 tipsCreate.addEventListener('click',()=>openPlatformEditor());
 // Legacy card buttons use inline handlers. Expose only the existing UI actions.
