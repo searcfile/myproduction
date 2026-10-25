@@ -634,11 +634,13 @@ if (getCurrentFile() === targetFile) {
 
 setActiveFile(targetFile);
 
-// Tidak perlu loading automatik untuk tukar tab.
-sessionStorage.removeItem("adminShowContentLoading");
-sessionStorage.removeItem("smartForceLoading");
+// Tandakan navigasi tab untuk Smart Content Loader.
+sessionStorage.setItem(
+  "5g88.smartTabNavigation",
+  "1"
+);
 
-// Mulakan navigasi terus.
+// Navigasi ke halaman tab yang dipilih.
 window.location.assign(`./${targetFile}`);
   }
 
@@ -4918,13 +4920,13 @@ document
             "spin"
           );
 
-          sessionStorage.setItem(
-            "adminShowContentLoading",
-            "1"
-          );
 sessionStorage.setItem(
-  "smartForceLoading",
+  "5g88.showRefreshLoading",
   "1"
+);
+
+sessionStorage.removeItem(
+  "5g88.smartTabNavigation"
 );
           setTimeout(
             () => {
@@ -5827,29 +5829,57 @@ function initAdminRefreshOverlay() {
     return;
   }
 
-  // Paparkan spinner serta-merta selepas JS tersedia.
   window.showGlobalLoading(
     "Please wait while fetching...",
     0
   );
 
-  // Ini hanya menunggu resource halaman,
-  // bukan pengesahan Firebase selesai.
-  const finish = () => {
-    window.hideGlobalLoading?.();
-  };
+  let pageReady =
+    document.readyState === "complete";
 
-  if (document.readyState === "complete") {
+  let firebaseReady =
+    !!currentAdminProfile;
+
+  let finished = false;
+
+  function finish() {
+    if (finished || !pageReady || !firebaseReady) {
+      return;
+    }
+
+    finished = true;
+
+    window.removeEventListener(
+      "5g88-admin-profile-ready",
+      onProfileReady
+    );
+
+    window.hideGlobalLoading?.();
+  }
+
+  function onProfileReady() {
+    firebaseReady = !!currentAdminProfile;
     finish();
-  } else {
+  }
+
+  window.addEventListener(
+    "5g88-admin-profile-ready",
+    onProfileReady
+  );
+
+  if (!pageReady) {
     window.addEventListener(
       "load",
-      finish,
+      () => {
+        pageReady = true;
+        finish();
+      },
       { once: true }
     );
   }
-}
 
+  finish();
+}
 /* ==========================================================
    5G88 SHARED GLOBAL LOADING
    Menggunakan spinner daripada new-ui.js
@@ -5895,30 +5925,46 @@ function initSmartContentLoading() {
   const isReload = navigation?.type === "reload";
 
   const refreshKey = "5g88.showRefreshLoading";
+  const tabKey = "5g88.smartTabNavigation";
+
   const isTabRefresh =
     sessionStorage.getItem(refreshKey) === "1";
 
-  sessionStorage.removeItem(refreshKey);
+  const isTabNavigation =
+    sessionStorage.getItem(tabKey) === "1";
 
-  if (!isReload && !isTabRefresh) return;
+  // Refresh menggunakan Global Overlay, bukan Smart Loader.
+  if (isReload || isTabRefresh) {
+    sessionStorage.removeItem(tabKey);
+    return;
+  }
+
+  // Smart Loader hanya untuk navigation tab.
+  if (!isTabNavigation) return;
+
+  sessionStorage.removeItem(tabKey);
 
   const loader = document.createElement("div");
   loader.id = "smartContentLoader";
 
   Object.assign(loader.style, {
     position: "fixed",
-    inset: "0",
+    left: "0",
+    right: "0",
+    bottom: "0",
+    top: "0",
     zIndex: "2147483646",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "rgba(0, 0, 0, 0.55)",
+    background: "#101010",
     pointerEvents: "auto"
   });
 
   loader.setAttribute("role", "status");
   loader.setAttribute("aria-live", "polite");
 
+  // Kekalkan design 4 dots asal.
   loader.innerHTML = `
     <div class="smart-loading-box">
       <div class="smart-loading-dots">
@@ -5933,15 +5979,59 @@ function initSmartContentLoading() {
 
   document.body.appendChild(loader);
 
-  let pageReady = document.readyState === "complete";
-  let firebaseReady = !!currentAdminProfile;
+  // Letakkan loader di bawah header dan tabbar.
+  function updateContentPosition() {
+    const tabBar = document.getElementById("tabBar");
+
+    if (!tabBar) return;
+
+    const rect = tabBar.getBoundingClientRect();
+
+    loader.style.top =
+      Math.max(0, rect.bottom) + "px";
+  }
+
+  updateContentPosition();
+
+  window.addEventListener(
+    "resize",
+    updateContentPosition
+  );
+
+  let pageReady =
+    document.readyState === "complete";
+
+  let firebaseReady =
+    !!currentAdminProfile;
+
   let finished = false;
 
+  const errorTimer = setTimeout(() => {
+    if (finished) return;
+
+    const label = loader.querySelector(
+      ".smart-loading-text"
+    );
+
+    if (label) {
+      label.textContent =
+        "Still loading. Please check your connection.";
+    }
+  }, 15000);
+
   function finishLoading() {
-    if (finished || !pageReady || !firebaseReady) return;
+    if (finished || !pageReady || !firebaseReady) {
+      return;
+    }
 
     finished = true;
+
     clearTimeout(errorTimer);
+
+    window.removeEventListener(
+      "resize",
+      updateContentPosition
+    );
 
     window.removeEventListener(
       "5g88-admin-profile-ready",
@@ -5962,26 +6052,15 @@ function initSmartContentLoading() {
   );
 
   if (!pageReady) {
-    window.addEventListener("load", () => {
-      pageReady = true;
-      finishLoading();
-    }, { once: true });
-  }
-
-  // Jangan buka akses hanya kerana timeout.
-  // Jika Firebase gagal, kekalkan loading dengan mesej ralat.
-  const errorTimer = setTimeout(() => {
-    if (finished) return;
-
-    const label = loader.querySelector(
-      ".smart-loading-text"
+    window.addEventListener(
+      "load",
+      () => {
+        pageReady = true;
+        finishLoading();
+      },
+      { once: true }
     );
-
-    if (label) {
-      label.textContent =
-        "Still verifying your session. Please check your connection.";
-    }
-  }, 15000);
+  }
 
   finishLoading();
 }
@@ -5995,17 +6074,11 @@ function init() {
 
   renderTabs();
 
-  const navigation =
-    performance.getEntriesByType("navigation")[0];
+  // Refresh halaman menggunakan Global Overlay.
+  initAdminRefreshOverlay();
 
-  const isReload = navigation?.type === "reload";
-
-  const isTabRefresh =
-    sessionStorage.getItem("5g88.showRefreshLoading") === "1";
-
-  if (isReload || isTabRefresh) {
-    initSmartContentLoading();
-  }
+  // Pindah atau buka tab menggunakan Smart Content Loader.
+  initSmartContentLoading();
 
 
   initFloatingFab();
