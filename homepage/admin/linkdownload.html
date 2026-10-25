@@ -284,7 +284,30 @@ async function start(){
   adminProfile=profileSnap.val();
   if(!adminProfile||adminProfile.active!==true||!['superadmin','siteadmin'].includes(adminProfile.role)||adminProfile.pinVersion!==token.claims.pinVersion)throw Error('Admin verification failed');
   if(isSuper()){
-   const siteSnap=await db.ref('sites').once('value');sites=siteSnap.val()||{};
+   const tokenString = await user.getIdToken(true);
+
+const response = await fetch(
+  "https://fiveg88-admin-backend-v2.onrender.com/api/sites",
+  {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${tokenString}`
+    }
+  }
+);
+
+const result = await response.json();
+
+if (!response.ok || !result.ok) {
+  throw new Error(result.message || "Cannot load sites");
+}
+
+sites = Object.fromEntries(
+  (result.sites || []).map(site => [
+    site.id,
+    site
+  ])
+);
    createButton.hidden=false;
   }
   siteAccessReady=true;
