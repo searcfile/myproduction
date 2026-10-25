@@ -5876,126 +5876,109 @@ window.withAdminLoading = withAdminLoading;
    5G88 SMART CONTENT LOADING V2
    ========================================== */
 
-function initSmartContentLoading() {
-  const file = getCurrentFile();
-  const cacheKey = `smartLoaded:${file}`;
-  const cacheDuration = 60 * 1000;
 
+/* ==========================================================
+   5G88 REFRESH LOADING - WAIT FOR FIREBASE
+   ========================================================== */
+
+function initSmartContentLoading() {
   const navigation =
     performance.getEntriesByType("navigation")[0];
 
   const isReload = navigation?.type === "reload";
 
-  const forceLoading =
-    sessionStorage.getItem("smartForceLoading") === "1";
+  const refreshKey = "5g88.showRefreshLoading";
+  const isTabRefresh =
+    sessionStorage.getItem(refreshKey) === "1";
 
-  sessionStorage.removeItem("smartForceLoading");
+  sessionStorage.removeItem(refreshKey);
 
-  const lastLoaded = Number(
-    sessionStorage.getItem(cacheKey) || 0
-  );
+  if (!isReload && !isTabRefresh) return;
 
-  const recentlyLoaded =
-    lastLoaded > 0 &&
-    Date.now() - lastLoaded < cacheDuration;
+  const loader = document.createElement("div");
+  loader.id = "smartContentLoader";
 
-const shouldLoad =
-  isReload || forceLoading || !recentlyLoaded;
+  Object.assign(loader.style, {
+    position: "fixed",
+    inset: "0",
+    zIndex: "2147483646",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(0, 0, 0, 0.55)",
+    pointerEvents: "auto"
+  });
 
-  if (!shouldLoad) return;
+  loader.setAttribute("role", "status");
+  loader.setAttribute("aria-live", "polite");
 
-  // semua halaman boleh menggunakannya.
-  let loader = document.getElementById(
-    "smartContentLoader"
-  );
-
-  if (!loader) {
-    loader = document.createElement("div");
-    loader.id = "smartContentLoader";
-    loader.className = "smart-content-loader";
-
-    loader.setAttribute("role", "status");
-    loader.setAttribute("aria-live", "polite");
-
-    loader.innerHTML = `
-      <div class="smart-loading-box">
-        <div class="smart-loading-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-
-        <div class="smart-loading-text">
-          Please wait while fetching...
-        </div>
+  loader.innerHTML = `
+    <div class="smart-loading-box">
+      <div class="smart-loading-dots">
+        <span></span><span></span>
+        <span></span><span></span>
       </div>
-    `;
+      <div class="smart-loading-text">
+        Please wait while fetching...
+      </div>
+    </div>
+  `;
 
-    document.body.appendChild(loader);
-  }
+  document.body.appendChild(loader);
 
-  // Kira kedudukan bawah tab bar sebenar.
-  function updatePosition() {
-    const tabBar = document.getElementById("tabBar");
-    const header = document.querySelector(
-      "#homepageSharedShell .header"
-    );
-
-    const anchor = tabBar || header;
-
-    const top = anchor
-      ? anchor.getBoundingClientRect().bottom
-      : 110;
-
-    loader.style.top = `${Math.max(0, top)}px`;
-  }
-
-  updatePosition();
-
-  window.addEventListener("resize", updatePosition);
-
+  let pageReady = document.readyState === "complete";
+  let firebaseReady = !!currentAdminProfile;
   let finished = false;
-  const started = performance.now();
 
   function finishLoading() {
-    if (finished) return;
+    if (finished || !pageReady || !firebaseReady) return;
+
     finished = true;
+    clearTimeout(errorTimer);
 
-    // Minimum masa untuk nampak animasi.
-    const remaining = Math.max(
-      0,
-      150 - (performance.now() - started)
+    window.removeEventListener(
+      "5g88-admin-profile-ready",
+      onProfileReady
     );
 
-    setTimeout(() => {
-      loader.remove();
-
-      window.removeEventListener(
-        "resize",
-        updatePosition
-      );
-
-      sessionStorage.setItem(
-        cacheKey,
-        String(Date.now())
-      );
-    }, remaining);
+    loader.remove();
   }
 
-  if (document.readyState === "complete") {
+  function onProfileReady() {
+    firebaseReady = !!currentAdminProfile;
     finishLoading();
-  } else {
-    window.addEventListener(
-      "load",
-      finishLoading,
-      { once: true }
-    );
   }
 
-  // Elakkan loader tersekat selamanya.
-  setTimeout(finishLoading, 5000);
+  window.addEventListener(
+    "5g88-admin-profile-ready",
+    onProfileReady
+  );
+
+  if (!pageReady) {
+    window.addEventListener("load", () => {
+      pageReady = true;
+      finishLoading();
+    }, { once: true });
+  }
+
+  // Jangan buka akses hanya kerana timeout.
+  // Jika Firebase gagal, kekalkan loading dengan mesej ralat.
+  const errorTimer = setTimeout(() => {
+    if (finished) return;
+
+    const label = loader.querySelector(
+      ".smart-loading-text"
+    );
+
+    if (label) {
+      label.textContent =
+        "Still verifying your session. Please check your connection.";
+    }
+  }, 15000);
+
+  finishLoading();
 }
+
   /* ==========================================================
      INITIALIZE
      ========================================================== */
