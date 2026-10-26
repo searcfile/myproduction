@@ -2322,7 +2322,301 @@ app.delete(
     }
   }
 );
+/* =====================================================
+   PUSSY888 GAME CATALOG — BACKEND CRUD
+   ===================================================== */
 
+const PUSSY_MODULE = "pussy888.html";
+const PUSSY_PATH = "pussy888/games";
+
+/* ===== VISIBILITY ===== */
+
+function pussyVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+
+  if (game?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+
+  if (!assigned.length) return false;
+
+  // Legacy games remain global until migrated
+  if (game?.visibleToAllSites !== false) return true;
+
+  return assigned.some(id =>
+    game?.siteVisibility?.[id] === true
+  );
+}
+
+/* ===== EDIT PERMISSION ===== */
+
+function pussyEditable(game, profile) {
+  if (profile.role === "superadmin") return true;
+
+  if (game?.visibleToAllSites !== false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+
+  const selected = Object.keys(game?.siteVisibility || {})
+    .filter(id => game.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+/* ===== VALIDATION ===== */
+
+function pussyValidate(body) {
+  // Reuse the existing MEGA888 payload validation.
+  return megaValidate(body);
+}
+
+async function pussyCheckSites(data, profile) {
+  return megaCheckSites(data, profile);
+}
+
+/* ===== GET ACCESS ===== */
+
+app.get(
+  "/api/pussy888/access",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "view"),
+  (req, res) => {
+    const profile = req.admin.profile;
+
+    const actions = profile.role === "superadmin"
+      ? ["show", "view", "create", "edit", "delete"]
+      : profile.permissions?.["pussy888_html"] || [];
+
+    return res.json({
+      ok: true,
+      role: profile.role,
+      actions
+    });
+  }
+);
+
+/* ===== GET SITES ===== */
+
+app.get(
+  "/api/pussy888/sites",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+
+      const assigned = Array.isArray(profile.siteIds)
+        ? profile.siteIds
+        : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            profile.role === "superadmin" ||
+            assigned.includes(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+
+    } catch (error) {
+      console.error("PUSSY888 sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+/* ===== GET GAMES ===== */
+
+app.get(
+  "/api/pussy888/games",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(PUSSY_PATH).once("value")
+      ).val() || {};
+
+      const games = Object.entries(all)
+        .filter(([, game]) =>
+          pussyVisible(game, req.admin.profile)
+        )
+        .map(([id, game]) => ({
+          ...game,
+          id
+        }));
+
+      return res.json({
+        ok: true,
+        games
+      });
+
+    } catch (error) {
+      console.error("PUSSY888 list:", error);
+      return fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+/* ===== CREATE GAME ===== */
+
+app.post(
+  "/api/pussy888/games",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = pussyValidate(req.body);
+
+      await pussyCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(PUSSY_PATH).once("value")
+      ).val() || {};
+
+      const exists = Object.values(all).some(game =>
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      );
+
+      if (exists) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      const ref = db.ref(PUSSY_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+
+    } catch (error) {
+      console.error("PUSSY888 create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+/* ===== EDIT GAME ===== */
+
+app.patch(
+  "/api/pussy888/games/:id",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${PUSSY_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!pussyEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game edit not permitted");
+      }
+
+      const data = pussyValidate(req.body);
+
+      await pussyCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(PUSSY_PATH).once("value")
+      ).val() || {};
+
+      const duplicate = Object.entries(all).some(
+        ([otherId, game]) =>
+          otherId !== id &&
+          String(game?.name || "").toLowerCase() ===
+          data.name.toLowerCase()
+      );
+
+      if (duplicate) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+      console.error("PUSSY888 edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+/* ===== DELETE GAME ===== */
+
+app.delete(
+  "/api/pussy888/games/:id",
+  requireAdmin,
+  requirePermission(PUSSY_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${PUSSY_PATH}/${id}`);
+      const game = (await ref.once("value")).val();
+
+      if (!game) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!pussyEditable(game, req.admin.profile)) {
+        return fail(res, 403, "Game delete not permitted");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+      console.error("PUSSY888 delete:", error);
+      return fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
+/* =====================================================
+   END PUSSY888 GAME CATALOG
+   ===================================================== */
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
