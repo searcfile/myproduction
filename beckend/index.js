@@ -1117,6 +1117,274 @@ app.delete(
     }
   });
 
+/* =====================================================
+   GAME LOGO — BACKEND CRUD + SITE PERMISSIONS
+   ===================================================== */
+
+const GAME_LOGO_PATH = "game_logos";
+const GAME_LOGO_MODULE = "logogame.html";
+
+function gameLogoVisible(logo, profile) {
+  if (profile.role === "superadmin") return true;
+  if (logo?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  return assigned.length > 0 && (
+    logo?.visibleToAllSites === true ||
+    assigned.some(id => logo?.siteVisibility?.[id] === true)
+  );
+}
+
+function gameLogoData(body) {
+  const name = String(body?.name ?? "").trim();
+  const alias = String(body?.alias ?? "").trim();
+  const type = String(body?.type ?? "").trim();
+  const image = String(body?.image ?? "").trim();
+  const platform = body?.platform;
+
+  if (!name || name.length > 120 ||
+      !alias || alias.length > 120) {
+    throw Error("Invalid game name or alias");
+  }
+
+  if (!["slot", "live", "table"].includes(type)) {
+    throw Error("Invalid method");
+  }
+
+  if (!Array.isArray(platform) ||
+      !platform.length || platform.length > 20 ||
+      !platform.every(p =>
+        typeof p === "string" &&
+        /^[a-z0-9_-]{1,48}$/.test(p)
+      )) {
+    throw Error("Invalid platforms");
+  }
+
+  if (!/^https:\/\/[^\s]+$/i.test(image) ||
+      image.length > 2048) {
+    throw Error("Invalid image URL");
+  }
+
+  if (typeof body.active !== "boolean" ||
+      typeof body.visibleToAllSites !== "boolean") {
+    throw Error("Invalid status");
+  }
+
+  const siteVisibility = body.siteVisibility ?? {};
+
+  if (!siteVisibility ||
+      typeof siteVisibility !== "object" ||
+      Array.isArray(siteVisibility) ||
+      Object.keys(siteVisibility).length > 100 ||
+      !Object.entries(siteVisibility).every(
+        ([id, enabled]) =>
+          siteIdOK(id) && enabled === true
+      )) {
+    throw Error("Invalid Site Visibility");
+  }
+
+  if (!body.visibleToAllSites &&
+      !Object.keys(siteVisibility).length) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name, alias, type,
+    platform: [...new Set(platform)],
+    image,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function gameLogoCheckSites(data, profile, old = null) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const ids = Object.keys(data.siteVisibility);
+
+  if (!ids.every(id => sites[id]?.active === true)) {
+    throw Error("Selected site is invalid or inactive");
+  }
+
+  if (profile.role !== "superadmin") {
+    const assigned = Array.isArray(profile.siteIds)
+      ? profile.siteIds : [];
+
+    if (!assigned.length ||
+        data.visibleToAllSites ||
+        ids.some(id => !assigned.includes(id))) {
+      throw Error("Site selection not permitted");
+    }
+
+    if (old?.visibleToAllSites === true) {
+      throw Error("Global logo is managed by Super Admin");
+    }
+  }
+}
+
+app.get(
+  "/api/game-logos/sites",
+  requireAdmin,
+  requirePermission(GAME_LOGO_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+      const assigned = Array.isArray(profile.siteIds)
+        ? profile.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (profile.role === "superadmin" ||
+           assigned.includes(id))
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      res.json({ok:true, sites});
+    } catch (e) {
+      console.error("Game logo sites", e);
+      fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+app.get(
+  "/api/game-logos",
+  requireAdmin,
+  requirePermission(GAME_LOGO_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(GAME_LOGO_PATH).once("value")
+      ).val() || {};
+
+      const logos = Object.entries(all)
+        .filter(([, logo]) =>
+          gameLogoVisible(logo, req.admin.profile)
+        )
+        .map(([id, logo]) => ({...logo, id}));
+
+      res.json({ok:true, logos});
+    } catch (e) {
+      console.error("Game logos", e);
+      fail(res, 500, "Cannot load game logos");
+    }
+  }
+);
+
+app.post(
+  "/api/game-logos",
+  requireAdmin,
+  requirePermission(GAME_LOGO_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = gameLogoData(req.body);
+      await gameLogoCheckSites(data, req.admin.profile);
+
+      const ref = db.ref(GAME_LOGO_PATH).push();
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      res.status(201).json({ok:true, id:ref.key});
+    } catch (e) {
+      console.error("Create game logo", e);
+      fail(res, 400, e.message);
+    }
+  }
+);
+
+app.patch(
+  "/api/game-logos/:id",
+  requireAdmin,
+  requirePermission(GAME_LOGO_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid logo ID");
+      }
+
+      const ref = db.ref(`${GAME_LOGO_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Logo not found");
+      }
+
+      const old = snap.val();
+
+      if (!gameLogoVisible(old, req.admin.profile)) {
+        return fail(res, 403, "Logo access denied");
+      }
+
+      const data = gameLogoData(req.body);
+      await gameLogoCheckSites(
+        data, req.admin.profile, old
+      );
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      res.json({ok:true});
+    } catch (e) {
+      console.error("Edit game logo", e);
+      fail(res, 400, e.message);
+    }
+  }
+);
+
+app.delete(
+  "/api/game-logos/:id",
+  requireAdmin,
+  requirePermission(GAME_LOGO_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid logo ID");
+      }
+
+      const ref = db.ref(`${GAME_LOGO_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Logo not found");
+      }
+
+      if (!gameLogoVisible(snap.val(), req.admin.profile)) {
+        return fail(res, 403, "Logo access denied");
+      }
+
+      await ref.remove();
+      res.json({ok:true});
+    } catch (e) {
+      console.error("Delete game logo", e);
+      fail(res, 500, "Cannot delete logo");
+    }
+  }
+);
+
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
