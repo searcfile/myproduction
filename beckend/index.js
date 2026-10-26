@@ -1968,6 +1968,8 @@ app.delete("/api/918kiss/games/:id",
     }
   }
 );
+
+
 /* =====================================================
    MEGA888 GAME CATALOG — BACKEND CRUD
    ===================================================== */
@@ -1979,7 +1981,7 @@ function megaVisible(game, profile) {
   if (profile.role === "superadmin") return true;
   if (game?.active === false) return false;
 
-  // Legacy games: treated as global until migrated.
+  // Legacy games: global until migrated
   if (game?.visibleToAllSites !== false) return true;
 
   const assigned = Array.isArray(profile.siteIds)
@@ -1993,7 +1995,7 @@ function megaVisible(game, profile) {
 function megaEditable(game, profile) {
   if (profile.role === "superadmin") return true;
 
-  // Global and legacy games are superadmin-managed.
+  // Global games can only be managed by Super Admin
   if (game?.visibleToAllSites !== false) return false;
 
   const assigned = Array.isArray(profile.siteIds)
@@ -2068,7 +2070,10 @@ function megaValidate(body) {
   }
 
   return {
-    name, bets, pecahan, freeGameOptions,
+    name,
+    bets,
+    pecahan,
+    freeGameOptions,
     active: body.active,
     visibleToAllSites: body.visibleToAllSites,
     siteVisibility
@@ -2095,16 +2100,20 @@ async function megaCheckSites(data, profile) {
   }
 }
 
-app.get("/api/mega888/access",
+/* ===== ACCESS ===== */
+
+app.get(
+  "/api/mega888/access",
   requireAdmin,
-  requirePermission(KISS_MODULE, "view"),
+  requirePermission(MEGA_MODULE, "view"),
   (req, res) => {
     const p = req.admin.profile;
+
     const actions = p.role === "superadmin"
       ? ["show", "view", "create", "edit", "delete"]
       : p.permissions?.["mega888_html"] || [];
 
-    res.json({
+    return res.json({
       ok: true,
       role: p.role,
       actions
@@ -2112,138 +2121,203 @@ app.get("/api/mega888/access",
   }
 );
 
-app.get("/api/918kiss/sites",
+/* ===== SITES ===== */
+
+app.get(
+  "/api/mega888/sites",
   requireAdmin,
-  requirePermission(KISS_MODULE, "view"),
+  requirePermission(MEGA_MODULE, "view"),
   async (req, res) => {
     try {
       const all = (await db.ref("sites").once("value")).val() || {};
       const p = req.admin.profile;
-      const assigned = Array.isArray(p.siteIds) ? p.siteIds : [];
+
+      const assigned = Array.isArray(p.siteIds)
+        ? p.siteIds : [];
 
       const sites = Object.entries(all)
         .filter(([id, site]) =>
           site?.active === true &&
-          (p.role === "superadmin" || assigned.includes(id))
+          (
+            p.role === "superadmin" ||
+            assigned.includes(id)
+          )
         )
         .map(([id, site]) => ({
-          id, name: site.name || id
+          id,
+          name: site.name || id
         }));
 
-      return res.json({ok:true, sites});
+      return res.json({ ok: true, sites });
+
     } catch (e) {
-      console.error("MEGA888 sites", e);
+      console.error("MEGA888 sites:", e);
       return fail(res, 500, "Cannot load sites");
     }
   }
 );
 
-app.get("/api/918kiss/games",
+/* ===== LIST GAMES ===== */
+
+app.get(
+  "/api/mega888/games",
   requireAdmin,
-  requirePermission(KISS_MODULE, "view"),
+  requirePermission(MEGA_MODULE, "view"),
   async (req, res) => {
     try {
-      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
-      const games = Object.entries(all)
-        .filter(([, game]) => kissVisible(game, req.admin.profile))
-        .map(([id, game]) => ({...game, id}));
+      const all = (
+        await db.ref(MEGA_PATH).once("value")
+      ).val() || {};
 
-      return res.json({ok:true, games});
+      const games = Object.entries(all)
+        .filter(([, game]) =>
+          megaVisible(game, req.admin.profile)
+        )
+        .map(([id, game]) => ({
+          ...game,
+          id
+        }));
+
+      return res.json({ ok: true, games });
+
     } catch (e) {
-      console.error("MEGA888 list", e);
+      console.error("MEGA888 list:", e);
       return fail(res, 500, "Cannot load games");
     }
   }
 );
 
-app.post("/api/918kiss/games",
+/* ===== CREATE GAME ===== */
+
+app.post(
+  "/api/mega888/games",
   requireAdmin,
-  requirePermission(KISS_MODULE, "create"),
+  requirePermission(MEGA_MODULE, "create"),
   async (req, res) => {
     try {
-      const data = kissValidate(req.body);
-      await kissCheckSites(data, req.admin.profile);
+      const data = megaValidate(req.body);
 
-      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(MEGA_PATH).once("value")
+      ).val() || {};
+
       if (Object.values(all).some(game =>
-        String(game?.name || "").toLowerCase() === data.name.toLowerCase()
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
       )) {
         return fail(res, 409, "Game name already exists");
       }
 
-      const ref = db.ref(KISS_PATH).push();
+      const ref = db.ref(MEGA_PATH).push();
+
       await ref.set({
         ...data,
         createdAt: now(),
-        updatedAt: now()
+        updatedAt: now(),
+        createdBy: req.admin.uid
       });
 
-      return res.status(201).json({ok:true, id:ref.key});
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+
     } catch (e) {
+      console.error("MEGA888 create:", e);
       return fail(res, 400, e.message);
     }
   }
 );
 
-app.patch("/api/918kiss/games/:id",
+/* ===== EDIT GAME ===== */
+
+app.patch(
+  "/api/mega888/games/:id",
   requireAdmin,
-  requirePermission(KISS_MODULE, "edit"),
+  requirePermission(MEGA_MODULE, "edit"),
   async (req, res) => {
     try {
       const id = req.params.id;
+
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
         return fail(res, 400, "Invalid game ID");
       }
 
-      const ref = db.ref(`${KISS_PATH}/${id}`);
+      const ref = db.ref(`${MEGA_PATH}/${id}`);
       const old = (await ref.once("value")).val();
-      if (!old) return fail(res, 404, "Game not found");
 
-      if (!kissEditable(old, req.admin.profile)) {
+      if (!old) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!megaEditable(old, req.admin.profile)) {
         return fail(res, 403, "Game edit not permitted");
       }
 
-      const data = kissValidate(req.body);
-      await kissCheckSites(data, req.admin.profile);
+      const data = megaValidate(req.body);
 
-      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(MEGA_PATH).once("value")
+      ).val() || {};
+
       if (Object.entries(all).some(([otherId, game]) =>
         otherId !== id &&
-        String(game?.name || "").toLowerCase() === data.name.toLowerCase()
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
       )) {
         return fail(res, 409, "Game name already exists");
       }
 
-      await ref.update({...data, updatedAt:now()});
-      return res.json({ok:true});
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+
     } catch (e) {
+      console.error("MEGA888 edit:", e);
       return fail(res, 400, e.message);
     }
   }
 );
 
-app.delete("/api/918kiss/games/:id",
+/* ===== DELETE GAME ===== */
+
+app.delete(
+  "/api/mega888/games/:id",
   requireAdmin,
-  requirePermission(KISS_MODULE, "delete"),
+  requirePermission(MEGA_MODULE, "delete"),
   async (req, res) => {
     try {
       const id = req.params.id;
+
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
         return fail(res, 400, "Invalid game ID");
       }
 
-      const ref = db.ref(`${KISS_PATH}/${id}`);
+      const ref = db.ref(`${MEGA_PATH}/${id}`);
       const game = (await ref.once("value")).val();
-      if (!game) return fail(res, 404, "Game not found");
 
-      if (!kissEditable(game, req.admin.profile)) {
+      if (!game) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!megaEditable(game, req.admin.profile)) {
         return fail(res, 403, "Game delete not permitted");
       }
 
       await ref.remove();
-      return res.json({ok:true});
+
+      return res.json({ ok: true });
+
     } catch (e) {
-      console.error("MEGA888 delete", e);
+      console.error("MEGA888 delete:", e);
       return fail(res, 500, "Cannot delete game");
     }
   }
