@@ -2913,6 +2913,21 @@ globalInput.checked = old.visibleToAllSites === true;
 
 const globalTrack = mgElement('span', 'shared-active-track');
 
+const globalText = mgElement(
+  'span',
+  'shared-active-text',
+  'Inactive'
+);
+
+const globalKnob = mgElement(
+  'span',
+  'shared-active-knob'
+);
+
+globalKnob.setAttribute('aria-hidden', 'true');
+
+globalTrack.append(globalText, globalKnob);
+
 globalSwitch.append(globalInput, globalTrack);
 
 globalField.append(
@@ -2981,6 +2996,21 @@ const statusTrack = mgElement(
   'span',
   'shared-active-track'
 );
+
+const statusText = mgElement(
+  'span',
+  'shared-active-text',
+  'Inactive'
+);
+
+const statusKnob = mgElement(
+  'span',
+  'shared-active-knob'
+);
+
+statusKnob.setAttribute('aria-hidden', 'true');
+
+statusTrack.append(statusText, statusKnob);
 
 statusSwitch.append(statusInput, statusTrack);
 statusWrap.append(statusLabel, statusSwitch);
