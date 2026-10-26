@@ -2613,7 +2613,233 @@ app.delete(
     }
   }
 );
+/* =====================================================
+   EVO888 GAME CATALOG — BACKEND CRUD
+   ===================================================== */
 
+const EVO_MODULE = "evo888.html";
+const EVO_PATH = "evo888/games";
+
+function evoVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  if (!assigned.length) return false;
+  if (game?.visibleToAllSites !== false) return true;
+
+  return assigned.some(id =>
+    game?.siteVisibility?.[id] === true
+  );
+}
+
+function evoEditable(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.visibleToAllSites !== false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  const selected = Object.keys(game?.siteVisibility || {})
+    .filter(id => game.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+app.get(
+  "/api/evo888/access",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "view"),
+  (req, res) => {
+    const p = req.admin.profile;
+
+    res.json({
+      ok: true,
+      role: p.role,
+      actions: p.role === "superadmin"
+        ? ["show", "view", "create", "edit", "delete"]
+        : p.permissions?.evo888_html || []
+    });
+  }
+);
+
+app.get(
+  "/api/evo888/sites",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const p = req.admin.profile;
+      const assigned = Array.isArray(p.siteIds)
+        ? p.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (p.role === "superadmin" || assigned.includes(id))
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      res.json({ ok: true, sites });
+    } catch (err) {
+      console.error("EVO888 sites:", err);
+      fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+app.get(
+  "/api/evo888/games",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(EVO_PATH).once("value")
+      ).val() || {};
+
+      const games = Object.entries(all)
+        .filter(([, game]) =>
+          evoVisible(game, req.admin.profile)
+        )
+        .map(([id, game]) => ({ ...game, id }));
+
+      res.json({ ok: true, games });
+    } catch (err) {
+      console.error("EVO888 games:", err);
+      fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+app.post(
+  "/api/evo888/games",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = megaValidate(req.body);
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(EVO_PATH).once("value")
+      ).val() || {};
+
+      if (Object.values(all).some(game =>
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      const ref = db.ref(EVO_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      res.status(201).json({ ok: true, id: ref.key });
+    } catch (err) {
+      console.error("EVO888 create:", err);
+      fail(res, 400, err.message);
+    }
+  }
+);
+
+app.patch(
+  "/api/evo888/games/:id",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${EVO_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) return fail(res, 404, "Game not found");
+
+      if (!evoEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game edit not permitted");
+      }
+
+      const data = megaValidate(req.body);
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(EVO_PATH).once("value")
+      ).val() || {};
+
+      if (Object.entries(all).some(([otherId, game]) =>
+        otherId !== id &&
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("EVO888 edit:", err);
+      fail(res, 400, err.message);
+    }
+  }
+);
+
+app.delete(
+  "/api/evo888/games/:id",
+  requireAdmin,
+  requirePermission(EVO_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${EVO_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) return fail(res, 404, "Game not found");
+
+      if (!evoEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game delete not permitted");
+      }
+
+      await ref.remove();
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("EVO888 delete:", err);
+      fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
+/* ===== END EVO888 BACKEND ===== */
 /* =====================================================
    END PUSSY888 GAME CATALOG
    ===================================================== */
