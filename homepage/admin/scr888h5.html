@@ -2976,9 +2976,9 @@ function mgOptions(raw) {
 
   const numbers = text.split(/[,\s]+/).map(Number);
 
-  if (numbers.some(n =>
-    !Number.isSafeInteger(n) || n < 1
-  )) return null;
+if (numbers.some(n =>
+  !Number.isSafeInteger(n) || n < 1 || n > 100
+)) return null;
 
   return [...new Set(numbers)].sort((a, b) => a - b);
 }
@@ -3082,11 +3082,22 @@ function mgApplyCatalog(snapshot) {
     }
   }
 
-  gameCS?.refresh?.();
-  betCS?.refresh?.();
-  winCS?.refresh?.();
+const refreshDropdown = (id, dropdown) => {
+  const select = document.getElementById(id);
 
-  mgCatalogLoaded = true;
+  const api =
+    select?._sharedDropdown ||
+    dropdown ||
+    window.NewUI?.dropdown?.(select);
+
+  api?.refresh?.();
+};
+
+refreshDropdown("gameSelect", gameCS);
+refreshDropdown("betSelect", betCS);
+refreshDropdown("pecahanSelect", winCS);
+
+mgCatalogLoaded = true;
 }
 
 function mgSyncPermission() {
@@ -3313,7 +3324,7 @@ function mgEditor(oldName = "") {
 
     const a = mgField("Bet", String(bet), "number");
     a.input.step = "any";
-    a.input.min = "0";
+    a.input.min = "0.01";
 
     const b = mgField("Win Options", String(wins));
     b.input.placeholder = "30, 60, 100";
@@ -3423,7 +3434,7 @@ function mgEditor(oldName = "") {
       return;
     }
 
-    if (freeOptions === null) {
+   if (freeOptions === null || freeOptions.length > 10) {
       mgToast(
         "Free Game Options must contain positive whole numbers",
         "error"
@@ -3445,7 +3456,7 @@ function mgEditor(oldName = "") {
       if (
         !betText ||
         !Number.isFinite(bet) ||
-        bet < 0 ||
+        bet <= 0 ||
         !wins.length
       ) {
         mgToast("Enter valid Bet and Win values", "error");
