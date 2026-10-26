@@ -1385,6 +1385,309 @@ app.delete(
   }
 );
 
+/* =====================================================
+   FIND GAME — API, SITE VISIBILITY & PERMISSIONS
+   ===================================================== */
+
+const FIND_GAME_PATH = "find_game/games";
+const FIND_GAME_MODULE = "findgame.html";
+
+function fgServerVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  return assigned.length > 0 && (
+    game?.visibleToAllSites === true ||
+    assigned.some(id => game?.siteVisibility?.[id] === true)
+  );
+}
+
+function fgServerValidate(body) {
+  const name = String(body?.name ?? "").trim();
+  const alias = String(body?.alias ?? "").trim();
+  const type = String(body?.type ?? "").trim();
+  const payline = body?.payline;
+  const tags = body?.tags;
+  const bets = body?.bets;
+  const image = String(body?.image ?? "").trim();
+  const active = body?.active;
+  const visibleToAllSites = body?.visibleToAllSites;
+  const siteVisibility = body?.siteVisibility ?? {};
+
+  if (!name || name.length > 120 || alias.length > 120) {
+    throw Error("Invalid game name or alias");
+  }
+
+  if (!["Slot", "Live Game", "Table"].includes(type)) {
+    throw Error("Invalid game type");
+  }
+
+  if (!Number.isInteger(payline) ||
+      payline < 1 || payline > 1000) {
+    throw Error("Invalid paylines");
+  }
+
+  if (!Array.isArray(tags) ||
+      !tags.length || tags.length > 30 ||
+      !tags.every(t =>
+        typeof t === "string" &&
+        /^[a-z0-9_-]{1,48}$/.test(t)
+      )) {
+    throw Error("Invalid platforms");
+  }
+
+  if (!bets || typeof bets !== "object" ||
+      Array.isArray(bets) ||
+      !Object.keys(bets).length ||
+      Object.keys(bets).length > 1000) {
+    throw Error("Invalid bet values");
+  }
+
+  for (const [line, values] of Object.entries(bets)) {
+    const number = Number(line);
+
+    if (!/^[1-9]\d*$/.test(line) ||
+        !Number.isInteger(number) ||
+        number > payline ||
+        !Array.isArray(values) ||
+        !values.length ||
+        values.length > 200 ||
+        values.some(v =>
+          typeof v !== "number" ||
+          !Number.isFinite(v) || v <= 0
+        )) {
+      throw Error("Invalid bet line: " + line);
+    }
+  }
+
+  if (!/^https:\/\/[^\s]+$/i.test(image) ||
+      image.length > 2048) {
+    throw Error("Invalid image URL");
+  }
+
+  if (typeof body?.adjustable !== "boolean" ||
+      typeof active !== "boolean" ||
+      typeof visibleToAllSites !== "boolean") {
+    throw Error("Invalid game status");
+  }
+
+  if (!siteVisibility ||
+      typeof siteVisibility !== "object" ||
+      Array.isArray(siteVisibility) ||
+      Object.keys(siteVisibility).length > 100 ||
+      !Object.entries(siteVisibility).every(
+        ([id, value]) => siteIdOK(id) && value === true
+      )) {
+    throw Error("Invalid site visibility");
+  }
+
+  if (!visibleToAllSites &&
+      !Object.keys(siteVisibility).length) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name, alias, type, payline,
+    adjustable: body.adjustable,
+    tags: [...new Set(tags)],
+    bets, image, active,
+    visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function fgServerCheckSites(data, profile, old = null) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const ids = Object.keys(data.siteVisibility);
+
+  if (!ids.every(id => sites[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role !== "superadmin") {
+    const assigned = Array.isArray(profile.siteIds)
+      ? profile.siteIds : [];
+
+    if (!assigned.length ||
+        data.visibleToAllSites ||
+        ids.some(id => !assigned.includes(id))) {
+      throw Error("Site selection not permitted");
+    }
+
+    if (old?.visibleToAllSites === true) {
+      throw Error("Global game is managed by Super Admin");
+    }
+  }
+}
+
+app.get(
+  "/api/find-game/sites",
+  requireAdmin,
+  requirePermission(FIND_GAME_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+      const assigned = Array.isArray(profile.siteIds)
+        ? profile.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (profile.role === "superadmin" ||
+           assigned.includes(id))
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ok:true, sites});
+    } catch (error) {
+      console.error("Find Game sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+app.get(
+  "/api/find-game/games",
+  requireAdmin,
+  requirePermission(FIND_GAME_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(FIND_GAME_PATH).once("value")
+      ).val() || {};
+
+      const games = Object.entries(all)
+        .filter(([, game]) =>
+          fgServerVisible(game, req.admin.profile)
+        )
+        .map(([id, game]) => ({...game, id}));
+
+      return res.json({ok:true, games});
+    } catch (error) {
+      console.error("Find Game list:", error);
+      return fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+app.post(
+  "/api/find-game/games",
+  requireAdmin,
+  requirePermission(FIND_GAME_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = fgServerValidate(req.body);
+      await fgServerCheckSites(data, req.admin.profile);
+
+      const ref = db.ref(FIND_GAME_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok:true,
+        id:ref.key
+      });
+    } catch (error) {
+      console.error("Create Find Game:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+app.patch(
+  "/api/find-game/games/:id",
+  requireAdmin,
+  requirePermission(FIND_GAME_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${FIND_GAME_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Game not found");
+      }
+
+      const old = snap.val();
+
+      if (!fgServerVisible(old, req.admin.profile)) {
+        return fail(res, 403, "Game access denied");
+      }
+
+      const data = fgServerValidate(req.body);
+      await fgServerCheckSites(
+        data, req.admin.profile, old
+      );
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ok:true});
+    } catch (error) {
+      console.error("Edit Find Game:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+app.delete(
+  "/api/find-game/games/:id",
+  requireAdmin,
+  requirePermission(FIND_GAME_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${FIND_GAME_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!fgServerVisible(snap.val(), req.admin.profile)) {
+        return fail(res, 403, "Game access denied");
+      }
+
+      await ref.remove();
+      return res.json({ok:true});
+    } catch (error) {
+      console.error("Delete Find Game:", error);
+      return fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
