@@ -2953,7 +2953,9 @@ async function mgApi(path, options = {}) {
 
   if (!response.ok || result.ok === false) {
     throw Error(
-      result.message || result.error || "Request failed"
+      result.message ||
+result.error ||
+`HTTP ${response.status} ${response.statusText}: ${path}`
     );
   }
 
