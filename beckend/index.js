@@ -2839,6 +2839,286 @@ app.delete(
   }
 );
 
+/* =====================================================
+   SCR888H5 GAME CATALOG — BACKEND CRUD
+   ===================================================== */
+
+const SCR_MODULE = "scr888h5.html";
+const SCR_PATH = "scr888h5/games";
+
+function scrVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  if (!assigned.length) return false;
+  if (game?.visibleToAllSites !== false) return true;
+
+  return assigned.some(id =>
+    game?.siteVisibility?.[id] === true
+  );
+}
+
+function scrEditable(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.visibleToAllSites !== false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  const selected = Object.keys(game?.siteVisibility || {})
+    .filter(id => game.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+/* =====================================================
+   GET — ADMIN ACCESS / PERMISSIONS
+   ===================================================== */
+
+app.get(
+  "/api/scr888h5/access",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "view"),
+  (req, res) => {
+    const p = req.admin.profile;
+
+    res.json({
+      ok: true,
+      role: p.role,
+      actions: p.role === "superadmin"
+        ? ["show", "view", "create", "edit", "delete"]
+        : p.permissions?.scr888h5_html || []
+    });
+  }
+);
+
+/* =====================================================
+   GET — AVAILABLE SITES
+   ===================================================== */
+
+app.get(
+  "/api/scr888h5/sites",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const p = req.admin.profile;
+      const assigned = Array.isArray(p.siteIds)
+        ? p.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            p.role === "superadmin" ||
+            assigned.includes(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+
+    } catch (err) {
+      console.error("SCR888H5 sites:", err);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+/* =====================================================
+   GET — LIST GAMES
+   ===================================================== */
+
+app.get(
+  "/api/scr888h5/games",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(SCR_PATH).once("value")
+      ).val() || {};
+
+      const games = Object.entries(all)
+        .filter(([, game]) =>
+          scrVisible(game, req.admin.profile)
+        )
+        .map(([id, game]) => ({
+          ...game,
+          id
+        }));
+
+      return res.json({ ok: true, games });
+
+    } catch (err) {
+      console.error("SCR888H5 games:", err);
+      return fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+/* =====================================================
+   POST — CREATE GAME
+   ===================================================== */
+
+app.post(
+  "/api/scr888h5/games",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = megaValidate(req.body);
+
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(SCR_PATH).once("value")
+      ).val() || {};
+
+      const duplicate = Object.values(all).some(game =>
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      );
+
+      if (duplicate) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      const ref = db.ref(SCR_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+
+    } catch (err) {
+      console.error("SCR888H5 create:", err);
+      return fail(res, 400, err.message);
+    }
+  }
+);
+
+/* =====================================================
+   PATCH — EDIT GAME
+   ===================================================== */
+
+app.patch(
+  "/api/scr888h5/games/:id",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${SCR_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!scrEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game edit not permitted");
+      }
+
+      const data = megaValidate(req.body);
+
+      await megaCheckSites(data, req.admin.profile);
+
+      const all = (
+        await db.ref(SCR_PATH).once("value")
+      ).val() || {};
+
+      const duplicate = Object.entries(all).some(
+        ([otherId, game]) =>
+          otherId !== id &&
+          String(game?.name || "").toLowerCase() ===
+          data.name.toLowerCase()
+      );
+
+      if (duplicate) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+
+    } catch (err) {
+      console.error("SCR888H5 edit:", err);
+      return fail(res, 400, err.message);
+    }
+  }
+);
+
+/* =====================================================
+   DELETE — REMOVE GAME
+   ===================================================== */
+
+app.delete(
+  "/api/scr888h5/games/:id",
+  requireAdmin,
+  requirePermission(SCR_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${SCR_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!scrEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game delete not permitted");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+
+    } catch (err) {
+      console.error("SCR888H5 delete:", err);
+      return fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
+/* =====================================================
+   END SCR888H5 GAME CATALOG
+   ===================================================== */
+
 /* ===== END EVO888 BACKEND ===== */
 /* =====================================================
    END PUSSY888 GAME CATALOG
