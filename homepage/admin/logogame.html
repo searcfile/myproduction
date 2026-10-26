@@ -953,7 +953,55 @@ select:focus-visible{
 #createGameBtn[hidden] {
   display: none !important;
 }
+/* ==========================================
+   GAME LOGO - RESPONSIVE ACTION BUTTONS
+   ========================================== */
 
+.logo-grid .logo-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  width: 100%;
+  min-width: 0;
+  margin-top: auto;
+  padding-top: 10px;
+
+  border-top: 1px solid var(--border-input);
+}
+
+/* Semua tombol */
+.logo-grid .logo-actions button {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Copy ambil satu baris penuh */
+.logo-grid .logo-actions .btn-copy-new {
+  grid-column: 1 / -1;
+}
+
+/* Edit & Delete masing-masing separuh */
+.logo-grid .logo-actions .btn-edit-new,
+.logo-grid .logo-actions .btn-delete-new {
+  grid-column: auto;
+}
+
+/* Jika hanya ada satu tombol selain Copy */
+.logo-grid .logo-actions button:nth-child(2):last-child {
+  grid-column: 1 / -1;
+}
 </style>
 <body>
 <div class="logo-toolbar-row">
