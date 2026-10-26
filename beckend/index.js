@@ -1688,6 +1688,287 @@ app.delete(
   }
 );
 
+/* =====================================================
+   918KISS GAME CATALOG — BACKEND CRUD
+   ===================================================== */
+
+const KISS_MODULE = "918kiss.html";
+const KISS_PATH = "918kiss/games";
+
+function kissVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.active === false) return false;
+
+  // Legacy games: treated as global until migrated.
+  if (game?.visibleToAllSites !== false) return true;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  return assigned.some(id =>
+    game?.siteVisibility?.[id] === true
+  );
+}
+
+function kissEditable(game, profile) {
+  if (profile.role === "superadmin") return true;
+
+  // Global and legacy games are superadmin-managed.
+  if (game?.visibleToAllSites !== false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  const visibleSites = Object.keys(game?.siteVisibility || {})
+    .filter(id => game.siteVisibility[id] === true);
+
+  return visibleSites.length > 0 &&
+    visibleSites.every(id => assigned.includes(id));
+}
+
+function kissValidate(body) {
+  const name = String(body?.name || "").trim();
+  const bets = body?.bets;
+  const pecahan = body?.pecahan;
+  const freeGameOptions = body?.freeGameOptions;
+  const siteVisibility = body?.siteVisibility;
+
+  if (!name || name.length > 120) {
+    throw Error("Invalid game name");
+  }
+
+  if (!Array.isArray(bets) ||
+      bets.length < 1 || bets.length > 200 ||
+      bets.some(n => typeof n !== "number" ||
+        !Number.isFinite(n) || n <= 0) ||
+      new Set(bets).size !== bets.length) {
+    throw Error("Invalid bets");
+  }
+
+  if (!pecahan || typeof pecahan !== "object" ||
+      Array.isArray(pecahan)) {
+    throw Error("Invalid win options");
+  }
+
+  if (Object.keys(pecahan).length !== bets.length ||
+      bets.some(bet => {
+        const values = pecahan[String(bet)];
+        return !Array.isArray(values) ||
+          !values.length || values.length > 200 ||
+          values.some(n => typeof n !== "number" ||
+            !Number.isFinite(n) || n < 0);
+      })) {
+    throw Error("Invalid win options");
+  }
+
+  if (!Array.isArray(freeGameOptions) ||
+      freeGameOptions.length > 10 ||
+      freeGameOptions.some(n =>
+        !Number.isSafeInteger(n) || n < 1 || n > 100)) {
+    throw Error("Invalid Free Game Options");
+  }
+
+  if (typeof body?.active !== "boolean" ||
+      typeof body?.visibleToAllSites !== "boolean") {
+    throw Error("Invalid status");
+  }
+
+  if (!siteVisibility || typeof siteVisibility !== "object" ||
+      Array.isArray(siteVisibility) ||
+      Object.keys(siteVisibility).length > 100 ||
+      !Object.entries(siteVisibility).every(
+        ([id, value]) => siteIdOK(id) && value === true
+      )) {
+    throw Error("Invalid Site Visibility");
+  }
+
+  if (!body.visibleToAllSites &&
+      !Object.keys(siteVisibility).length) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name, bets, pecahan, freeGameOptions,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function kissCheckSites(data, profile) {
+  const all = (await db.ref("sites").once("value")).val() || {};
+  const ids = Object.keys(data.siteVisibility);
+
+  if (!ids.every(id => all[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role !== "superadmin") {
+    const assigned = Array.isArray(profile.siteIds)
+      ? profile.siteIds : [];
+
+    if (data.visibleToAllSites ||
+        !assigned.length ||
+        ids.some(id => !assigned.includes(id))) {
+      throw Error("Site selection not permitted");
+    }
+  }
+}
+
+app.get("/api/918kiss/access",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "view"),
+  (req, res) => {
+    const p = req.admin.profile;
+    const actions = p.role === "superadmin"
+      ? ["show", "view", "create", "edit", "delete"]
+      : p.permissions?.["918kiss_html"] || [];
+
+    res.json({
+      ok: true,
+      role: p.role,
+      actions
+    });
+  }
+);
+
+app.get("/api/918kiss/sites",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (await db.ref("sites").once("value")).val() || {};
+      const p = req.admin.profile;
+      const assigned = Array.isArray(p.siteIds) ? p.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (p.role === "superadmin" || assigned.includes(id))
+        )
+        .map(([id, site]) => ({
+          id, name: site.name || id
+        }));
+
+      return res.json({ok:true, sites});
+    } catch (e) {
+      console.error("918KISS sites", e);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+app.get("/api/918kiss/games",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
+      const games = Object.entries(all)
+        .filter(([, game]) => kissVisible(game, req.admin.profile))
+        .map(([id, game]) => ({...game, id}));
+
+      return res.json({ok:true, games});
+    } catch (e) {
+      console.error("918KISS list", e);
+      return fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+app.post("/api/918kiss/games",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = kissValidate(req.body);
+      await kissCheckSites(data, req.admin.profile);
+
+      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
+      if (Object.values(all).some(game =>
+        String(game?.name || "").toLowerCase() === data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      const ref = db.ref(KISS_PATH).push();
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now()
+      });
+
+      return res.status(201).json({ok:true, id:ref.key});
+    } catch (e) {
+      return fail(res, 400, e.message);
+    }
+  }
+);
+
+app.patch("/api/918kiss/games/:id",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${KISS_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+      if (!old) return fail(res, 404, "Game not found");
+
+      if (!kissEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game edit not permitted");
+      }
+
+      const data = kissValidate(req.body);
+      await kissCheckSites(data, req.admin.profile);
+
+      const all = (await db.ref(KISS_PATH).once("value")).val() || {};
+      if (Object.entries(all).some(([otherId, game]) =>
+        otherId !== id &&
+        String(game?.name || "").toLowerCase() === data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      await ref.update({...data, updatedAt:now()});
+      return res.json({ok:true});
+    } catch (e) {
+      return fail(res, 400, e.message);
+    }
+  }
+);
+
+app.delete("/api/918kiss/games/:id",
+  requireAdmin,
+  requirePermission(KISS_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${KISS_PATH}/${id}`);
+      const game = (await ref.once("value")).val();
+      if (!game) return fail(res, 404, "Game not found");
+
+      if (!kissEditable(game, req.admin.profile)) {
+        return fail(res, 403, "Game delete not permitted");
+      }
+
+      await ref.remove();
+      return res.json({ok:true});
+    } catch (e) {
+      console.error("918KISS delete", e);
+      return fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
