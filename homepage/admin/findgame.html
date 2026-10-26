@@ -2546,7 +2546,26 @@ function fgParseBets(text,payline){
   }
   return out;
 }
-function fgBetsToText(g){return Object.entries(g?.bets||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):'')).join('\n');}
+
+function fgBetsToText(g) {
+  return Object.entries(g?.bets || {})
+    .filter(([line, values]) => {
+      const lineNumber = Number(line);
+
+      return (
+        Number.isInteger(lineNumber) &&
+        lineNumber >= 1 &&
+        Array.isArray(values) &&
+        values.length > 0
+      );
+    })
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([line, values]) => {
+      return `${line}: ${values.join(', ')}`;
+    })
+    .join('\n');
+}
+
 async function fgCloudUpload(file,upload){
   if(!file) return upload?.getUrl()||'';
   const form=new FormData();form.append('file',file);form.append('upload_preset',FG_PRESET);
