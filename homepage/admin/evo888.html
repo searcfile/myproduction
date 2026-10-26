@@ -1392,6 +1392,69 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   min-width: 1300px;
   width: max-content;
 }
+/* ===== EVO888 BACKEND GAME MODAL ===== */
+
+#mgCreate[hidden],
+#mgManage[hidden] {
+  display: none !important;
+}
+
+.mg-scope-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mg-scope-field > label:first-child {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mg-scope-field .shared-active-switch {
+  width: 100%;
+  max-width: 100%;
+}
+
+#mgModalSites {
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mg-form-actions > .mg-scope-field {
+  flex: 1 1 180px;
+}
+
+.mg-form-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mg-form-right button {
+  min-width: 100px;
+  height: 34px;
+}
+
+@media (max-width: 480px) {
+  .mg-form-right {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .mg-form-right button {
+    flex: 1;
+  }
+}
 </style>
 <body>
 <header class="mg-head">
@@ -2810,9 +2873,72 @@ document.addEventListener("copy", function() {
   });
 }, true);
 
-/* ================= EVO888 FIREBASE GAME CATALOG ================= */
-const MG_PATH='evo888/games';
-let mgRef=null, mgCatalogLoaded=false, mgGameIds={};
+/* ================= EVO888 BACKEND GAME CATALOG ================= */
+
+const MG_API =
+  "https://fiveg88-admin-backend-v2.onrender.com/api/evo888";
+
+let mgCatalogLoaded = false;
+let mgGameIds = {};
+let mgRecords = {};
+let mgSites = [];
+let mgAccess = { role: "", actions: [] };
+
+function mgCan(action) {
+  return mgAccess.role === "superadmin" ||
+    mgAccess.actions.includes(action);
+}
+
+async function mgApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) throw Error("Please login again");
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(MG_API + path, {
+    method: options.method || "GET",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json"
+    },
+    body: options.body === undefined
+      ? undefined
+      : JSON.stringify(options.body)
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw Error(result.message || result.error || "Request failed");
+  }
+
+  return result;
+}
+
+function mgSyncPermission() {
+  const create = document.getElementById("mgCreate");
+  const manage = document.getElementById("mgManage");
+
+  if (create) create.hidden = !mgCan("create");
+
+  if (manage) {
+    manage.hidden = !(
+      mgCan("edit") || mgCan("delete")
+    );
+  }
+}
+
+async function mgReload() {
+  const result = await mgApi("/games");
+  const catalog = {};
+
+  for (const game of result.games || []) {
+    catalog[game.id] = game;
+  }
+
+  mgApplyCatalog(catalog);
+}
 function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
@@ -2848,11 +2974,13 @@ for (const key of Object.keys(gameData)) {
 }
 
 mgGameIds = {};
+mgRecords = {};
 
  Object.entries(data).forEach(([id,v])=>{
    if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
    gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
    mgGameIds[v.name]=id;
+   mgRecords[v.name] = v;
  });
  const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
  Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
@@ -2864,16 +2992,80 @@ mgGameIds = {};
  gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
  mgCatalogLoaded=true;
 }
-function mgStart(){
- const create=document.getElementById('mgCreate'),manage=document.getElementById('mgManage');
- create.addEventListener('click',()=>mgEditor());manage.addEventListener('click',mgManager);
- if(!window.firebase?.apps?.length){mgToast('Firebase is not initialized. Check firebase.js','error');return;}
- try{mgRef=firebase.database().ref(MG_PATH);mgRef.on('value',s=>mgApplyCatalog(s.val()),e=>mgToast('Game loading failed: '+e.message,'error'));}
- catch(e){mgToast('Firebase connection error: '+e.message,'error');}
+function mgStart() {
+  const create = document.getElementById("mgCreate");
+  const manage = document.getElementById("mgManage");
+
+  create.hidden = true;
+  manage.hidden = true;
+
+  create.addEventListener("click", () => mgEditor());
+  manage.addEventListener("click", mgManager);
+
+  if (!window.firebase?.apps?.length) {
+    mgToast("Firebase not initialized", "error");
+    return;
+  }
+
+  firebase.auth().onAuthStateChanged(async user => {
+    mgAccess = { role: "", actions: [] };
+    mgSites = [];
+    mgSyncPermission();
+
+    if (!user) {
+      mgApplyCatalog({});
+      return;
+    }
+
+    try {
+      const [access, sites] = await Promise.all([
+        mgApi("/access"),
+        mgApi("/sites")
+      ]);
+
+      if (firebase.auth().currentUser?.uid !== user.uid) {
+        return;
+      }
+
+      mgAccess = {
+        role: access.role,
+        actions: access.actions || []
+      };
+
+      mgSites = sites.sites || [];
+
+      await mgReload();
+      mgSyncPermission();
+
+    } catch (error) {
+      mgAccess = { role: "", actions: [] };
+      mgSites = [];
+      mgSyncPermission();
+      mgApplyCatalog({});
+
+      mgToast(
+        "Game loading failed: " + error.message,
+        "error"
+      );
+    }
+  });
 }
 function mgEditor(oldName=''){
- if(!mgRef){mgToast('Firebase not ready','error');return;}
- const old=gameData[oldName]||{};
+if (!mgCan(oldName ? "edit" : "create")) {
+  mgToast("Permission denied", "error");
+  return;
+}
+
+const old = mgRecords[oldName] || {};
+
+if (
+  oldName &&
+  mgAccess.role !== "superadmin" &&
+  old.visibleToAllSites !== false
+) {
+  mgToast("Global game is Super Admin managed", "error");
+  return;
+}
  const form=mgElement('form','mg-modal-form');
  const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
 
@@ -2886,6 +3078,54 @@ const free = mgField(
 
 free.input.placeholder = '5, 10, 20, 50, 100';
 form.append(free.host);
+/* ===== GLOBAL ACTIVE ===== */
+
+const globalField = mgElement("div", "mg-scope-field");
+const globalLabel = mgElement("label", "", "Global Active");
+const globalSwitch = mgElement("label", "shared-active-switch");
+
+const globalInput = mgElement("input");
+globalInput.type = "checkbox";
+globalInput.id = "mgGlobalActive";
+globalInput.checked = mgAccess.role === "superadmin"
+  ? (oldName ? old.visibleToAllSites !== false : true)
+  : false;
+
+const globalTrack = mgElement("span", "shared-active-track");
+const globalText = mgElement("span", "shared-active-text", "Inactive");
+const globalKnob = mgElement("span", "shared-active-knob");
+
+globalKnob.setAttribute("aria-hidden", "true");
+globalTrack.append(globalText, globalKnob);
+globalSwitch.append(globalInput, globalTrack);
+
+globalField.append(
+  globalLabel,
+  globalSwitch,
+  mgElement(
+    "small",
+    "",
+    "ON: Semua site. OFF: Ikut Site Visibility."
+  )
+);
+
+form.append(globalField);
+
+/* ===== SITE VISIBILITY ===== */
+
+const siteField = mgElement("div", "mg-scope-field");
+const siteLabel = mgElement("label", "", "Site Visibility");
+const siteHost = mgElement("div");
+
+siteHost.id = "mgModalSites";
+
+siteField.append(
+  siteLabel,
+  siteHost,
+  mgElement("small", "", "Pilih site untuk game ini.")
+);
+
+form.append(siteField);
  const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
  const rows=mgElement('div','mg-modal-form');form.append(rows);
  function addBet(bet='',wins=''){
@@ -2896,9 +3136,62 @@ form.append(free.host);
  (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
  if(!old.bets?.length)addBet();
  const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
- const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+/* ===== ACTIVE / INACTIVE ===== */
+
+const statusField = mgElement("div", "mg-scope-field");
+const statusLabel = mgElement("label", "", "Active / Inactive");
+const statusSwitch = mgElement("label", "shared-active-switch");
+
+const statusInput = mgElement("input");
+statusInput.type = "checkbox";
+statusInput.id = "mgGameActive";
+statusInput.checked = old.active !== false;
+
+const statusTrack = mgElement("span", "shared-active-track");
+const statusText = mgElement("span", "shared-active-text", "Inactive");
+const statusKnob = mgElement("span", "shared-active-knob");
+
+statusKnob.setAttribute("aria-hidden", "true");
+statusTrack.append(statusText, statusKnob);
+statusSwitch.append(statusInput, statusTrack);
+statusField.append(statusLabel, statusSwitch);
+
+/* ===== MODAL ACTIONS ===== */
+
+const actions = mgElement("div", "mg-form-actions");
+const right = mgElement("div", "mg-form-right");
+
+const cancel = mgElement("button", "btn-cancel-new", "Cancel");
+const save = mgElement("button", "btn-primary-new", "Save Game");
+
+cancel.type = "button";
+save.type = "submit";
+
+right.append(cancel, save);
+actions.append(statusField, right);
+form.append(actions);
  const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
  form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
+globalInput.disabled = mgAccess.role !== "superadmin";
+
+window.SharedActiveSwitch?.sync?.(globalInput);
+window.SharedActiveSwitch?.sync?.(statusInput);
+
+const selectedSites = Object.entries(
+  old.siteVisibility || {}
+)
+  .filter(([, enabled]) => enabled === true)
+  .map(([id]) => id);
+
+const siteChips = NewUI.chips(siteHost, {
+  options: mgSites.map(site => ({
+    value: site.id,
+    label: site.name
+  })),
+  value: selectedSites,
+  multiple: true,
+  placeholder: "Select Sites"
+});
  form.addEventListener('submit',async e=>{
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
  if(!gameName){mgToast('Enter game name','error');return;}
@@ -2911,7 +3204,7 @@ if (freeOptions === null) {
   return;
 }
  if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
- const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
+ const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<=0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
  if(!bets.length){mgToast('Add at least one Bet','error');return;}
 // Custom NewUI loading spinner
 await NewUI.setButtonLoading(save, true, {
@@ -2919,17 +3212,44 @@ await NewUI.setButtonLoading(save, true, {
 });
 
 try {
-  const id = (oldName && mgGameIds[oldName])
-    ? mgGameIds[oldName]
-    : mgRef.push().key;
+  const id = oldName ? mgGameIds[oldName] : null;
 
-  await mgRef.child(id).set({
+  if (oldName && !id) {
+    throw Error("Game ID not found");
+  }
+
+  const sites = siteChips.getValue() || [];
+
+  const payload = {
     name: gameName,
     bets,
     pecahan,
     freeGameOptions: freeOptions,
-    updatedAt: firebase.database.ServerValue.TIMESTAMP
-  });
+    active: statusInput.checked,
+    visibleToAllSites: globalInput.checked,
+    siteVisibility: Object.fromEntries(
+      sites.map(siteId => [siteId, true])
+    )
+  };
+
+  if (
+    !payload.visibleToAllSites &&
+    sites.length === 0
+  ) {
+    throw Error("Please select at least one site");
+  }
+
+  await mgApi(
+    id
+      ? "/games/" + encodeURIComponent(id)
+      : "/games",
+    {
+      method: id ? "PATCH" : "POST",
+      body: payload
+    }
+  );
+
+  await mgReload();
 
   // Pastikan spinner sempat kelihatan
   await NewUI.setButtonLoading(save, false, {
@@ -2950,23 +3270,99 @@ try {
 
 
 
-function mgManager(){
-const host = mgElement('div', 'mg-manager');
+function mgManager() {
+  if (!mgCan("edit") && !mgCan("delete")) {
+    mgToast("Permission denied", "error");
+    return;
+  }
 
-const names = Object.keys(gameData).sort((a, b) =>
-  a.localeCompare(b)
-); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
- names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
- const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
- 
-del.disabled = !mgGameIds[name];
-del.title = "Delete Game";
+  const host = mgElement("div", "mg-manager");
 
- del.onclick=async()=>{if(!mgGameIds[name])return;if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{await mgRef.child(mgGameIds[name]).remove();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
- acts.append(edit,del);item.append(title,acts);host.append(item);});
- const modal=NewUI.modal.open({title:'Manage EVO888 Games',content:host,width:650});
+  const names = Object.keys(gameData).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  if (!names.length) {
+    window.showEmptyState?.(
+      host,
+      "No games yet",
+      "large",
+      "center"
+    );
+  }
+
+  names.forEach(name => {
+    const item = mgElement("div", "mg-item");
+    const title = mgElement("div");
+
+    title.append(
+      mgElement("strong", "", name),
+      mgElement(
+        "small",
+        "",
+        ` • ${gameData[name].bets.length} bets • Free: ${
+          (gameData[name].freeGameOptions || []).join(", ") || "None"
+        }`
+      )
+    );
+
+    const acts = mgElement("div", "mg-item-actions");
+
+    const edit = mgElement("button", "btn-edit-new", "Edit");
+    const del = mgElement("button", "btn-delete-new", "Delete");
+
+    edit.type = "button";
+    del.type = "button";
+
+    edit.hidden = !mgCan("edit");
+    del.hidden = !mgCan("delete");
+
+    edit.onclick = () => {
+      modal.close();
+      mgEditor(name);
+    };
+
+    del.onclick = async () => {
+      if (!mgGameIds[name]) return;
+
+      const confirmed = await NewUI.confirm({
+        target: del,
+        title: "Delete Game",
+        message: `Delete game ${name}?`,
+        confirmText: "Delete"
+      });
+
+      if (!confirmed) return;
+
+      try {
+        await mgApi(
+          "/games/" + encodeURIComponent(mgGameIds[name]),
+          { method: "DELETE" }
+        );
+
+        await mgReload();
+
+        modal.close();
+        mgManager();
+
+        mgToast("Game deleted", "success");
+
+      } catch (err) {
+        mgToast(err.message, "error");
+      }
+    };
+
+    acts.append(edit, del);
+    item.append(title, acts);
+    host.append(item);
+  });
+
+  const modal = NewUI.modal.open({
+    title: "Manage EVO888 Games",
+    content: host,
+    width: 650
+  });
 }
-
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-new-ui-input]').forEach(el=>window.NewUI?.input?.(el));
