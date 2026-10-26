@@ -803,6 +803,320 @@ app.delete(
   }
 );
 
+/* =====================================================
+   ITEM COLLECTION — SITE VISIBILITY + PERMISSIONS
+   ===================================================== */
+
+const ITEM_PATH = "item_collection/items";
+const ITEM_MODULE = "item.html";
+
+const itemIdOK = id =>
+  /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+const itemSiteIds = profile =>
+  Array.isArray(profile.siteIds) ? profile.siteIds : [];
+
+// Tentukan item yang boleh dilihat Site Admin
+function itemVisible(item, profile) {
+  if (profile.role === "superadmin") return true;
+
+  if (item?.active === false) return false;
+
+  const ids = itemSiteIds(profile);
+
+  return ids.length > 0 && (
+    item?.visibleToAllSites === true ||
+    ids.some(id => item?.siteVisibility?.[id] === true)
+  );
+}
+
+// Validate data Create / Edit
+function validateItemPayload(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throw Error("Invalid item");
+  }
+
+  const title = typeof body.title === "string"
+    ? body.title.trim() : "";
+
+  const collection = typeof body.collection === "string"
+    ? body.collection.trim() : "";
+
+  const code = typeof body.code === "string"
+    ? body.code.trim() : "";
+
+  const tag = typeof body.tag === "string"
+    ? body.tag.trim() : "";
+
+  const img = typeof body.img === "string"
+    ? body.img.trim() : "";
+
+  if (!title || title.length > 120) {
+    throw Error("Invalid item name");
+  }
+
+  if (!collection || collection.length > 100) {
+    throw Error("Invalid collection");
+  }
+
+  if (code.length > 120 || tag.length > 120) {
+    throw Error("Invalid code or tags");
+  }
+
+  if (
+    img.length > 2048 ||
+    !/^https:\/\/[^\s]+$/i.test(img)
+  ) {
+    throw Error("Invalid image URL");
+  }
+
+  if (
+    typeof body.active !== "boolean" ||
+    typeof body.visibleToAllSites !== "boolean"
+  ) {
+    throw Error("Invalid active settings");
+  }
+
+  const visibility = body.siteVisibility ?? {};
+
+  if (
+    !visibility ||
+    typeof visibility !== "object" ||
+    Array.isArray(visibility) ||
+    Object.keys(visibility).length > 100 ||
+    !Object.entries(visibility).every(
+      ([id, enabled]) =>
+        siteIdOK(id) &&
+        typeof enabled === "boolean"
+    )
+  ) {
+    throw Error("Invalid site visibility");
+  }
+
+  return {
+    title,
+    collection,
+    code,
+    tag,
+    img,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility: visibility
+  };
+}
+
+// Pastikan site yang dipilih sah
+async function itemValidateSites(data, profile, oldItem = null) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  if (
+    !Object.keys(data.siteVisibility).every(
+      id => sites[id]?.active === true
+    )
+  ) {
+    throw Error("Invalid site selection");
+  }
+
+  if (profile.role !== "superadmin") {
+    const assigned = itemSiteIds(profile);
+
+    if (
+      !assigned.length ||
+      data.visibleToAllSites === true ||
+      Object.keys(data.siteVisibility).some(
+        id => !assigned.includes(id)
+      )
+    ) {
+      throw Error("Site visibility outside assigned sites");
+    }
+
+    if (oldItem?.visibleToAllSites === true) {
+      throw Error("Global item can only be edited by Super Admin");
+    }
+  }
+}
+
+// GET — Site dropdown chips
+app.get(
+  "/api/item-collection/sites",
+  requireAdmin,
+  requirePermission(ITEM_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const assigned = itemSiteIds(req.admin.profile);
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            req.admin.profile.role === "superadmin" ||
+            assigned.includes(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+
+    } catch (error) {
+      console.error("Item sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// GET — Item list
+app.get(
+  "/api/item-collection/items",
+  requireAdmin,
+  requirePermission(ITEM_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(ITEM_PATH).once("value")
+      ).val() || {};
+
+      const items = Object.entries(all)
+        .filter(([, item]) =>
+          itemVisible(item, req.admin.profile)
+        )
+        .map(([id, item]) => ({
+          id,
+          ...item
+        }));
+
+      return res.json({ ok: true, items });
+
+    } catch (error) {
+      console.error("Item list:", error);
+      return fail(res, 500, "Cannot load items");
+    }
+  }
+);
+
+// POST — Create Item
+app.post(
+  "/api/item-collection/items",
+  requireAdmin,
+  requirePermission(ITEM_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = validateItemPayload(req.body);
+
+      await itemValidateSites(data, req.admin.profile);
+
+      const ref = db.ref(ITEM_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+
+    } catch (error) {
+      console.error("Item create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// PATCH — Edit Item / Active / Inactive
+app.patch(
+  "/api/item-collection/items/:id",
+  requireAdmin,
+  requirePermission(ITEM_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!itemIdOK(id)) {
+        return fail(res, 400, "Invalid item ID");
+      }
+
+      const ref = db.ref(`${ITEM_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Item not found");
+      }
+
+      const old = snap.val();
+
+      if (!itemVisible(old, req.admin.profile)) {
+        return fail(res, 403, "Item access denied");
+      }
+
+      const data = validateItemPayload(req.body);
+
+      await itemValidateSites(
+        data,
+        req.admin.profile,
+        old
+      );
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+      console.error("Item edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// DELETE — Delete Item
+app.delete(
+  "/api/item-collection/items/:id",
+  requireAdmin,
+  requirePermission(ITEM_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!itemIdOK(id)) {
+        return fail(res, 400, "Invalid item ID");
+      }
+
+      const ref = db.ref(`${ITEM_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Item not found");
+      }
+
+      if (!itemVisible(snap.val(), req.admin.profile)) {
+        return fail(res, 403, "Item access denied");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+      console.error("Item delete:", error);
+      return fail(res, 500, "Cannot delete item");
+    }
+  });
+
 // GET — List all sites
 app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
