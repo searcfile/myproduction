@@ -2863,11 +2863,22 @@ function scrVisible(game, profile) {
 
 function scrEditable(game, profile) {
   if (profile.role === "superadmin") return true;
-  if (game?.visibleToAllSites !== false) return false;
+
+  if (profile.role !== "siteadmin") return false;
 
   const assigned = Array.isArray(profile.siteIds)
-    ? profile.siteIds : [];
+    ? profile.siteIds
+    : [];
 
+  if (!assigned.length) return false;
+
+  // Game global yang boleh dilihat oleh Site Admin.
+  if (game?.visibleToAllSites !== false) {
+    return game?.active !== false;
+  }
+
+  // Game khusus site: hanya jika semua site game
+  // termasuk dalam site yang ditugaskan.
   const selected = Object.keys(game?.siteVisibility || {})
     .filter(id => game.siteVisibility[id] === true);
 
@@ -3043,9 +3054,36 @@ app.patch(
         return fail(res, 403, "Game edit not permitted");
       }
 
-      const data = megaValidate(req.body);
+const data = megaValidate(req.body);
 
-      await megaCheckSites(data, req.admin.profile);
+const profile = req.admin.profile;
+
+if (
+  profile.role === "siteadmin" &&
+  old.visibleToAllSites !== false
+) {
+  // Site Admin boleh edit data game global,
+  // tetapi tidak boleh ubah visibility atau site assignment.
+  if (
+    data.visibleToAllSites !== true ||
+    JSON.stringify(
+      Object.keys(data.siteVisibility).sort()
+    ) !== JSON.stringify(
+      Object.keys(old.siteVisibility || {})
+        .filter(id => old.siteVisibility[id] === true)
+        .sort()
+    )
+  ) {
+    return fail(
+      res,
+      403,
+      "Cannot change global game visibility"
+    );
+  }
+
+} else {
+  await megaCheckSites(data, profile);
+}
 
       const all = (
         await db.ref(SCR_PATH).once("value")
