@@ -812,7 +812,68 @@ grid-template-columns:
   const lower=v=>clean(v).toLocaleLowerCase();
   const records=new Map();
   const ITEM_TAGS=['Bank Item','Game Item','Other Item'];
-  let tagFilter,collectionFilter,searchUI,dbRef=null,loaded=false;
+let tagFilter, collectionFilter, searchUI, loaded = false;
+let itemSites = [];
+let itemProfile = null;
+
+const ITEM_API =
+  "https://fiveg88-admin-backend-v2.onrender.com/api/item-collection";
+
+function itemCan(action) {
+  if (itemProfile?.role === "superadmin") return true;
+  if (itemProfile?.role !== "siteadmin") return false;
+
+  const actions = itemProfile.permissions?.item_html;
+
+  return Array.isArray(actions) &&
+    actions.includes("show") &&
+    actions.includes("view") &&
+    actions.includes(action);
+}
+
+async function itemApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) throw Error("Login required");
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(ITEM_API + path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || result.ok !== true) {
+    throw Error(result.message || "API request failed");
+  }
+
+  return result;
+}
+
+async function reloadItems() {
+  const result = await itemApi("/items");
+
+  records.clear();
+
+  for (const item of result.items || []) {
+    if (item.id && item.title && item.img) {
+      records.set(item.id, {
+        ...item,
+        legacy: false
+      });
+    }
+  }
+
+  loaded = true;
+  refreshFilters();
+  render();
+}
   const legacy=LEGACY_ITEMS.map((r,i)=>({
     id:'legacy-'+i,title:r.title,code:r.code,img:r.img,tag:r.tag,
     collection:r.title,legacy:true
@@ -849,10 +910,28 @@ if (tagFilter && !(tagFilter.getValue() || []).length) {
     const copy=document.createElement('button');copy.type='button';copy.className='copy-btn';copy.textContent='Copy Image';
     copy.addEventListener('click',()=>copyImage(item,copy));
     actions.append(copy);
-    if(!item.legacy){
-      const edit=document.createElement('button');edit.type='button';edit.className='btn-edit-new';edit.title='Edit item';edit.setAttribute('aria-label','Edit item');edit.textContent='Edit';edit.addEventListener('click',()=>openForm(item));
-      const del=document.createElement('button');del.type='button';del.className='btn-delete-new';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='Delete';del.addEventListener('click',()=>removeItem(item));
-      actions.append(edit,del);
+      
+if (!item.legacy) {
+  if (itemCan("edit")) {
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "btn-edit-new";
+    edit.title = "Edit item";
+    edit.textContent = "Edit";
+    edit.addEventListener("click", () => openForm(item));
+    actions.append(edit);
+  }
+
+  if (itemCan("delete")) {
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "btn-delete-new";
+    del.title = "Delete item";
+    del.textContent = "Delete";
+    del.addEventListener("click", () => removeItem(item));
+    actions.append(del);
+  }
+}
     }
     const footer = document.createElement('div');
 footer.className = 'item-status-footer';
@@ -971,7 +1050,10 @@ function render() {
     return json.secure_url;
   }
   function openForm(item=null){
-    if(!dbRef){notify('Firebase belum tersedia atau akses ditolak. Semak login dan rules.','error');return;}
+if (!itemCan(item ? "edit" : "create")) {
+  notify("Permission denied", "error");
+  return;
+}
     const form=document.createElement('form');form.className='item-form';form.noValidate=true;
     const row=document.createElement('div');row.className='item-form-grid';
     row.append(
@@ -1027,7 +1109,11 @@ globalInput.checked = item
   : true;
 
 window.SharedActiveSwitch?.sync(globalInput);
-
+if (itemProfile?.role !== "superadmin") {
+  globalInput.checked = false;
+  globalInput.disabled = true;
+  window.SharedActiveSwitch?.sync(globalInput);
+}
 const siteChips = NewUI.chips(
   form.querySelector('#itemSiteChips'),
   {
@@ -1045,7 +1131,8 @@ siteChips.setValue(
     .map(([id]) => id)
 );
     cancel.addEventListener('click',()=>modal.close());
-    row.querySelectorAll('input').forEach(el=>NewUI.input(el));
+    row.querySelectorAll('input:not([type="checkbox"])')
+   .forEach(el => NewUI.input(el));
     const savedTags=clean(item?.tag).split(',').map(t=>t.trim()).filter(Boolean);
     const modalTagOptions=[...new Set([...ITEM_TAGS,...savedTags])].map(v=>({value:v,label:v}));
     const modalTags=NewUI.chips(tagHost,{
@@ -1068,37 +1155,127 @@ siteChips.setValue(
         let img=uploader.getUrl();
         if(uploader.getFile())img=await cloudinaryUpload(uploader.getFile());
         // Legacy rules require 'code'; preserve it in Firebase only, without showing a Code field.
-        const data={title,collection,code:item?.code||'5G88_Site',tag,img,updatedAt:firebase.database.ServerValue.TIMESTAMP};
-        if(item)await dbRef.child(item.id).update(data);
-        else await dbRef.push().set({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+const selectedSites = siteChips.getValue() || [];
+
+const siteVisibility = Object.fromEntries(
+  selectedSites.map(id => [id, true])
+);
+
+const data = {
+  title,
+  collection,
+  code: item?.code || "5G88_Site",
+  tag,
+  img,
+  active: item ? item.active !== false : true,
+  visibleToAllSites: globalInput.checked,
+  siteVisibility
+};
+
+if (item) {
+  await itemApi(`/items/${encodeURIComponent(item.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(data)
+  });
+} else {
+  await itemApi("/items", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+await reloadItems();
         notify(item?'Item updated':'Item created','success');modal.close();
       }catch(err){console.error(err);notify(err.message||'Save failed','error');}
       finally{await NewUI.setButtonLoading(save,false,{minDuration:600});}
     });
   }
-  async function removeItem(item){
-    if(!dbRef)return;
-    if(!confirm(`Delete "${item.title}"? This cannot be undone.`))return;
-    try{await dbRef.child(item.id).remove();notify('Item deleted','success');}
-    catch(e){console.error(e);notify('Delete failed: '+e.message,'error');}
+async function removeItem(item) {
+  if (!itemCan("delete")) {
+    notify("Permission denied", "error");
+    return;
   }
-  function startRealtime(){
-    try{
-      if(typeof firebase==='undefined'||!firebase.apps?.length){loaded=true;render();notify('Firebase app belum initialized. Semak ../firebase.js','error');return;}
-      const auth=firebase.auth();
-      auth.onAuthStateChanged(user=>{
-        if(dbRef){dbRef.off();dbRef=null;}
-        records.clear();
-        if(!user){loaded=true;refreshFilters();render();notify('Sila login untuk Create Item','warning');return;}
-        dbRef=firebase.database().ref(DB_PATH);loaded=false;
-        dbRef.on('value',snapshot=>{
-          records.clear();
-          snapshot.forEach(child=>{const v=child.val();if(v&&v.title&&v.img)records.set(child.key,{...v,id:child.key,legacy:false});});
-          loaded=true;refreshFilters();render();
-        },err=>{loaded=true;notify('Database: '+err.message,'error');render();});
-      });
-    }catch(err){loaded=true;console.error(err);notify('Firebase initialization error: '+err.message,'error');render();}
+
+  if (!confirm(`Delete "${item.title}"? This cannot be undone.`)) {
+    return;
   }
+
+  try {
+    await itemApi(`/items/${encodeURIComponent(item.id)}`, {
+      method: "DELETE"
+    });
+
+    await reloadItems();
+
+    notify("Item deleted", "success");
+  } catch (error) {
+    console.error(error);
+    notify(error.message || "Delete failed", "error");
+  }
+}
+function startRealtime() {
+  firebase.auth().onAuthStateChanged(async user => {
+    records.clear();
+    itemSites = [];
+    itemProfile = null;
+    loaded = false;
+
+    const createButton = document.getElementById("itemCreate");
+    createButton.hidden = true;
+
+    if (!user) {
+      loaded = true;
+      refreshFilters();
+      render();
+      return;
+    }
+
+    try {
+      const token = await user.getIdTokenResult(true);
+
+      if (token.claims.secondVerified !== true) {
+        throw Error("Second password verification required");
+      }
+
+      const snap = await firebase.database()
+        .ref(`adminUsers/${user.uid}`)
+        .once("value");
+
+      const profile = snap.val();
+
+      if (
+        !profile ||
+        profile.active !== true ||
+        !["superadmin", "siteadmin"].includes(profile.role) ||
+        profile.secondPasswordEnabled !== true ||
+        profile.pinVersion !== token.claims.pinVersion
+      ) {
+        throw Error("Admin verification failed");
+      }
+
+      itemProfile = profile;
+
+      if (!itemCan("view")) {
+        throw Error("Item Collection view permission denied");
+      }
+
+      const sitesResult = await itemApi("/sites");
+      itemSites = sitesResult.sites || [];
+
+      createButton.hidden = !itemCan("create");
+
+      await reloadItems();
+
+    } catch (error) {
+      console.error("Item initialization:", error);
+      loaded = true;
+      records.clear();
+      refreshFilters();
+      render();
+      notify(error.message || "Cannot load Item Collection", "error");
+    }
+  });
+}
 tagFilter = NewUI.chips('#itemTagChips', {
   placeholder: 'All Tags',
   options: ITEM_TAGS.map(tag => ({
