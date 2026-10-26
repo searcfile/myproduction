@@ -1971,7 +1971,13 @@ deleteBtn.addEventListener('click', e => {
 
   const removeGame = async () => {
     try {
-      await fgDatabase().ref(FG_DB_PATH + '/' + g._id).remove();
+      
+await fgApi('/games/' + encodeURIComponent(g._id), {
+  method: 'DELETE'
+});
+
+await fgReloadGames();
+
       fgToast('Game deleted', 'success');
     } catch (err) {
       fgToast(err.message, 'error');
@@ -1989,7 +1995,15 @@ deleteBtn.addEventListener('click', e => {
   }
 });
 
-actions.append(editBtn, deleteBtn);
+
+if (g._id && fgCan('edit')) {
+  actions.append(editBtn);
+}
+
+if (g._id && fgCan('delete')) {
+  actions.append(deleteBtn);
+}
+
 row.append(label, actions);
     row.addEventListener('click',()=>openDetail(g, row));
     row.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openDetail(g, row); }});
@@ -2811,7 +2825,6 @@ NewUI.setButtonLoading(save, true, {
       const bets=fgParseBets(form.querySelector('#fg-bets').value,payline);
       const image=await fgCloudUpload(fgImageUploader?.getFile(),fgImageUploader);
       if(!image)throw new Error('Please upload a game image');
-      const db=fgDatabase();
 
 const selectedSites = fgSiteChips.getValue() || [];
 
