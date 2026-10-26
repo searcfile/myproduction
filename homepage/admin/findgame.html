@@ -1555,6 +1555,51 @@ select:focus-visible{
 .fg-field .shared-upload-progress-text {
   display: none !important;
 }
+    
+/* FIND GAME — VISIBILITY & STATUS */
+#fgModalSites {
+  width: 100%;
+  min-width: 0;
+}
+
+.fg-form .fg-field.full {
+  min-width: 0;
+}
+
+.fg-modal-actions {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between !important;
+  gap: 12px;
+  width: 100%;
+}
+
+.fg-modal-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.fg-footer-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-left: auto;
+}
+
+#fgCreate[hidden],
+#fgEditGame[hidden],
+#fgDeleteGame[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  .fg-modal-actions {
+    flex-wrap: wrap;
+  }
+}
+
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1564,7 +1609,7 @@ select:focus-visible{
         <div class="fg-search"><input id="q" type="text" placeholder="Search" autocomplete="off" aria-label="Search games" /></div>
         <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
         <div id="fgTypeFilter"class="fg-type-chips" aria-label="Game types"></div>
-        <button type="button" class="fg-create" id="fgCreate">+ Create Game</button>
+        <button type="button" class="fg-create" id="fgCreate" hidden>+ Create Game</button> 
       </div>
     </div>
   </section>
@@ -2263,6 +2308,7 @@ const controls = [
 // Open detail
 function openDetail(game, rowEl){
   selectedGame = game;
+    fgSyncActions();
   const lines = Object.keys(game.bets||{}).map(Number);
   selectedLine = lines.length ? Math.max(...lines) : 1;
   updateDetail();
@@ -2371,6 +2417,73 @@ try { new ResizeObserver(setFilterHeight).observe(document.querySelector('.filte
    Uses existing shared NewUI components, no image URL input.
 =========================================================== */
 const FG_DB_PATH='find_game/games';
+
+const FG_MODULE = 'findgame.html';
+const FG_API_BASE =
+  'https://fiveg88-admin-backend-v2.onrender.com/api/find-game';
+
+let fgProfile = null;
+let fgSites = [];
+
+function fgCan(action) {
+  if (fgProfile?.role === 'superadmin') return true;
+  if (fgProfile?.role !== 'siteadmin') return false;
+
+  const key = FG_MODULE.replace(/\.html$/, '_html');
+  const actions = fgProfile.permissions?.[key];
+
+  return Array.isArray(actions) &&
+    actions.includes('show') &&
+    actions.includes('view') &&
+    actions.includes(action);
+}
+
+async function fgApi(path = '', options = {}) {
+  const user = firebase.auth().currentUser;
+  if (!user) throw Error('Please login');
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(FG_API_BASE + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || result.ok !== true) {
+    throw Error(result.message || 'Find Game API failed');
+  }
+
+  return result;
+}
+
+async function fgReloadGames() {
+  const result = await fgApi('/games');
+  firebaseGames = (result.games || []).map(game => ({
+    ...game,
+    _id: game.id
+  }));
+  fgRebuild();
+}
+
+function fgSyncActions() {
+  const create = document.getElementById('fgCreate');
+  if (create) create.hidden = !fgCan('create');
+
+  const edit = document.getElementById('fgEditGame');
+  if (edit) edit.hidden =
+    !fgCan('edit') || !selectedGame?._id;
+
+  const del = document.getElementById('fgDeleteGame');
+  if (del) del.hidden =
+    !fgCan('delete') || !selectedGame?._id;
+}
+
 const FG_CLOUD='dqctvbenv';
 const FG_PRESET='game_logos';
 let fgDb=null;
@@ -2398,19 +2511,12 @@ function fgRebuild(){
 }
   }
 }
-function fgListen(){
-  try {
-    fgDb=fgDatabase();
-    fgDb.ref(FG_DB_PATH).on('value',snap=>{
-      firebaseGames=[];
-      snap.forEach(child=>{
-        const g=child.val();
-        if(g && typeof g==='object' && g.name)firebaseGames.push({...g,_id:child.key});
-      });
-      fgRebuild();
-    },err=>fgToast('Firebase read failed: '+err.message,'error'));
-  }catch(err){fgToast(err.message,'error');}
+
+async function fgListen() {
+  await fgReloadGames();
+  fgSyncActions();
 }
+
 function fgParseBets(text,payline){
   const value=text.trim();
   if(!value)throw new Error('Enter bet values. Example: 0.01, 0.02, 0.05');
@@ -2437,6 +2543,10 @@ async function fgCloudUpload(file,upload){
   return json.secure_url;
 }
 function fgOpenEditor(record=null){
+if (!fgCan(record ? 'edit' : 'create')) {
+  fgToast('Permission denied', 'error');
+  return;
+}
   if(!window.NewUI?.modal||!window.NewUI?.imageUpload) {fgToast('Shared modal or image upload missing in new-ui.js','error');return;}
   fgEditing=record?record._id||null:null;
   const form=document.createElement('form');form.className='fg-form';form.id='fgGameForm';
@@ -2494,6 +2604,39 @@ form.append(gameTypeField);
   platformField.className='fg-field full';
   platformField.innerHTML='<label>Platforms</label><div id="fgModalPlatforms"></div>';
   form.append(platformField);
+
+/* GLOBAL ACTIVE */
+const fgGlobalField = document.createElement('div');
+fgGlobalField.className = 'fg-field full';
+
+fgGlobalField.innerHTML = `
+  <label>Global Active</label>
+  <label class="shared-active-switch">
+    <input type="checkbox" id="fg-global"
+      data-active-label="ON"
+      data-inactive-label="OFF">
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+  <small>ON: Semua site. OFF: Ikut Site Visibility.</small>
+`;
+
+form.append(fgGlobalField);
+
+/* SITE VISIBILITY */
+const fgSiteField = document.createElement('div');
+fgSiteField.className = 'fg-field full';
+
+fgSiteField.innerHTML = `
+  <label>Site Visibility</label>
+  <div id="fgModalSites"></div>
+  <small>Pilih site yang boleh melihat game ini.</small>
+`;
+
+form.append(fgSiteField);
+
 /* ==========================================
    ADJUSTABLE LINES - SHARED TOGGLE
    ========================================== */
@@ -2564,7 +2707,29 @@ const save = document.createElement('button');
 save.type = 'submit';
 save.className = 'btn-primary-new';
 save.textContent = record ? 'Save Changes' : 'Create Game';
-  buttons.append(cancel,save);form.append(buttons);
+  
+const fgStatus = document.createElement('div');
+fgStatus.className = 'fg-modal-status';
+
+fgStatus.innerHTML = `
+  <label class="shared-active-switch">
+    <input type="checkbox" id="fg-status"
+      data-active-label="Active"
+      data-inactive-label="Inactive">
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+`;
+
+const fgFooterRight = document.createElement('div');
+fgFooterRight.className = 'fg-footer-right';
+fgFooterRight.append(cancel, save);
+
+buttons.append(fgStatus, fgFooterRight);
+form.append(buttons);
+
   fgActiveModal=NewUI.modal.open({title:record?'Edit Game':'Create Game',content:form,width:800,onClose:()=>{fgImageUploader?.destroy?.();fgImageUploader=null;fgActiveModal=null;}});
   /* Initialize Game Type shared dropdown */
 
@@ -2582,6 +2747,41 @@ if (typeof window.createSharedDropdown === 'function') {
     options:[...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].map(value=>({value,label:value.toUpperCase()})),
     value:(record?.tags||[]).map(x=>String(x).toLowerCase())
   });
+
+const fgGlobalInput = form.querySelector('#fg-global');
+const fgStatusInput = form.querySelector('#fg-status');
+
+fgGlobalInput.checked =
+  record?.visibleToAllSites === true;
+
+fgStatusInput.checked =
+  record ? record.active !== false : true;
+
+fgGlobalInput.disabled =
+  fgProfile?.role !== 'superadmin';
+
+window.SharedActiveSwitch?.sync(fgGlobalInput);
+window.SharedActiveSwitch?.sync(fgStatusInput);
+
+const fgSelectedSites = Object.entries(
+  record?.siteVisibility || {}
+)
+.filter(([, enabled]) => enabled === true)
+.map(([id]) => id);
+
+const fgSiteChips = NewUI.chips(
+  form.querySelector('#fgModalSites'),
+  {
+    placeholder: 'Select Sites',
+    options: fgSites.map(site => ({
+      value: site.id,
+      label: site.name
+    }))
+  }
+);
+
+fgSiteChips.setValue(fgSelectedSites);
+
   const adjustableToggle = form.querySelector('#fg-adjustable');
 
 // Kekalkan nilai daripada Firebase ketika Edit Game
@@ -2612,9 +2812,43 @@ NewUI.setButtonLoading(save, true, {
       const image=await fgCloudUpload(fgImageUploader?.getFile(),fgImageUploader);
       if(!image)throw new Error('Please upload a game image');
       const db=fgDatabase();
-      const data={name,alias,type,payline,adjustable:form.querySelector('#fg-adjustable').checked,tags,bets,image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
-      if(fgEditing)await db.ref(FG_DB_PATH+'/'+fgEditing).update(data);
-      else await db.ref(FG_DB_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+
+const selectedSites = fgSiteChips.getValue() || [];
+
+const data = {
+  name,
+  alias,
+  type,
+  payline,
+  adjustable: form.querySelector('#fg-adjustable').checked,
+  tags,
+  bets,
+  image,
+  active: fgStatusInput.checked,
+  visibleToAllSites: fgGlobalInput.checked,
+  siteVisibility: Object.fromEntries(
+    selectedSites.map(id => [id, true])
+  )
+};
+
+if (!data.visibleToAllSites && !selectedSites.length) {
+  throw Error('Sila pilih sekurang-kurangnya satu site');
+}
+
+if (fgEditing) {
+  await fgApi('/games/' + encodeURIComponent(fgEditing), {
+    method: 'PATCH',
+    body: JSON.stringify(data)
+  });
+} else {
+  await fgApi('/games', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+await fgReloadGames();
+
       fgToast(record?'Game updated':'Game created','success');fgActiveModal?.close();
     }catch(err){fgToast(err.message,'error');}
    finally {
@@ -2630,6 +2864,7 @@ function fgEnsureDetailActions(){
   const actions=document.createElement('div');actions.className='fg-detail-actions';actions.id='fgDetailActions';
   actions.innerHTML='<button type="button" id="fgEditGame">Edit</button><button type="button" class="danger" id="fgDeleteGame">Delete</button>';
   hdr.insertBefore(actions,document.getElementById('btnClose'));
+    fgSyncActions();
   document.getElementById('fgEditGame').addEventListener('click',()=>{
     if(!selectedGame)return;
     if(!selectedGame._id){fgToast('This is a legacy game. Create a Firebase version to edit it.','warning');return;}
@@ -2638,35 +2873,84 @@ function fgEnsureDetailActions(){
   document.getElementById('fgDeleteGame').addEventListener('click',async()=>{
     if(!selectedGame?._id){fgToast('Legacy games cannot be deleted until migrated to Firebase.','warning');return;}
     const name=selectedGame.name,id=selectedGame._id;
-    const action=async()=>{await fgDatabase().ref(FG_DB_PATH+'/'+id).remove();fgToast('Game deleted','success');};
+    
+const action = async () => {
+  if (!fgCan('delete')) {
+    throw Error('Permission denied');
+  }
+
+  await fgApi('/games/' + encodeURIComponent(id), {
+    method: 'DELETE'
+  });
+
+  fgToast('Game deleted', 'success');
+  selectedGame = null;
+  await fgReloadGames();
+  fgSyncActions();
+};
+
     if(NewUI.confirm){NewUI.confirm({title:'Delete Game',message:'Delete '+name+'?',onConfirm:action});}
     else if(window.confirm('Delete '+name+'?')){try{await action();}catch(e){fgToast(e.message,'error');}}
   });
 }
 document.getElementById('fgCreate').addEventListener('click', () => fgOpenEditor());
 
+
 firebase.auth().onAuthStateChanged(async user => {
-  if (!user) {
-    console.warn('[Find Game] Firebase Auth belum login');
-    fgToast('Firebase Auth belum login', 'error');
-    return;
-  }
+  fgProfile = null;
+  fgSites = [];
+  firebaseGames = [];
+  fgRebuild();
+  fgSyncActions();
+
+  if (!user) return;
 
   try {
     const token = await user.getIdTokenResult(true);
 
-    console.log('[Find Game] Auth Check:', {
-      uid: user.uid,
-      secondVerified: token.claims.secondVerified,
-      pinVersion: token.claims.pinVersion
-    });
+    if (token.claims.secondVerified !== true) {
+      throw Error('Second password required');
+    }
 
-    fgListen();
-  } catch (err) {
-    console.error('[Find Game] Auth Check failed:', err);
-    fgToast(err.message, 'error');
+    const snap = await firebase.database()
+      .ref(`adminUsers/${user.uid}`)
+      .once('value');
+
+    const profile = snap.val();
+
+    if (
+      !profile ||
+      profile.active !== true ||
+      profile.secondPasswordEnabled !== true ||
+      !['superadmin', 'siteadmin'].includes(profile.role) ||
+      Number(profile.pinVersion) !==
+        Number(token.claims.pinVersion)
+    ) {
+      throw Error('Admin verification failed');
+    }
+
+    fgProfile = profile;
+
+    if (!fgCan('view')) {
+      throw Error('Find Game view permission denied');
+    }
+
+    const siteResult = await fgApi('/sites');
+    fgSites = siteResult.sites || [];
+
+    await fgListen();
+
+  } catch (error) {
+    console.error('Find Game initialization:', error);
+    fgProfile = null;
+    fgSites = [];
+    firebaseGames = [];
+    fgRebuild();
+    fgSyncActions();
+    fgToast(error.message || 'Cannot load games', 'error');
   }
 });
+
 
 /* First paint */
 renderList();
