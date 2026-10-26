@@ -897,6 +897,63 @@ select:focus-visible{
   cursor: pointer;
 }
 
+/* GAME LOGO — VISIBILITY FIELDS */
+.logo-visibility-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.logo-visibility-field small {
+  color: var(--page-text);
+  opacity: .65;
+  font-size: 11px;
+}
+
+#logoSiteChips {
+  width: 100%;
+  min-width: 0;
+}
+
+/* FOOTER MODAL */
+.logo-dialog-buttons {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between !important;
+  gap: 12px;
+  width: 100%;
+  padding-top: 14px;
+}
+
+.logo-modal-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo-footer-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .logo-dialog-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+/* CREATE BUTTON — HIDDEN UNTIL PERMISSION */
+#createGameBtn[hidden] {
+  display: none !important;
+}
+
 </style>
 <body>
 <div class="logo-toolbar-row">
@@ -907,10 +964,11 @@ select:focus-visible{
     placeholder="Search"
     autocomplete="off"
   >
+      
 </div>
   <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
   <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
-  <button type="button" id="createGameBtn" class="create-game-btn">+ Create</button>
+  <button type="button" id="createGameBtn" class="create-game-btn" hidden>+ Create</button>
 </div>
 <div class="logo-grid" id="gameGrid">
   </div>
@@ -971,15 +1029,72 @@ select:focus-visible{
 
     </div>
 
+<!-- GLOBAL ACTIVE -->
+<div class="logo-visibility-field">
+  <span>Global Active</span>
+
+  <label class="shared-active-switch">
+    <input
+      type="checkbox"
+      id="logoGlobalActive"
+      data-active-label="ON"
+      data-inactive-label="OFF"
+    >
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+
+  <small>ON: Semua site. OFF: Ikut Site Visibility.</small>
+</div>
+
+<!-- SITE VISIBILITY -->
+<div class="logo-visibility-field">
+  <span>Site Visibility</span>
+  <div id="logoSiteChips"></div>
+  <small>Pilih site yang boleh melihat logo ini.</small>
+</div>
+
 <div class="logo-upload-field">
   <span class="logo-upload-label">Upload Image</span>
   <div id="logoImagePicker"></div>
 </div>
 
-    <div class="logo-dialog-buttons">
-      <button type="button" id="logoCancel" class="btn-cancel-new">Cancel</button>
-      <button type="submit" id="logoSave" class="btn-primary-new">Save</button>
-    </div>
+
+<div class="logo-dialog-buttons">
+
+  <div class="logo-modal-status">
+    <label class="shared-active-switch">
+      <input
+        type="checkbox"
+        id="logoActiveStatus"
+        data-active-label="Active"
+        data-inactive-label="Inactive"
+      >
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob"></span>
+      </span>
+    </label>
+  </div>
+
+  <div class="logo-footer-buttons">
+    <button
+      type="button"
+      id="logoCancel"
+      class="btn-cancel-new"
+    >Cancel</button>
+
+    <button
+      type="submit"
+      id="logoSave"
+      class="btn-primary-new"
+    >Save</button>
+  </div>
+
+</div>
+
 
   </form>
 </div>
@@ -1138,7 +1253,15 @@ del.addEventListener('click', () => {
   deleteLogo(game, del);
 });
 
-actions.append(copy, edit, del);
+actions.append(copy);
+
+if (logoCan("edit")) {
+  actions.append(edit);
+}
+
+if (logoCan("delete")) {
+  actions.append(del);
+}
 div.append(actions);
 
         }
@@ -1412,6 +1535,60 @@ document.addEventListener("keydown", function(e) {
 const CLOUD_NAME = 'dqctvbenv';
 const UPLOAD_PRESET = 'game_logos';
 const LOGO_PATH = 'game_logos';
+
+const GAME_LOGO_API =
+  "https://fiveg88-admin-backend-v2.onrender.com/api/game-logos";
+
+let logoProfile = null;
+let logoSites = [];
+let logoSiteChips = null;
+
+function logoCan(action) {
+  if (logoProfile?.role === "superadmin") return true;
+  if (logoProfile?.role !== "siteadmin") return false;
+
+  const permissions =
+    logoProfile.permissions?.logogame_html;
+
+  return Array.isArray(permissions) &&
+    permissions.includes("show") &&
+    permissions.includes("view") &&
+    permissions.includes(action);
+}
+
+async function logoApi(path = "", options = {}) {
+  const user = firebase.auth().currentUser;
+  if (!user) throw Error("Login required");
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(
+    GAME_LOGO_API + path,
+    {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || result.ok !== true) {
+    throw Error(result.message || "Game Logo API failed");
+  }
+
+  return result;
+}
+
+async function reloadGameLogos() {
+  const result = await logoApi();
+  games = result.logos || [];
+  renderGames();
+}
+
 let editingLogoId = null, previewObjectUrl = null, logoDbRef = null;
 const logoDialog = document.getElementById('logoDialog');
 const logoForm = document.getElementById('logoForm');
@@ -1460,12 +1637,24 @@ const logoImagePicker = NewUI.imageUpload('#logoImagePicker', {
   onError: error => NewUI.showToast(error.message, 'error')
 });
 NewUI.init(logoForm);
+
+logoSiteChips = NewUI.chips("#logoSiteChips", {
+  placeholder: "Select Sites",
+  options: []
+});
+
 // Use the shared searchable dropdown for Method; Platforms uses shared multi-select.
 window.createSharedDropdown?.('#logoType', { placeholder: 'Select method' });
   window.createSharedDropdown?.('#logoPlatformPicker', {
   placeholder: 'Select platform'
 });
 function openLogoEditor(game=null) {
+
+if (!logoCan(game ? "edit" : "create")) {
+  NewUI.showToast("Permission denied", "error");
+  return;
+}
+
   editingLogoId=game?.id||null;
   logoForm.reset();
   document.getElementById('logoName').value=game?.name||'';
@@ -1482,6 +1671,44 @@ platformSelect.dispatchEvent(
 );
   logoImagePicker.clear(false);
   if(game?.image) logoImagePicker.setUrl(game.image,'Current image');
+
+// GLOBAL ACTIVE
+const globalInput =
+  document.getElementById("logoGlobalActive");
+
+globalInput.checked =
+  game?.visibleToAllSites === true;
+
+globalInput.disabled =
+  logoProfile?.role !== "superadmin";
+
+window.SharedActiveSwitch?.sync(globalInput);
+
+// ACTIVE / INACTIVE
+const statusInput =
+  document.getElementById("logoActiveStatus");
+
+statusInput.checked =
+  game ? game.active !== false : true;
+
+window.SharedActiveSwitch?.sync(statusInput);
+
+// SITE VISIBILITY
+const selectedSites = Object.entries(
+  game?.siteVisibility || {}
+)
+.filter(([, enabled]) => enabled === true)
+.map(([id]) => id);
+
+logoSiteChips.setOptions(
+  logoSites.map(site => ({
+    value: site.id,
+    label: site.name
+  }))
+);
+
+logoSiteChips.setValue(selectedSites);
+
 showLogoModal(
   game ? 'Edit Game Logo' : 'Create Game Logo'
 );
@@ -1533,11 +1760,50 @@ if (editingLogoId) {
 if (!validImageUrl(image)) {
   throw new Error('Sila upload image terlebih dahulu');
 }
-    const data={name:document.getElementById('logoName').value.trim(),alias:document.getElementById('logoAlias').value.trim(),type:document.getElementById('logoType').value,platform:platforms,image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
-    if(!data.name||!data.alias)throw new Error('Nama dan alias diperlukan');
-    const db = logoDb();
-    if(editingLogoId)await db.ref(`${LOGO_PATH}/${editingLogoId}`).update(data);
-    else await db.ref(LOGO_PATH).push({...data,createdAt:firebase.database.ServerValue.TIMESTAMP});
+
+const selectedSites = logoSiteChips.getValue() || [];
+
+const data = {
+  name: document.getElementById("logoName").value.trim(),
+  alias: document.getElementById("logoAlias").value.trim(),
+  type: document.getElementById("logoType").value,
+  platform: platforms,
+  image,
+  active:
+    document.getElementById("logoActiveStatus").checked,
+  visibleToAllSites:
+    document.getElementById("logoGlobalActive").checked,
+  siteVisibility: Object.fromEntries(
+    selectedSites.map(id => [id, true])
+  )
+};
+
+if (!data.name || !data.alias) {
+  throw Error("Game Name dan Alias diperlukan");
+}
+
+if (!data.visibleToAllSites &&
+    selectedSites.length === 0) {
+  throw Error("Sila pilih sekurang-kurangnya satu site");
+}
+
+if (editingLogoId) {
+  await logoApi(
+    "/" + encodeURIComponent(editingLogoId),
+    {
+      method: "PATCH",
+      body: JSON.stringify(data)
+    }
+  );
+} else {
+  await logoApi("", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+await reloadGameLogos();
+
 
 // Tunggu minimum loading shared selesai
 await NewUI.setButtonLoading(btn, false);
@@ -1567,6 +1833,10 @@ finally {
    ========================================== */
 
 async function deleteLogo(game, button) {
+if (!logoCan("delete")) {
+  NewUI.showToast("Permission denied", "error");
+  return;
+}
 
   // STEP 1: Paparkan shared confirm box
   const confirmed = await NewUI.confirm({
@@ -1588,9 +1858,12 @@ async function deleteLogo(game, button) {
   await new Promise(resolve => setTimeout(resolve, 180));
 
   try {
-    await logoDb()
-      .ref(`${LOGO_PATH}/${game.id}`)
-      .remove();
+await logoApi(
+  "/" + encodeURIComponent(game.id),
+  { method: "DELETE" }
+);
+
+await reloadGameLogos();
 
     NewUI.showToast(
       'Game logo deleted!',
@@ -1608,14 +1881,75 @@ async function deleteLogo(game, button) {
 }
 
 
-function startLogoRealtime(){
- try{logoDbRef=logoDb().ref(LOGO_PATH);logoDbRef.on('value',snap=>{
-  if(snap.exists()){games=Object.entries(snap.val()).map(([id,game])=>({...game,id}));}
-  else{games=[];}
-  renderGames();
- },err=>{console.error('Logo read failed:',err);NewUI.showToast('Logo read failed: '+err.message,'error');});}
- catch(err){console.warn('Logo Firebase unavailable:',err.message);}
+
+function startLogoRealtime() {
+  const createButton =
+    document.getElementById("createGameBtn");
+
+  createButton.hidden = true;
+
+  firebase.auth().onAuthStateChanged(async user => {
+    createButton.hidden = true;
+    logoProfile = null;
+    logoSites = [];
+    games = [];
+    renderGames();
+
+    if (!user) return;
+
+    try {
+      const token = await user.getIdTokenResult(true);
+
+      if (token.claims.secondVerified !== true) {
+        throw Error("Second password required");
+      }
+
+      const snapshot = await firebase.database()
+        .ref(`adminUsers/${user.uid}`)
+        .once("value");
+
+      const profile = snapshot.val();
+
+      if (
+        !profile ||
+        profile.active !== true ||
+        profile.secondPasswordEnabled !== true ||
+        !["superadmin", "siteadmin"].includes(profile.role) ||
+        profile.pinVersion !== token.claims.pinVersion
+      ) {
+        throw Error("Admin verification failed");
+      }
+
+      logoProfile = profile;
+
+      if (!logoCan("view")) {
+        throw Error("Logo Game view permission denied");
+      }
+
+      const sitesResult = await logoApi("/sites");
+      logoSites = sitesResult.sites || [];
+
+      await reloadGameLogos();
+
+      createButton.hidden = !logoCan("create");
+
+    } catch (error) {
+      console.error("Logo initialization:", error);
+
+      createButton.hidden = true;
+      logoProfile = null;
+      logoSites = [];
+      games = [];
+      renderGames();
+
+      NewUI.showToast(
+        error.message || "Cannot load Game Logos",
+        "error"
+      );
+    }
+  });
 }
+
 startLogoRealtime();
 </script>
 </body>
