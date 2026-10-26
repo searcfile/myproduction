@@ -508,7 +508,38 @@ select:focus-visible{
 .item-form-field{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;font-weight:400;color:var(--page-text);}
 .item-form-field input{width:100%;height:34px;border-radius:6px;background:var(--page-input);border:1px solid var(--border-input);color:var(--page-text);padding:0 10px;font:inherit;font-size:13px;}
 .item-form-field .new-ui-input-wrap{width:100%;}
-.item-form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:12px;}
+/* Footer modal Item Collection */
+.item-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  width: 100%;
+}
+
+/* Toggle Active/Inactive di kiri */
+.item-modal-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+/* Cancel dan Save di kanan */
+.item-footer-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .item-form-actions {
+    flex-wrap: wrap;
+  }
+}
 .item-page .shared-empty{grid-column:1/-1;min-height:160px;}
 @media(max-width:1300px){.item-page .card-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
 @media (max-width: 1050px) {
@@ -787,7 +818,14 @@ grid-template-columns:
       <div class="item-toolbar-search"><input type="search" id="searchInput" placeholder="Search" aria-label="Search items"></div>
       <div id="itemTagChips" class="item-filter" aria-label="Filter tags"></div>
       <div id="itemCollectionChips" class="item-filter" aria-label="Filter collections"></div>
-      <button id="itemCreate" class="btn-primary-new" type="button">+ Create Item</button>
+      <button
+  id="itemCreate"
+  class="btn-primary-new"
+  type="button"
+  hidden
+>
+  + Create Item
+</button>
     </div>
     <div class="card-grid" id="cardGrid"></div>
   </main>
@@ -933,55 +971,7 @@ if (!item.legacy) {
   }
 }
     
-const footer = document.createElement('div');
-footer.className = 'item-status-footer';
-
-const activeSwitch = document.createElement('label');
-activeSwitch.className = 'shared-active-switch';
-
-activeSwitch.innerHTML = `
-  <input type="checkbox"
-    data-active-label="Active"
-    data-inactive-label="Inactive">
-  <span class="shared-active-track">
-    <span class="shared-active-text"></span>
-    <span class="shared-active-knob"></span>
-  </span>
-`;
-
-const activeInput = activeSwitch.querySelector('input');
-
-activeInput.checked = item.active !== false;
-activeInput.disabled = !itemCan('edit');
-
-window.SharedActiveSwitch?.sync(activeInput);
-
-activeInput.addEventListener('change', async () => {
-  const next = activeInput.checked;
-  activeInput.disabled = true;
-
-  try {
-    await itemApi(`/items/${encodeURIComponent(item.id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        ...item,
-        active: next
-      })
-    });
-
-    await reloadItems();
-    notify(next ? 'Item activated' : 'Item deactivated', 'success');
-  } catch (error) {
-    activeInput.checked = !next;
-    window.SharedActiveSwitch?.sync(activeInput);
-    notify(error.message, 'error');
-  } finally {
-    activeInput.disabled = !itemCan('edit');
-  }
-});
-
-footer.append(activeSwitch);
-el.append(image,info,actions,footer);
+el.append(image, info, actions);
 return el;
   }
 function render() {
@@ -1100,8 +1090,41 @@ row.append(globalField, siteField);
     const footer=document.createElement('div');footer.className='item-form-actions';
     const cancel=document.createElement('button');cancel.type='button';cancel.className='btn-cancel-new';cancel.textContent='Cancel';
     const save=document.createElement('button');save.type='submit';save.className='btn-primary-new';save.textContent=item?'Save Changes':'Create Item';
-    footer.append(cancel,save);form.append(row,imageLabel,footer);
+    // Active / Inactive — bawah kiri modal
+const statusFooter = document.createElement('div');
+statusFooter.className = 'item-modal-status';
+
+statusFooter.innerHTML = `
+  <label class="shared-active-switch" title="Item Status">
+    <input
+      type="checkbox"
+      id="itemActiveStatus"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+    >
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+`;
+
+// Cancel dan Save — bawah kanan
+const footerButtons = document.createElement('div');
+footerButtons.className = 'item-footer-buttons';
+footerButtons.append(cancel, save);
+
+footer.append(statusFooter, footerButtons);
+form.append(row, imageLabel, footer);
     const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:720});
+      // Status Active / Inactive
+const statusInput = form.querySelector('#itemActiveStatus');
+
+// Create = Active secara default
+// Edit = ikut status item dalam database
+statusInput.checked = item ? item.active !== false : true;
+
+window.SharedActiveSwitch?.sync(statusInput);
     const globalInput = form.querySelector('#itemGlobalActive');
 
 globalInput.checked = item
@@ -1167,7 +1190,7 @@ const data = {
   code: item?.code || "5G88_Site",
   tag,
   img,
-  active: item ? item.active !== false : true,
+  active: statusInput.checked,
   visibleToAllSites: globalInput.checked,
   siteVisibility
 };
@@ -1268,6 +1291,9 @@ function startRealtime() {
 
     } catch (error) {
       console.error("Item initialization:", error);
+      createButton.hidden = true;
+      itemProfile = null;
+      itemSites = [];
       loaded = true;
       records.clear();
       refreshFilters();
