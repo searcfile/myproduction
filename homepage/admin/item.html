@@ -768,7 +768,16 @@ grid-template-columns:
     margin: 0;
   }
 }
+.item-status-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
 
+#itemCreate[hidden] {
+  display: none !important;
+}
   </style>
 </head>
 <body>
@@ -845,7 +854,56 @@ if (tagFilter && !(tagFilter.getValue() || []).length) {
       const del=document.createElement('button');del.type='button';del.className='btn-delete-new';del.title='Delete item';del.setAttribute('aria-label','Delete item');del.textContent='Delete';del.addEventListener('click',()=>removeItem(item));
       actions.append(edit,del);
     }
-    el.append(image,info,actions);return el;
+    const footer = document.createElement('div');
+footer.className = 'item-status-footer';
+
+const activeSwitch = document.createElement('label');
+activeSwitch.className = 'shared-active-switch';
+
+activeSwitch.innerHTML = `
+  <input type="checkbox"
+    data-active-label="Active"
+    data-inactive-label="Inactive">
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob"></span>
+  </span>
+`;
+
+const activeInput = activeSwitch.querySelector('input');
+
+activeInput.checked = item.active !== false;
+activeInput.disabled = !itemCan('edit');
+
+window.SharedActiveSwitch?.sync(activeInput);
+
+activeInput.addEventListener('change', async () => {
+  const next = activeInput.checked;
+  activeInput.disabled = true;
+
+  try {
+    await itemApi(`/items/${encodeURIComponent(item.id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...item,
+        active: next
+      })
+    });
+
+    await reloadItems();
+    notify(next ? 'Item activated' : 'Item deactivated', 'success');
+  } catch (error) {
+    activeInput.checked = !next;
+    window.SharedActiveSwitch?.sync(activeInput);
+    notify(error.message, 'error');
+  } finally {
+    activeInput.disabled = !itemCan('edit');
+  }
+});
+
+footer.append(activeSwitch);
+el.append(image,info,actions,footer);
+return el;
   }
 function render() {
   const items = filtered();
@@ -926,6 +984,34 @@ function render() {
     const tagHost=document.createElement('div');tagHost.id='itemFormTagChips';
     tagField.append(tagLabel,tagHost);
     row.append(tagField);
+    // Global Active
+const globalField = document.createElement('div');
+globalField.className = 'item-form-field item-form-full';
+
+globalField.innerHTML = `
+  <span>Global Active</span>
+  <label class="shared-active-switch">
+    <input type="checkbox" id="itemGlobalActive"
+      data-active-label="ON" data-inactive-label="OFF">
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+  <small>ON: Semua site. OFF: Ikut Site Visibility.</small>
+`;
+
+// Site Visibility
+const siteField = document.createElement('div');
+siteField.className = 'item-form-field item-form-full';
+
+siteField.innerHTML = `
+  <span>Site Visibility</span>
+  <div id="itemSiteChips"></div>
+  <small>Pilih site yang boleh melihat item ini.</small>
+`;
+
+row.append(globalField, siteField);
     const imageLabel=document.createElement('div');imageLabel.className='item-form-field item-form-full';
     const span=document.createElement('span');span.textContent='Item Image';
     const uploadHost=document.createElement('div');uploadHost.id='itemUploadHost';imageLabel.append(span,uploadHost);
@@ -933,7 +1019,31 @@ function render() {
     const cancel=document.createElement('button');cancel.type='button';cancel.className='btn-cancel-new';cancel.textContent='Cancel';
     const save=document.createElement('button');save.type='submit';save.className='btn-primary-new';save.textContent=item?'Save Changes':'Create Item';
     footer.append(cancel,save);form.append(row,imageLabel,footer);
-    const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:660});
+    const modal=NewUI.modal.open({title:item?'Edit Item':'Create Item',content:form,width:720});
+    const globalInput = form.querySelector('#itemGlobalActive');
+
+globalInput.checked = item
+  ? item.visibleToAllSites === true
+  : true;
+
+window.SharedActiveSwitch?.sync(globalInput);
+
+const siteChips = NewUI.chips(
+  form.querySelector('#itemSiteChips'),
+  {
+    placeholder: 'Select Sites',
+    options: itemSites.map(site => ({
+      value: site.id,
+      label: site.name
+    }))
+  }
+);
+
+siteChips.setValue(
+  Object.entries(item?.siteVisibility || {})
+    .filter(([, enabled]) => enabled === true)
+    .map(([id]) => id)
+);
     cancel.addEventListener('click',()=>modal.close());
     row.querySelectorAll('input').forEach(el=>NewUI.input(el));
     const savedTags=clean(item?.tag).split(',').map(t=>t.trim()).filter(Boolean);
