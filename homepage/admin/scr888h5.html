@@ -1488,7 +1488,20 @@ select:focus-visible{
     flex: 1;
   }
 }
+/* SCR888H5 - SITE VISIBILITY CUSTOM CHIPS */
+#mgModalSites {
+  width: 100%;
+  min-width: 0;
+}
 
+.mg-scope-field {
+  min-width: 0;
+}
+
+.mg-scope-field > label:first-child {
+  font-size: 13px;
+  font-weight: 600;
+}
 </style>
 <body>
 <header class="mg-head">
@@ -3226,54 +3239,39 @@ function mgSwitch(title, checked, disabled = false) {
 
 function mgSiteSelector(selected = []) {
   const field = mgElement("div", "mg-scope-field");
-  const label = mgElement("div", "mg-scope-label", "Site Visibility");
-  const list = mgElement("div", "mg-site-list");
+  const label = mgElement("label", "", "Site Visibility");
+  const host = mgElement("div");
 
-  const selectedSet = new Set(selected);
+  host.id = "mgModalSites";
 
-  mgSites.forEach(site => {
-    const button = mgElement(
-      "button", "mg-site-chip", site.name || site.id
-    );
+  field.append(
+    label,
+    host,
+    mgElement("small", "", "Pilih site untuk game ini.")
+  );
 
-    button.type = "button";
-    button.dataset.selected = selectedSet.has(site.id)
-      ? "true" : "false";
-
-    button.setAttribute(
-      "aria-pressed",
-      String(selectedSet.has(site.id))
-    );
-
-    button.addEventListener("click", () => {
-      if (selectedSet.has(site.id)) {
-        selectedSet.delete(site.id);
-      } else {
-        selectedSet.add(site.id);
-      }
-
-      const active = selectedSet.has(site.id);
-      button.dataset.selected = String(active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    list.append(button);
-  });
-
-  if (!mgSites.length) {
-    list.append(
-      mgElement("small", "", "No available sites")
-    );
-  }
-
-  field.append(label, list);
+  let chips = null;
 
   return {
     field,
-    getValue: () => [...selectedSet]
+
+    init() {
+      chips = NewUI.chips(host, {
+        options: mgSites.map(site => ({
+          value: site.id,
+          label: site.name || site.id
+        })),
+        value: selected,
+        multiple: true,
+        placeholder: "Select Sites"
+      });
+    },
+
+    getValue() {
+      return chips?.getValue() || [];
+    }
   };
 }
-
 /* ==========================================================
    CREATE / EDIT GAME
    ========================================================== */
@@ -3309,7 +3307,25 @@ function mgEditor(oldName = "") {
 
   free.input.placeholder = "5, 10";
   form.append(free.host);
+/* GLOBAL ACTIVE & SITE VISIBILITY */
+const global = mgSwitch(
+  "Global Active",
+  mgAccess.role === "superadmin"
+    ? (editing ? old.visibleToAllSites !== false : true)
+    : false,
+  mgAccess.role !== "superadmin"
+);
 
+form.append(global.field);
+
+const selectedSites = Object.entries(
+  old.siteVisibility || {}
+)
+  .filter(([, enabled]) => enabled === true)
+  .map(([id]) => id);
+
+const siteSelector = mgSiteSelector(selectedSites);
+form.append(siteSelector.field);
   form.append(
     mgElement(
       "div",
@@ -3368,27 +3384,7 @@ function mgEditor(oldName = "") {
   add.onclick = () => addBet();
   form.append(add);
 
-  /* GLOBAL ACTIVE */
-  const global = mgSwitch(
-    "Global Active",
-    mgAccess.role === "superadmin"
-      ? (editing ? old.visibleToAllSites !== false : true)
-      : false,
-    mgAccess.role !== "superadmin"
-  );
-
-  form.append(global.field);
-
-  /* SITE VISIBILITY */
-  const selectedSites = Object.entries(
-    old.siteVisibility || {}
-  )
-    .filter(([, enabled]) => enabled === true)
-    .map(([id]) => id);
-
-  const siteSelector = mgSiteSelector(selectedSites);
-  form.append(siteSelector.field);
-
+  
   /* ACTIVE / INACTIVE */
   const status = mgSwitch(
     "Active / Inactive",
@@ -3421,7 +3417,8 @@ function mgEditor(oldName = "") {
   });
 
   cancel.onclick = () => modal.close();
-
+  siteSelector.init();
+    
   form.querySelectorAll("input[data-new-ui-input]")
     .forEach(input => NewUI.input(input));
 
