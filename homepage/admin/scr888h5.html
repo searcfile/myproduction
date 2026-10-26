@@ -3285,12 +3285,6 @@ function mgEditor(oldName = "") {
   }
 
   const old = mgRecords[oldName] || {};
-
-  if (editing && !mgEditable(old)) {
-    mgToast("This game cannot be edited", "error");
-    return;
-  }
-
   const form = mgElement("form", "mg-modal-form");
 
   const name = mgField("Game Name", oldName);
@@ -3310,12 +3304,11 @@ function mgEditor(oldName = "") {
 /* GLOBAL ACTIVE & SITE VISIBILITY */
 const global = mgSwitch(
   "Global Active",
-  mgAccess.role === "superadmin"
-    ? (editing ? old.visibleToAllSites !== false : true)
-    : false,
+  editing
+    ? old.visibleToAllSites !== false
+    : mgAccess.role === "superadmin",
   mgAccess.role !== "superadmin"
 );
-
 form.append(global.field);
 
 const selectedSites = Object.entries(
@@ -3477,17 +3470,27 @@ form.append(siteSelector.field);
     }
 
     const sites = siteSelector.getValue();
-
+// Site Admin yang edit game global mesti kekalkan
+// visibility global asal, bukan menukar assignment site.
+const editingGlobal =
+  editing &&
+  mgAccess.role !== "superadmin" &&
+  old.visibleToAllSites !== false;
     const payload = {
       name: gameName,
       bets,
       pecahan,
       freeGameOptions: freeOptions,
       active: status.input.checked,
-      visibleToAllSites: global.input.checked,
-      siteVisibility: Object.fromEntries(
-        sites.map(id => [id, true])
-      )
+      visibleToAllSites: editingGlobal
+  ? true
+  : global.input.checked,
+
+siteVisibility: editingGlobal
+  ? (old.siteVisibility || {})
+  : Object.fromEntries(
+      sites.map(id => [id, true])
+    )
     };
 
     if (
@@ -3597,8 +3600,8 @@ function mgManager() {
     edit.type = "button";
     del.type = "button";
 
-    edit.hidden = !mgCan("edit") || !mgEditable(game);
-    del.hidden = !mgCan("delete") || !mgEditable(game);
+   edit.hidden = !mgCan("edit");
+   del.hidden = !mgCan("delete");
 
     edit.onclick = () => {
       modal.close();
