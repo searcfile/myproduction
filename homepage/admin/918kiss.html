@@ -1201,6 +1201,62 @@ select:focus-visible{
   .form-row-middle .shared-input { width: 100%; }
 }
 
+#mgCreate[hidden],
+#mgManage[hidden] {
+  display: none !important;
+}
+
+.mg-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mg-form-right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mg-scope-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.mg-scope-field > label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mg-scope-field small {
+  font-size: 11px;
+  opacity: .7;
+}
+
+#mgModalSites {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .mg-form-actions {
+    align-items: stretch;
+  }
+
+  .mg-form-right {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .mg-form-right button {
+    flex: 1;
+  }
+}
+
 </style>
 <body>
 <header class="mg-head">
@@ -1209,7 +1265,7 @@ select:focus-visible{
       Manage Games
     </button>
 
-    <button id="mgCreate" type="button" class="btn-primary-new">
+    <button id="mgCreate" type="button" class="btn-primary-new" hidden>
       + Create Game
     </button>
   </div>
@@ -2735,8 +2791,57 @@ function mgEditor(oldName=''){
  const old=gameData[oldName]||{};
  const form=mgElement('form','mg-modal-form');
  const name=mgField('Game Name',oldName,'text');name.input.required=true;name.input.placeholder='Example: ICELAND';form.append(name.host);
- const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10, 20, 50, 100 — maximum 10 Free Game rows.');free.input.placeholder='5, 10';form.append(free.host);
- const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
+const free=mgField('Free Game Options',(old.freeGameOptions||[]).join(', '),'text','Example: 5, 10, 20, 50, 100 — maximum 10 Free Game rows.');free.input.placeholder='5, 10';form.append(free.host);
+
+/* GLOBAL ACTIVE */
+const globalField = mgElement('div', 'mg-scope-field');
+
+const globalLabel = mgElement('label', '', 'Global Active');
+
+const globalSwitch = mgElement('label', 'shared-active-switch');
+const globalInput = mgElement('input');
+
+globalInput.type = 'checkbox';
+globalInput.id = 'mgGlobalActive';
+globalInput.checked = old.visibleToAllSites === true;
+
+const globalTrack = mgElement('span', 'shared-active-track');
+
+globalSwitch.append(globalInput, globalTrack);
+
+globalField.append(
+  globalLabel,
+  globalSwitch,
+  mgElement(
+    'small',
+    '',
+    'ON: Semua site. OFF: Ikut Site Visibility.'
+  )
+);
+
+form.append(globalField);
+
+/* SITE VISIBILITY */
+const siteField = mgElement('div', 'mg-scope-field');
+
+const siteLabel = mgElement('label', '', 'Site Visibility');
+
+const siteHost = mgElement('div');
+siteHost.id = 'mgModalSites';
+
+siteField.append(
+  siteLabel,
+  siteHost,
+  mgElement(
+    'small',
+    '',
+    'Pilih site yang boleh melihat game ini.'
+  )
+);
+
+form.append(siteField);
+
+  const hint=mgElement('div','mg-notice','Bet & Win: add one row for each Bet amount. Every Bet has its own Win options.');form.append(hint);
  const rows=mgElement('div','mg-modal-form');form.append(rows);
  function addBet(bet='',wins=''){
    const row=mgElement('div','mg-betrow');const a=mgField('Bet',String(bet),'number');a.input.step='any';a.input.min='0';const b=mgField('Win Options',String(wins),'text');b.input.placeholder='30, 60, 100';const del=mgElement('button','btn-delete-new','Remove');del.type='button';del.onclick=()=>row.remove();row.append(a.host,b.host,del);rows.append(row);
@@ -2746,8 +2851,49 @@ function mgEditor(oldName=''){
  (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
  if(!old.bets?.length)addBet();
  const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
- const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';actions.append(cancel,save);form.append(actions);
+ const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';
+ 
+const statusWrap = mgElement('div', 'mg-scope-field');
+
+const statusLabel = mgElement(
+  'label',
+  '',
+  'Active / Inactive'
+);
+
+const statusSwitch = mgElement(
+  'label',
+  'shared-active-switch'
+);
+
+const statusInput = mgElement('input');
+statusInput.type = 'checkbox';
+statusInput.id = 'mgGameActive';
+statusInput.checked = old.active !== false;
+
+const statusTrack = mgElement(
+  'span',
+  'shared-active-track'
+);
+
+statusSwitch.append(statusInput, statusTrack);
+statusWrap.append(statusLabel, statusSwitch);
+
+const rightActions = mgElement(
+  'div',
+  'mg-form-right'
+);
+
+rightActions.append(cancel, save);
+
+actions.append(statusWrap, rightActions);
+form.append(actions);
+
  const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+
+window.SharedActiveSwitch?.sync(globalInput);
+window.SharedActiveSwitch?.sync(statusInput);
+
  form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
  form.addEventListener('submit',async e=>{
  e.preventDefault();const gameName=name.input.value.trim(),freeOptions=mgOptions(free.input.value);
