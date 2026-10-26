@@ -65,13 +65,15 @@
   .ld-button{font:inherit;border-radius:6px;height:32px;padding:0 15px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%}.ld-primary{background:var(--ld-blue);border-color:var(--ld-blue);color:#fff}.ld-button:disabled{opacity:.55;cursor:not-allowed}
 .ld-grid {
   display: grid;
+
   grid-template-columns: repeat(
     auto-fill,
-    minmax(min(100%, 315px), 315px)
+    minmax(min(100%, 260px), 1fr)
   );
+
   gap: 14px;
-  justify-content: start;
   align-items: start;
+  justify-content: start;
   min-width: 0;
 }
 .ld-card {
