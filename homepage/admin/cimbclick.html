@@ -805,6 +805,12 @@ html {
   font-size: 11px;
   opacity: .65;
 }
+#bankCreate[hidden],
+#bankManage[hidden],
+.cimb-bank-list-buttons button[hidden],
+.cimb-bank-form-actions button[hidden] {
+  display: none !important;
+}
 </style>
 <body>
   
@@ -879,8 +885,8 @@ html {
 
   <!-- RIGHT BUTTONS -->
   <div class="cimb-bank-actions">
-    <button type="button" class="btn-primary-new" id="bankCreate">+ Create Bank</button>
-    <button type="button" class="btn-cancel-new" id="bankManage">Manage Banks</button>
+    <button type="button" class="btn-primary-new" id="bankCreate" hidden>+ Create Bank</button>
+    <button type="button" class="btn-cancel-new" id="bankManage" hidden>Manage Banks</button>
   </div>
 
 </div>
@@ -1820,51 +1826,129 @@ const bankToast = (message, type="success") => {
   if (typeof window.showToast === "function") window.showToast(message, type);
   else console[type === "error" ? "error" : "log"](message);
 };
-const bankDb = () => {
-  try {
-    if (!window.firebase || !firebase.apps.length) return null;
-    return firebase.database().ref(BANK_DB_PATH);
-  } catch (error) {
-    console.error("Bank catalog Firebase:", error);
-    return null;
+const CIMB_API_BASE =
+  "https://fiveg88-admin-backend-v2.onrender.com";
+
+async function cimbApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw Error("Admin session expired. Please login again.");
   }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(CIMB_API_BASE + path, {
+    method: options.method || "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: options.body === undefined
+      ? undefined
+      : JSON.stringify(options.body)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.ok === false) {
+    throw Error(data.message || `API error ${response.status}`);
+  }
+
+  return data;
+}
+
+let cimbAccess = {
+  role: "",
+  actions: []
 };
+
+function cimbCan(action) {
+  return cimbAccess.role === "superadmin" ||
+    cimbAccess.actions.includes(action);
+}
+
+async function cimbLoadSites() {
+  const data = await cimbApi("/api/cimbclick/sites");
+  return Array.isArray(data.sites) ? data.sites : [];
+}
+
+async function cimbLoadAccess() {
+  const data = await cimbApi("/api/cimbclick/access");
+
+  cimbAccess = {
+    role: data.role || "",
+    actions: Array.isArray(data.actions)
+      ? data.actions
+      : []
+  };
+
+  document.getElementById("bankCreate").hidden =
+    !cimbCan("create");
+
+  document.getElementById("bankManage").hidden =
+    !cimbCan("edit") &&
+    !cimbCan("delete") &&
+    !cimbCan("create");
+}
+
+async function cimbLoadBanks() {
+  const data = await cimbApi("/api/cimbclick/banks");
+
+  BANK_RECORDS = {};
+
+  for (const bank of data.banks || []) {
+    const normalized = normalizedBankRecord(bank);
+
+    if (normalized && bank.id) {
+      BANK_RECORDS[bank.id] = {
+        ...normalized,
+        canManage: bank.canManage === true
+      };
+    }
+  }
+
+  bankCatalogLoaded = true;
+  refreshBankCatalog();
+}
 const bankEscape = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
 })[char]);
 function normalizedBankRecord(value) {
   if (!value || typeof value !== "object") return null;
+
   const name = String(value.name || "").trim();
   const len = Number(value.len);
   const rule = value.rule === "start" ? "start" : "prefix";
   const digits = String(value.digits ?? "");
-  if (!name || name.length > 100 || !Number.isInteger(len) || len < 1 || len > 30 ||
-      !/^\d*$/.test(digits) || digits.length > len) return null;
+
+  if (
+    !name ||
+    name.length > 100 ||
+    !Number.isInteger(len) ||
+    len < 1 ||
+    len > 30 ||
+    !/^\d*$/.test(digits) ||
+    digits.length > len
+  ) {
+    return null;
+  }
+
   return {
-  name,
-  len,
-  rule,
-  digits,
-  active: value.active !== false,
-
-  visibleToAllSites: value.visibleToAllSites !== false,
-
-siteVisibility: Object.fromEntries(
-  Object.entries(value.siteVisibility || {})
-    .filter(([id, enabled]) =>
-      /^[a-z0-9_-]{1,48}$/.test(id) &&
-      enabled === true
+    name,
+    len,
+    rule,
+    digits,
+    active: value.active !== false,
+    visibleToAllSites: value.visibleToAllSites === true,
+    siteVisibility: Object.fromEntries(
+      Object.entries(value.siteVisibility || {})
+        .filter(([id, enabled]) =>
+          /^[a-z0-9_-]{1,48}$/.test(id) &&
+          enabled === true
+        )
     )
-)
-      .filter(([id, enabled]) =>
-        typeof id === "string" &&
-        id.length > 0 &&
-        id.length <= 128 &&
-        !/[.#$\[\]/]/.test(id) &&
-        enabled === true
-      )
-  )
-};
+  };
 }
 function refreshBankCatalog() {
   if (!bankCatalogLoaded) return;
@@ -1902,26 +1986,32 @@ function refreshBankCatalog() {
 
 renderBankMenu();
 }
-function initFirebaseBanks() {
-  const ref = bankDb();
-  if (!ref) {
-    bankToast("Data belum siap. Tidak dapat memuatkan senarai bank.", "warning");
-    return;
+async function initFirebaseBanks() {
+  try {
+    await cimbLoadAccess();
+    await cimbLoadBanks();
+  } catch (error) {
+    bankCatalogLoaded = false;
+
+    document.getElementById("bankCreate").hidden = true;
+    document.getElementById("bankManage").hidden = true;
+
+    bankToast(
+      "Cannot load CIMB bank catalog: " + error.message,
+      "error"
+    );
   }
-  ref.on("value", snap => {
-    const records = {};
-    snap.forEach(child => {
-      const normalized = normalizedBankRecord(child.val());
-      if (normalized) records[child.key] = normalized;
-    });
-    BANK_RECORDS = records;
-    bankCatalogLoaded = true;
-    refreshBankCatalog();
-  }, error => bankToast("Tidak dapat membaca bank Firebase: " + error.message, "error"));
 }
 async function bankFormModal(id=null) {
   if (!window.NewUI?.modal?.open) return bankToast("Custom modal belum tersedia.", "error");
   const current = id ? BANK_RECORDS[id] : null;
+  if (!cimbCan(id ? "edit" : "create")) {
+  return bankToast("Permission denied", "error");
+}
+
+if (id && !current?.canManage) {
+  return bankToast("Bank edit access denied", "error");
+}
   const content = document.createElement("form");
   content.className = "cimb-bank-form";
 content.innerHTML = `
@@ -2035,6 +2125,13 @@ content.innerHTML = `
   const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:720});
   NewUI.init(content);
   NewUI.activeSwitch.init(content);
+    const globalSwitch = content.elements.visibleToAllSites;
+
+if (cimbAccess.role !== "superadmin") {
+  globalSwitch.checked = false;
+  globalSwitch.disabled = true;
+  NewUI.activeSwitch.sync?.(globalSwitch);
+}
   // ===== SITE VISIBILITY =====
 const siteContainer =
   content.querySelector("#cimbBankSites");
@@ -2114,8 +2211,7 @@ if (
     "warning"
   );
 }
-    const ref = bankDb();
-    if (!ref) return bankToast("Firebase belum tersedia.", "error");
+
 const value = normalizedBankRecord({
   name: content.elements.name.value,
   len: Number(content.elements.len.value),
@@ -2130,13 +2226,22 @@ const value = normalizedBankRecord({
     if (!value) return bankToast("Semak nama bank, length dan digits.", "warning");
     if (Object.entries(BANK_RECORDS).some(([key,other])=>key!==id && other.name.toLowerCase()===value.name.toLowerCase()))
       return bankToast("Nama bank sudah wujud.", "warning");
-const saveButton = content.querySelector("[data-save]");
 
 await NewUI.setButtonLoading(saveButton, true, {
   text: id ? "Saving..." : "Creating..."
 });
     try {
-      await (id ? ref.child(id) : ref.push()).set({...value,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+await cimbApi(
+  id
+    ? `/api/cimbclick/banks/${encodeURIComponent(id)}`
+    : "/api/cimbclick/banks",
+  {
+    method: id ? "PATCH" : "POST",
+    body: value
+  }
+);
+
+await cimbLoadBanks();
 localStorage.setItem("cimb_bank_catalog_initialized", "1");
 
 // Tunggu loading minimum 700ms seperti MEGA888
@@ -2167,6 +2272,7 @@ function bankManageModal() {
   const addButton = document.createElement("button");
   addButton.type="button"; addButton.className="btn-update";addButton.textContent="+ Create Bank";
   toolbar.append(addButton);
+  addButton.hidden = !cimbCan("create");
   const list = document.createElement("div");list.className="cimb-bank-list";
   content.append(toolbar,list);
   const modal = NewUI.modal.open({title:"Manage Banks",content,width:720});
@@ -2188,27 +2294,37 @@ function bankManageModal() {
       const buttons=document.createElement("div");buttons.className="cimb-bank-list-buttons";
       const edit=document.createElement("button");edit.type="button";edit.className="btn-edit-new";edit.textContent="Edit";
       edit.addEventListener("click",()=>{modal.close();bankFormModal(key);});
+      edit.hidden = !cimbCan("edit") || !bank.canManage;
       const del=document.createElement("button");del.type="button";del.className="btn-delete-new";del.textContent="Delete";
       del.addEventListener("click",async()=>{
+        del.hidden = !cimbCan("delete") || !bank.canManage;
         if (!window.NewUI?.confirm) return bankToast("Custom confirm belum tersedia.","error");
         const confirmed=await NewUI.confirm({target:del,title:"Delete Bank",message:`Delete ${bank.name}?`,confirmText:"Delete",danger:true});
         if (!confirmed) return;
-        const ref=bankDb();if(!ref)return bankToast("Firebase belum tersedia.","error");
-        try {await ref.child(key).remove();bankToast("Bank deleted successfully");renderList();}
-        catch(error){bankToast("Gagal delete: "+error.message,"error");}
+        try {
+  await cimbApi(
+    `/api/cimbclick/banks/${encodeURIComponent(key)}`,
+    { method: "DELETE" }
+  );
+
+  await cimbLoadBanks();
+
+  bankToast("Bank deleted successfully", "success");
+  renderList();
+} catch (error) {
+  bankToast("Delete failed: " + error.message, "error");
+}
       });
       buttons.append(edit,del);row.append(description,buttons);list.append(row);
     }
   }
   addButton.addEventListener("click",()=>{modal.close();bankFormModal();});
  
-  const ref=bankDb();
-  if(ref) ref.once("value").then(snap=>{
-    const records={};snap.forEach(child=>{const v=normalizedBankRecord(child.val());if(v)records[child.key]=v;});
-    BANK_RECORDS=records;renderList();
-  }).catch(error=>bankToast(error.message,"error"));
-  else renderList();
-}
+cimbLoadBanks()
+  .then(renderList)
+  .catch(error => {
+    bankToast(error.message, "error");
+  });
 document.getElementById("bankCreate")?.addEventListener("click",()=>bankFormModal());
 document.getElementById("bankManage")?.addEventListener("click",bankManageModal);
 initFirebaseBanks();
