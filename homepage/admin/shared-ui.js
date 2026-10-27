@@ -3225,13 +3225,26 @@ if (!verifiedProfileReady) {
     moreWrap.append(moreButton, moreDropdown);
 
 
+
 function refreshTab(tab) {
   if (!verifiedProfileReady) return;
   if (!tab?.file) return;
 
-  const targetFile = String(tab.file).toLowerCase();
+  const targetFile = String(tab.file)
+    .split(/[?#]/)[0]
+    .split("/")
+    .pop()
+    .toLowerCase();
 
   if (!canViewAdminPage(targetFile)) return;
+
+  const uid = getCurrentUserStorageSuffix();
+
+  // Reset state untuk tab ini sahaja.
+  if (uid) {
+    const key = `5g88.tabState.v1:${uid}:${targetFile}`;
+    localStorage.removeItem(key);
+  }
 
   if (getCurrentFile() === targetFile) {
     sessionStorage.setItem(
@@ -3241,9 +3254,12 @@ function refreshTab(tab) {
 
     window.location.reload();
   } else {
+    // Script sekarang menggunakan full-page navigation.
+    // Pergi ke tab sasaran selepas state tab itu dipadam.
     navigateToTab(tab);
   }
 }
+
 
 
     function createTabActions(tab) {
