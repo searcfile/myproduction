@@ -3700,5 +3700,404 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
 });
 
 
+/* =====================================================
+   MAYBANK2U - BANK CATALOG API
+   SITE VISIBILITY + PERMISSIONS
+   ===================================================== */
+
+const MAYBANK_MODULE = "maybank2u.html";
+const MAYBANK_PATH = "bank_catalog/maybankm2u";
+
+const maybankIdOK = id =>
+  /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+const maybankAssigned = profile =>
+  Array.isArray(profile.siteIds) ? profile.siteIds : [];
+
+function maybankVisible(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (bank?.active === false) return false;
+
+  const assigned = maybankAssigned(profile);
+  if (!assigned.length) return false;
+
+  return bank?.visibleToAllSites === true ||
+    assigned.some(id => bank?.siteVisibility?.[id] === true);
+}
+
+function maybankEditable(bank, profile) {
+  if (profile.role === "superadmin") {
+    return true;
+  }
+
+  if (profile.role !== "siteadmin") {
+    return false;
+  }
+
+  // Site Admin tidak boleh edit bank Global
+  if (bank?.visibleToAllSites === true) {
+    return false;
+  }
+
+  if (!maybankVisible(bank, profile)) {
+    return false;
+  }
+
+  const assigned = maybankAssigned(profile);
+
+  const selected = Object.keys(
+    bank?.siteVisibility || {}
+  ).filter(id => bank.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+function maybankValidate(body) {
+  if (!body || typeof body !== "object" ||
+      Array.isArray(body)) {
+    throw Error("Invalid bank data");
+  }
+
+  const name = String(body.name || "").trim();
+  const len = Number(body.len);
+  const rule = body.rule;
+  const digits = String(body.digits ?? "");
+
+  if (!name || name.length > 100)
+    throw Error("Invalid bank name");
+
+  if (!Number.isInteger(len) || len < 1 || len > 30)
+    throw Error("Invalid account length");
+
+  if (!["prefix", "start"].includes(rule))
+    throw Error("Invalid number rule");
+
+  if (!/^\d*$/.test(digits) || digits.length > len)
+    throw Error("Invalid prefix/start digits");
+
+  if (typeof body.active !== "boolean" ||
+      typeof body.visibleToAllSites !== "boolean") {
+    throw Error("Invalid status or visibility");
+  }
+
+  const siteVisibility = body.siteVisibility ?? {};
+
+  if (!siteVisibility ||
+      typeof siteVisibility !== "object" ||
+      Array.isArray(siteVisibility) ||
+      Object.keys(siteVisibility).length > 100 ||
+      !Object.entries(siteVisibility).every(
+        ([id, value]) => siteIdOK(id) && value === true
+      )) {
+    throw Error("Invalid site visibility");
+  }
+
+  if (!body.visibleToAllSites &&
+      !Object.keys(siteVisibility).length) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name,
+    len,
+    rule,
+    digits,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function maybankCheckScope(data, profile) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const selected = Object.keys(data.siteVisibility);
+
+  if (!selected.every(id => sites[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role === "siteadmin") {
+    if (data.visibleToAllSites === true) {
+      throw Error("Only Super Admin can enable Global Active");
+    }
+
+    const assigned = maybankAssigned(profile);
+
+    if (!selected.length ||
+        !selected.every(id => assigned.includes(id))) {
+      throw Error("Site selection is not assigned to you");
+    }
+  }
+}
+
+// ===== SITE DROPDOWN =====
+
+app.get(
+  "/api/maybank2u/sites",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+      const assigned = maybankAssigned(profile);
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            profile.role === "superadmin" ||
+            assigned.includes(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("Maybank sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// ===== ACCESS PERMISSIONS =====
+
+app.get(
+  "/api/maybank2u/access",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "view"),
+  (req, res) => {
+    const profile = req.admin.profile;
+    const key = MAYBANK_MODULE.replace(/\.html$/, "_html");
+
+    const actions = profile.role === "superadmin"
+      ? ["show", "view", "create", "edit", "delete"]
+      : (profile.permissions?.[key] || []);
+
+    return res.json({
+      ok: true,
+      role: profile.role,
+      actions
+    });
+  }
+);
+
+// ===== LIST BANKS =====
+
+app.get(
+  "/api/maybank2u/banks",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref(MAYBANK_PATH).once("value")
+      ).val() || {};
+
+      const banks = Object.entries(all)
+        .filter(([, bank]) =>
+          maybankVisible(bank, req.admin.profile)
+        )
+        .map(([id, bank]) => ({
+          id,
+          ...bank,
+          canManage: maybankEditable(
+            bank, req.admin.profile
+          ),
+          canDelete:
+            maybankEditable(bank, req.admin.profile) &&
+            (
+              req.admin.profile.role === "superadmin" ||
+              bank.visibleToAllSites !== true
+            )
+        }));
+
+      return res.json({ ok: true, banks });
+    } catch (error) {
+      console.error("Maybank list:", error);
+      return fail(res, 500, "Cannot load banks");
+    }
+  }
+);
+
+// ===== CREATE BANK =====
+
+app.post(
+  "/api/maybank2u/banks",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = maybankValidate(req.body);
+      await maybankCheckScope(data, req.admin.profile);
+
+      const root = db.ref(MAYBANK_PATH);
+      const all = (await root.once("value")).val() || {};
+
+      if (Object.values(all).some(bank =>
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      const ref = root.push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+    } catch (error) {
+      console.error("Maybank create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// ===== EDIT BANK =====
+
+app.patch(
+  "/api/maybank2u/banks/:id",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!maybankIdOK(id))
+        return fail(res, 400, "Invalid bank ID");
+
+      const ref = db.ref(`${MAYBANK_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists())
+        return fail(res, 404, "Bank not found");
+
+      const old = snap.val();
+
+      if (!maybankEditable(old, req.admin.profile))
+        return fail(res, 403, "Bank edit access denied");
+
+      const data = maybankValidate(req.body);
+
+      if (req.admin.profile.role === "siteadmin") {
+        const oldSites = Object.keys(old.siteVisibility || {})
+          .filter(id => old.siteVisibility[id] === true)
+          .sort();
+
+        const newSites = Object.keys(data.siteVisibility)
+          .sort();
+
+        if (
+          data.visibleToAllSites !==
+            (old.visibleToAllSites === true) ||
+          JSON.stringify(oldSites) !==
+            JSON.stringify(newSites)
+        ) {
+          return fail(
+            res, 403,
+            "Only Super Admin can change bank visibility"
+          );
+        }
+
+if (old.visibleToAllSites === true) {
+
+  data.visibleToAllSites = true;
+  data.siteVisibility = old.siteVisibility || {};
+} else {
+  await maybankCheckScope(data, req.admin.profile);
+}
+      } else {
+        await maybankCheckScope(data, req.admin.profile);
+      }
+
+      const all = (
+        await db.ref(MAYBANK_PATH).once("value")
+      ).val() || {};
+
+      if (Object.entries(all).some(([key, bank]) =>
+        key !== id &&
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Maybank edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// ===== DELETE BANK =====
+
+app.delete(
+  "/api/maybank2u/banks/:id",
+  requireAdmin,
+  requirePermission(MAYBANK_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!maybankIdOK(id))
+        return fail(res, 400, "Invalid bank ID");
+
+      const ref = db.ref(`${MAYBANK_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists())
+        return fail(res, 404, "Bank not found");
+
+      const bank = snap.val();
+
+      if (
+        !maybankEditable(bank, req.admin.profile) ||
+        (
+          req.admin.profile.role === "siteadmin" &&
+          bank.visibleToAllSites === true
+        )
+      ) {
+        return fail(res, 403, "Bank delete access denied");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Maybank delete:", error);
+      return fail(res, 500, "Cannot delete bank");
+    }
+  }
+);
+
+/* =====================================================
+   END MAYBANK2U BANK API
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
