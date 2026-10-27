@@ -613,7 +613,7 @@ html {
     white-space: nowrap !important;
     -webkit-overflow-scrolling: touch;
     position: relative !important;
-    z-index: 1000 !important;
+    z-index: 1 !important;
      visibility: visible !important;
      opacity: 1 !important;
     transform: none !important;
@@ -2391,4 +2391,49 @@ body.tab-dragging-active *{
 }
 .admin-workspace-tabs-list {
     perspective: 1000px;
+}
+
+/* =========================================
+   5G88 - HEADER / TABBAR / SIDEBAR LAYERS
+   ========================================= */
+
+/* Tab bar sentiasa di bawah header dan sidebar */
+.tab-bar,
+.tab-bar.shrink {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Header dan semua dropdown header */
+.header,
+.header.shrink {
+  z-index: 3000 !important;
+  overflow: visible !important;
+}
+
+/* Username dropdown */
+.header .user-dropdown,
+.header .dropdown-wrapper {
+  overflow: visible !important;
+}
+
+.header .dropdown-content {
+  z-index: 3100 !important;
+}
+
+/* Sidebar dan background overlay */
+.sidebar-overlay {
+  z-index: 3200 !important;
+}
+
+.sidebar {
+  z-index: 3201 !important;
+}
+
+/* Tab bar mobile */
+@media (max-width: 815px) {
+  .tab-bar,
+  .tab-bar.shrink {
+    z-index: 1 !important;
+  }
 }
