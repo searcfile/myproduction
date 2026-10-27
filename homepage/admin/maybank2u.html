@@ -1120,6 +1120,30 @@
             font-size: 14px !important;
           }
         }
+       /* MAYBANK2U - SITE VISIBILITY CHIPS */
+.mainan-bank-scope {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.mainan-bank-scope-title {
+  font-size: 12px;
+  color: var(--page-text);
+}
+
+.mainan-bank-sites {
+  width: 100%;
+  min-width: 0;
+}
+
+.mainan-bank-scope small {
+  font-size: 11px;
+  opacity: 0.65;
+}
         </style>
         <body>
          <div class="wrap">
@@ -2139,12 +2163,7 @@ function mainanWaitForAuth() {
                     placeholder="Example: 88"
                   />
                 </label>
-        <div class="field">
-          <label>Site Visibility</label>
-          <div id="mainanBankSites">
-            Loading sites...
-          </div>
-        </div>
+
         <div class="mainan-bank-status">
           <div class="mainan-bank-status-field">
             <span class="mainan-bank-status-label">
@@ -2166,7 +2185,20 @@ function mainanWaitForAuth() {
             </label>
           </div>
         </div>
-        
+
+<div class="mainan-bank-scope">
+  <span class="mainan-bank-scope-title">
+    Site Visibility
+  </span>
+
+  <div
+    id="mainanBankSites"
+    class="mainan-bank-sites"
+  ></div>
+
+  <small>Select sites for this bank.</small>
+</div>
+
         <div class="mainan-bank-status">
           <div class="mainan-bank-status-field">
             <span class="mainan-bank-status-label">Status</span>
@@ -2208,42 +2240,67 @@ function mainanWaitForAuth() {
           existing?.siteVisibility || {}
         ).filter(id => existing.siteVisibility[id] === true);
         
-        const saveBtnSiteReady = { value: false };
-        
-        mainanLoadSites().then(sites => {
-          siteContainer.replaceChildren();
-        
-          for (const site of sites) {
-            const label = document.createElement("label");
-            label.style.cssText =
-              "display:flex;align-items:center;gap:8px;margin:8px 0";
-        
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.value = site.id;
-            checkbox.checked = selectedSiteIds.includes(site.id);
-            checkbox.style.width = "auto";
-        
-            checkbox.disabled =
-              editing && mainanAccess.role !== "superadmin";
-        
-            checkbox.addEventListener("change", () => {
-              selectedSiteIds = [
-                ...siteContainer.querySelectorAll(
-                  'input[type="checkbox"]:checked'
-                )
-              ].map(input => input.value);
-            });
-        
-            label.append(checkbox, document.createTextNode(site.name));
-            siteContainer.append(label);
-          }
-        
-          saveBtnSiteReady.value = true;
-        }).catch(error => {
-          siteContainer.textContent = "Failed to load sites";
-          mainanToast(error.message, "error");
-        });
+
+const saveBtnSiteReady = { value: false };
+
+mainanLoadSites()
+  .then(sites => {
+    const allowedSiteIds = new Set(
+      sites.map(site => site.id)
+    );
+
+    const initialSiteIds = selectedSiteIds.filter(
+      id => allowedSiteIds.has(id)
+    );
+
+    siteContainer.replaceChildren();
+
+    const chips = NewUI.chips(siteContainer, {
+      options: sites.map(site => ({
+        value: site.id,
+        label: site.name
+      })),
+      value: initialSiteIds,
+      multiple: true,
+      placeholder: "Select Sites",
+
+      onChange(values) {
+        selectedSiteIds = Array.isArray(values)
+          ? values.filter(id => allowedSiteIds.has(id))
+          : [];
+      }
+    });
+
+    if (!chips) {
+      throw new Error(
+        "Cannot initialize site dropdown"
+      );
+    }
+
+    selectedSiteIds = initialSiteIds;
+
+    // Site Admin tidak boleh menukar site
+    // ketika Edit, sama seperti logic asal.
+    if (editing && mainanAccess.role !== "superadmin") {
+      const controls = siteContainer.querySelectorAll(
+        "button, input, [tabindex]"
+      );
+
+      controls.forEach(el => {
+        if ("disabled" in el) el.disabled = true;
+        el.setAttribute("aria-disabled", "true");
+        el.tabIndex = -1;
+      });
+    }
+
+    saveBtnSiteReady.value = true;
+  })
+  .catch(error => {
+    saveBtnSiteReady.value = false;
+    siteContainer.textContent = "Failed to load sites";
+    mainanToast(error.message, "error");
+  });
+
           const form = root.querySelector("#mainanBankForm");
         
           nameInput.value = existing?.name || "";
