@@ -3265,7 +3265,9 @@ async function cimbCheckScope(data, profile) {
     await db.ref("sites").once("value")
   ).val() || {};
 
-  const selected = Object.keys(data.siteVisibility);
+  const selected = Object.entries(data.siteVisibility)
+  .filter(([, enabled]) => enabled === true)
+  .map(([id]) => id);
 
   if (!selected.every(id => allSites[id]?.active === true)) {
     throw Error("Site missing or inactive");
