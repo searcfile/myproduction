@@ -5,7 +5,7 @@ const cors = require('cors');
 const crypto = require('node:crypto');
 const { rateLimit } = require('express-rate-limit');
 const { initializeApp, cert } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
+const { getAuth } = require('firebase-admin/auth');  
 const { getDatabase } = require('firebase-admin/database');
 
 for (const k of ['FIREBASE_SERVICE_ACCOUNT','FIREBASE_DATABASE_URL','FIREBASE_WEB_API_KEY','PIN_PEPPER','ALLOWED_ORIGINS']) {
