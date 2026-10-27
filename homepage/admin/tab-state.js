@@ -1,98 +1,140 @@
 
 /* ==========================================
-   5G88 - AUTO SAVE PAGE STATE
-   Per Firebase UID + Per HTML Page
+   5G88 SELECTIVE TAB STATE V2
+   UID + HTML PAGE
    ========================================== */
-
 (() => {
   "use strict";
 
   if (window.__5G88_TAB_STATE__) return;
   window.__5G88_TAB_STATE__ = true;
 
-  // Jangan aktifkan pada halaman authentication.
-  const page = location.pathname.split("/").pop().toLowerCase();
+  const page = location.pathname
+    .split("/").pop().toLowerCase();
 
-  if (
-    !page ||
-    ["login.html", "index.html", "users.html"].includes(page)
-  ) return;
+  if (!page || [
+    "login.html",
+    "index.html",
+    "users.html"
+  ].includes(page)) return;
 
   const PREFIX = "5g88.tabState.v1";
+  const RESET_PREFIX = "5g88.tabReset.v2:";
+  const MODAL_SELECTOR = [
+    '[role="dialog"]',
+    '[aria-modal="true"]',
+    'dialog',
+    '.modal',
+    '.modal-overlay',
+    '.modal-backdrop',
+    '.shared-modal',
+    '.newui-modal',
+    '.mg-modal',
+    '[data-modal]',
+    '[class*="modal-content"]',
+    '[class*="modal-body"]'
+  ].join(",");
+
+  let initialized = false;
+  let restoring = false;
+  let timer = null;
+  let resetThisPage = false;
 
   function getUid() {
-    const uid = sessionStorage.getItem("5g88.adminSession");
-    const user = window.firebase?.auth?.().currentUser;
+    try {
+      const user = firebase.auth().currentUser;
+      const marker = sessionStorage.getItem(
+        "5g88.adminSession"
+      );
+      const expiry = Number(
+        localStorage.getItem("autoLogout.expireAt")
+      );
 
-    if (
-      !uid ||
-      !user ||
-      user.isAnonymous ||
-      user.uid !== uid
-    ) return null;
+      if (
+        !user ||
+        user.isAnonymous ||
+        user.uid !== marker ||
+        !Number.isFinite(expiry) ||
+        expiry <= Date.now()
+      ) return null;
 
-    const expiry = Number(
-      localStorage.getItem("autoLogout.expireAt")
-    );
-
-    if (!Number.isFinite(expiry) || expiry <= Date.now()) {
+      return user.uid;
+    } catch (_) {
       return null;
     }
-
-    return uid;
   }
 
-  function storageKey() {
+  function key() {
     const uid = getUid();
     return uid ? `${PREFIX}:${uid}:${page}` : null;
+  }
+
+  function resetKey() {
+    const uid = getUid();
+    return uid
+      ? `${RESET_PREFIX}${uid}:${page}`
+      : null;
   }
 
   function eligible(el) {
     if (!(el instanceof HTMLElement)) return false;
 
-    if (!el.matches("input, textarea, select")) return false;
+    if (!el.matches("input,textarea,select")) {
+      return false;
+    }
 
     if (el.closest(
-      '[data-no-tab-save], [data-sensitive], ' +
-      '.password-wrap, .pin-inputs'
+      MODAL_SELECTOR +
+      ',[data-no-tab-save],[data-sensitive],' +
+      '.password-wrap,.pin-inputs'
     )) return false;
 
     if (el.matches(
-      '[type="password"], [type="hidden"], ' +
-      '[type="file"], [type="submit"], ' +
-      '[type="button"], [type="reset"]'
+      '[type="password"],[type="hidden"],' +
+      '[type="file"],[type="submit"],' +
+      '[type="button"],[type="reset"],' +
+      '[type="number"][data-sensitive]'
     )) return false;
 
-    const name = [
-      el.name,
+    if (el.disabled) return false;
+
+    // Input carian DALAM panel dropdown tidak disimpan.
+    if (el.closest(
+      '.shared-dropdown-panel,' +
+      '.cs-options,.cs-menu,' +
+      '[role="listbox"]'
+    )) return false;
+
+    const identity = [
       el.id,
+      el.name,
       el.autocomplete,
-      el.getAttribute("aria-label")
+      el.getAttribute("aria-label"),
+      el.getAttribute("placeholder")
     ].join(" ").toLowerCase();
 
     if (
-      /password|passwd|pin|token|secret|otp|2fa|auth|csrf|session|cvv|cardnumber|accountnumber/i.test(name)
+      /password|passwd|pin|token|secret|otp|2fa|auth|csrf|session|cvv|card.?number|account.?number|email|phone|mobile|amount|deposit|withdraw|balance|wallet|transaction|recipient/i.test(identity)
     ) return false;
+
+    // Hanya input yang mempunyai identiti stabil.
+    if (!el.id && !el.name) return false;
 
     return true;
   }
 
-  function fieldId(el) {
+  function fieldKey(el) {
     if (el.id) return "id:" + el.id;
-    if (el.name) {
-      const group = Array.from(
-        document.querySelectorAll("[name]")
-      ).filter(x => x.name === el.name);
 
-      return "name:" + el.name + ":" + group.indexOf(el);
-    }
+    const matches = Array.from(
+      document.querySelectorAll("[name]")
+    ).filter(x =>
+      x.name === el.name &&
+      eligible(x)
+    );
 
-    // Fallback untuk input tanpa ID/name.
-    const fields = Array.from(
-      document.querySelectorAll("input,textarea,select")
-    ).filter(eligible);
-
-    return "index:" + fields.indexOf(el);
+    return "name:" + el.name + ":" +
+      matches.indexOf(el);
   }
 
   function collect() {
@@ -103,21 +145,27 @@
     ).forEach(el => {
       if (!eligible(el)) return;
 
-      const key = fieldId(el);
+      const id = fieldKey(el);
 
-      if (el.type === "checkbox" || el.type === "radio") {
-        fields[key] = {
+      if (
+        el.type === "checkbox" ||
+        el.type === "radio"
+      ) {
+        fields[id] = {
           type: "checked",
           value: el.checked
         };
-      } else if (el.tagName === "SELECT" && el.multiple) {
-        fields[key] = {
+      } else if (
+        el.tagName === "SELECT" &&
+        el.multiple
+      ) {
+        fields[id] = {
           type: "multiple",
           value: Array.from(el.selectedOptions)
             .map(option => option.value)
         };
       } else {
-        fields[key] = {
+        fields[id] = {
           type: "value",
           value: el.value
         };
@@ -126,49 +174,50 @@
 
     return {
       fields,
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
       updatedAt: Date.now()
     };
   }
 
-  let restoring = false;
-  let saveTimer = null;
-  let initialized = false;
-
   function save() {
-    if (restoring) return;
+    if (restoring || resetThisPage) return;
 
-    const key = storageKey();
-    if (!key) return;
+    const storage = key();
+    if (!storage) return;
 
     try {
-      localStorage.setItem(key, JSON.stringify(collect()));
-    } catch (err) {
-      console.warn("[Tab State] Save failed:", err);
+      localStorage.setItem(
+        storage,
+        JSON.stringify(collect())
+      );
+    } catch (error) {
+      console.warn("[Tab State] Save:", error);
     }
   }
 
   function scheduleSave() {
-    if (restoring) return;
+    if (restoring || resetThisPage) return;
 
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 250);
+    clearTimeout(timer);
+    timer = setTimeout(save, 250);
   }
 
   function restore() {
-    const key = storageKey();
-    if (!key) return;
+    if (resetThisPage) return;
 
-    let state;
+    const storage = key();
+    if (!storage) return;
+
+    let saved;
 
     try {
-      state = JSON.parse(localStorage.getItem(key) || "null");
+      saved = JSON.parse(
+        localStorage.getItem(storage) || "null"
+      );
     } catch (_) {
       return;
     }
 
-    if (!state?.fields) return;
+    if (!saved?.fields) return;
 
     restoring = true;
 
@@ -178,22 +227,38 @@
       ).forEach(el => {
         if (!eligible(el)) return;
 
-        const saved = state.fields[fieldId(el)];
-        if (!saved) return;
+        const item = saved.fields[fieldKey(el)];
+        if (!item) return;
 
-        if (saved.type === "checked") {
-          el.checked = Boolean(saved.value);
-        } else if (saved.type === "multiple") {
-          const values = new Set(saved.value || []);
+        if (item.type === "checked") {
+          el.checked = Boolean(item.value);
+        } else if (item.type === "multiple") {
+          const selected = new Set(
+            item.value || []
+          );
 
-          Array.from(el.options).forEach(option => {
-            option.selected = values.has(option.value);
-          });
-        } else if (saved.type === "value") {
-          el.value = saved.value ?? "";
+          Array.from(el.options).forEach(
+            option => {
+              option.selected = selected.has(
+                option.value
+              );
+            }
+          );
+        } else if (item.type === "value") {
+          // Jangan paksa nilai yang tidak ada
+          // dalam pilihan dropdown semasa.
+          if (el.tagName === "SELECT") {
+            const exists = Array.from(el.options)
+              .some(option =>
+                option.value === item.value
+              );
+
+            if (!exists) return;
+          }
+
+          el.value = item.value ?? "";
         }
 
-        // Maklumkan filter/search tentang nilai dipulihkan.
         el.dispatchEvent(new Event("input", {
           bubbles: true
         }));
@@ -202,13 +267,19 @@
           bubbles: true
         }));
       });
-
-      window.scrollTo(
-        Number(state.scrollX) || 0,
-        Number(state.scrollY) || 0
-      );
     } finally {
       restoring = false;
+    }
+  }
+
+  function clearCurrentPage() {
+    clearTimeout(timer);
+
+    resetThisPage = true;
+
+    const storage = key();
+    if (storage) {
+      localStorage.removeItem(storage);
     }
   }
 
@@ -216,31 +287,48 @@
     if (initialized || !getUid()) return;
     initialized = true;
 
-    // Pulihkan selepas kebanyakan komponen siap.
-    requestAnimationFrame(() => {
-      setTimeout(restore, 500);
-    });
+    const pendingReset = resetKey();
 
-    document.addEventListener("input", scheduleSave, true);
-    document.addEventListener("change", scheduleSave, true);
+    if (
+      pendingReset &&
+      sessionStorage.getItem(pendingReset) === "1"
+    ) {
+      sessionStorage.removeItem(pendingReset);
+      clearCurrentPage();
+    } else {
+      // Pulihkan selepas komponen awal siap.
+      setTimeout(restore, 700);
+    }
+
+    document.addEventListener(
+      "input", scheduleSave, true
+    );
+
+    document.addEventListener(
+      "change", scheduleSave, true
+    );
 
     window.addEventListener("pagehide", () => {
-      clearTimeout(saveTimer);
+      clearTimeout(timer);
       save();
     });
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) save();
-    });
+    document.addEventListener(
+      "visibilitychange", () => {
+        if (document.hidden) save();
+      }
+    );
 
-    // API untuk komponen custom.
     window.save5G88TabState = save;
     window.restore5G88TabState = restore;
+    window.clear5G88TabState = clearCurrentPage;
   }
 
   if (window.firebase?.auth) {
     firebase.auth().onAuthStateChanged(user => {
-      if (user && !user.isAnonymous) start();
+      if (user && !user.isAnonymous) {
+        start();
+      }
     });
   }
 })();
