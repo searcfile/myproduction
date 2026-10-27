@@ -3152,7 +3152,367 @@ app.delete(
     }
   }
 );
+/* =====================================================
+   CIMB CLICKS - BANK CATALOG API
+   ===================================================== */
 
+const CIMB_MODULE = "cimbclick.html";
+const CIMB_PATH = "bank_catalog/cimbclicks";
+
+const cimbIdOK = id =>
+  /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+const cimbAssigned = profile =>
+  Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+
+function cimbVisible(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (bank?.active === false) return false;
+
+  const assigned = cimbAssigned(profile);
+  if (!assigned.length) return false;
+
+  if (bank?.visibleToAllSites === true) return true;
+
+  return assigned.some(id =>
+    bank?.siteVisibility?.[id] === true
+  );
+}
+
+function cimbEditable(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (profile.role !== "siteadmin") return false;
+
+  const assigned = cimbAssigned(profile);
+  if (!assigned.length || !cimbVisible(bank, profile)) {
+    return false;
+  }
+
+  // Global bank hanya boleh diubah Super Admin.
+  if (bank?.visibleToAllSites === true) return false;
+
+  const selected = Object.keys(bank?.siteVisibility || {})
+    .filter(id => bank.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+function cimbValidate(body) {
+  if (!body || typeof body !== "object" ||
+      Array.isArray(body)) {
+    throw Error("Invalid bank data");
+  }
+
+  const name = String(body.name || "").trim();
+  const len = Number(body.len);
+  const rule = body.rule;
+  const digits = String(body.digits ?? "");
+
+  if (!name || name.length > 100) {
+    throw Error("Invalid bank name");
+  }
+
+  if (!Number.isInteger(len) || len < 1 || len > 30) {
+    throw Error("Invalid account length");
+  }
+
+  if (!["prefix", "start"].includes(rule)) {
+    throw Error("Invalid number rule");
+  }
+
+  if (!/^\d*$/.test(digits) || digits.length > len) {
+    throw Error("Invalid prefix/start digits");
+  }
+
+  if (
+    typeof body.active !== "boolean" ||
+    typeof body.visibleToAllSites !== "boolean"
+  ) {
+    throw Error("Invalid status or visibility");
+  }
+
+  const visibility = body.siteVisibility;
+
+  if (
+    !visibility ||
+    typeof visibility !== "object" ||
+    Array.isArray(visibility) ||
+    Object.keys(visibility).length > 100 ||
+    !Object.entries(visibility).every(([id, enabled]) =>
+      /^[a-z0-9_-]{1,48}$/.test(id) &&
+      enabled === true
+    )
+  ) {
+    throw Error("Invalid site visibility");
+  }
+
+  return {
+    name,
+    len,
+    rule,
+    digits,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility: visibility
+  };
+}
+
+async function cimbCheckScope(data, profile) {
+  const allSites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const selected = Object.keys(data.siteVisibility);
+
+  if (!selected.every(id => allSites[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role === "siteadmin") {
+    if (data.visibleToAllSites) {
+      throw Error("Only Super Admin can enable Global Active");
+    }
+
+    const assigned = cimbAssigned(profile);
+
+    if (
+      selected.length === 0 ||
+      !selected.every(id => assigned.includes(id))
+    ) {
+      throw Error("Site selection is not assigned to you");
+    }
+  }
+
+  if (!data.visibleToAllSites && selected.length === 0) {
+    throw Error("Select at least one site");
+  }
+}
+
+// ===== AVAILABLE SITES =====
+
+app.get(
+  "/api/cimbclick/sites",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+      const assigned = new Set(cimbAssigned(profile));
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            profile.role === "superadmin" ||
+            assigned.has(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: String(site.name || id)
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("CIMB sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// ===== PERMISSION INFORMATION =====
+
+app.get(
+  "/api/cimbclick/access",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "view"),
+  (req, res) => {
+    const profile = req.admin.profile;
+    const isSuper = profile.role === "superadmin";
+
+    const key = CIMB_MODULE.replace(/\.html$/, "_html");
+    const actions = isSuper
+      ? ["show", "view", "create", "edit", "delete"]
+      : (profile.permissions?.[key] || []);
+
+    return res.json({
+      ok: true,
+      role: profile.role,
+      actions
+    });
+  }
+);
+
+// ===== GET BANKS =====
+
+app.get(
+  "/api/cimbclick/banks",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const data = (
+        await db.ref(CIMB_PATH).once("value")
+      ).val() || {};
+
+      const banks = Object.entries(data)
+        .filter(([, bank]) =>
+          cimbVisible(bank, req.admin.profile)
+        )
+        .map(([id, bank]) => ({
+          id,
+          ...bank,
+          canManage: cimbEditable(bank, req.admin.profile)
+        }));
+
+      return res.json({ ok: true, banks });
+    } catch (error) {
+      console.error("CIMB banks:", error);
+      return fail(res, 500, "Cannot load banks");
+    }
+  }
+);
+
+// ===== CREATE BANK =====
+
+app.post(
+  "/api/cimbclick/banks",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = cimbValidate(req.body);
+      await cimbCheckScope(data, req.admin.profile);
+
+      const ref = db.ref(CIMB_PATH);
+      const existing = (await ref.once("value")).val() || {};
+
+      if (Object.values(existing).some(bank =>
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      const newRef = ref.push();
+
+      await newRef.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: newRef.key
+      });
+    } catch (error) {
+      console.error("CIMB create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// ===== EDIT BANK =====
+
+app.patch(
+  "/api/cimbclick/banks/:id",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!cimbIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${CIMB_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      if (!cimbEditable(snap.val(), req.admin.profile)) {
+        return fail(res, 403, "Bank edit access denied");
+      }
+
+      const data = cimbValidate(req.body);
+      await cimbCheckScope(data, req.admin.profile);
+
+      const all = (
+        await db.ref(CIMB_PATH).once("value")
+      ).val() || {};
+
+      if (Object.entries(all).some(([key, bank]) =>
+        key !== id &&
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("CIMB edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// ===== DELETE BANK =====
+
+app.delete(
+  "/api/cimbclick/banks/:id",
+  requireAdmin,
+  requirePermission(CIMB_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!cimbIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${CIMB_PATH}/${id}`);
+      const snap = await ref.once("value");
+
+      if (!snap.exists()) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      if (!cimbEditable(snap.val(), req.admin.profile)) {
+        return fail(res, 403, "Bank delete access denied");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("CIMB delete:", error);
+      return fail(res, 500, "Cannot delete bank");
+    }
+  }
+);
+
+/* =====================================================
+   END CIMB CLICKS BANK API
+   ===================================================== */
 /* =====================================================
    END SCR888H5 GAME CATALOG
    ===================================================== */
