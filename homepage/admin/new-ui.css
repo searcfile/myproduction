@@ -2474,7 +2474,20 @@ html.new-ui-modal-open {
 /* =========================================================
    5G88 GLOBAL OVERLAY LOADING
    ========================================================= */
-
+.reset-button {
+    background: red;
+    color: white;
+    border: 1px solid transparent;
+    padding: 0px 15px;
+    height: 32px;
+    font-size: 14px;
+}
+.reset-button:hover {
+     background: #ff4d4d;
+    }
+.reset-button:active {
+     background: #bf0000;
+}
 .login-loading {
   position: fixed;
   inset: 0;
