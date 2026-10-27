@@ -993,44 +993,31 @@ body {
 #biManageBanks[hidden] {
   display: none !important;
 }
-/* BANK ISLAM - SITE VISIBILITY */
+/* BANK ISLAM - CUSTOM SITE VISIBILITY */
 
 .bi-bank-scope {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
-  margin-top: 12px;
+  min-width: 0;
+  margin: 0;
 }
 
-#biBankSites {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.bi-site-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 10px;
-  border: 1px solid var(--border-input);
-  border-radius: 6px;
-  background: var(--page-input);
-  color: var(--page-text);
-  cursor: pointer;
+.bi-bank-scope-title {
   font-size: 12px;
+  color: var(--page-text);
 }
 
-.bi-site-option input {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--blue);
+.bi-bank-sites {
+  width: 100%;
+  min-width: 0;
 }
 
 .bi-bank-scope small {
   font-size: 11px;
-  opacity: .65;
+  opacity: 0.65;
 }
 
 #biBankSites[hidden] {
@@ -1880,24 +1867,6 @@ function biOpenBankForm(editId = null) {
                  placeholder="Example: 12">
         </label>
 
-        <div class="bi-bank-status">
-          <span class="bi-bank-status-label">Status</span>
-
-          <label class="shared-active-switch">
-            <input
-              id="biBankActive"
-              type="checkbox"
-              data-active-label="Active"
-              data-inactive-label="Inactive"
-              checked
-            />
-
-            <span class="shared-active-track">
-              <span class="shared-active-text"></span>
-              <span class="shared-active-knob" aria-hidden="true"></span>
-            </span>
-          </label>
-        </div>
 <div class="bi-bank-status">
   <span class="bi-bank-status-label">
     Global Active
@@ -1907,23 +1876,49 @@ function biOpenBankForm(editId = null) {
     <input
       id="biBankGlobal"
       type="checkbox"
-      data-active-label="ON"
-      data-inactive-label="OFF"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
     />
 
     <span class="shared-active-track">
       <span class="shared-active-text"></span>
-      <span class="shared-active-knob"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
     </span>
   </label>
 </div>
 
 <div class="bi-bank-scope">
-  <label>Site Visibility</label>
-  <div id="biBankSites"></div>
-  <small>
-    Select which sites can access this bank.
-  </small>
+  <span class="bi-bank-scope-title">
+    Site Visibility
+  </span>
+
+  <div
+    id="biBankSites"
+    class="bi-bank-sites"
+  ></div>
+
+  <small>Select sites for this bank.</small>
+</div>
+
+<div class="bi-bank-status">
+  <span class="bi-bank-status-label">
+    Status
+  </span>
+
+  <label class="shared-active-switch">
+    <input
+      id="biBankActive"
+      type="checkbox"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+      checked
+    />
+
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
 </div>
       </form>
     `
@@ -1957,28 +1952,46 @@ if (!biIsSuperAdmin) {
   globalInput.checked = false;
 }
 
-const siteCheckboxes = new Map();
+const allowedSiteIds = new Set(
+  biSites.map(site => site.id)
+);
 
-for (const site of biSites) {
-  const label = document.createElement("label");
-  label.className = "bi-site-option";
+selectedSiteIds = selectedSiteIds.filter(
+  id => allowedSiteIds.has(id)
+);
 
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.checked = selectedSiteIds.includes(site.id);
+const chips = NewUI.chips(siteContainer, {
+  options: biSites.map(site => ({
+    value: site.id,
+    label: site.name || site.id
+  })),
 
-  checkbox.addEventListener("change", () => {
-    selectedSiteIds = [...siteCheckboxes.entries()]
-      .filter(([, input]) => input.checked)
-      .map(([id]) => id);
+  value: selectedSiteIds,
+  multiple: true,
+  placeholder: "Select Sites",
+
+  onChange(values) {
+    selectedSiteIds = Array.isArray(values)
+      ? values.filter(id => allowedSiteIds.has(id))
+      : [];
+  }
+});
+
+if (!chips) {
+  biToast("Cannot initialize site dropdown", "error");
+  modal.close();
+  return;
+}
+
+// Site Admin tidak boleh menukar site semasa Edit
+if (editing && !biIsSuperAdmin) {
+  siteContainer.querySelectorAll(
+    "button, input, [tabindex]"
+  ).forEach(el => {
+    if ("disabled" in el) el.disabled = true;
+    el.setAttribute("aria-disabled", "true");
+    el.tabIndex = -1;
   });
-
-  const name = document.createElement("span");
-  name.textContent = site.name || site.id;
-
-  label.append(checkbox, name);
-  siteContainer.appendChild(label);
-  siteCheckboxes.set(site.id, checkbox);
 }
 
 function syncBiScope() {
@@ -2012,6 +2025,24 @@ syncBiBankActiveText();
 activeInput.addEventListener(
   "change",
   syncBiBankActiveText
+);
+    const globalText = globalInput
+  .closest(".shared-active-switch")
+  ?.querySelector(".shared-active-text");
+
+function syncBiBankGlobalText() {
+  if (!globalText) return;
+
+  globalText.textContent = globalInput.checked
+    ? "Active"
+    : "Inactive";
+}
+
+syncBiBankGlobalText();
+
+globalInput.addEventListener(
+  "change",
+  syncBiBankGlobalText
 );
   rule._sharedDropdown?.refresh?.();
 
