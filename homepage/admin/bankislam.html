@@ -989,6 +989,53 @@ body {
     text-align: center !important;
   }
 }
+#biCreateBank[hidden],
+#biManageBanks[hidden] {
+  display: none !important;
+}
+/* BANK ISLAM - SITE VISIBILITY */
+
+.bi-bank-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+#biBankSites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bi-site-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  background: var(--page-input);
+  color: var(--page-text);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.bi-site-option input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--blue);
+}
+
+.bi-bank-scope small {
+  font-size: 11px;
+  opacity: .65;
+}
+
+#biBankSites[hidden] {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -1051,10 +1098,10 @@ body {
   <button type="button" class="btn" id="btnReset">Reset</button>
 
             <div class="bank-islam-actions">
-  <button type="button" class="btn primary" id="biCreateBank">
+  <button type="button" class="btn primary" id="biCreateBank" hidden>
     + Create Bank
   </button>
-  <button type="button" class="btn" id="biManageBanks">
+  <button type="button" class="btn" id="biManageBanks" hidden>
     Manage Banks
   </button>
 </div>
@@ -1077,7 +1124,7 @@ body {
         <!-- HAPUS tombol gear -->
         <div class="row-top">
           <div class="left">
-            <div><span class="type">Fund Transfer</span><span class="badge"><span>Success</span></span></div>
+            <div><span class="type">buku nota</span><span class="badge"><span>nota</span></span></div>
 
             <!-- Kiri: ref & tanggal saja -->
             <div class="refblock">
@@ -1089,23 +1136,23 @@ body {
           <!-- Kanan: amount + View Receipt di bawahnya -->
           <div class="right-col">
             <div class="amount"><span class="rm" id="amt">RM 50.00</span></div>
-            <a href="#" class="view-receipt">View Receipt</a>
+            <a href="#" class="view-receipt">View nota</a>
           </div>
         </div>
 
         <hr>
 
         <div>
-          <div class="sect">Recipient Details</div>
+          <div class="sect">Nota Details</div>
           <div class="detail">
             <div><span class="initial" id="nmIni">B</span><span id="nmRest">AHARUDEEN BIN ABDUL</span></div>
-            <div id="bankName">Maybank</div>
+            <div id="bankName">Code</div>
             <div class="sub" id="accNum">164548072822</div>
           </div>
         </div>
 
         <div style="margin-top:12px">
-          <div class="sect">Transfer Mode</div>
+          <div class="sect">Nota Mode</div>
           <div class="detail sub">DuitNow</div>
         </div>
 
@@ -1123,10 +1170,84 @@ body {
 <script defer src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
-  /* ======== DATA BANK (panjang no. akun) ======== */
-/* BANK ISLAM - REALTIME BANK CATALOG */
+/* =====================================================
+   BANK ISLAM - CONFIGURATION
+   ===================================================== */
+
 const BI_BANK_PATH = "bank_catalog/bankislam";
 
+const BI_API_BASE =
+  "https://fiveg88-admin-backend-v2.onrender.com";
+
+let biPermissions = [];
+let biSites = [];
+let biIsSuperAdmin = false;
+let biBankLoading = false;
+let biBankRefreshId = 0;
+
+async function biApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw new Error("Please login again");
+  }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(BI_API_BASE + path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.ok === false) {
+    throw new Error(
+      data.message || "Request failed"
+    );
+  }
+
+  return data;
+}
+
+async function biLoadAccess() {
+  const data = await biApi("/api/bankislam/access");
+
+  biPermissions = data.actions || [];
+  biIsSuperAdmin = data.role === "superadmin";
+
+  return data;
+}
+
+function biCan(action) {
+  return biIsSuperAdmin ||
+    biPermissions.includes(action);
+}
+function biUpdateBankButtons() {
+  const createBtn = document.getElementById("biCreateBank");
+  const manageBtn = document.getElementById("biManageBanks");
+
+  if (createBtn) {
+    createBtn.hidden = !biCan("create");
+  }
+
+  if (manageBtn) {
+    manageBtn.hidden = !(
+      biCan("edit") || biCan("delete")
+    );
+  }
+}
+async function biLoadSites() {
+  const data = await biApi("/api/bankislam/sites");
+
+  biSites = data.sites || [];
+
+  return biSites;
+}
 let BANKS = [];
 let biBankRecords = {};
 let biBanksLoaded = false;
@@ -1201,37 +1322,50 @@ function biRefreshBankDropdown() {
   inBank._sharedDropdown?.refresh?.();
 }
 
-function biStartBankListener() {
+async function biStartBankListener() {
+  if (biBankLoading) return;
+
+  biBankLoading = true;
+
   try {
-    biBankRef().on("value", snapshot => {
-      const records = {};
+    const result = await biApi("/api/bankislam/banks");
 
-      snapshot.forEach(child => {
-        const bank = biNormalizeBank(child.val());
+    const records = {};
 
-        if (bank) {
-          records[child.key] = {
-            id: child.key,
-            ...bank
-          };
-        }
-      });
+    for (const item of result.banks || []) {
+      const bank = biNormalizeBank(item);
 
-      biBankRecords = records;
-      biBanksLoaded = true;
-      biRefreshBankDropdown();
+      if (!bank) continue;
 
-    }, error => {
-      console.error("Bank Islam catalog:", error);
-      biToast("Failed to load banks", "error");
-    });
+      records[item.id] = {
+        ...bank,
+        id: item.id,
+        visibleToAllSites:
+          item.visibleToAllSites === true,
+        siteVisibility:
+          item.siteVisibility || {},
+        canManage: item.canManage === true,
+        canDelete: item.canDelete === true
+      };
+    }
+
+    biBankRecords = records;
+    biBanksLoaded = true;
+
+    biRefreshBankDropdown();
 
   } catch (error) {
-    console.error(error);
-    biToast(error.message, "error");
+    console.error("Bank Islam load:", error);
+
+    biToast(
+      error.message || "Failed to load banks",
+      "error"
+    );
+
+  } finally {
+    biBankLoading = false;
   }
 }
-
   /* ======== EL ======== */
   const apply   = document.getElementById('apply');
   const btnNow  = document.getElementById('btnNow');
@@ -1764,7 +1898,33 @@ function biOpenBankForm(editId = null) {
             </span>
           </label>
         </div>
+<div class="bi-bank-status">
+  <span class="bi-bank-status-label">
+    Global Active
+  </span>
 
+  <label class="shared-active-switch">
+    <input
+      id="biBankGlobal"
+      type="checkbox"
+      data-active-label="ON"
+      data-inactive-label="OFF"
+    />
+
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob"></span>
+    </span>
+  </label>
+</div>
+
+<div class="bi-bank-scope">
+  <label>Site Visibility</label>
+  <div id="biBankSites"></div>
+  <small>
+    Select which sites can access this bank.
+  </small>
+</div>
       </form>
     `
   });
@@ -1776,6 +1936,57 @@ function biOpenBankForm(editId = null) {
   const rule = root.querySelector("#biBankRule");
   const number = root.querySelector("#biBankDigits");
   const activeInput = root.querySelector("#biBankActive");
+    const globalInput =
+  root.querySelector("#biBankGlobal");
+
+const siteContainer =
+  root.querySelector("#biBankSites");
+
+let selectedSiteIds = Object.keys(
+  existing?.siteVisibility || {}
+).filter(id =>
+  existing.siteVisibility[id] === true
+);
+
+globalInput.checked =
+  existing?.visibleToAllSites === true;
+
+globalInput.disabled = !biIsSuperAdmin;
+
+if (!biIsSuperAdmin) {
+  globalInput.checked = false;
+}
+
+const siteCheckboxes = new Map();
+
+for (const site of biSites) {
+  const label = document.createElement("label");
+  label.className = "bi-site-option";
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = selectedSiteIds.includes(site.id);
+
+  checkbox.addEventListener("change", () => {
+    selectedSiteIds = [...siteCheckboxes.entries()]
+      .filter(([, input]) => input.checked)
+      .map(([id]) => id);
+  });
+
+  const name = document.createElement("span");
+  name.textContent = site.name || site.id;
+
+  label.append(checkbox, name);
+  siteContainer.appendChild(label);
+  siteCheckboxes.set(site.id, checkbox);
+}
+
+function syncBiScope() {
+  siteContainer.hidden = globalInput.checked;
+}
+
+globalInput.addEventListener("change", syncBiScope);
+syncBiScope();
 
   name.value = existing?.name || "";
   length.value = existing?.len || 12;
@@ -1829,13 +2040,32 @@ activeInput.addEventListener(
 
     if (!form.reportValidity()) return;
 
-const data = biNormalizeBank({
+const normalized = biNormalizeBank({
   name: name.value,
   len: length.value,
   rule: rule.value,
   digits: number.value,
   active: activeInput.checked
 });
+
+if (!normalized) {
+  biToast("Invalid bank information", "error");
+  return;
+}
+
+if (!globalInput.checked && !selectedSiteIds.length) {
+  biToast("Please select at least one site", "error");
+  return;
+}
+
+const data = {
+  ...normalized,
+  visibleToAllSites:
+    biIsSuperAdmin && globalInput.checked,
+  siteVisibility: Object.fromEntries(
+    selectedSiteIds.map(id => [id, true])
+  )
+};
 
     if (!data) {
       biToast("Please enter valid bank information", "error");
@@ -1862,13 +2092,17 @@ const data = biNormalizeBank({
     let success = false;
 
     try {
-      const ref = biBankRef();
+await biApi(
+  editing
+    ? `/api/bankislam/banks/${encodeURIComponent(editId)}`
+    : "/api/bankislam/banks",
+  {
+    method: editing ? "PATCH" : "POST",
+    body: JSON.stringify(data)
+  }
+);
 
-      if (editing) {
-        await ref.child(editId).set(data);
-      } else {
-        await ref.push(data);
-      }
+await biStartBankListener();
 
       success = true;
 
@@ -1942,7 +2176,11 @@ function biOpenManageBanks() {
                 data-delete>Delete</button>
       </div>
     `;
+row.querySelector("[data-edit]").disabled =
+  !biCan("edit") || !bank.canManage;
 
+row.querySelector("[data-delete]").disabled =
+  !biCan("delete") || !bank.canDelete;
     row.querySelector("[data-edit]")
       .addEventListener("click", () => {
         modal.close();
@@ -1961,7 +2199,14 @@ function biOpenManageBanks() {
         loadingText: "Deleting...",
 
         onConfirm: async () => {
-          await biBankRef().child(bank.id).remove();
+          await biApi(
+  `/api/bankislam/banks/${encodeURIComponent(bank.id)}`,
+  {
+    method: "DELETE"
+  }
+);
+
+await biStartBankListener();
 
           biToast("Bank deleted successfully", "success");
           modal.close();
@@ -1994,8 +2239,33 @@ document.getElementById("biManageBanks")
     biOpenManageBanks();
   });
 
-/* START REALTIME DATABASE */
-biStartBankListener();
+/* START BANK ISLAM ACCESS & DATA */
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) {
+    biPermissions = [];
+    biIsSuperAdmin = false;
+    biUpdateBankButtons();
+    return;
+  }
+
+  try {
+await biLoadAccess();
+await biLoadSites();
+await biStartBankListener();
+biUpdateBankButtons();
+  } catch (error) {
+    console.error("Bank Islam permission:", error);
+
+    biPermissions = [];
+    biIsSuperAdmin = false;
+    biUpdateBankButtons();
+
+    biToast(
+      "Failed to load bank permissions",
+      "error"
+    );
+  }
+});
 /* ==========================================
    BANK ISLAM - COPY IMAGE WITH CUSTOM TOAST
    ========================================== */
