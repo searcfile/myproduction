@@ -2318,9 +2318,9 @@ mainanLoadSites()
           NewUI.init(root);
           
         /* Sync custom Active / Inactive switch text */
-        const activeText = root.querySelector(
-          ".mainan-bank-status .shared-active-text"
-        );
+        const activeText = activeInput
+  .closest(".shared-active-switch")
+  ?.querySelector(".shared-active-text");
         
         function syncBankActiveText() {
           if (!activeText) return;
