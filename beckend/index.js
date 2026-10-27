@@ -4106,6 +4106,313 @@ app.delete(
 );
 
 /* =====================================================
+   RHB BANK - CATALOG API
+   ===================================================== */
+
+const RHB_MODULE = "rhb.html";
+const RHB_PATH = "bank_catalog/rhb";
+
+const rhbIdOK = id =>
+  /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+const rhbAssigned = profile =>
+  Array.isArray(profile.siteIds) ? profile.siteIds : [];
+
+function rhbVisible(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (bank?.active === false) return false;
+
+  const assigned = rhbAssigned(profile);
+  if (!assigned.length) return false;
+
+  return bank?.visibleToAllSites === true ||
+    assigned.some(id =>
+      bank?.siteVisibility?.[id] === true
+    );
+}
+
+function rhbEditable(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (profile.role !== "siteadmin") return false;
+  if (bank?.visibleToAllSites === true) return false;
+  if (!rhbVisible(bank, profile)) return false;
+
+  const selected = Object.keys(
+    bank?.siteVisibility || {}
+  ).filter(id => bank.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => rhbAssigned(profile).includes(id));
+}
+
+function rhbValidate(body) {
+  if (!body || typeof body !== "object" ||
+      Array.isArray(body)) {
+    throw Error("Invalid bank data");
+  }
+
+  const name = String(body.name || "").trim();
+  const pattern = String(body.pattern || "").trim();
+
+  if (!name || name.length > 100) {
+    throw Error("Invalid bank name");
+  }
+
+  if (!/^\d{1,2}(-\d{1,2})*$/.test(pattern)) {
+    throw Error("Invalid account pattern");
+  }
+
+  const groups = pattern.split("-").map(Number);
+  const total = groups.reduce((sum, n) => sum + n, 0);
+
+  if (groups.some(n => n < 1 || n > 30) ||
+      total > 30) {
+    throw Error("Invalid account pattern length");
+  }
+
+  if (typeof body.active !== "boolean" ||
+      typeof body.visibleToAllSites !== "boolean") {
+    throw Error("Invalid status or visibility");
+  }
+
+  const siteVisibility = body.siteVisibility ?? {};
+
+  if (!siteVisibility ||
+      typeof siteVisibility !== "object" ||
+      Array.isArray(siteVisibility) ||
+      Object.keys(siteVisibility).length > 100 ||
+      !Object.entries(siteVisibility).every(
+        ([id, value]) => siteIdOK(id) && value === true
+      )) {
+    throw Error("Invalid site visibility");
+  }
+
+  if (!body.visibleToAllSites &&
+      !Object.keys(siteVisibility).length) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name,
+    pattern,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function rhbCheckScope(data, profile) {
+  const sites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const selected = Object.keys(data.siteVisibility);
+
+  if (!selected.every(id => sites[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role === "siteadmin") {
+    if (data.visibleToAllSites) {
+      throw Error("Only Super Admin can enable Global Active");
+    }
+
+    if (!selected.length ||
+        !selected.every(id => rhbAssigned(profile).includes(id))) {
+      throw Error("Site selection is not assigned to you");
+    }
+  }
+}
+
+app.get(
+  "/api/rhb/access",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "view"),
+  (req, res) => {
+    const profile = req.admin.profile;
+    const key = RHB_MODULE.replace(/\.html$/, "_html");
+
+    return res.json({
+      ok: true,
+      role: profile.role,
+      actions: profile.role === "superadmin"
+        ? ["show", "view", "create", "edit", "delete"]
+        : (profile.permissions?.[key] || [])
+    });
+  }
+);
+
+app.get(
+  "/api/rhb/sites",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const profile = req.admin.profile;
+      const raw = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const sites = Object.entries(raw)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (profile.role === "superadmin" ||
+           rhbAssigned(profile).includes(id))
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("RHB sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+app.get(
+  "/api/rhb/banks",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const profile = req.admin.profile;
+      const raw = (
+        await db.ref(RHB_PATH).once("value")
+      ).val() || {};
+
+      const banks = Object.entries(raw)
+        .filter(([, bank]) => rhbVisible(bank, profile))
+        .map(([id, bank]) => ({
+          id,
+          ...bank,
+          canManage: rhbEditable(bank, profile),
+          canDelete: rhbEditable(bank, profile)
+        }));
+
+      return res.json({ ok: true, banks });
+    } catch (error) {
+      console.error("RHB banks:", error);
+      return fail(res, 500, "Cannot load banks");
+    }
+  }
+);
+
+app.post(
+  "/api/rhb/banks",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = rhbValidate(req.body);
+      await rhbCheckScope(data, req.admin.profile);
+
+      const ref = db.ref(RHB_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: ref.key
+      });
+    } catch (error) {
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+app.patch(
+  "/api/rhb/banks/:id",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!rhbIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${RHB_PATH}/${id}`);
+      const existing = (await ref.once("value")).val();
+
+      if (!existing) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      const profile = req.admin.profile;
+
+      if (!rhbEditable(existing, profile)) {
+        return fail(res, 403, "Bank edit access denied");
+      }
+
+      const data = rhbValidate(req.body);
+
+      if (profile.role === "siteadmin") {
+        if (data.visibleToAllSites !==
+            (existing.visibleToAllSites === true) ||
+            JSON.stringify(data.siteVisibility) !==
+            JSON.stringify(existing.siteVisibility || {})) {
+          return fail(res, 403, "Cannot change site visibility");
+        }
+      }
+
+      await rhbCheckScope(data, profile);
+
+      await ref.update({
+        ...data,
+        updatedAt: Date.now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (error) {
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+app.delete(
+  "/api/rhb/banks/:id",
+  requireAdmin,
+  requirePermission(RHB_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!rhbIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${RHB_PATH}/${id}`);
+      const existing = (await ref.once("value")).val();
+
+      if (!existing) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      if (!rhbEditable(existing, req.admin.profile)) {
+        return fail(res, 403, "Bank delete access denied");
+      }
+
+      await ref.remove();
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("RHB delete:", error);
+      return fail(res, 500, "Cannot delete bank");
+    }
+  }
+);
+
+/* END RHB BANK API */
+
+/* =====================================================
    END MAYBANK2U BANK API
    ===================================================== */
 /* =====================================================
