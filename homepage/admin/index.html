@@ -31,27 +31,43 @@
   <meta name="twitter:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
   <meta name="twitter:image" content="https://searcfile.github.io/myproduction/homepage/admin/logo.svg">
 </head>
+  <style>
+  /* HOME - CUSTOM EMPTY STATE */
+  #mainContainer {
+    position: relative;
+    min-height: calc(
+      100dvh - var(--admin-header-height, 64px)
+      - var(--admin-tabs-height, 52px)
+    );
+  }
+
+  #homeEmptyState {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  #homeEmptyState .shared-empty {
+    width: 100%;
+    min-height: 0;
+  }
+
+  #homeEmptyState[hidden] {
+    display: none !important;
+  }
+
+  /* Hide empty state when iframe content exists */
+  #mainContainer:has(iframe) #homeEmptyState {
+    display: none !important;
+  }
+</style>
 <body>
-
 <div class="container" id="mainContainer">
-  <div id="emptyState" class="empty-state hidden" role="status" aria-live="polite">
-    <h3 class="empty-title">Click menu open sidebar!</h3>
-
-    <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"/>
-      <path d="M3 13h5l2 3h4l2-3h5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"/>
-    </svg>
-
-    <p class="empty-desc">No data</p>
-  </div>
+  <div id="homeEmptyState" role="status" aria-live="polite"></div>
 </div>
-
 <audio id="notifSound" src="./audio/audio.wav" preload="auto"></audio>
 <audio id="christmasMusic" loop> <source src="https://5g88-main.vercel.app/main/merrychristmas/" type="audio/mpeg" /></audio>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -68,5 +84,40 @@
 <script src="./new-ui.js"></script>
 <script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
+  
+<script>
+  (function () {
+    const empty = document.getElementById("homeEmptyState");
+    const main = document.getElementById("mainContainer");
+
+    if (!empty || !main) return;
+
+    // Use existing custom No Data SVG from shared-ui.js
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(
+        empty,
+        "No data",
+        "large",
+        "center"
+      );
+    }
+
+    function syncHomeEmpty() {
+      const hasIframe = !!main.querySelector("iframe");
+      empty.hidden = hasIframe;
+    }
+
+    syncHomeEmpty();
+
+    // Watch when admin.js adds/removes tab content
+    const observer = new MutationObserver(syncHomeEmpty);
+
+    observer.observe(main, {
+      childList: true,
+      subtree: true
+    });
+  })();
+</script>
+
 </body>
 </html>
