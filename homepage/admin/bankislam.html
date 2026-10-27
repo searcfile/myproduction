@@ -1020,9 +1020,6 @@ body {
   opacity: 0.65;
 }
 
-#biBankSites[hidden] {
-  display: none !important;
-}
 </style>
 </head>
 <body>
@@ -1994,10 +1991,13 @@ if (editing && !biIsSuperAdmin) {
   });
 }
 
-function syncBiScope() {
-  siteContainer.hidden = globalInput.checked;
-}
+/* ==========================================
+   BANK ISLAM - KEEP SITE VISIBILITY VISIBLE
+   ========================================== */
 
+function syncBiScope() {
+  siteContainer.hidden = false;
+}
 globalInput.addEventListener("change", syncBiScope);
 syncBiScope();
 
