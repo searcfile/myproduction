@@ -4109,7 +4109,7 @@ app.delete(
    RHB BANK - CATALOG API
    ===================================================== */
 
-const RHB_MODULE = "rhb.html";
+const RHB_MODULE = "rhbbank.html";
 const RHB_PATH = "bank_catalog/rhb";
 
 const rhbIdOK = id =>
