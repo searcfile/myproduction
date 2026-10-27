@@ -1502,19 +1502,105 @@ select:focus-visible{
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ==========================================
+   SCR888H5 - BOTTOM ACTIONS LIKE MEGA888
+   ========================================== */
+
+.mg-panel .mg-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* LEFT BUTTONS */
+.mg-panel .mg-bottom-actions .form-row-bottom {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: auto;
+  flex: 0 1 auto;
+  margin: 0 !important;
+}
+
+/* RIGHT BUTTONS */
+.mg-panel .mg-bottom-actions .mg-head-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: auto !important;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+/* BUTTON SIZE */
+.mg-panel .mg-bottom-actions .mg-head-actions button {
+  width: auto !important;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 15px;
+  flex: 0 0 auto;
+}
+
+/* HIDDEN PERMISSION BUTTONS */
+.mg-panel .mg-bottom-actions .mg-head-actions button[hidden] {
+  display: none !important;
+}
+
+/* ==========================================
+   SCR888H5 - RESPONSIVE BOTTOM ACTIONS
+   ========================================== */
+
+@container (max-width: 600px) {
+
+  .mg-panel .mg-bottom-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  /* Dua kumpulan jadi 2 kolum */
+  .mg-panel .mg-bottom-actions .form-row-bottom,
+  .mg-panel .mg-bottom-actions .mg-head-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    flex: none !important;
+  }
+
+  /* Semua button full width */
+  .mg-panel .mg-bottom-actions .form-row-bottom button,
+  .mg-panel .mg-bottom-actions .mg-head-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 32px !important;
+    padding: 0 8px !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+    text-align: center;
+  }
+
+  /* Permission hidden kekal */
+  .mg-panel .mg-bottom-actions .mg-head-actions button[hidden] {
+    display: none !important;
+  }
+}
+
 </style>
 <body>
-<header class="mg-head">
-  <div class="mg-head-actions">
-    <button id="mgManage" type="button" class="btn-primary-new" hidden>
-      Manage Games
-    </button>
 
-    <button id="mgCreate" type="button" class="btn-primary-new" hidden>
-      + Create Game
-    </button>
-  </div>
-</header>
 <section class="mg-panel"><div class="mg-panel-title">Game Settings</div>
   <div class="form-row form-row-top">
 
@@ -1594,13 +1680,32 @@ select:focus-visible{
     <button onclick="setRandomWin()" class="btn-primary-new">Set Winner</button>
   </div>
 
-  <div class="mg-actions-divider"></div>
-    <div class="form-row form-row-bottom bottom-gap">
-    <button onclick="generateLog()" class="btn-primary-new">Change</button>
-    <button onclick="deleteCents()" class="btn-primary-new">Delete Cents</button>
-    <button onclick="copyGameLogImage()" class="btn-primary-new">COPY IMAGE</button>
+
+<div class="mg-actions-divider"></div>
+
+<div class="mg-bottom-actions">
+
+  <!-- LEFT: GENERATOR ACTIONS -->
+  <div class="form-row form-row-bottom bottom-gap">
+    <button onclick="generateLog()" class="btn-main h38">Change</button>
+    <button onclick="deleteCents()" class="btn-main h38">Delete Cents</button>
+    <button onclick="copyGameLogImage()" class="btn-main h38">COPY IMAGE</button>
     <button onclick="resetLog()" class="reset-button">Reset Log</button>
   </div>
+
+  <!-- RIGHT: GAME MANAGEMENT -->
+  <div class="mg-head-actions">
+    <button id="mgManage" type="button" class="btn-primary-new" hidden>
+      Manage Games
+    </button>
+
+    <button id="mgCreate" type="button" class="btn-primary-new" hidden>
+      + Create Game
+    </button>
+  </div>
+
+</div>
+
 </section>
 <section class="mg-panel mg-log-panel" id="gameLogCard">
 <div class="mg-panel-title">Game Log</div>
