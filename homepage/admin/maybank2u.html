@@ -1836,7 +1836,42 @@ const MAINAN_BANK_PATH = "bank_catalog/maybankm2u";
 
 let MAINAN_BANK_RECORDS = {};
 let mainanBankLoaded = false;
+const MAINAN_API_BASE =
+  "https://fiveg88-admin-backend-v2.onrender.com";
 
+async function mainanApi(path, options = {}) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw new Error("Please login again");
+  }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(
+    MAINAN_API_BASE + path,
+    {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || result.ok === false) {
+    throw new Error(
+      result.message ||
+      result.error ||
+      "Request failed"
+    );
+  }
+
+  return result;
+}
 const mainanToast = (message, type = "success") => {
   window.showToast?.(message, type);
 };
@@ -1871,6 +1906,8 @@ function mainanNormalizeBank(data) {
   const rule = data.rule === "start" ? "start" : "prefix";
   const digits = String(data.digits ?? "");
   const active = data.active !== false;
+  const visibleToAllSites =
+  data.visibleToAllSites === true;
 
   if (
     !name ||
@@ -1884,13 +1921,14 @@ function mainanNormalizeBank(data) {
     return null;
   }
 
-  return {
-    name,
-    len,
-    rule,
-    digits,
-    active
-  };
+return {
+  name,
+  len,
+  rule,
+  digits,
+  active,
+  visibleToAllSites
+};
 }
 
 
@@ -2046,6 +2084,27 @@ function mainanOpenBankForm(editId = null) {
           />
         </label>
 
+<div class="mainan-bank-status">
+  <div class="mainan-bank-status-field">
+    <span class="mainan-bank-status-label">
+      Global Active
+    </span>
+
+    <label class="shared-active-switch">
+      <input
+        id="mainanBankGlobal"
+        type="checkbox"
+        data-active-label="Active"
+        data-inactive-label="Inactive"
+      />
+
+      <span class="shared-active-track">
+        <span class="shared-active-text"></span>
+        <span class="shared-active-knob" aria-hidden="true"></span>
+      </span>
+    </label>
+  </div>
+</div>
 
 <div class="mainan-bank-status">
   <div class="mainan-bank-status-field">
@@ -2080,6 +2139,7 @@ function mainanOpenBankForm(editId = null) {
   const ruleInput = root.querySelector("#mainanBankRule");
   const digitsInput = root.querySelector("#mainanBankDigits");
   const activeInput = root.querySelector("#mainanBankActive");
+  const globalInput = root.querySelector("#mainanBankGlobal");
   const form = root.querySelector("#mainanBankForm");
 
   nameInput.value = existing?.name || "";
@@ -2087,6 +2147,7 @@ function mainanOpenBankForm(editId = null) {
   ruleInput.value = existing?.rule || "prefix";
   digitsInput.value = existing?.digits || "";
   activeInput.checked = existing?.active !== false;
+  globalInput.checked = existing?.visibleToAllSites === true;
 
   NewUI.init(root);
   
@@ -2106,6 +2167,20 @@ function syncBankActiveText() {
 syncBankActiveText();
 
 activeInput.addEventListener("change", syncBankActiveText);
+ const globalText = globalInput
+  .closest(".shared-active-switch")
+  ?.querySelector(".shared-active-text");
+
+function syncBankGlobalText() {
+  if (globalText) {
+    globalText.textContent = globalInput.checked
+      ? "Active"
+      : "Inactive";
+  }
+}
+
+globalInput.addEventListener("change", syncBankGlobalText);
+syncBankGlobalText();
 
   ruleInput._sharedDropdown?.refresh?.();
 
@@ -2139,7 +2214,8 @@ const data = mainanNormalizeBank({
   len: lengthInput.value,
   rule: ruleInput.value,
   digits: digitsInput.value,
-  active: activeInput.checked
+  active: activeInput.checked,
+  visibleToAllSites: globalInput.checked
 });
 
     if (!data) {
