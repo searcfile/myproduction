@@ -2082,7 +2082,7 @@ content.innerHTML = `
       type="checkbox"
       data-active-label="Active"
       data-inactive-label="Inactive"
-      ${current?.visibleToAllSites === false ? "" : "checked"}
+      ${current?.visibleToAllSites === true ? "checked" : ""}
     >
 
     <span class="shared-active-track">
@@ -2096,14 +2096,10 @@ content.innerHTML = `
 <div class="cimb-bank-scope">
   <span class="cimb-bank-scope-title">Site Visibility</span>
 
-<select
+<div
   id="cimbBankSites"
-  name="siteVisibility"
   class="cimb-bank-sites"
-  data-shared-dropdown
-  data-placeholder="Select sites"
-  multiple
-></select>
+></div>
 
   <small>Select sites for this bank.</small>
 </div>
@@ -2193,19 +2189,21 @@ try {
 
   siteContainer.replaceChildren();
 
-  const chips = NewUI.chips(siteContainer, {
-    placeholder: "Select sites",
-    options: sites.map(site => ({
-      value: site.id,
-      label: site.name
-    })),
-    value: initialSiteIds,
-    onChange(values) {
-      selectedSiteIds = values.filter(
-        id => allowedSiteIds.has(id)
-      );
-    }
-  });
+const chips = NewUI.chips(siteContainer, {
+  options: sites.map(site => ({
+    value: site.id,
+    label: site.name
+  })),
+  value: initialSiteIds,
+  multiple: true,
+  placeholder: "Select Sites",
+
+  onChange(values) {
+    selectedSiteIds = Array.isArray(values)
+      ? values.filter(id => allowedSiteIds.has(id))
+      : [];
+  }
+});
 
   if (!chips) {
     throw Error("Cannot initialize site dropdown");
@@ -2323,8 +2321,8 @@ function bankManageModal() {
       edit.addEventListener("click",()=>{modal.close();bankFormModal(key);});
       edit.hidden = !cimbCan("edit") || !bank.canManage;
       const del=document.createElement("button");del.type="button";del.className="btn-delete-new";del.textContent="Delete";
+      del.hidden = !cimbCan("delete") || !bank.canManage;
       del.addEventListener("click",async()=>{
-        del.hidden = !cimbCan("delete") || !bank.canManage;
         if (!window.NewUI?.confirm) return bankToast("Custom confirm belum tersedia.","error");
         const confirmed=await NewUI.confirm({target:del,title:"Delete Bank",message:`Delete ${bank.name}?`,confirmText:"Delete",danger:true});
         if (!confirmed) return;
