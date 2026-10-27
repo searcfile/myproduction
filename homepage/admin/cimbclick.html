@@ -1849,8 +1849,13 @@ function normalizedBankRecord(value) {
 
   visibleToAllSites: value.visibleToAllSites !== false,
 
-  siteVisibility: Object.fromEntries(
-    Object.entries(value.siteVisibility || {})
+siteVisibility: Object.fromEntries(
+  Object.entries(value.siteVisibility || {})
+    .filter(([id, enabled]) =>
+      /^[a-z0-9_-]{1,48}$/.test(id) &&
+      enabled === true
+    )
+)
       .filter(([id, enabled]) =>
         typeof id === "string" &&
         id.length > 0 &&
@@ -1914,7 +1919,7 @@ function initFirebaseBanks() {
     refreshBankCatalog();
   }, error => bankToast("Tidak dapat membaca bank Firebase: " + error.message, "error"));
 }
-function bankFormModal(id=null) {
+async function bankFormModal(id=null) {
   if (!window.NewUI?.modal?.open) return bankToast("Custom modal belum tersedia.", "error");
   const current = id ? BANK_RECORDS[id] : null;
   const content = document.createElement("form");
@@ -1974,10 +1979,14 @@ content.innerHTML = `
 <div class="cimb-bank-scope">
   <span class="cimb-bank-scope-title">Site Visibility</span>
 
-  <div
-    id="cimbBankSites"
-    class="cimb-bank-sites"
-  ></div>
+<select
+  id="cimbBankSites"
+  name="siteVisibility"
+  class="cimb-bank-sites"
+  data-shared-dropdown
+  data-placeholder="Select sites"
+  multiple
+></select>
 
   <small>Select sites for this bank.</small>
 </div>
@@ -2026,9 +2035,85 @@ content.innerHTML = `
   const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:720});
   NewUI.init(content);
   NewUI.activeSwitch.init(content);
+  // ===== SITE VISIBILITY =====
+const siteContainer =
+  content.querySelector("#cimbBankSites");
+
+const saveButton =
+  content.querySelector("[data-save]");
+
+let sitesLoaded = false;
+
+let selectedSiteIds = Object.entries(
+  current?.siteVisibility || {}
+)
+  .filter(([, enabled]) => enabled === true)
+  .map(([id]) => id);
+
+let allowedSiteIds = new Set();
+
+saveButton.disabled = true;
+siteContainer.textContent = "Loading sites...";
+
+try {
+  const sites = await cimbLoadSites();
+
+  allowedSiteIds = new Set(
+    sites.map(site => site.id)
+  );
+
+  // Jangan hilangkan pilihan lama ketika Edit.
+  const initialSiteIds = selectedSiteIds.filter(
+    id => allowedSiteIds.has(id)
+  );
+
+  siteContainer.replaceChildren();
+
+  const chips = NewUI.chips(siteContainer, {
+    placeholder: "Select sites",
+    options: sites.map(site => ({
+      value: site.id,
+      label: site.name
+    })),
+    value: initialSiteIds,
+    onChange(values) {
+      selectedSiteIds = values.filter(
+        id => allowedSiteIds.has(id)
+      );
+    }
+  });
+
+  if (!chips) {
+    throw Error("Cannot initialize site dropdown");
+  }
+
+  selectedSiteIds = initialSiteIds;
+  sitesLoaded = true;
+  saveButton.disabled = false;
+
+} catch (error) {
+  siteContainer.textContent = "Failed to load sites";
+  bankToast(error.message, "error");
+}
   content.querySelector("[data-cancel]").addEventListener("click",()=>modal.close());
   content.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!sitesLoaded) {
+  return bankToast(
+    "Please wait until sites finish loading.",
+    "warning"
+  );
+}
+
+if (
+  !content.elements.visibleToAllSites.checked &&
+  selectedSiteIds.length === 0
+) {
+  return bankToast(
+    "Please select at least one site.",
+    "warning"
+  );
+}
     const ref = bankDb();
     if (!ref) return bankToast("Firebase belum tersedia.", "error");
 const value = normalizedBankRecord({
@@ -2038,7 +2123,9 @@ const value = normalizedBankRecord({
   digits: content.elements.digits.value.trim(),
   active: content.elements.active.checked,
   visibleToAllSites:content.elements.visibleToAllSites.checked,
-  siteVisibility: current?.siteVisibility || {}
+  siteVisibility: Object.fromEntries(
+  selectedSiteIds.map(id => [id, true])
+)
 });
     if (!value) return bankToast("Semak nama bank, length dan digits.", "warning");
     if (Object.entries(BANK_RECORDS).some(([key,other])=>key!==id && other.name.toLowerCase()===value.name.toLowerCase()))
