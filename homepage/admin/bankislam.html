@@ -2008,9 +2008,9 @@ syncBiScope();
   activeInput.checked = existing?.active !== false;
 
   NewUI.init(root);
-  const activeText = root.querySelector(
-  ".bi-bank-status .shared-active-text"
-);
+const activeText = activeInput
+  .closest(".shared-active-switch")
+  ?.querySelector(".shared-active-text");
 
 function syncBiBankActiveText() {
   if (!activeText) return;
