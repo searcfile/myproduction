@@ -73,7 +73,17 @@ function requirePermission(moduleName, action = "view") {
 
 const firebaseKey = moduleName.replace(/\.html$/, "_html");
 const actions = admin.profile.permissions?.[firebaseKey];
-
+if (moduleName === "maybankm2u.html") {
+  console.warn("[MAYBANK PERMISSION DEBUG]", {
+    uid: admin.uid,
+    role: admin.profile.role,
+    moduleName,
+    firebaseKey,
+    requiredAction: action,
+    savedKeys: Object.keys(admin.profile.permissions || {}),
+    actions: Array.isArray(actions) ? actions : null
+  });
+}
     if (
       !Array.isArray(actions) ||
       !actions.includes("show") ||
