@@ -3500,11 +3500,63 @@ if (oldPreview) {
       window.__homepageMoreOutsideHandler
     );
 
-requestAnimationFrame(updateMoreTabs);
 
+/* ==========================================
+   AUTO SHOW ACTIVE TAB WHEN HIDDEN
+   ========================================== */
+
+function revealActiveTab(smooth = true) {
+  const activeTab = Array.from(
+    tabList.querySelectorAll(".admin-workspace-tab")
+  ).find(tab =>
+    String(tab.dataset.file || "").toLowerCase() ===
+    String(getActiveFile() || currentFile).toLowerCase()
+  ) || tabList.querySelector(".admin-workspace-tab.active-tab");
+
+  if (!activeTab) return;
+
+  const listRect = tabList.getBoundingClientRect();
+  const activeRect = activeTab.getBoundingClientRect();
+
+  if (!listRect.width || !activeRect.width) return;
+
+  const padding = 12;
+  let targetLeft = tabList.scrollLeft;
+
+  // Tab tersembunyi di sebelah kiri
+  if (activeRect.left < listRect.left + padding) {
+    targetLeft -= listRect.left + padding - activeRect.left;
+  }
+
+  // Tab tersembunyi di sebelah kanan
+  else if (activeRect.right > listRect.right - padding) {
+    targetLeft += activeRect.right - listRect.right + padding;
+  }
+
+  if (Math.abs(targetLeft - tabList.scrollLeft) < 1) {
+    return;
+  }
+
+  tabList.scrollTo({
+    left: targetLeft,
+    behavior: smooth ? "smooth" : "auto"
+  });
+}
+
+// Tunggu tab bar selesai dirender
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    revealActiveTab(true);
+    updateMoreTabs();
+  });
+});
+
+// Kekalkan fungsi drag tab asal
 initWorkspaceTabDrag(tabList);
 
+// Kekalkan indicator asal
 updateOpenIndicators();
+
 
   }
 
