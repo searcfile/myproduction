@@ -3226,6 +3226,7 @@ if (!verifiedProfileReady) {
 
 
 
+
 function refreshTab(tab) {
   if (!verifiedProfileReady) return;
   if (!tab?.file) return;
@@ -3239,12 +3240,25 @@ function refreshTab(tab) {
   if (!canViewAdminPage(targetFile)) return;
 
   const uid = getCurrentUserStorageSuffix();
+  if (!uid) return;
 
-  // Reset state untuk tab ini sahaja.
-  if (uid) {
-    const key = `5g88.tabState.v1:${uid}:${targetFile}`;
-    localStorage.removeItem(key);
+  const stateKey =
+    `5g88.tabState.v1:${uid}:${targetFile}`;
+
+  const resetKey =
+    `5g88.tabReset.v2:${uid}:${targetFile}`;
+
+  // Jangan biarkan halaman aktif menyimpan
+  // state lama semula semasa pagehide.
+  if (getCurrentFile() === targetFile) {
+    window.clear5G88TabState?.();
   }
+
+  // Padam state tab yang dipilih sahaja.
+  localStorage.removeItem(stateKey);
+
+  // Beritahu halaman sasaran bahawa ini reset.
+  sessionStorage.setItem(resetKey, "1");
 
   if (getCurrentFile() === targetFile) {
     sessionStorage.setItem(
@@ -3254,8 +3268,6 @@ function refreshTab(tab) {
 
     window.location.reload();
   } else {
-    // Script sekarang menggunakan full-page navigation.
-    // Pergi ke tab sasaran selepas state tab itu dipadam.
     navigateToTab(tab);
   }
 }
