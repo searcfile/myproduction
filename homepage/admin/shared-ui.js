@@ -3502,51 +3502,37 @@ if (oldPreview) {
 
 
 /* ==========================================
-   AUTO SHOW ACTIVE TAB WHEN HIDDEN
+   AUTO REVEAL ACTIVE TAB - OLD STYLE
    ========================================== */
 
-function revealActiveTab(smooth = true) {
+function revealActiveTab(smooth = false) {
+
+  const activeFile = String(
+    getActiveFile() || currentFile
+  ).toLowerCase();
+
   const activeTab = Array.from(
     tabList.querySelectorAll(".admin-workspace-tab")
   ).find(tab =>
-    String(tab.dataset.file || "").toLowerCase() ===
-    String(getActiveFile() || currentFile).toLowerCase()
-  ) || tabList.querySelector(".admin-workspace-tab.active-tab");
+    String(tab.dataset.file || "").toLowerCase() === activeFile
+  ) || tabList.querySelector(
+    ".admin-workspace-tab.active-tab"
+  );
 
   if (!activeTab) return;
 
-  const listRect = tabList.getBoundingClientRect();
-  const activeRect = activeTab.getBoundingClientRect();
-
-  if (!listRect.width || !activeRect.width) return;
-
-  const padding = 12;
-  let targetLeft = tabList.scrollLeft;
-
-  // Tab tersembunyi di sebelah kiri
-  if (activeRect.left < listRect.left + padding) {
-    targetLeft -= listRect.left + padding - activeRect.left;
-  }
-
-  // Tab tersembunyi di sebelah kanan
-  else if (activeRect.right > listRect.right - padding) {
-    targetLeft += activeRect.right - listRect.right + padding;
-  }
-
-  if (Math.abs(targetLeft - tabList.scrollLeft) < 1) {
-    return;
-  }
-
-  tabList.scrollTo({
-    left: targetLeft,
-    behavior: smooth ? "smooth" : "auto"
+  activeTab.scrollIntoView({
+    behavior: smooth ? "smooth" : "instant",
+    block: "nearest",
+    inline: "nearest"
   });
+
 }
 
-// Tunggu tab bar selesai dirender
+// Tunggu browser selesai menyusun tab.
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
-    revealActiveTab(true);
+    revealActiveTab(false);
     updateMoreTabs();
   });
 });
