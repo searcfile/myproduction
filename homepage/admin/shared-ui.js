@@ -343,34 +343,43 @@ const ICON_CLEAR = `
      USER STORAGE
      ========================================================== */
 
-  function getCurrentUserStorageSuffix() {
-    try {
-      const login = JSON.parse(
-        localStorage.getItem("gmailLogin") || "{}"
-      );
 
-      const email = String(login.email || "")
-        .trim()
-        .toLowerCase();
+function getCurrentUserStorageSuffix() {
+  try {
+    const user = firebase.auth().currentUser;
 
-      if (!email) return "guest";
+    const sessionUid = sessionStorage.getItem(
+      "5g88.adminSession"
+    );
 
-      return email.replace(/[^a-z0-9]/g, "_");
-
-    } catch (_) {
-      return "guest";
+    // Pastikan UID milik login yang sah.
+    if (
+      !user ||
+      user.isAnonymous ||
+      !sessionUid ||
+      user.uid !== sessionUid
+    ) {
+      return null;
     }
+
+    return user.uid;
+  } catch (error) {
+    return null;
   }
+}
 
 
-  function getTabsStorageKey() {
-    return `openTabs_${getCurrentUserStorageSuffix()}`;
-  }
 
 
-  function getActiveTabStorageKey() {
-    return `activeTabUrl_${getCurrentUserStorageSuffix()}`;
-  }
+function getTabsStorageKey() {
+  const uid = getCurrentUserStorageSuffix();
+  return uid ? `openTabs_uid_${uid}` : null;
+}
+
+function getActiveTabStorageKey() {
+  const uid = getCurrentUserStorageSuffix();
+  return uid ? `activeTabUrl_uid_${uid}` : null;
+}
 
 
   /* ==========================================================
@@ -428,6 +437,7 @@ window.isLivechatTabActive = isLivechatTabActive;
      ========================================================== */
 
   function getTabs() {
+   if (!getTabsStorageKey()) return [];
     try {
       const value =
         JSON.parse(
@@ -508,16 +518,15 @@ window.isLivechatTabActive = isLivechatTabActive;
   }
 
 
-  function getUserTabsDbPath() {
-    try {
-      const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-      const email = String(login.email || "").trim().toLowerCase();
-      if (!email) return "";
-      return `users/${email.replace(/\./g, "_")}/mainOpenTabs`;
-    } catch (_) {
-      return "";
-    }
-  }
+
+function getUserTabsDbPath() {
+  const uid = getCurrentUserStorageSuffix();
+
+  if (!uid) return "";
+
+  return `adminWorkspaceTabs/${uid}`;
+}
+
 
 function syncTabsToFirebase(tabs) {
   try {
@@ -541,6 +550,7 @@ function syncTabsToFirebase(tabs) {
 }
 
   function saveTabs(tabs) {
+   if (!getTabsStorageKey()) return;
     const finalTabs = Array.isArray(tabs) ? tabs : [];
 
     localStorage.setItem(
@@ -553,6 +563,9 @@ function syncTabsToFirebase(tabs) {
 
 
   function getActiveFile() {
+     if (!getActiveTabStorageKey()) {
+  return getCurrentFile();
+}
     const stored =
       localStorage.getItem(
         getActiveTabStorageKey()
@@ -591,6 +604,7 @@ function syncTabsToFirebase(tabs) {
 
 
   function setActiveFile(file) {
+     if (!getActiveTabStorageKey()) return;
     const url =
       normalizeUrl(`./${file}`);
 
