@@ -781,6 +781,30 @@ html {
     text-align: center !important;
   }
 }
+/* CIMB BANK - GLOBAL & SITE VISIBILITY */
+.cimb-bank-scope {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.cimb-bank-scope-title {
+  font-size: 12px;
+  color: var(--page-text);
+}
+
+.cimb-bank-sites {
+  width: 100%;
+  min-width: 0;
+}
+
+.cimb-bank-scope small {
+  font-size: 11px;
+  opacity: .65;
+}
 </style>
 <body>
   
@@ -1816,7 +1840,26 @@ function normalizedBankRecord(value) {
   const digits = String(value.digits ?? "");
   if (!name || name.length > 100 || !Number.isInteger(len) || len < 1 || len > 30 ||
       !/^\d*$/.test(digits) || digits.length > len) return null;
-  return {name,len,rule,digits,active:value.active !== false};
+  return {
+  name,
+  len,
+  rule,
+  digits,
+  active: value.active !== false,
+
+  visibleToAllSites: value.visibleToAllSites !== false,
+
+  siteVisibility: Object.fromEntries(
+    Object.entries(value.siteVisibility || {})
+      .filter(([id, enabled]) =>
+        typeof id === "string" &&
+        id.length > 0 &&
+        id.length <= 128 &&
+        !/[.#$\[\]/]/.test(id) &&
+        enabled === true
+      )
+  )
+};
 }
 function refreshBankCatalog() {
   if (!bankCatalogLoaded) return;
@@ -1907,7 +1950,37 @@ content.innerHTML = `
       placeholder="Example: 7 Or 88"
       value="${bankEscape(current?.digits ?? "")}">
   </label>
+<!-- GLOBAL ACTIVE -->
+<div class="cimb-bank-scope">
+  <span class="cimb-bank-scope-title">Global Active</span>
 
+  <label class="shared-active-switch">
+    <input
+      name="visibleToAllSites"
+      type="checkbox"
+      data-active-label="Active"
+      data-inactive-label="Inactive"
+      ${current?.visibleToAllSites === false ? "" : "checked"}
+    >
+
+    <span class="shared-active-track">
+      <span class="shared-active-text"></span>
+      <span class="shared-active-knob" aria-hidden="true"></span>
+    </span>
+  </label>
+</div>
+
+<!-- SITE VISIBILITY -->
+<div class="cimb-bank-scope">
+  <span class="cimb-bank-scope-title">Site Visibility</span>
+
+  <div
+    id="cimbBankSites"
+    class="cimb-bank-sites"
+  ></div>
+
+  <small>Select sites for this bank.</small>
+</div>
 <div style="
   display:flex;
   flex-direction:column;
@@ -1958,11 +2031,15 @@ content.innerHTML = `
     event.preventDefault();
     const ref = bankDb();
     if (!ref) return bankToast("Firebase belum tersedia.", "error");
-    const value = normalizedBankRecord({
-      name:content.elements.name.value, len:Number(content.elements.len.value),
-      rule:content.elements.rule.value, digits:content.elements.digits.value.trim(),
-      active:content.elements.active.checked
-    });
+const value = normalizedBankRecord({
+  name: content.elements.name.value,
+  len: Number(content.elements.len.value),
+  rule: content.elements.rule.value,
+  digits: content.elements.digits.value.trim(),
+  active: content.elements.active.checked,
+  visibleToAllSites:content.elements.visibleToAllSites.checked,
+  siteVisibility: current?.siteVisibility || {}
+});
     if (!value) return bankToast("Semak nama bank, length dan digits.", "warning");
     if (Object.entries(BANK_RECORDS).some(([key,other])=>key!==id && other.name.toLowerCase()===value.name.toLowerCase()))
       return bankToast("Nama bank sudah wujud.", "warning");
