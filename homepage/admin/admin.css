@@ -2393,47 +2393,49 @@ body.tab-dragging-active *{
     perspective: 1000px;
 }
 
-/* =========================================
-   5G88 - HEADER / TABBAR / SIDEBAR LAYERS
-   ========================================= */
 
-/* Tab bar sentiasa di bawah header dan sidebar */
+/* ========================================
+   5G88 - FIX GLOBAL STACKING ORDER
+   ======================================== */
+
+/* Header di depan overlay */
+.header,
+.header.shrink {
+  position: fixed !important;
+  z-index: 5000 !important;
+  overflow: visible !important;
+}
+
+/* Header dropdown tidak dipotong */
+.header .header-links,
+.header .dropdown-wrapper,
+.header .user-dropdown {
+  overflow: visible !important;
+}
+
+/* Sidebar overlay hanya gelapkan content */
+.sidebar-overlay {
+  z-index: 3000 !important;
+}
+
+/* Sidebar di atas overlay, bawah header */
+.sidebar {
+  z-index: 4000 !important;
+}
+
+/* Tab bar dan content kekal di belakang */
 .tab-bar,
 .tab-bar.shrink {
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Header dan semua dropdown header */
-.header,
-.header.shrink {
-  z-index: 3000 !important;
-  overflow: visible !important;
-}
-
-/* Username dropdown */
-.header .user-dropdown,
-.header .dropdown-wrapper {
-  overflow: visible !important;
+/* Dropdown header */
+.header .dropdown-links {
+  z-index: 5100 !important;
 }
 
 .header .dropdown-content {
-  z-index: 3100 !important;
+  z-index: 5100 !important;
 }
 
-/* Sidebar dan background overlay */
-.sidebar-overlay {
-  z-index: 3200 !important;
-}
-
-.sidebar {
-  z-index: 3201 !important;
-}
-
-/* Tab bar mobile */
-@media (max-width: 815px) {
-  .tab-bar,
-  .tab-bar.shrink {
-    z-index: 1 !important;
-  }
-}
