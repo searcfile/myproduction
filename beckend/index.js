@@ -3262,7 +3262,7 @@ function cimbValidate(body) {
   };
 }
 
-async function cimbCheckScope(data, profile, allowExistingGlobal = false) {
+async function cimbCheckScope(data, profile) {
   const allSites = (
     await db.ref("sites").once("value")
   ).val() || {};
@@ -3276,7 +3276,7 @@ async function cimbCheckScope(data, profile, allowExistingGlobal = false) {
   }
 
   if (profile.role === "siteadmin") {
-   if (data.visibleToAllSites && !allowExistingGlobal) {
+   if (data.visibleToAllSites) {
       throw Error("Only Super Admin can enable Global Active");
     }
 
@@ -3398,32 +3398,8 @@ app.post(
   requirePermission(CIMB_MODULE, "create"),
   async (req, res) => {
     try {
-      const existing = snap.val();
+
 const data = cimbValidate(req.body);
-
-if (req.admin.profile.role === "siteadmin") {
-  // Site Admin tidak boleh menukar Global Active
-  // atau site yang sudah ditetapkan pada bank.
-  const existingSites = Object.keys(existing.siteVisibility || {})
-    .filter(id => existing.siteVisibility[id] === true)
-    .sort();
-
-  const requestedSites = Object.keys(data.siteVisibility || {})
-    .filter(id => data.siteVisibility[id] === true)
-    .sort();
-
-  if (
-    data.visibleToAllSites !== existing.visibleToAllSites ||
-    JSON.stringify(requestedSites) !== JSON.stringify(existingSites)
-  ) {
-    return fail(
-      res,
-      403,
-      "Only Super Admin can change bank visibility"
-    );
-  }
-}
-
 await cimbCheckScope(data, req.admin.profile);
 
       const ref = db.ref(CIMB_PATH);
@@ -3477,23 +3453,54 @@ app.patch(
         return fail(res, 404, "Bank not found");
       }
 
-      if (
-  !cimbEditable(snap.val(), req.admin.profile) ||
-  (
-    req.admin.profile.role === "siteadmin" &&
-    snap.val()?.visibleToAllSites === true
-  )
-) {
-        return fail(res, 403, "Bank edit access denied");
-      }
+if (!cimbEditable(snap.val(), req.admin.profile)) {
+  return fail(res, 403, "Bank edit access denied");
+}
 
-      const data = cimbValidate(req.body);
-      await cimbCheckScope(
-  data,
-  req.admin.profile,
-  req.admin.profile.role === "siteadmin" &&
-  existing.visibleToAllSites === true
-);
+const existing = snap.val();
+const data = cimbValidate(req.body);
+
+if (req.admin.profile.role === "siteadmin") {
+  // Site Admin tidak boleh menukar status Global
+  // atau menukar site yang sudah ditetapkan.
+  const oldSites = Object.keys(existing.siteVisibility || {})
+    .filter(id => existing.siteVisibility[id] === true)
+    .sort();
+
+  const newSites = Object.keys(data.siteVisibility || {})
+    .filter(id => data.siteVisibility[id] === true)
+    .sort();
+
+  if (
+    data.visibleToAllSites !== existing.visibleToAllSites ||
+    JSON.stringify(oldSites) !== JSON.stringify(newSites)
+  ) {
+    return fail(
+      res,
+      403,
+      "Only Super Admin can change bank visibility"
+    );
+  }
+
+  // Bank Global mungkin mempunyai siteVisibility kosong.
+  // Benarkan hanya skop asal yang tidak berubah.
+  if (existing.visibleToAllSites === true) {
+    const allSites = (
+      await db.ref("sites").once("value")
+    ).val() || {};
+
+    if (!newSites.every(id => allSites[id]?.active === true)) {
+      return fail(res, 400, "Site missing or inactive");
+    }
+
+    // Jangan benarkan perubahan skop bank Global.
+    // Pemeriksaan kesamaan skop sudah dibuat di atas.
+  } else {
+    await cimbCheckScope(data, req.admin.profile);
+  }
+} else {
+  await cimbCheckScope(data, req.admin.profile);
+}
 
       const all = (
         await db.ref(CIMB_PATH).once("value")
@@ -3542,9 +3549,15 @@ app.delete(
         return fail(res, 404, "Bank not found");
       }
 
-      if (!cimbEditable(snap.val(), req.admin.profile)) {
-        return fail(res, 403, "Bank delete access denied");
-      }
+if (
+  !cimbEditable(snap.val(), req.admin.profile) ||
+  (
+    req.admin.profile.role === "siteadmin" &&
+    snap.val()?.visibleToAllSites === true
+  )
+) {
+  return fail(res, 403, "Bank delete access denied");
+}
 
       await ref.remove();
 
