@@ -1422,7 +1422,7 @@ body.light-theme .theme-toggle-knob{
 
   scrollbar-width:none;
 
-  z-index:1;
+  z-index:1005;
 
   transition:
     margin-left .2s ease,
@@ -1454,6 +1454,44 @@ body.light-theme .theme-toggle-knob{
   width:100% !important;
 }
 
+
+/* ==========================================
+   FIX TAB SEARCH DROPDOWN FRONT LAYER
+   ========================================== */
+
+.tab-bar,
+.tab-bar.shrink {
+  position: relative !important;
+  z-index: 1005 !important;
+  overflow: visible !important;
+}
+
+.tab-bar > .tab-module-search {
+  position: relative;
+  z-index: 1006 !important;
+}
+
+.tab-search-list {
+  position: fixed;
+  z-index: 1007 !important;
+}
+
+/* More Tabs juga kekal di depan */
+.admin-workspace-more {
+  z-index: 1006 !important;
+}
+
+.admin-workspace-more-dropdown {
+  z-index: 1007 !important;
+}
+
+/* Override media query lama pada skrin kecil */
+@media (max-width: 815px) {
+  .tab-bar,
+  .tab-bar.shrink {
+    z-index: 1005 !important;
+  }
+}
 
 /* ==========================================================
    TAB
