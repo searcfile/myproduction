@@ -2480,7 +2480,9 @@ html.new-ui-modal-open {
     border: 1px solid transparent;
     padding: 0px 15px;
     height: 32px;
+    border-radius:8px;
     font-size: 14px;
+   transition: background .2s cubic-bezier(0.645, 0.045, 0.355, 1), transform .15s ease, box-shadow .6s ease;
 }
 .reset-button:hover {
      background: #ff4d4d;
