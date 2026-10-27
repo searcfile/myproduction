@@ -4144,7 +4144,18 @@ function rhbEditable(bank, profile) {
   return selected.length > 0 &&
     selected.every(id => rhbAssigned(profile).includes(id));
 }
+function rhbSameSites(a, b) {
+  const left = Object.keys(a || {})
+    .filter(id => a[id] === true)
+    .sort();
 
+  const right = Object.keys(b || {})
+    .filter(id => b[id] === true)
+    .sort();
+
+  return left.length === right.length &&
+    left.every((id, index) => id === right[index]);
+}
 function rhbValidate(body) {
   if (!body || typeof body !== "object" ||
       Array.isArray(body)) {
@@ -4358,8 +4369,10 @@ app.patch(
       if (profile.role === "siteadmin") {
         if (data.visibleToAllSites !==
             (existing.visibleToAllSites === true) ||
-            JSON.stringify(data.siteVisibility) !==
-            JSON.stringify(existing.siteVisibility || {})) {
+!rhbSameSites(
+  data.siteVisibility,
+  existing.siteVisibility || {}
+)) {
           return fail(res, 403, "Cannot change site visibility");
         }
       }
