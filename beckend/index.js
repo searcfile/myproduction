@@ -4108,6 +4108,356 @@ app.delete(
 /* =====================================================
    END MAYBANK2U BANK API
    ===================================================== */
+/* =====================================================
+   BANK ISLAM - BANK CATALOG API
+   ===================================================== */
 
+const BI_MODULE = "bankislam.html";
+const BI_PATH = "bank_catalog/bankislam";
+
+const biIdOK = id =>
+  /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+function biAssigned(profile) {
+  return Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+}
+
+function biVisible(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (bank?.active === false) return false;
+
+  const assigned = biAssigned(profile);
+  if (!assigned.length) return false;
+
+  if (bank?.visibleToAllSites === true) return true;
+
+  return assigned.some(id =>
+    bank?.siteVisibility?.[id] === true
+  );
+}
+
+function biEditable(bank, profile) {
+  if (profile.role === "superadmin") return true;
+  if (profile.role !== "siteadmin") return false;
+
+  if (!biVisible(bank, profile)) return false;
+
+  // Global records hanya boleh diubah Super Admin.
+  if (bank?.visibleToAllSites === true) return false;
+
+  const selected = Object.keys(bank?.siteVisibility || {})
+    .filter(id => bank.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => biAssigned(profile).includes(id));
+}
+
+function biValidate(body) {
+  if (!body || typeof body !== "object" ||
+      Array.isArray(body)) {
+    throw Error("Invalid bank data");
+  }
+
+  const name = String(body.name || "").trim();
+  const len = Number(body.len);
+  const rule = body.rule;
+  const digits = String(body.digits ?? "");
+
+  if (!name || name.length > 100) {
+    throw Error("Invalid bank name");
+  }
+
+  if (!Number.isInteger(len) || len < 1 || len > 30) {
+    throw Error("Invalid account length");
+  }
+
+  if (!["prefix", "start"].includes(rule)) {
+    throw Error("Invalid number rule");
+  }
+
+  if (!/^\d*$/.test(digits) || digits.length > len) {
+    throw Error("Invalid digits");
+  }
+
+  if (
+    typeof body.active !== "boolean" ||
+    typeof body.visibleToAllSites !== "boolean"
+  ) {
+    throw Error("Invalid status");
+  }
+
+  const siteVisibility = body.siteVisibility;
+
+  if (
+    !siteVisibility ||
+    typeof siteVisibility !== "object" ||
+    Array.isArray(siteVisibility) ||
+    Object.keys(siteVisibility).length > 100 ||
+    !Object.entries(siteVisibility).every(([id, enabled]) =>
+      /^[a-z0-9_-]{1,48}$/.test(id) &&
+      enabled === true
+    )
+  ) {
+    throw Error("Invalid site visibility");
+  }
+
+  return {
+    name,
+    len,
+    rule,
+    digits,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function biCheckScope(data, profile) {
+  const allSites = (
+    await db.ref("sites").once("value")
+  ).val() || {};
+
+  const selected = Object.keys(data.siteVisibility)
+    .filter(id => data.siteVisibility[id] === true);
+
+  if (!selected.every(id => allSites[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role === "siteadmin") {
+    if (data.visibleToAllSites) {
+      throw Error("Only Super Admin can enable Global Active");
+    }
+
+    if (
+      selected.length === 0 ||
+      !selected.every(id => biAssigned(profile).includes(id))
+    ) {
+      throw Error("Site selection is not assigned to you");
+    }
+  }
+
+  if (!data.visibleToAllSites && selected.length === 0) {
+    throw Error("Select at least one site");
+  }
+}
+
+// GET ASSIGNED SITES
+app.get(
+  "/api/bankislam/sites",
+  requireAdmin,
+  requirePermission(BI_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (
+        await db.ref("sites").once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+      const assigned = new Set(biAssigned(profile));
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (
+            profile.role === "superadmin" ||
+            assigned.has(id)
+          )
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (error) {
+      console.error("Bank Islam sites:", error);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// GET PERMISSIONS
+app.get(
+  "/api/bankislam/access",
+  requireAdmin,
+  requirePermission(BI_MODULE, "view"),
+  (req, res) => {
+    const profile = req.admin.profile;
+    const isSuper = profile.role === "superadmin";
+    const key = BI_MODULE.replace(/\.html$/, "_html");
+
+    return res.json({
+      ok: true,
+      role: profile.role,
+      actions: isSuper
+        ? ["show", "view", "create", "edit", "delete"]
+        : (profile.permissions?.[key] || [])
+    });
+  }
+);
+
+// GET BANKS
+app.get(
+  "/api/bankislam/banks",
+  requireAdmin,
+  requirePermission(BI_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const data = (
+        await db.ref(BI_PATH).once("value")
+      ).val() || {};
+
+      const profile = req.admin.profile;
+
+      const banks = Object.entries(data)
+        .filter(([, bank]) => biVisible(bank, profile))
+        .map(([id, bank]) => ({
+          id,
+          ...bank,
+          canManage: biEditable(bank, profile),
+          canDelete: biEditable(bank, profile)
+        }));
+
+      return res.json({ ok: true, banks });
+    } catch (error) {
+      console.error("Bank Islam banks:", error);
+      return fail(res, 500, "Cannot load banks");
+    }
+  }
+);
+
+// CREATE BANK
+app.post(
+  "/api/bankislam/banks",
+  requireAdmin,
+  requirePermission(BI_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = biValidate(req.body);
+      await biCheckScope(data, req.admin.profile);
+
+      const ref = db.ref(BI_PATH);
+      const existing = (await ref.once("value")).val() || {};
+
+      if (Object.values(existing).some(bank =>
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      const newRef = ref.push();
+
+      await newRef.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({
+        ok: true,
+        id: newRef.key
+      });
+    } catch (error) {
+      console.error("Bank Islam create:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// EDIT BANK
+app.patch(
+  "/api/bankislam/banks/:id",
+  requireAdmin,
+  requirePermission(BI_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!biIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${BI_PATH}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      if (!biEditable(snapshot.val(), req.admin.profile)) {
+        return fail(res, 403, "Bank access denied");
+      }
+
+      const data = biValidate(req.body);
+      await biCheckScope(data, req.admin.profile);
+
+      const all = (
+        await db.ref(BI_PATH).once("value")
+      ).val() || {};
+
+      if (Object.entries(all).some(([otherId, bank]) =>
+        otherId !== id &&
+        String(bank?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Bank name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Bank Islam edit:", error);
+      return fail(res, 400, error.message);
+    }
+  }
+);
+
+// DELETE BANK
+app.delete(
+  "/api/bankislam/banks/:id",
+  requireAdmin,
+  requirePermission(BI_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!biIdOK(id)) {
+        return fail(res, 400, "Invalid bank ID");
+      }
+
+      const ref = db.ref(`${BI_PATH}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Bank not found");
+      }
+
+      if (!biEditable(snapshot.val(), req.admin.profile)) {
+        return fail(res, 403, "Bank access denied");
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Bank Islam delete:", error);
+      return fail(res, 500, "Cannot delete bank");
+    }
+  }
+);
+
+/* =====================================================
+   END BANK ISLAM BANK API
+   ===================================================== */
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
