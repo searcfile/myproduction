@@ -1828,15 +1828,42 @@ const bankToast = (message, type="success") => {
 };
 const CIMB_API_BASE =
   "https://fiveg88-admin-backend-v2.onrender.com";
+/* =====================================================
+   CIMB - WAIT FIREBASE AUTH READY
+   ===================================================== */
 
+function cimbWaitForAuth() {
+  return new Promise((resolve, reject) => {
+    const auth = firebase.auth();
+
+    let unsubscribe = null;
+
+    unsubscribe = auth.onAuthStateChanged(
+      user => {
+        if (unsubscribe) unsubscribe();
+
+        if (!user || user.isAnonymous) {
+          reject(
+            new Error(
+              "Admin session not found. Please login again."
+            )
+          );
+          return;
+        }
+
+        resolve(user);
+      },
+      error => {
+        if (unsubscribe) unsubscribe();
+        reject(error);
+      }
+    );
+  });
+}
 async function cimbApi(path, options = {}) {
-  const user = firebase.auth().currentUser;
+const user = await cimbWaitForAuth();
 
-  if (!user) {
-    throw Error("Admin session expired. Please login again.");
-  }
-
-  const token = await user.getIdToken();
+const token = await user.getIdToken();
 
   const response = await fetch(CIMB_API_BASE + path, {
     method: options.method || "GET",
