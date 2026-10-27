@@ -3705,7 +3705,7 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
    SITE VISIBILITY + PERMISSIONS
    ===================================================== */
 
-const MAYBANK_MODULE = "maybank2u.html";
+const MAYBANK_MODULE = "maybankm2u.html";
 const MAYBANK_PATH = "bank_catalog/maybankm2u";
 
 const maybankIdOK = id =>
