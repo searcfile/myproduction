@@ -2325,6 +2325,7 @@ cimbLoadBanks()
   .catch(error => {
     bankToast(error.message, "error");
   });
+}
 document.getElementById("bankCreate")?.addEventListener("click",()=>bankFormModal());
 document.getElementById("bankManage")?.addEventListener("click",bankManageModal);
 initFirebaseBanks();
