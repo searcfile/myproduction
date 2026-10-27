@@ -2322,7 +2322,7 @@ function bankManageModal() {
       edit.addEventListener("click",()=>{modal.close();bankFormModal(key);});
       edit.hidden = !cimbCan("edit") || !bank.canManage;
       const del=document.createElement("button");del.type="button";del.className="btn-delete-new";del.textContent="Delete";
-      del.hidden = !cimbCan("delete") || !bank.canManage;
+      del.hidden = !cimbCan("delete") || !bank.canDelete;
       del.addEventListener("click",async()=>{
         if (!window.NewUI?.confirm) return bankToast("Custom confirm belum tersedia.","error");
         const confirmed=await NewUI.confirm({target:del,title:"Delete Bank",message:`Delete ${bank.name}?`,confirmText:"Delete",danger:true});
