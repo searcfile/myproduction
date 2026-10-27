@@ -2620,6 +2620,7 @@ body.tab-dragging-active *{
   gap:8px;
   padding:5px 12px;
   border-radius:4px;
+  height:32px;
 }
 
 .admin-workspace-more-item:hover{
