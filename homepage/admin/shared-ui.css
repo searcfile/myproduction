@@ -2598,7 +2598,7 @@ body.tab-dragging-active *{
   right:0;
   display:none;
   width:200px;
-  max-height:280px;
+  max-height:265px;
   overflow-y:auto;
   overflow-x:hidden;
   padding:4px;
