@@ -1930,7 +1930,8 @@ async function cimbLoadBanks() {
     if (normalized && bank.id) {
       BANK_RECORDS[bank.id] = {
         ...normalized,
-        canManage: bank.canManage === true
+        canManage: bank.canManage === true,
+canDelete: bank.canDelete === true
       };
     }
   }
