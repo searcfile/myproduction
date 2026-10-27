@@ -3373,7 +3373,13 @@ app.get(
         .map(([id, bank]) => ({
           id,
           ...bank,
-          canManage: cimbEditable(bank, req.admin.profile)
+          canManage: cimbEditable(bank, req.admin.profile),
+canDelete:
+  cimbEditable(bank, req.admin.profile) &&
+  (
+    req.admin.profile.role === "superadmin" ||
+    bank.visibleToAllSites !== true
+  )
         }));
 
       return res.json({ ok: true, banks });
