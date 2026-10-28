@@ -1746,6 +1746,98 @@ let isRestoringSelection = false;
 let lastWinRowIndex = -1;
 let manualWinAmount = 0;
 const gameData = {};
+
+/* ==========================================
+   SCR888H5 - SAVE & TAB RESET
+   ========================================== */
+
+const SCR_SAVE_KEY = "gameLogDataScr888h5";
+
+const SCR_INPUT_IDS = [
+  "manualTime",
+  "manualScore",
+  "manualJackpot",
+  "manualScoreInput",
+  "manualWinInput",
+  "freeGameInput"
+];
+
+function getScrResetKey(uid) {
+  return `5g88.pageReset.v1:${uid}:scr888h5.html`;
+}
+
+function isScrResetPending() {
+  const uid = sessionStorage.getItem("5g88.adminSession");
+  return !!uid &&
+    sessionStorage.getItem(getScrResetKey(uid)) === "1";
+}
+
+function readScrSaved() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(SCR_SAVE_KEY) || "{}"
+    ) || {};
+  } catch {
+    return {};
+  }
+}
+
+function clearScrSavedGenerator() {
+  localStorage.removeItem(SCR_SAVE_KEY);
+  localStorage.removeItem("jackpotInsertedMap");
+  localStorage.removeItem("autoFreeGameOnScr888h5");
+  localStorage.removeItem("autoAddScoreOnScr888h5");
+}
+
+function saveScrInputs() {
+  if (isScrResetPending() || isRestoringSelection) return;
+
+  const saved = readScrSaved();
+  const inputs = { ...(saved.inputs || {}) };
+
+  for (const id of SCR_INPUT_IDS) {
+    inputs[id] = document.getElementById(id)?.value ?? "";
+  }
+
+  localStorage.setItem(
+    SCR_SAVE_KEY,
+    JSON.stringify({
+      ...saved,
+      inputs
+    })
+  );
+}
+
+function restoreScrInputs(data) {
+  for (const id of SCR_INPUT_IDS) {
+    const input = document.getElementById(id);
+    if (input && data.inputs?.[id] !== undefined) {
+      input.value = data.inputs[id];
+    }
+  }
+}
+
+function applyScrWorkspaceReset(user) {
+  if (!user || user.isAnonymous) return false;
+
+  const key = getScrResetKey(user.uid);
+
+  if (sessionStorage.getItem(key) !== "1") {
+    return false;
+  }
+
+  sessionStorage.removeItem(key);
+
+  resetLog();
+  clearScrSavedGenerator();
+
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
+
+  return true;
+}
+
 function updateAutoAddScoreButtonUI() {
   const btn = document.getElementById("autoAddScoreBtn");
   if (!btn) return;
@@ -1759,7 +1851,11 @@ function updateAutoAddScoreButtonUI() {
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
 function saveCurrentSelectionOnly() {
-  if (isRestoringSelection) return;
+  if (
+    isRestoringSelection ||
+    !mgCatalogLoaded ||
+    isScrResetPending()
+  ) return;
 
   const oldData = JSON.parse(localStorage.getItem("gameLogDataScr888h5") || "{}");
 
@@ -2291,7 +2387,18 @@ applyFreeGame({ randomizePosition: true });
       lastWinRowIndex,
       manualWinAmount,
     };
-    localStorage.setItem("gameLogDataScr888h5", JSON.stringify(savedData));
+    
+const existing = readScrSaved();
+
+localStorage.setItem(
+  "gameLogDataScr888h5",
+  JSON.stringify({
+    ...existing,
+    ...savedData,
+    inputs: existing.inputs || {}
+  })
+);
+
   }, 50);
 }
 
@@ -2606,13 +2713,23 @@ function resetLog() {
   autoAddScoreOn = false;
   updateAutoAddScoreButtonUI();
 
-  // reset state lain
   lastWinRowIndex = null;
   manualWinAmount = 0;
-}
 
+  clearScrSavedGenerator();
+
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
+}
 window.addEventListener("DOMContentLoaded", () => {
-  const savedAuto = localStorage.getItem("autoFreeGameOnScr888h5");
+
+  if (isScrResetPending()) {
+    clearScrSavedGenerator();
+  }
+
+  const savedAuto =
+    localStorage.getItem("autoFreeGameOnScr888h5");
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
 
@@ -2659,6 +2776,8 @@ window.addEventListener("DOMContentLoaded", () => {
     freeGameInput.value = Number(data.freeGame) > 0 ? data.freeGame : "";
   }
 
+  restoreScrInputs(data);
+
   isRestoringSelection = true;
 
   if (gameSelect) {
@@ -2685,8 +2804,20 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   applyFreeGame();
-  saveCurrentSelectionOnly();
 });
+
+/* ==========================================
+   SCR888H5 - AUTO SAVE INPUT EVENTS
+   ========================================== */
+
+for (const id of SCR_INPUT_IDS) {
+  const input = document.getElementById(id);
+  if (!input) continue;
+
+  input.addEventListener("input", saveScrInputs);
+  input.addEventListener("change", saveScrInputs);
+}
+
 function showToast(message, type = "success", duration = 3500) {
   if (window.NewUI && typeof window.NewUI.showToast === "function") {
     return window.NewUI.showToast(message, type, duration);
@@ -3125,100 +3256,138 @@ function mgField(label, value = "", type = "text", hint = "") {
   return { host, input };
 }
 
+
 function mgApplyCatalog(snapshot) {
-  const select = document.getElementById("gameSelect");
-  const previous = select.value;
-  const data = snapshot || {};
+  const gameSelect = document.getElementById("gameSelect");
+  const betSelect = document.getElementById("betSelect");
+  const winSelect = document.getElementById("pecahanSelect");
 
-  Object.keys(gameData).forEach(key => delete gameData[key]);
+  const previous = mgCatalogLoaded ? {
+    game: gameSelect.value,
+    bet: betSelect.value,
+    pecahan: winSelect.value
+  } : null;
 
-  mgGameIds = {};
-  mgRecords = {};
+  const saved = readScrSaved();
 
-  Object.entries(data).forEach(([id, game]) => {
-    if (
-      !game ||
-      typeof game.name !== "string" ||
-      !Array.isArray(game.bets) ||
-      !game.pecahan
-    ) return;
+  mgCatalogLoaded = false;
+  isRestoringSelection = true;
 
-    gameData[game.name] = {
-      bets: game.bets,
-      pecahan: game.pecahan,
-      freeGameOptions: Array.isArray(game.freeGameOptions)
-        ? game.freeGameOptions : []
-    };
+  try {
+    Object.keys(gameData).forEach(key => {
+      delete gameData[key];
+    });
 
-    mgGameIds[game.name] = id;
-    mgRecords[game.name] = game;
-  });
+    mgGameIds = {};
+    mgRecords = {};
 
-  select.replaceChildren(new Option("Select Game", ""));
+    Object.entries(snapshot || {}).forEach(([id, game]) => {
+      if (
+        !game ||
+        typeof game.name !== "string" ||
+        !Array.isArray(game.bets) ||
+        !game.pecahan
+      ) return;
 
-  Object.keys(gameData)
-    .sort((a, b) => a.localeCompare(b))
-    .forEach(name => select.add(new Option(name, name)));
+      gameData[game.name] = {
+        bets: game.bets,
+        pecahan: game.pecahan,
+        freeGameOptions: Array.isArray(game.freeGameOptions)
+          ? game.freeGameOptions
+          : []
+      };
 
-  const saved = (() => {
-    try {
-      return JSON.parse(
-        localStorage.getItem("gameLogDataScr888h5") || "{}"
+      mgGameIds[game.name] = id;
+      mgRecords[game.name] = game;
+    });
+
+    gameSelect.replaceChildren(
+      new Option("Select Game", "")
+    );
+
+    Object.keys(gameData)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(name => {
+        gameSelect.add(new Option(name, name));
+      });
+
+    const selectedGame =
+      previous?.game && gameData[previous.game]
+        ? previous.game
+        : saved.game && gameData[saved.game]
+          ? saved.game
+          : "";
+
+    gameSelect.value = selectedGame;
+
+    gameSelect.dispatchEvent(
+      new Event("change", { bubbles: true })
+    );
+
+    if (selectedGame) {
+      const preferredBet =
+        previous?.game === selectedGame && previous.bet
+          ? String(previous.bet)
+          : saved.game === selectedGame && saved.bet != null
+            ? String(saved.bet)
+            : "";
+
+      const betOptions = Array.from(betSelect.options);
+
+      const matchedBet = betOptions.find(
+        option =>
+          option.value !== "" &&
+          option.value === preferredBet
       );
-    } catch {
-      return {};
-    }
-  })();
 
-  const selected = gameData[previous]
-    ? previous
-    : gameData[saved.game]
-      ? saved.game : "";
+      const firstBet = betOptions.find(
+        option => option.value !== "" && !option.disabled
+      );
 
-  if (selected) {
-    select.value = selected;
-    isRestoringSelection = true;
+      betSelect.value =
+        matchedBet?.value || firstBet?.value || "";
 
-    try {
-      select.dispatchEvent(
+      betSelect.dispatchEvent(
         new Event("change", { bubbles: true })
       );
 
-      if (saved.game === selected && saved.bet !== undefined) {
-        const betSelect = document.getElementById("betSelect");
-        const winSelect = document.getElementById("pecahanSelect");
+      const preferredWin =
+        previous?.game === selectedGame && previous.pecahan
+          ? String(previous.pecahan)
+          : saved.game === selectedGame && saved.pecahan != null
+            ? String(saved.pecahan)
+            : "";
 
-        betSelect.value = String(saved.bet);
-        betSelect.dispatchEvent(
-          new Event("change", { bubbles: true })
-        );
+      const winOptions = Array.from(winSelect.options);
 
-        if (saved.pecahan !== undefined) {
-          winSelect.value = String(saved.pecahan);
-        }
-      }
-    } finally {
-      isRestoringSelection = false;
+      const matchedWin = winOptions.find(
+        option =>
+          option.value !== "" &&
+          option.value === preferredWin
+      );
+
+      const firstWin = winOptions.find(
+        option => option.value !== "" && !option.disabled
+      );
+
+      winSelect.value =
+        matchedWin?.value || firstWin?.value || "";
     }
+
+  } finally {
+    isRestoringSelection = false;
+    mgCatalogLoaded = true;
+
+    gameCS?.refresh?.();
+    betCS?.refresh?.();
+    winCS?.refresh?.();
   }
 
-const refreshDropdown = (id, dropdown) => {
-  const select = document.getElementById(id);
-
-  const api =
-    select?._sharedDropdown ||
-    dropdown ||
-    window.NewUI?.dropdown?.(select);
-
-  api?.refresh?.();
-};
-
-refreshDropdown("gameSelect", gameCS);
-refreshDropdown("betSelect", betCS);
-refreshDropdown("pecahanSelect", winCS);
-
-mgCatalogLoaded = true;
+  if (Object.keys(gameData).length > 0) {
+    saveCurrentSelectionOnly();
+  }
 }
+
 
 function mgSyncPermission() {
   const create = document.getElementById("mgCreate");
@@ -3242,6 +3411,7 @@ async function mgReload() {
   mgApplyCatalog(catalog);
 }
 
+
 function mgStart() {
   const create = document.getElementById("mgCreate");
   const manage = document.getElementById("mgManage");
@@ -3257,49 +3427,123 @@ function mgStart() {
     return;
   }
 
+  let loadVersion = 0;
+
   firebase.auth().onAuthStateChanged(async user => {
+    const version = ++loadVersion;
+
     mgAccess = { role: "", actions: [] };
     mgSites = [];
     mgSyncPermission();
 
-    if (!user) {
+    if (!user || user.isAnonymous) {
+      mgCatalogLoaded = false;
       mgApplyCatalog({});
       return;
     }
 
+    // Reset apabila SVG refresh tab ditekan.
     try {
-      const [access, sites] = await Promise.all([
-        mgApi("/access"),
-        mgApi("/sites")
-      ]);
+      applyScrWorkspaceReset(user);
+    } catch (error) {
+      console.error("[SCR888H5] Reset failed:", error);
+    }
 
-      if (firebase.auth().currentUser?.uid !== user.uid) {
-        return;
+    // Game Catalog tidak perlu menunggu Access/Sites.
+    const gamesPromise = (async () => {
+      try {
+        const startedAt = performance.now();
+
+        const result = await mgApi("/games");
+
+        if (
+          version !== loadVersion ||
+          firebase.auth().currentUser?.uid !== user.uid
+        ) return;
+
+        if (!Array.isArray(result.games)) {
+          throw new Error("Invalid Game Catalog response");
+        }
+
+        const catalog = {};
+
+        for (const game of result.games) {
+          if (game && game.id != null) {
+            catalog[game.id] = game;
+          }
+        }
+
+        mgApplyCatalog(catalog);
+
+        console.log(
+          "[SCR888H5] Games loaded:",
+          result.games.length,
+          "in",
+          Math.round(performance.now() - startedAt) + "ms"
+        );
+
+      } catch (error) {
+        if (version !== loadVersion) return;
+
+        console.error("[SCR888H5] Games error:", error);
+
+        mgToast(
+          "Game loading failed: " + error.message,
+          "error"
+        );
+      }
+    })();
+
+    // Access dan Sites berjalan secara berasingan.
+    const permissionsPromise = (async () => {
+      const [accessResult, sitesResult] =
+        await Promise.allSettled([
+          mgApi("/access"),
+          mgApi("/sites")
+        ]);
+
+      if (
+        version !== loadVersion ||
+        firebase.auth().currentUser?.uid !== user.uid
+      ) return;
+
+      if (accessResult.status === "fulfilled") {
+        const access = accessResult.value || {};
+
+        mgAccess = {
+          role: access.role || "",
+          actions: Array.isArray(access.actions)
+            ? access.actions
+            : []
+        };
+      } else {
+        console.error(
+          "[SCR888H5] Access error:",
+          accessResult.reason
+        );
       }
 
-      mgAccess = {
-        role: access.role || "",
-        actions: access.actions || []
-      };
+      if (sitesResult.status === "fulfilled") {
+        mgSites = Array.isArray(sitesResult.value?.sites)
+          ? sitesResult.value.sites
+          : [];
+      } else {
+        console.error(
+          "[SCR888H5] Sites error:",
+          sitesResult.reason
+        );
+      }
 
-      mgSites = sites.sites || [];
-
-      await mgReload();
       mgSyncPermission();
+    })();
 
-    } catch (err) {
-      mgAccess = { role: "", actions: [] };
-      mgSites = [];
-      mgSyncPermission();
-      mgApplyCatalog({});
-
-      mgToast(
-        "Game loading failed: " + err.message,
-        "error"
-      );
-    }
+    await Promise.allSettled([
+      gamesPromise,
+      permissionsPromise
+    ]);
   });
 }
+
 
 /* ==========================================================
    CUSTOM ACTIVE SWITCH
