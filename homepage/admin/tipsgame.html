@@ -1330,6 +1330,126 @@ try {
 const tipsPlatformFilterEl = document.getElementById('tipsPlatformFilter');
 const tipsStatusFilterEl = document.getElementById('tipsStatusFilter');
 const tipsSearchPlatformEl = document.getElementById('tipsSearchPlatform');
+
+/* ==========================================
+   TIPS GAME - SAVE / RESTORE FILTER
+   ========================================== */
+
+const TIPS_FILTER_PAGE = "tipsgame.html";
+let tipsFilterReady = false;
+
+function getTipsFilterKeys() {
+  const user = firebase.auth().currentUser;
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    !uid ||
+    user.uid !== uid
+  ) {
+    return null;
+  }
+
+  return {
+    state: `5g88.pageState.v1:${uid}:${TIPS_FILTER_PAGE}`,
+    reset: `5g88.pageReset.v1:${uid}:${TIPS_FILTER_PAGE}`
+  };
+}
+
+function isTipsResetPending() {
+  const keys = getTipsFilterKeys();
+
+  return !!keys &&
+    sessionStorage.getItem(keys.reset) === "1";
+}
+
+function saveTipsFilters() {
+  if (!tipsFilterReady || isTipsResetPending()) return;
+
+  const keys = getTipsFilterKeys();
+  if (!keys) return;
+
+  try {
+    localStorage.setItem(
+      keys.state,
+      JSON.stringify({
+        search: tipsSearchPlatformEl.value,
+        status: tipsStatusChips.getValue(),
+        platforms: tipsPlatformChips.getValue()
+      })
+    );
+  } catch (error) {
+    console.warn("[Tips Game] Save failed:", error);
+  }
+}
+
+function restoreTipsFilters() {
+  if (tipsFilterReady || !tipsLoaded) return;
+
+  const keys = getTipsFilterKeys();
+  if (!keys) return;
+
+  if (isTipsResetPending()) {
+    localStorage.removeItem(keys.state);
+
+    tipsSearchPlatformEl.value = "";
+    tipsSearchPlatformEl.defaultValue = "";
+
+    tipsStatusChips.setValue([]);
+    tipsPlatformChips.setValue([]);
+
+    tipsFilterReady = true;
+    sessionStorage.removeItem(keys.reset);
+
+    applyTipsFilters();
+    return;
+  }
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(keys.state) || "null"
+    );
+  } catch (error) {
+    console.warn("[Tips Game] Restore failed:", error);
+  }
+
+  if (saved && typeof saved === "object") {
+    tipsSearchPlatformEl.value =
+      String(saved.search ?? "");
+
+    const validStatuses = new Set([
+      "active",
+      "inactive"
+    ]);
+
+    const validPlatforms = new Set(
+      Object.keys(tipsRecords)
+    );
+
+    tipsStatusChips.setValue(
+      Array.isArray(saved.status)
+        ? saved.status.filter(value =>
+            validStatuses.has(value)
+          )
+        : []
+    );
+
+    tipsPlatformChips.setValue(
+      Array.isArray(saved.platforms)
+        ? saved.platforms.filter(value =>
+            validPlatforms.has(value)
+          )
+        : []
+    );
+  }
+
+  tipsFilterReady = true;
+  applyTipsFilters();
+}
+
 NewUI.syncSearch('#tipsSearchPlatform', {
   onSearch: async () => {
     await new Promise(resolve =>
@@ -1346,20 +1466,79 @@ NewUI.syncSearch('#tipsSearchPlatform', {
     );
   }
 });
-const tipsPlatformChips = NewUI.chips(tipsPlatformFilterEl, {
-  placeholder:'All Platforms', options:[], value:[], onChange:applyTipsFilters
+
+const tipsPlatformChips = NewUI.chips(
+  tipsPlatformFilterEl,
+  {
+    placeholder: "All Platforms",
+    options: [],
+    value: [],
+    onChange: () => {
+      applyTipsFilters();
+      saveTipsFilters();
+    }
+  }
+);
+
+const tipsStatusChips = NewUI.chips(
+  tipsStatusFilterEl,
+  {
+    placeholder: "All Status",
+    options: [
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" }
+    ],
+    value: [],
+    onChange: () => {
+      applyTipsFilters();
+      saveTipsFilters();
+    }
+  }
+);
+
+tipsSearchPlatformEl.addEventListener("input", () => {
+  applyTipsFilters();
+  saveTipsFilters();
 });
-const tipsStatusChips = NewUI.chips(tipsStatusFilterEl, {
-  placeholder:'All Status',
-  options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],
-  value:[],onChange:applyTipsFilters
+
+tipsSearchPlatformEl.addEventListener("change", () => {
+  applyTipsFilters();
+  saveTipsFilters();
 });
-tipsSearchPlatformEl.addEventListener('input',applyTipsFilters);
+
+
 function updateTipsFilterOptions(records) {
   const current = tipsPlatformChips.getValue();
-  tipsPlatformChips.setOptions(records.map(r=>({value:r.id,label:r.name})).sort((a,b)=>a.label.localeCompare(b.label)));
-  tipsPlatformChips.setValue(current.filter(id=>tipsRecords[id]),false);
+  const wasReady = tipsFilterReady;
+
+  // Jangan auto-save semasa options diperbaharui.
+  tipsFilterReady = false;
+
+  try {
+    const options = records
+      .map(record => ({
+        value: record.id,
+        label: record.name
+      }))
+      .sort((a, b) =>
+        a.label.localeCompare(b.label)
+      );
+
+    tipsPlatformChips.setOptions(options);
+
+    const validIds = new Set(
+      options.map(option => option.value)
+    );
+
+    tipsPlatformChips.setValue(
+      current.filter(id => validIds.has(id)),
+      false
+    );
+  } finally {
+    tipsFilterReady = wasReady;
+  }
 }
+
 function applyTipsFilters() {
   const selected = new Set(tipsPlatformChips?.getValue() || []);
   const statuses = new Set(tipsStatusChips?.getValue() || []);
@@ -1557,6 +1736,9 @@ async function startTipsRealtime() {
 
     renderPlatformsFromDatabase();
 
+    // Restore filter selepas semua platform tersedia.
+    restoreTipsFilters();
+
   } catch (error) {
     console.error('Tips Game API:', error);
 
@@ -1567,6 +1749,19 @@ async function startTipsRealtime() {
   }
 }
 tipsCreate.addEventListener('click',()=>openPlatformEditor());
+
+/* ==========================================
+   TIPS GAME - SAVE WHEN LEAVING PAGE
+   ========================================== */
+
+window.addEventListener("pagehide", () => {
+  // Jangan simpan semula filter lama
+  // apabila icon SVG refresh ditekan.
+  if (isTipsResetPending()) return;
+
+  saveTipsFilters();
+});
+
 // Legacy card buttons use inline handlers. Expose only the existing UI actions.
 Object.assign(window,{refreshList,copyTips,toggleAuto,togglePercent,toggleNumber});
 startTipsRealtime();
