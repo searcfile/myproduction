@@ -1703,6 +1703,55 @@ let isRestoringSelection = false;
 let lastWinRowIndex = -1;
 let manualWinAmount = 0;
 const gameData = {};
+
+/* ==========================================
+   EVO888 - WORKSPACE RESET
+   ========================================== */
+
+const EVO_RESET_PAGE = "evo888.html";
+
+function getEvoResetKey(uid) {
+  return `5g88.pageReset.v1:${uid}:${EVO_RESET_PAGE}`;
+}
+
+function isEvoResetPending() {
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  return !!uid &&
+    sessionStorage.getItem(getEvoResetKey(uid)) === "1";
+}
+
+function clearEvoSavedGenerator() {
+  localStorage.removeItem("gameLogDataEvo888");
+  localStorage.removeItem("jackpotInsertedMap");
+  localStorage.removeItem("autoFreeGameOnEvo888");
+  localStorage.removeItem("autoAddScoreOnEvo888");
+}
+
+function applyEvoWorkspaceReset(user) {
+  if (!user || user.isAnonymous) return false;
+
+  const uid = sessionStorage.getItem("5g88.adminSession");
+  if (uid !== user.uid) return false;
+
+  const key = getEvoResetKey(user.uid);
+  if (sessionStorage.getItem(key) !== "1") return false;
+
+  sessionStorage.removeItem(key);
+
+  // Sama seperti tekan tombol Reset Log.
+  resetLog();
+
+  // Pastikan data lama tidak disimpan semula.
+  clearEvoSavedGenerator();
+
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
+
+  return true;
+}
+
 function updateAutoAddScoreButtonUI() {
   const btn = document.getElementById("autoAddScoreBtn");
   if (!btn) return;
@@ -1716,7 +1765,11 @@ function updateAutoAddScoreButtonUI() {
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
 function saveCurrentSelectionOnly() {
-  if (isRestoringSelection) return;
+  if (
+    isRestoringSelection ||
+    !mgCatalogLoaded ||
+    isEvoResetPending()
+  ) return;
 
   const oldData = JSON.parse(localStorage.getItem("gameLogDataEvo888") || "{}");
 
@@ -2560,10 +2613,22 @@ function resetLog() {
   // reset state lain
   lastWinRowIndex = null;
   manualWinAmount = 0;
+
+  clearEvoSavedGenerator();
+
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const savedAuto = localStorage.getItem("autoFreeGameOnEvo888");
+
+  if (isEvoResetPending()) {
+    clearEvoSavedGenerator();
+  }
+
+  const savedAuto =
+    localStorage.getItem("autoFreeGameOnEvo888");
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
 
@@ -2636,7 +2701,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   applyFreeGame();
-  saveCurrentSelectionOnly();
 });
 function showToast(message, type = "success", duration = 3500) {
   if (window.NewUI && typeof window.NewUI.showToast === "function") {
@@ -3074,33 +3138,127 @@ function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.
 function mgField(label,value='',type='text',hint=''){
  const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
 }
-function mgApplyCatalog(snapshot){
- const previous=document.getElementById('gameSelect').value;
- const data=snapshot||{};
 
-for (const key of Object.keys(gameData)) {
-  delete gameData[key];
+function mgApplyCatalog(snapshot) {
+  const gameSelect = document.getElementById("gameSelect");
+  const betSelect = document.getElementById("betSelect");
+  const winSelect = document.getElementById("pecahanSelect");
+
+  const previous = mgCatalogLoaded ? {
+    game: gameSelect.value,
+    bet: betSelect.value,
+    pecahan: winSelect.value
+  } : null;
+
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem("gameLogDataEvo888") || "{}"
+    );
+  } catch (error) {
+    console.warn("[EVO888] Restore failed:", error);
+  }
+
+  mgCatalogLoaded = false;
+  isRestoringSelection = true;
+
+  try {
+    for (const key of Object.keys(gameData)) {
+      delete gameData[key];
+    }
+
+    mgGameIds = {};
+    mgRecords = {};
+
+    Object.entries(snapshot || {}).forEach(([id, game]) => {
+      if (
+        !game ||
+        typeof game.name !== "string" ||
+        !Array.isArray(game.bets) ||
+        !game.pecahan
+      ) return;
+
+      gameData[game.name] = {
+        bets: game.bets,
+        pecahan: game.pecahan,
+        freeGameOptions: Array.isArray(game.freeGameOptions)
+          ? game.freeGameOptions
+          : []
+      };
+
+      mgGameIds[game.name] = id;
+      mgRecords[game.name] = game;
+    });
+
+    gameSelect.replaceChildren(
+      new Option("Select Game", "")
+    );
+
+    Object.keys(gameData)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(name => {
+        gameSelect.add(new Option(name, name));
+      });
+
+    const selectedGame =
+      previous?.game && gameData[previous.game]
+        ? previous.game
+        : saved.game && gameData[saved.game]
+          ? saved.game
+          : "";
+
+    if (selectedGame) {
+      gameSelect.value = selectedGame;
+      gameSelect.dispatchEvent(
+        new Event("change", { bubbles: true })
+      );
+
+      const selectedBet =
+        previous?.game === selectedGame && previous.bet
+          ? previous.bet
+          : saved.game === selectedGame
+            ? saved.bet
+            : "";
+
+      if (
+        selectedBet !== "" &&
+        selectedBet !== undefined
+      ) {
+        betSelect.value = String(selectedBet);
+
+        if (betSelect.value !== "") {
+          betSelect.dispatchEvent(
+            new Event("change", { bubbles: true })
+          );
+
+          const selectedWin =
+            previous?.game === selectedGame &&
+            previous.bet === selectedBet
+              ? previous.pecahan
+              : saved.pecahan;
+
+          if (
+            selectedWin !== "" &&
+            selectedWin !== undefined
+          ) {
+            winSelect.value = String(selectedWin);
+          }
+        }
+      }
+    }
+
+  } finally {
+    isRestoringSelection = false;
+    mgCatalogLoaded = true;
+
+    gameCS?.refresh?.();
+    betCS?.refresh?.();
+    winCS?.refresh?.();
+  }
 }
 
-mgGameIds = {};
-mgRecords = {};
 
- Object.entries(data).forEach(([id,v])=>{
-   if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
-   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
-   mgGameIds[v.name]=id;
-   mgRecords[v.name] = v;
- });
- const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
- Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
- const saved=(()=>{try{return JSON.parse(localStorage.getItem('gameLogDataEvo888')||'{}')}catch{return {}}})();
- const selected=gameData[previous]?previous:gameData[saved.game]?saved.game:'';
- if(selected){select.value=selected;isRestoringSelection=true;select.dispatchEvent(new Event('change',{bubbles:true}));
- if(saved.game===selected&&saved.bet!==undefined){document.getElementById('betSelect').value=String(saved.bet);document.getElementById('betSelect').dispatchEvent(new Event('change',{bubbles:true}));if(saved.pecahan!==undefined)document.getElementById('pecahanSelect').value=String(saved.pecahan);}
- isRestoringSelection=false;}
- gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
- mgCatalogLoaded=true;
-}
 function mgStart() {
   const create = document.getElementById("mgCreate");
   const manage = document.getElementById("mgManage");
@@ -3116,49 +3274,118 @@ function mgStart() {
     return;
   }
 
+  let loadVersion = 0;
+
   firebase.auth().onAuthStateChanged(async user => {
+    const version = ++loadVersion;
+
     mgAccess = { role: "", actions: [] };
     mgSites = [];
     mgSyncPermission();
 
-    if (!user) {
+    if (!user || user.isAnonymous) {
+      mgCatalogLoaded = false;
       mgApplyCatalog({});
       return;
     }
 
-    try {
-      const [access, sites] = await Promise.all([
-        mgApi("/access"),
-        mgApi("/sites")
-      ]);
+    // SVG refresh tab menggunakan Reset Log asal.
+    applyEvoWorkspaceReset(user);
 
-      if (firebase.auth().currentUser?.uid !== user.uid) {
-        return;
+    // Muat senarai Game tanpa menunggu Access/Sites.
+    const gamesPromise = (async () => {
+      try {
+        const startedAt = performance.now();
+        const result = await mgApi("/games");
+
+        if (
+          version !== loadVersion ||
+          firebase.auth().currentUser?.uid !== user.uid
+        ) return;
+
+        if (!Array.isArray(result.games)) {
+          throw new Error("Invalid Game Catalog response");
+        }
+
+        const catalog = {};
+
+        for (const game of result.games) {
+          if (game && game.id != null) {
+            catalog[game.id] = game;
+          }
+        }
+
+        mgApplyCatalog(catalog);
+
+        console.log(
+          "[EVO888] Games loaded:",
+          result.games.length,
+          "in",
+          Math.round(performance.now() - startedAt) + "ms"
+        );
+
+      } catch (error) {
+        if (version !== loadVersion) return;
+
+        console.error("[EVO888] Games:", error);
+
+        mgToast(
+          "Game loading failed: " + error.message,
+          "error"
+        );
+      }
+    })();
+
+    // Permission masih disemak seperti asal.
+    const permissionsPromise = (async () => {
+      const [accessResult, sitesResult] =
+        await Promise.allSettled([
+          mgApi("/access"),
+          mgApi("/sites")
+        ]);
+
+      if (
+        version !== loadVersion ||
+        firebase.auth().currentUser?.uid !== user.uid
+      ) return;
+
+      if (accessResult.status === "fulfilled") {
+        const access = accessResult.value || {};
+
+        mgAccess = {
+          role: access.role || "",
+          actions: Array.isArray(access.actions)
+            ? access.actions
+            : []
+        };
+      } else {
+        console.error(
+          "[EVO888] Access error:",
+          accessResult.reason
+        );
       }
 
-      mgAccess = {
-        role: access.role,
-        actions: access.actions || []
-      };
+      if (sitesResult.status === "fulfilled") {
+        mgSites = Array.isArray(sitesResult.value?.sites)
+          ? sitesResult.value.sites
+          : [];
+      } else {
+        console.error(
+          "[EVO888] Sites error:",
+          sitesResult.reason
+        );
+      }
 
-      mgSites = sites.sites || [];
-
-      await mgReload();
       mgSyncPermission();
+    })();
 
-    } catch (error) {
-      mgAccess = { role: "", actions: [] };
-      mgSites = [];
-      mgSyncPermission();
-      mgApplyCatalog({});
-
-      mgToast(
-        "Game loading failed: " + error.message,
-        "error"
-      );
-    }
+    await Promise.allSettled([
+      gamesPromise,
+      permissionsPromise
+    ]);
   });
 }
+
 function mgEditor(oldName=''){
 if (!mgCan(oldName ? "edit" : "create")) {
   mgToast("Permission denied", "error");
