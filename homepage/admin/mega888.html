@@ -3130,12 +3130,14 @@ function mgStart() {
       await mgReload();
       mgSyncPermission();
 
-    } catch (error) {
-      mgAccess = { role: "", actions: [] };
-      mgSites = [];
-      mgSyncPermission();
-      mgApplyCatalog({});
 
+    } catch (error) {
+      console.error(
+        "[MEGA888] Failed to load game catalog:",
+        error
+      );
+
+      mgSyncPermission();
       mgToast(
         "Game loading failed: " + error.message,
         "error"
