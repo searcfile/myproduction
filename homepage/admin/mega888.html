@@ -1510,7 +1510,7 @@ function updateAutoAddScoreButtonUI() {
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
 function saveCurrentSelectionOnly() {
-  if (isRestoringSelection) return;
+  if (isRestoringSelection || !mgCatalogLoaded) return;
 
   const oldData = JSON.parse(localStorage.getItem("gameLogDataMega888") || "{}");
 
@@ -2505,24 +2505,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   isRestoringSelection = true;
 
-  if (gameSelect) {
-    gameSelect.value = data.game || "";
-    gameSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    if (typeof gameCS !== "undefined" && gameCS) gameCS.refresh();
-  }
-
-  if (betSelect && data.bet !== undefined && data.bet !== "") {
-    betSelect.value = String(data.bet);
-    betSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    if (typeof betCS !== "undefined" && betCS) betCS.refresh();
-  }
-
-  if (pecahanSelect && data.pecahan !== undefined && data.pecahan !== "") {
-    pecahanSelect.value = String(data.pecahan);
-    if (typeof winCS !== "undefined" && winCS) winCS.refresh();
-  }
-
-  isRestoringSelection = false;
+  // Game, Bet dan Win akan dipulihkan selepas
+  // game catalog siap dimuat daripada API.
 
   if (tbody) {
     tbody.innerHTML = data.logs || "";
@@ -2538,7 +2522,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   applyFreeGame();
-  saveCurrentSelectionOnly();
 });
 /* ==========================================
    MEGA888 - CUSTOM NEWUI TOAST
