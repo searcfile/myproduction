@@ -854,6 +854,123 @@ let tagFilter, collectionFilter, searchUI, loaded = false;
 let itemSites = [];
 let itemProfile = null;
 
+/* ==========================================
+   ITEM COLLECTION - SAVE & RESTORE FILTER
+   ========================================== */
+
+const ITEM_FILTER_PAGE = "item.html";
+let itemFilterReady = false;
+
+function getItemFilterKeys() {
+  const user = firebase.auth().currentUser;
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (!user || user.isAnonymous || !uid || user.uid !== uid) {
+    return null;
+  }
+
+  return {
+    state: `5g88.pageState.v1:${uid}:${ITEM_FILTER_PAGE}`,
+    reset: `5g88.pageReset.v1:${uid}:${ITEM_FILTER_PAGE}`
+  };
+}
+
+function isItemResetPending() {
+  const keys = getItemFilterKeys();
+
+  return !!keys &&
+    sessionStorage.getItem(keys.reset) === "1";
+}
+
+function saveItemFilters() {
+  if (!itemFilterReady || isItemResetPending()) return;
+
+  const keys = getItemFilterKeys();
+  if (!keys) return;
+
+  try {
+    localStorage.setItem(keys.state, JSON.stringify({
+      search: search.value,
+      tags: tagFilter?.getValue?.() || [],
+      collections: collectionFilter?.getValue?.() || []
+    }));
+  } catch (error) {
+    console.warn("[Item] Save filter failed:", error);
+  }
+}
+
+function restoreItemFilters() {
+  if (itemFilterReady || !loaded) return;
+
+  const keys = getItemFilterKeys();
+  if (!keys) return;
+
+  if (isItemResetPending()) {
+    localStorage.removeItem(keys.state);
+
+    search.value = "";
+    search.defaultValue = "";
+
+    tagFilter?.setValue?.([...ITEM_TAGS], false);
+    collectionFilter?.setValue?.([], false);
+
+    itemFilterReady = true;
+    sessionStorage.removeItem(keys.reset);
+
+    render();
+    return;
+  }
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(keys.state) || "null"
+    );
+  } catch (error) {
+    console.warn("[Item] Restore filter failed:", error);
+  }
+
+  if (saved && typeof saved === "object") {
+    search.value = String(saved.search ?? "");
+
+    const availableTags = new Set([
+      ...ITEM_TAGS,
+      ...allItems().flatMap(item =>
+        clean(item.tag)
+          .split(",")
+          .map(value => value.trim())
+          .filter(Boolean)
+      )
+    ]);
+
+    const availableCollections = new Set(
+      allItems()
+        .map(item => clean(item.collection || item.title))
+        .filter(Boolean)
+    );
+
+    if (Array.isArray(saved.tags)) {
+      tagFilter?.setValue?.(
+        saved.tags.filter(value => availableTags.has(value)),
+        false
+      );
+    }
+
+    if (Array.isArray(saved.collections)) {
+      collectionFilter?.setValue?.(
+        saved.collections.filter(value =>
+          availableCollections.has(value)
+        ),
+        false
+      );
+    }
+  }
+
+  itemFilterReady = true;
+  render();
+}
+
 const ITEM_API =
   "https://fiveg88-admin-backend-v2.onrender.com/api/item-collection";
 
@@ -917,17 +1034,68 @@ async function reloadItems() {
     collection:r.title,legacy:true
   }));
   function allItems(){return [...legacy,...records.values()].sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));}
-  function refreshFilters(){
-    const items=allItems();
-    const tags=[...new Set([...ITEM_TAGS,...items.flatMap(x=>clean(x.tag).split(',').map(s=>s.trim()).filter(Boolean))])].sort((a,b)=>a.localeCompare(b));
-    const collections=[...new Set(items.map(x=>clean(x.collection||x.title)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-    tagFilter?.setOptions(tags.map(v=>({value:v,label:v})));
-    // Kekalkan pilihan default jika belum ada pilihan
-if (tagFilter && !(tagFilter.getValue() || []).length) {
-  tagFilter.setValue([...ITEM_TAGS]);
-}
-    collectionFilter?.setOptions(collections.map(v=>({value:v,label:v})));
+
+function refreshFilters() {
+  const items = allItems();
+
+  const tags = [
+    ...new Set([
+      ...ITEM_TAGS,
+      ...items.flatMap(item =>
+        clean(item.tag)
+          .split(",")
+          .map(value => value.trim())
+          .filter(Boolean)
+      )
+    ])
+  ].sort((a, b) => a.localeCompare(b));
+
+  const collections = [
+    ...new Set(
+      items
+        .map(item => clean(item.collection || item.title))
+        .filter(Boolean)
+    )
+  ].sort((a, b) => a.localeCompare(b));
+
+  const previousTags = tagFilter?.getValue?.() || [];
+  const previousCollections =
+    collectionFilter?.getValue?.() || [];
+
+  const wasReady = itemFilterReady;
+  itemFilterReady = false;
+
+  try {
+    tagFilter?.setOptions?.(
+      tags.map(value => ({
+        value,
+        label: value
+      }))
+    );
+
+    collectionFilter?.setOptions?.(
+      collections.map(value => ({
+        value,
+        label: value
+      }))
+    );
+
+    tagFilter?.setValue?.(
+      previousTags.filter(value => tags.includes(value)),
+      false
+    );
+
+    collectionFilter?.setValue?.(
+      previousCollections.filter(value =>
+        collections.includes(value)
+      ),
+      false
+    );
+  } finally {
+    itemFilterReady = wasReady;
   }
+}
+
   function filtered(){
     const q=lower(search.value),tags=tagFilter?.getValue()||[],cols=collectionFilter?.getValue()||[];
     return allItems().filter(x=>{
@@ -1286,8 +1454,8 @@ function startRealtime() {
       itemSites = sitesResult.sites || [];
 
       createButton.hidden = !itemCan("create");
-
       await reloadItems();
+      restoreItemFilters();
 
     } catch (error) {
       console.error("Item initialization:", error);
@@ -1302,26 +1470,49 @@ function startRealtime() {
     }
   });
 }
+
 tagFilter = NewUI.chips('#itemTagChips', {
   placeholder: 'All Tags',
   options: ITEM_TAGS.map(tag => ({
     value: tag,
     label: tag
   })),
-  onChange: render
+  onChange: () => {
+    render();
+    saveItemFilters();
+  }
 });
 
-// Default pilih semua Tags
-tagFilter.setValue([...ITEM_TAGS]);
+// Default Item Collection: semua Tags dipilih.
+tagFilter.setValue([...ITEM_TAGS], false);
 
 collectionFilter = NewUI.chips('#itemCollectionChips', {
   placeholder: 'All Collections',
   options: [],
-  onChange: render
+  onChange: () => {
+    render();
+    saveItemFilters();
+  }
 });
+
   searchUI=NewUI.syncSearch(search,{onSearch:async()=>{render();await new Promise(r=>setTimeout(r,450));}});
-  search.addEventListener('input',render);
+  search.addEventListener('input', () => {
+  render();
+  saveItemFilters();
+});
+
+search.addEventListener('change', () => {
+  render();
+  saveItemFilters();
+});
   document.getElementById('itemCreate').addEventListener('click',()=>openForm());
+  
+window.addEventListener("pagehide", () => {
+  if (isItemResetPending()) return;
+
+  saveItemFilters();
+});
+
   refreshFilters();render();startRealtime();
   // Keep original parent-frame activity tracking.
   window.HISTORY_TAB_NAME='ITEM COLLECTION';
