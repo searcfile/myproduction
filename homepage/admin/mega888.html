@@ -1457,6 +1457,50 @@ let autoAddScoreOn = false;
 let isRestoringSelection = false;
 const gameData = Object.create(null); // Live game catalog from Firebase, no hardcoded games.
 
+/* ==========================================
+   MEGA888 - WORKSPACE SAVE & RESET
+   ========================================== */
+
+const MEGA_FILTER_PAGE = "mega888.html";
+
+function getMegaWorkspaceKeys() {
+  const user = firebase.auth().currentUser;
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    !uid ||
+    user.uid !== uid
+  ) {
+    return null;
+  }
+
+  return {
+    reset: `5g88.pageReset.v1:${uid}:${MEGA_FILTER_PAGE}`
+  };
+}
+
+function applyMegaWorkspaceReset() {
+  const keys = getMegaWorkspaceKeys();
+  if (!keys) return false;
+
+  if (sessionStorage.getItem(keys.reset) !== "1") {
+    return false;
+  }
+
+  // Padam state generator MEGA888 sahaja.
+  localStorage.removeItem("gameLogDataMega888");
+  localStorage.removeItem("jackpotInsertedMap");
+  localStorage.removeItem("autoFreeGameOnMega888");
+  localStorage.removeItem("autoAddScoreOnMega888");
+
+  // Reset sudah diproses.
+  sessionStorage.removeItem(keys.reset);
+
+  return true;
+}
+
 function updateAutoAddScoreButtonUI() {
   const input = document.getElementById("autoAddScoreBtn");
   if (!input) return;
@@ -2414,6 +2458,7 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
 });
 
 window.addEventListener("DOMContentLoaded", () => {
+  applyMegaWorkspaceReset();
   const savedAuto = localStorage.getItem("autoFreeGameOnMega888");
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
