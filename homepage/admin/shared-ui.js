@@ -3226,8 +3226,6 @@ if (!verifiedProfileReady) {
 
 
 
-
-
 function refreshTab(tab) {
   if (!verifiedProfileReady) return;
   if (!tab?.file) return;
@@ -3249,20 +3247,32 @@ function refreshTab(tab) {
   const resetKey =
     `5g88.pageReset.v1:${uid}:${targetFile}`;
 
-  // Beritahu halaman supaya tidak save
-  // semula filter lama semasa reload.
+  // Tandakan reset untuk halaman sasaran.
   sessionStorage.setItem(resetKey, "1");
 
-  // Padam filter halaman ini sahaja.
+  // Padam state filter halaman sahaja.
   localStorage.removeItem(stateKey);
 
   if (getCurrentFile() === targetFile) {
+    // Kekalkan loading overlay sedia ada.
     sessionStorage.setItem(
       "5g88.showRefreshLoading",
       "1"
     );
 
-    window.location.reload();
+    // Navigasi ke URL baru supaya dokumen HTML
+    // tidak diambil daripada cache URL sebelumnya.
+    const url = new URL(
+      `./${targetFile}`,
+      window.location.href
+    );
+
+    url.searchParams.set(
+      "_tabrefresh",
+      String(Date.now())
+    );
+
+    window.location.replace(url.href);
   } else {
     navigateToTab(tab);
   }
