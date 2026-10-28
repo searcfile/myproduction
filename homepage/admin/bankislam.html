@@ -1288,11 +1288,7 @@ function biEscape(value) {
 
 
 function biRefreshBankDropdown() {
-  // Ambil pilihan terakhir daripada draft.
-  // Penting: option bank belum tentu tersedia
-  // ketika restoreFromStorage() dijalankan.
   const draft = loadDraft();
-
   const previous = draft?.bank ?? inBank.value ?? "";
 
   BANKS = Object.values(biBankRecords)
@@ -1316,12 +1312,6 @@ function biRefreshBankDropdown() {
   );
 
   inBank.value = bankExists ? previous : "";
-
-  // Simpan semula hanya jika bank lama
-  // sudah tidak tersedia
-  if (previous && !bankExists) {
-    saveDraft();
-  }
 
   // Update custom dropdown UI
   inBank._sharedDropdown?.refresh?.();
@@ -1491,8 +1481,9 @@ function saveDraft(){
     date:   inDate.value,
     prefix: inPrefix.value,
     len:    inLen.value,
-    bank:   inBank.value,
-    name:   inName.value,
+bank:   inBank.value,
+alpha:  document.getElementById("nmAlpha")?.value || "",
+name:   inName.value,
   };
   localStorage.setItem(LS_DRAFT, JSON.stringify(data));
 }
@@ -1537,8 +1528,19 @@ function restoreFromStorage(){
     if (d.date   != null) inDate.value   = d.date;
     if (d.prefix != null) inPrefix.value = d.prefix;
     if (d.len    != null) inLen.value    = d.len;
-    if (d.bank   != null) inBank.value   = d.bank;
-    if (d.name   != null) inName.value   = d.name;
+
+if (d.bank != null) {
+  // Bank akan dipilih semula setelah API selesai load
+  inBank.value = d.bank;
+}
+
+if (d.alpha != null) {
+  document.getElementById("nmAlpha").value = d.alpha;
+}
+
+if (d.name != null) {
+  inName.value = d.name;
+}
   }
 
   // 2) Balikkan snapshot -> tampilan kartu
@@ -1566,7 +1568,17 @@ function restoreFromStorage(){
 }
 
 // Simpan draft otomatis saat user mengetik/ubah
-[inAmount, inDate, inPrefix, inLen, inBank, inName].forEach(el=>{
+
+[
+  inAmount,
+  inDate,
+  inPrefix,
+  inLen,
+  inBank,
+  document.getElementById("nmAlpha"),
+  inName
+].forEach(el => {
+
   el?.addEventListener('input',  saveDraft);
   el?.addEventListener('change', saveDraft);
 });
@@ -1721,9 +1733,13 @@ window.addEventListener('load', () => {
   inLen.closest('.fld')?.style &&
     (inLen.closest('.fld').style.display = 'none');
 
-  // Refresh UI dropdown selepas restore
-  inLen._sharedDropdown?.refresh?.();
-  inBank._sharedDropdown?.refresh?.();
+
+// Refresh semua custom dropdown selepas restore
+inLen._sharedDropdown?.refresh?.();
+inBank._sharedDropdown?.refresh?.();
+document.getElementById("nmAlpha")
+  ?._sharedDropdown?.refresh?.();
+
 
   // Paparkan resit atau No Data
   updateBankIslamEmptyState();
