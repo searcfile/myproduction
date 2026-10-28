@@ -1168,6 +1168,129 @@ let currentPlatforms = [
   let methodChip = null;
   let platformChip = null;
   const LOGO_METHODS = [{value:'slot',label:'Slot'},{value:'live',label:'Live Game'},{value:'table',label:'Table Game'}];
+  
+/* ==========================================
+   LOGO GAME - SAVE & RESTORE FILTER
+   ========================================== */
+
+const LOGO_FILTER_PAGE = "logogame.html";
+
+let logoFilterReady = false;
+
+function getLogoFilterKeys() {
+  const user = firebase.auth().currentUser;
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    !uid ||
+    user.uid !== uid
+  ) {
+    return null;
+  }
+
+  return {
+    state: `5g88.pageState.v1:${uid}:${LOGO_FILTER_PAGE}`,
+    reset: `5g88.pageReset.v1:${uid}:${LOGO_FILTER_PAGE}`
+  };
+}
+
+function isLogoResetPending() {
+  const keys = getLogoFilterKeys();
+
+  return !!keys &&
+    sessionStorage.getItem(keys.reset) === "1";
+}
+
+function saveLogoFilters() {
+  if (!logoFilterReady || isLogoResetPending()) return;
+
+  const keys = getLogoFilterKeys();
+  if (!keys) return;
+
+  try {
+    localStorage.setItem(
+      keys.state,
+      JSON.stringify({
+        search: document.getElementById("searchInput").value,
+        methods: methodChip?.getValue?.() || [],
+        platforms: platformChip?.getValue?.() || []
+      })
+    );
+  } catch (error) {
+    console.warn("[Logo Game] Save failed:", error);
+  }
+}
+
+function restoreLogoFilters() {
+  if (logoFilterReady) return;
+
+  const keys = getLogoFilterKeys();
+  if (!keys) return;
+
+  const search = document.getElementById("searchInput");
+
+  if (isLogoResetPending()) {
+    localStorage.removeItem(keys.state);
+
+    search.value = "";
+    search.defaultValue = "";
+
+    currentTypes = LOGO_METHODS.map(item => item.value);
+    currentPlatforms = LOGO_PLATFORMS.map(item => item.value);
+
+    methodChip?.setValue?.([...currentTypes], false);
+    platformChip?.setValue?.([...currentPlatforms], false);
+
+    logoFilterReady = true;
+    sessionStorage.removeItem(keys.reset);
+
+    renderGames();
+    return;
+  }
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(keys.state) || "null"
+    );
+  } catch (error) {
+    console.warn("[Logo Game] Restore failed:", error);
+  }
+
+  if (saved && typeof saved === "object") {
+    search.value = String(saved.search ?? "");
+
+    const validMethods = new Set(
+      LOGO_METHODS.map(item => item.value)
+    );
+
+    const validPlatforms = new Set(
+      LOGO_PLATFORMS.map(item => item.value)
+    );
+
+    if (Array.isArray(saved.methods)) {
+      currentTypes = saved.methods.filter(value =>
+        validMethods.has(value)
+      );
+    }
+
+    if (Array.isArray(saved.platforms)) {
+      currentPlatforms = saved.platforms.filter(value =>
+        validPlatforms.has(value)
+      );
+    }
+
+    methodChip?.setValue?.([...currentTypes], false);
+    platformChip?.setValue?.([...currentPlatforms], false);
+  }
+
+  logoFilterReady = true;
+  renderGames();
+}
+
   const LOGO_PLATFORMS = [{value:'918kiss',label:'918KISS'},{value:'mega888',label:'MEGA888'},{value:'pussy888',label:'PUSSY888'},{value:'xe88',label:'XE88'}];
 
 function initLogoFilters() {
@@ -1181,8 +1304,9 @@ function initLogoFilters() {
     options: LOGO_METHODS,
     value: [...currentTypes],
     onChange(values) {
-      currentTypes = values;
-      renderGames();
+    currentTypes = values;
+    renderGames();
+    saveLogoFilters();
     }
   });
 
@@ -1191,8 +1315,9 @@ function initLogoFilters() {
     options: LOGO_PLATFORMS,
     value: [...currentPlatforms],
     onChange(values) {
-      currentPlatforms = values;
-      renderGames();
+    currentPlatforms = values;
+    renderGames();
+    saveLogoFilters();
     }
   });
 
@@ -1213,7 +1338,15 @@ function initLogoFilters() {
   });
 }
 
-  document.getElementById('searchInput').addEventListener('input',renderGames);
+  document.getElementById('searchInput').addEventListener('input', () => {
+  renderGames();
+  saveLogoFilters();
+});
+
+document.getElementById('searchInput').addEventListener('change', () => {
+  renderGames();
+  saveLogoFilters();
+});
   initLogoFilters();
     function renderGames() {
       const grid = document.getElementById('gameGrid');
@@ -1978,7 +2111,7 @@ function startLogoRealtime() {
       logoSites = sitesResult.sites || [];
 
       await reloadGameLogos();
-
+      restoreLogoFilters();
       createButton.hidden = !logoCan("create");
 
     } catch (error) {
@@ -1997,6 +2130,12 @@ function startLogoRealtime() {
     }
   });
 }
+
+window.addEventListener("pagehide", () => {
+  if (isLogoResetPending()) return;
+
+  saveLogoFilters();
+});
 
 startLogoRealtime();
 </script>
