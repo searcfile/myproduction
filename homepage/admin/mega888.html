@@ -3137,7 +3137,20 @@ function mgStart() {
     // Access dan Sites selesai.
     const gamesPromise = (async () => {
       try {
-        const result = await mgApi("/games");
+        
+const startedAt = performance.now();
+
+console.log("[MEGA888] Starting Game Catalog request");
+
+const result = await mgApi("/games");
+
+console.log(
+  "[MEGA888] Backend response:",
+  Math.round(performance.now() - startedAt) + "ms",
+  "Games:",
+  result.games?.length ?? 0
+);
+
 
         if (
           version !== loadVersion ||
@@ -3157,6 +3170,11 @@ function mgStart() {
         }
 
         mgApplyCatalog(catalog);
+        
+console.log(
+  "[MEGA888] Dropdown ready:",
+  Math.round(performance.now() - startedAt) + "ms"
+);
 
         console.log(
           "[MEGA888] Game Catalog ready:",
