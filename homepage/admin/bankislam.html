@@ -1286,23 +1286,44 @@ function biEscape(value) {
   })[char]);
 }
 
+
 function biRefreshBankDropdown() {
-  const previous = inBank.value;
+  // Ambil pilihan terakhir daripada draft.
+  // Penting: option bank belum tentu tersedia
+  // ketika restoreFromStorage() dijalankan.
+  const draft = loadDraft();
+
+  const previous = draft?.bank ?? inBank.value ?? "";
 
   BANKS = Object.values(biBankRecords)
-  .filter(bank => bank.active !== false)
-  .sort((a, b) => a.name.localeCompare(b.name));
+    .filter(bank => bank.active !== false)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  inBank.replaceChildren(new Option("Random Bank", ""));
+  // Bina semula pilihan daripada backend
+  inBank.replaceChildren(
+    new Option("Random Bank", "")
+  );
 
   BANKS.forEach(bank => {
-    inBank.add(new Option(bank.name, bank.name));
+    inBank.add(
+      new Option(bank.name, bank.name)
+    );
   });
 
-  inBank.value = BANKS.some(bank => bank.name === previous)
-    ? previous
-    : "";
+  // Restore selepas semua option tersedia
+  const bankExists = BANKS.some(
+    bank => bank.name === previous
+  );
 
+  inBank.value = bankExists ? previous : "";
+
+  // Simpan semula hanya jika bank lama
+  // sudah tidak tersedia
+  if (previous && !bankExists) {
+    saveDraft();
+  }
+
+  // Update custom dropdown UI
   inBank._sharedDropdown?.refresh?.();
 }
 
@@ -1688,17 +1709,26 @@ function resetLocal() {
   });
 
   // Initial state: biarkan kosong (lebih jelas user bisa ketik/klik Now)
-window.addEventListener('load', ()=>{
+
+window.addEventListener('load', () => {
+  // Restore semua input daripada localStorage
   restoreFromStorage();
+
   updatePrefixFromDate();
+
   inLen.value = DEFAULT_REF_TOTAL;
 
   inLen.closest('.fld')?.style &&
     (inLen.closest('.fld').style.display = 'none');
 
-  // Semak snapshot sebenar selepas refresh
+  // Refresh UI dropdown selepas restore
+  inLen._sharedDropdown?.refresh?.();
+  inBank._sharedDropdown?.refresh?.();
+
+  // Paparkan resit atau No Data
   updateBankIslamEmptyState();
 });
+
 
 apply.addEventListener('click', e=>{
   e.preventDefault();
