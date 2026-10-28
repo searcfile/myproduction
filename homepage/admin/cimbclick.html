@@ -2013,6 +2013,30 @@ function refreshBankCatalog() {
   }
 
 renderBankMenu();
+
+const user = firebase.auth().currentUser;
+
+if (user && cimbPersistenceReady) {
+  const saved = localStorage.getItem(
+    cimbInputKey(user.uid)
+  );
+
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+
+      if (data.bank && BANK_CONFIG[data.bank]) {
+        selectedBank = data.bank;
+        bankSelectNative.value = selectedBank;
+        bankSelectNative._sharedDropdown?.refresh?.();
+        toggleAccountNameByBank(selectedBank);
+        updateBankChargeCurrencyVisibility(selectedBank);
+      }
+    } catch (error) {
+      console.warn("[CIMB] Bank restore failed:", error);
+    }
+  }
+}
 }
 async function initFirebaseBanks() {
   try {
@@ -2352,9 +2376,223 @@ cimbLoadBanks()
     bankToast(error.message, "error");
   });
 }
-document.getElementById("bankCreate")?.addEventListener("click",()=>bankFormModal());
-document.getElementById("bankManage")?.addEventListener("click",bankManageModal);
+
+document.getElementById("bankCreate")
+  ?.addEventListener("click", () => bankFormModal());
+
+document.getElementById("bankManage")
+  ?.addEventListener("click", bankManageModal);
+
+
+/* ==========================================
+   CIMB BANK - AUTO SAVE + TAB SVG REFRESH
+   ========================================== */
+
+const CIMB_INPUT_STORAGE = "5g88.cimb.inputs.v1";
+
+const CIMB_INPUT_FIELDS = [
+  "input-recipient",
+  "input-date",
+  "input-ref4",
+  "input-amount"
+];
+
+let cimbPersistenceReady = false;
+
+function cimbInputKey(uid) {
+  return `${CIMB_INPUT_STORAGE}:${uid}`;
+}
+
+function cimbSaveInputs() {
+  if (!cimbPersistenceReady) return;
+
+  const user = firebase.auth().currentUser;
+  if (!user || user.isAnonymous) return;
+
+  const inputs = {};
+
+  for (const id of CIMB_INPUT_FIELDS) {
+    const el = document.getElementById(id);
+    if (el) inputs[id] = el.value;
+  }
+
+  localStorage.setItem(
+    cimbInputKey(user.uid),
+    JSON.stringify({
+      inputs,
+      bank: selectedBank,
+      autoName: autoNameOn
+    })
+  );
+}
+
+function cimbRestoreInputs(uid) {
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(cimbInputKey(uid)) || "null"
+    );
+  } catch (error) {
+    console.warn("[CIMB] Invalid saved inputs:", error);
+  }
+
+  if (!saved) return;
+
+  if (typeof saved.autoName === "boolean") {
+    setAutoName(saved.autoName);
+  }
+
+  for (const id of CIMB_INPUT_FIELDS) {
+    const el = document.getElementById(id);
+
+    if (
+      el &&
+      Object.prototype.hasOwnProperty.call(
+        saved.inputs || {},
+        id
+      )
+    ) {
+      el.value = saved.inputs[id];
+    }
+  }
+
+  if (saved.bank) {
+    selectedBank = saved.bank;
+    localStorage.setItem("selectedBank", saved.bank);
+  }
+
+  if (bankCatalogLoaded) {
+    refreshBankCatalog();
+  }
+
+  updateDisplay(true);
+}
+
+function cimbClearWorkspace(uid) {
+  cimbPersistenceReady = false;
+
+  localStorage.removeItem(cimbInputKey(uid));
+
+  const keys = [
+    "displayData",
+    "selectedBank",
+    "lastRecipientName",
+    "autoNameOn",
+    "cimb_blur_mode_v1",
+    "cimb_account_name_selected_v1"
+  ];
+
+  keys.forEach(key => localStorage.removeItem(key));
+
+  selectedBank = "";
+  autoNameOn = true;
+  lastRealAcc = "";
+  lastRealName = "";
+
+  for (const id of CIMB_INPUT_FIELDS) {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  }
+
+  const autoSwitch =
+    document.getElementById("btn-auto-name");
+
+  if (autoSwitch) {
+    autoSwitch.checked = true;
+    window.NewUI?.activeSwitch?.sync?.(autoSwitch);
+  }
+
+  const recipient =
+    document.getElementById("input-recipient");
+
+  if (recipient) recipient.disabled = true;
+
+  document.getElementById("transfer-date").textContent =
+    "01 May 2025, 00:00:00 am";
+
+  document.getElementById("main-amount").textContent =
+    "0.";
+
+  document.querySelector(".sen").textContent = "00";
+
+  document.getElementById("ref-number").textContent =
+    "000000000";
+
+  setAccountPreviewMode("full", "");
+  setNamePreviewMode("full", "");
+
+  if (bankCatalogLoaded) {
+    refreshBankCatalog();
+  }
+
+  updateCimbEmptyState();
+}
+
+function cimbInitPersistence() {
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user || user.isAnonymous) {
+      cimbPersistenceReady = false;
+      return;
+    }
+
+    const resetKey =
+      `5g88.pageReset.v1:${user.uid}:cimbclick.html`;
+
+    const resetRequested =
+      sessionStorage.getItem(resetKey) === "1";
+
+    if (resetRequested) {
+      sessionStorage.removeItem(resetKey);
+      cimbClearWorkspace(user.uid);
+    } else {
+      cimbRestoreInputs(user.uid);
+    }
+
+    if (!cimbPersistenceReady) {
+      for (const id of CIMB_INPUT_FIELDS) {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.cimbAutoSave === "1") continue;
+
+        el.dataset.cimbAutoSave = "1";
+
+        el.addEventListener("input", cimbSaveInputs);
+        el.addEventListener("change", cimbSaveInputs);
+      }
+
+      document.getElementById("btn-auto-name")
+        ?.addEventListener("change", () => {
+          queueMicrotask(cimbSaveInputs);
+        });
+
+      bankSelectNative.addEventListener(
+        "change",
+        () => queueMicrotask(cimbSaveInputs)
+      );
+
+      document.getElementById("btn-date")
+        ?.addEventListener("click", () => {
+          queueMicrotask(cimbSaveInputs);
+        });
+
+      document.getElementById("btn-create")
+        ?.addEventListener("click", () => {
+          queueMicrotask(cimbSaveInputs);
+        });
+
+      document.getElementById("btn-reset")
+        ?.addEventListener("click", () => {
+          queueMicrotask(cimbSaveInputs);
+        });
+    }
+
+    cimbPersistenceReady = true;
+  });
+}
+
+cimbInitPersistence();
 initFirebaseBanks();
+
 
 </script>
 </body>
