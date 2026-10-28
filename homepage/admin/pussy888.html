@@ -1560,6 +1560,53 @@ let autoFreeGameOn = false;   // ✅ status AUTO (off default)
 let autoAddScoreOn = false;
 let isRestoringSelection = false;
 const gameData = {};
+
+/* ==========================================
+   PUSSY888 - WORKSPACE RESET
+   ========================================== */
+
+const PUSSY_RESET_PAGE = "pussy888.html";
+
+function getPussyResetKey(uid) {
+  return `5g88.pageReset.v1:${uid}:${PUSSY_RESET_PAGE}`;
+}
+
+function clearPussySavedGenerator() {
+  localStorage.removeItem("gameLogDataPussy888");
+  localStorage.removeItem("jackpotInsertedMap");
+  localStorage.removeItem("autoFreeGameOnPussy888");
+  localStorage.removeItem("autoAddScoreOnPussy888");
+}
+
+function isPussyResetPending() {
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  return !!uid &&
+    sessionStorage.getItem(getPussyResetKey(uid)) === "1";
+}
+
+function applyPussyWorkspaceReset(user) {
+  if (!user || user.isAnonymous) return false;
+
+  const sessionUid =
+    sessionStorage.getItem("5g88.adminSession");
+
+  if (sessionUid !== user.uid) return false;
+
+  const resetKey = getPussyResetKey(user.uid);
+
+  if (sessionStorage.getItem(resetKey) !== "1") {
+    return false;
+  }
+
+  sessionStorage.removeItem(resetKey);
+
+  resetLog();
+  clearPussySavedGenerator();
+
+  return true;
+}
+
 function updateAutoAddScoreButtonUI() {
   const input=document.getElementById('autoAddScoreBtn');
   if(!input)return;
@@ -1568,7 +1615,7 @@ function updateAutoAddScoreButtonUI() {
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap")) || {};
 function saveCurrentSelectionOnly() {
-  if (isRestoringSelection) return;
+  if (isRestoringSelection || !mgCatalogLoaded || isPussyResetPending()) return;
 
   const oldData = JSON.parse(localStorage.getItem("gameLogDataPussy888") || "{}");
 
@@ -2263,7 +2310,26 @@ if (autoFreeGameOn) {
       lastWinRowIndex,manualWinAmount: parseFloat(document.getElementById("manualWinInput")?.value || "0") || 0,
       logs: tbody.innerHTML
     };
-    localStorage.setItem("gameLogDataPussy888", JSON.stringify(savedData));
+    
+const existing = (() => {
+  try {
+    return JSON.parse(
+      localStorage.getItem("gameLogDataPussy888") || "{}"
+    );
+  } catch {
+    return {};
+  }
+})();
+
+localStorage.setItem(
+  "gameLogDataPussy888",
+  JSON.stringify({
+    ...existing,
+    ...savedData,
+    inputs: existing.inputs || {}
+  })
+);
+
   }, 50);
 }
 function addJackpot() {
@@ -2567,9 +2633,18 @@ function resetLog() {
   // reset state lain
   lastWinRowIndex = null;
   manualWinAmount = 0;
+
+  clearPussySavedGenerator();
 }
+
 window.addEventListener("DOMContentLoaded", () => {
-  const savedAuto = localStorage.getItem("autoFreeGameOnPussy888");
+  if (isPussyResetPending()) {
+    clearPussySavedGenerator();
+  }
+
+  const savedAuto =
+    localStorage.getItem("autoFreeGameOnPussy888");
+
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
 
@@ -2602,16 +2677,31 @@ window.addEventListener("DOMContentLoaded", () => {
   const tbody = document.querySelector("#gameLog tbody");
 
   if (manualTimeInput) {
-    manualTimeInput.value = data.manualTime || "";
+    manualTimeInput.value =
+      data.inputs?.manualTime ?? data.manualTime ?? "";
   }
 
   if (manualScoreInput) {
-    manualScoreInput.value = Number(data.manualScore) > 0 ? data.manualScore : "";
+    manualScoreInput.value =
+  data.inputs?.manualScore ??
+  (Number(data.manualScore) > 0 ? data.manualScore : "");
   }
 
   if (freeGameInput && typeof data.freeGame !== "undefined") {
-    freeGameInput.value = Number(data.freeGame) > 0 ? data.freeGame : "";
+    freeGameInput.value =
+  data.inputs?.freeGameInput ??
+  (Number(data.freeGame) > 0 ? data.freeGame : "");
   }
+
+  // Restore input tambahan.
+  for (const id of pussyInputIds) {
+    const input = document.getElementById(id);
+
+    if (input && data.inputs?.[id] !== undefined) {
+      input.value = data.inputs[id];
+    }
+  }
+
 
   isRestoringSelection = true;
 
@@ -2639,9 +2729,58 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   applyFreeGame();
-  saveCurrentSelectionOnly();
 });
-  
+
+/* ==========================================
+   PUSSY888 - AUTO SAVE INPUT
+   ========================================== */
+
+const pussyInputIds = [
+  "manualTime",
+  "manualScore",
+  "manualJackpot",
+  "manualScoreInput",
+  "manualWinInput",
+  "freeGameInput"
+];
+
+function savePussyInputs() {
+  if (isPussyResetPending()) return;
+
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem("gameLogDataPussy888") || "{}"
+    );
+  } catch {}
+
+  saved.inputs = saved.inputs || {};
+
+  for (const id of pussyInputIds) {
+    saved.inputs[id] =
+      document.getElementById(id)?.value ?? "";
+  }
+
+  saved.manualTime = saved.inputs.manualTime;
+  saved.manualScore = saved.inputs.manualScore;
+  saved.freeGame = saved.inputs.freeGameInput;
+  saved.manualWinAmount =
+    Number(saved.inputs.manualWinInput) || 0;
+
+  localStorage.setItem(
+    "gameLogDataPussy888",
+    JSON.stringify(saved)
+  );
+}
+
+for (const id of pussyInputIds) {
+  const input = document.getElementById(id);
+  if (!input) continue;
+
+  input.addEventListener("input", savePussyInputs);
+  input.addEventListener("change", savePussyInputs);
+}
 
 /* ==========================================
    PUSSY888 - USE SHARED CUSTOM TOAST
@@ -3180,6 +3319,7 @@ async function mgReload() {
 
 /* ================= INITIALIZATION ================= */
 
+
 function mgStart() {
   const create = document.getElementById("mgCreate");
   const manage = document.getElementById("mgManage");
@@ -3195,47 +3335,123 @@ function mgStart() {
     return;
   }
 
+  let loadVersion = 0;
+
   firebase.auth().onAuthStateChanged(async user => {
+    const version = ++loadVersion;
+
     mgAccess = { role: "", actions: [] };
     mgSites = [];
     mgSyncPermission();
 
-    if (!user) {
+    if (!user || user.isAnonymous) {
+      mgCatalogLoaded = false;
       mgApplyCatalog({});
       return;
     }
 
+    // Reset SVG tab sebelum restore katalog.
     try {
-      const [access, sites] = await Promise.all([
-        mgApi("/access"),
-        mgApi("/sites")
-      ]);
+      applyPussyWorkspaceReset(user);
+    } catch (error) {
+      console.error("[PUSSY888] Reset failed:", error);
+    }
 
-      if (firebase.auth().currentUser?.uid !== user.uid) {
-        return;
+    // Load Game tanpa tunggu Access / Sites.
+    const gamesPromise = (async () => {
+      try {
+        const startedAt = performance.now();
+
+        const result = await mgApi("/games");
+
+        if (
+          version !== loadVersion ||
+          firebase.auth().currentUser?.uid !== user.uid
+        ) return;
+
+        if (!Array.isArray(result.games)) {
+          throw new Error("Invalid Game Catalog response");
+        }
+
+        const catalog = {};
+
+        for (const game of result.games) {
+          if (game && game.id != null) {
+            catalog[game.id] = game;
+          }
+        }
+
+        mgApplyCatalog(catalog);
+
+        console.log(
+          "[PUSSY888] Games loaded:",
+          Object.keys(gameData).length,
+          "in",
+          Math.round(performance.now() - startedAt) + "ms"
+        );
+
+      } catch (error) {
+        console.error(
+          "[PUSSY888] Game loading failed:",
+          error
+        );
+
+        if (version === loadVersion) {
+          mgToast(
+            "Game loading failed: " + error.message,
+            "error"
+          );
+        }
+      }
+    })();
+
+    // Load Access / Sites secara berasingan.
+    const permissionsPromise = (async () => {
+      const [accessResult, sitesResult] =
+        await Promise.allSettled([
+          mgApi("/access"),
+          mgApi("/sites")
+        ]);
+
+      if (
+        version !== loadVersion ||
+        firebase.auth().currentUser?.uid !== user.uid
+      ) return;
+
+      if (accessResult.status === "fulfilled") {
+        const access = accessResult.value || {};
+
+        mgAccess = {
+          role: access.role || "",
+          actions: Array.isArray(access.actions)
+            ? access.actions
+            : []
+        };
+      } else {
+        console.error(
+          "[PUSSY888] Access loading failed:",
+          accessResult.reason
+        );
       }
 
-      mgAccess = {
-        role: access.role,
-        actions: access.actions || []
-      };
+      if (sitesResult.status === "fulfilled") {
+        mgSites = Array.isArray(sitesResult.value?.sites)
+          ? sitesResult.value.sites
+          : [];
+      } else {
+        console.error(
+          "[PUSSY888] Sites loading failed:",
+          sitesResult.reason
+        );
+      }
 
-      mgSites = sites.sites || [];
-
-      await mgReload();
       mgSyncPermission();
+    })();
 
-    } catch (error) {
-      mgAccess = { role: "", actions: [] };
-      mgSites = [];
-      mgSyncPermission();
-      mgApplyCatalog({});
-
-      mgToast(
-        "Game loading failed: " + error.message,
-        "error"
-      );
-    }
+    await Promise.allSettled([
+      gamesPromise,
+      permissionsPromise
+    ]);
   });
 }
 
