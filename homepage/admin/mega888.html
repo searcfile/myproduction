@@ -1481,25 +1481,37 @@ function getMegaWorkspaceKeys() {
   };
 }
 
-function applyMegaWorkspaceReset() {
-  const keys = getMegaWorkspaceKeys();
-  if (!keys) return false;
 
-  if (sessionStorage.getItem(keys.reset) !== "1") {
+function applyMegaWorkspaceReset(user) {
+  if (!user || user.isAnonymous) return false;
+
+  const resetKey =
+    `5g88.pageReset.v1:${user.uid}:mega888.html`;
+
+  if (sessionStorage.getItem(resetKey) !== "1") {
     return false;
   }
 
-  // Padam state generator MEGA888 sahaja.
+  // Padam penanda supaya reset hanya berlaku sekali.
+  sessionStorage.removeItem(resetKey);
+
+  // Gunakan fungsi yang sama dengan tombol Reset Log.
+  resetLog();
+
+  // Pastikan semua state lama dibuang.
   localStorage.removeItem("gameLogDataMega888");
   localStorage.removeItem("jackpotInsertedMap");
   localStorage.removeItem("autoFreeGameOnMega888");
   localStorage.removeItem("autoAddScoreOnMega888");
 
-  // Reset sudah diproses.
-  sessionStorage.removeItem(keys.reset);
+  // Refresh paparan custom dropdown.
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
 
   return true;
 }
+
 
 function updateAutoAddScoreButtonUI() {
   const input = document.getElementById("autoAddScoreBtn");
@@ -2458,7 +2470,6 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
 });
 
 window.addEventListener("DOMContentLoaded", () => {
-  applyMegaWorkspaceReset();
   const savedAuto = localStorage.getItem("autoFreeGameOnMega888");
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
@@ -3081,8 +3092,16 @@ function mgStart() {
     return;
   }
 
+
   firebase.auth().onAuthStateChanged(async user => {
+
+    // Jika SVG refresh ditekan, jalankan Reset Log asal.
+    if (user && !user.isAnonymous) {
+      applyMegaWorkspaceReset(user);
+    }
+
     mgAccess = { role: "", actions: [] };
+
     mgSites = [];
     mgSyncPermission();
 
