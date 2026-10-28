@@ -2503,11 +2503,6 @@ window.addEventListener("DOMContentLoaded", () => {
     freeGameInput.value = Number(data.freeGame) > 0 ? data.freeGame : "";
   }
 
-  isRestoringSelection = true;
-
-  // Game, Bet dan Win akan dipulihkan selepas
-  // game catalog siap dimuat daripada API.
-
   if (tbody) {
     tbody.innerHTML = data.logs || "";
   }
@@ -2912,28 +2907,153 @@ function mgElement(tag,cls,text){const el=document.createElement(tag);if(cls)el.
 function mgField(label,value='',type='text',hint=''){
  const host=mgElement('div','mg-field'),lbl=mgElement('label','',label),input=mgElement('input');input.type=type;input.value=value;input.setAttribute('data-new-ui-input','');host.append(lbl,input);if(hint)host.append(mgElement('small','',hint));return {host,input};
 }
-function mgApplyCatalog(snapshot){
- const previous=document.getElementById('gameSelect').value;
- const data=snapshot||{};
- for(const key of Object.keys(gameData))delete gameData[key];
- mgGameIds = {};
- mgRecords = {};
- Object.entries(data).forEach(([id,v])=>{
-   if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
-   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
-   mgGameIds[v.name]=id;
-   mgRecords[v.name] = v;
- });
- const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
- Object.keys(gameData).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name,name)));
- const saved=(()=>{try{return JSON.parse(localStorage.getItem('gameLogDataMega888')||'{}')}catch{return {}}})();
- const selected=gameData[previous]?previous:gameData[saved.game]?saved.game:'';
- if(selected){select.value=selected;isRestoringSelection=true;select.dispatchEvent(new Event('change',{bubbles:true}));
- if(saved.game===selected&&saved.bet!==undefined){document.getElementById('betSelect').value=String(saved.bet);document.getElementById('betSelect').dispatchEvent(new Event('change',{bubbles:true}));if(saved.pecahan!==undefined)document.getElementById('pecahanSelect').value=String(saved.pecahan);}
- isRestoringSelection=false;}
- gameCS?.refresh?.();betCS?.refresh?.();winCS?.refresh?.();
- mgCatalogLoaded=true;
+
+function mgApplyCatalog(snapshot) {
+  const gameSelect = document.getElementById("gameSelect");
+  const betSelect = document.getElementById("betSelect");
+  const winSelect = document.getElementById("pecahanSelect");
+
+  // Simpan pilihan semasa sebelum katalog dibina semula.
+  const previous = mgCatalogLoaded ? {
+    game: gameSelect.value,
+    bet: betSelect.value,
+    pecahan: winSelect.value
+  } : null;
+
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem("gameLogDataMega888") || "{}"
+    );
+  } catch (error) {
+    console.warn("[MEGA888] Restore failed:", error);
+  }
+
+  // Jangan save ketika katalog sedang dikemas kini.
+  mgCatalogLoaded = false;
+  isRestoringSelection = true;
+
+  try {
+    for (const key of Object.keys(gameData)) {
+      delete gameData[key];
+    }
+
+    mgGameIds = {};
+    mgRecords = {};
+
+    Object.entries(snapshot || {}).forEach(([id, game]) => {
+      if (
+        !game ||
+        typeof game.name !== "string" ||
+        !Array.isArray(game.bets) ||
+        !game.pecahan
+      ) return;
+
+      gameData[game.name] = {
+        bets: game.bets,
+        pecahan: game.pecahan,
+        freeGameOptions: Array.isArray(game.freeGameOptions)
+          ? game.freeGameOptions
+          : []
+      };
+
+      mgGameIds[game.name] = id;
+      mgRecords[game.name] = game;
+    });
+
+    gameSelect.replaceChildren(
+      new Option("Select Game", "")
+    );
+
+    Object.keys(gameData)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(name => {
+        gameSelect.add(new Option(name, name));
+      });
+
+    const selectedGame =
+      previous?.game && gameData[previous.game]
+        ? previous.game
+        : saved.game && gameData[saved.game]
+          ? saved.game
+          : "";
+
+    gameSelect.value = selectedGame;
+
+    // Bina semula pilihan Bet dan Win.
+    gameSelect.dispatchEvent(
+      new Event("change", { bubbles: true })
+    );
+
+    if (selectedGame) {
+      const preferredBet =
+        previous?.game === selectedGame && previous.bet
+          ? String(previous.bet)
+          : saved.game === selectedGame && saved.bet != null
+            ? String(saved.bet)
+            : "";
+
+      const betOptions = Array.from(betSelect.options);
+
+      const matchedBet = betOptions.find(
+        option =>
+          option.value !== "" &&
+          option.value === preferredBet
+      );
+
+      const firstBet = betOptions.find(
+        option => option.value !== "" && !option.disabled
+      );
+
+      betSelect.value =
+        matchedBet?.value || firstBet?.value || "";
+
+      // Bet yang dipilih menentukan senarai Win.
+      betSelect.dispatchEvent(
+        new Event("change", { bubbles: true })
+      );
+
+      const preferredWin =
+        previous?.game === selectedGame && previous.pecahan
+          ? String(previous.pecahan)
+          : saved.game === selectedGame && saved.pecahan != null
+            ? String(saved.pecahan)
+            : "";
+
+      const winOptions = Array.from(winSelect.options);
+
+      const matchedWin = winOptions.find(
+        option =>
+          option.value !== "" &&
+          option.value === preferredWin
+      );
+
+      const firstWin = winOptions.find(
+        option => option.value !== "" && !option.disabled
+      );
+
+      winSelect.value =
+        matchedWin?.value || firstWin?.value || "";
+    }
+
+  } finally {
+    isRestoringSelection = false;
+    mgCatalogLoaded = true;
+
+    gameCS?.refresh?.();
+    betCS?.refresh?.();
+    winCS?.refresh?.();
+  }
+
+  // Simpan pilihan yang sudah selesai dipulihkan.
+  // Jangan timpa data tersimpan jika API pulangkan
+  // katalog kosong.
+  if (Object.keys(gameData).length > 0) {
+    saveCurrentSelectionOnly();
+  }
 }
+
 
 async function mgReload() {
   const result = await mgApi("/games");
