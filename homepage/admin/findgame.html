@@ -1814,22 +1814,166 @@ const btnClear = null;
 const debounce=(fn,ms=200)=>{let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
 
 // Restore search
-elQ.value = sessionStorage.getItem('fg.q') || '';
+elQ.value = "";
 
 // Shared search and multi-select platform chips
 const platformOptions = ['918kiss','mega888','pussy888'];
 let platformFilter = null;
 let gameTypeFilter = null;
 
+/* ==========================================
+   FIND GAME - SAVE / RESTORE FILTER
+   ========================================== */
+
+const FG_PAGE = "findgame.html";
+const FG_STATE_PREFIX = "5g88.pageState.v1";
+const FG_RESET_PREFIX = "5g88.pageReset.v1";
+
+let fgFilterReady = false;
+
+function fgFilterKeys() {
+  const user = firebase.auth().currentUser;
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (!user || user.isAnonymous || !uid || user.uid !== uid) {
+    return null;
+  }
+
+  return {
+    state: `${FG_STATE_PREFIX}:${uid}:${FG_PAGE}`,
+    reset: `${FG_RESET_PREFIX}:${uid}:${FG_PAGE}`
+  };
+}
+
+function fgResetPending() {
+  const keys = fgFilterKeys();
+  return !!keys && sessionStorage.getItem(keys.reset) === "1";
+}
+
+function fgSaveFilters() {
+  if (!fgFilterReady || fgResetPending()) return;
+
+  const keys = fgFilterKeys();
+  if (!keys) return;
+
+  try {
+    localStorage.setItem(keys.state, JSON.stringify({
+      search: elQ.value,
+      platforms: platformFilter?.getValue?.() || [],
+      types: gameTypeFilter?.getValue?.() || []
+    }));
+  } catch (error) {
+    console.warn("[Find Game] Save filter failed:", error);
+  }
+}
+
+function fgRestoreFilters() {
+  if (fgFilterReady) return;
+
+  const keys = fgFilterKeys();
+  if (!keys) return;
+
+  // Icon SVG refresh meminta reset filter.
+  if (fgResetPending()) {
+    localStorage.removeItem(keys.state);
+    sessionStorage.removeItem("fg.q");
+
+    elQ.value = "";
+    elQ.defaultValue = "";
+
+    platformFilter?.setValue?.([...platformOptions]);
+
+    gameTypeFilter?.setValue?.(
+      gameTypeOptions.map(option => option.value)
+    );
+
+    fgFilterReady = true;
+    sessionStorage.removeItem(keys.reset);
+
+    renderList();
+    return;
+  }
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(keys.state) || "null"
+    );
+  } catch (error) {
+    console.warn("[Find Game] Restore filter failed:", error);
+  }
+
+  if (saved && typeof saved === "object") {
+    elQ.value = String(saved.search ?? "");
+
+    const availablePlatforms = new Set([
+      ...platformOptions,
+      ...games.flatMap(game => game.tags || [])
+    ].map(value => String(value).toLowerCase()));
+
+    if (Array.isArray(saved.platforms)) {
+      platformFilter?.setValue?.(
+        saved.platforms.filter(value =>
+          availablePlatforms.has(value)
+        )
+      );
+    }
+
+    if (Array.isArray(saved.types)) {
+      const availableTypes = new Set(
+        gameTypeOptions.map(option => option.value)
+      );
+
+      gameTypeFilter?.setValue?.(
+        saved.types.filter(value =>
+          availableTypes.has(value)
+        )
+      );
+    }
+  }
+
+  fgFilterReady = true;
+  renderList();
+}
+
 const gameTypeOptions = [
   { value: 'slot', label: 'Slot' },
   { value: 'live game', label: 'Live Game' },
   { value: 'table', label: 'Table' }
 ];
+
 function updatePlatformOptions() {
-  const names = [...new Set([...platformOptions,...games.flatMap(g=>g.tags||[])].map(x=>String(x).toLowerCase()))].sort();
-  platformFilter?.setOptions(names.map(value=>({value,label:value.toUpperCase()})));
+  const names = [
+    ...new Set(
+      [
+        ...platformOptions,
+        ...games.flatMap(game => game.tags || [])
+      ].map(value => String(value).toLowerCase())
+    )
+  ].sort();
+
+  const previous = platformFilter?.getValue?.() || [];
+  const wasReady = fgFilterReady;
+
+  fgFilterReady = false;
+
+  try {
+    platformFilter?.setOptions?.(
+      names.map(value => ({
+        value,
+        label: value.toUpperCase()
+      }))
+    );
+
+    platformFilter?.setValue?.(
+      previous.filter(value => names.includes(value))
+    );
+  } finally {
+    fgFilterReady = wasReady;
+  }
 }
+
 if (window.NewUI) {
   NewUI.syncSearch(elQ, {
   onSearch: async () => {
@@ -1843,7 +1987,7 @@ if (window.NewUI) {
   platformFilter=NewUI.chips(elTags, {
     placeholder:'All Platforms',
     options:platformOptions.map(value=>({value,label:value.toUpperCase()})),
-    onChange:()=>renderList()
+    onChange: () => { renderList(); fgSaveFilters();}
   });
   platformFilter.setValue([...platformOptions]);
   gameTypeFilter = NewUI.chips(
@@ -1851,7 +1995,7 @@ if (window.NewUI) {
   {
     placeholder: 'Game Types',
     options: gameTypeOptions,
-    onChange: () => renderList()
+    onChange: () => { renderList(); fgSaveFilters();}
   }
 );
 // Default select semua game type
@@ -1886,7 +2030,6 @@ function applyListMaxHeight(visibleRows = 10){
 // Render list
 function renderList(){
   const q = (elQ.value || '').trim().toLowerCase();
-  sessionStorage.setItem('fg.q', elQ.value || '');
 
   const filtered = games.filter(g => {
     const nameMatch = g.name.toLowerCase().includes(q);
@@ -2389,7 +2532,17 @@ function changeLine(delta){
 }
 
 // Events
-elQ.addEventListener('input', debounce(renderList, 150));
+elQ.addEventListener('input', () => {
+  fgSaveFilters();
+  debouncedFindGameRender();
+});
+
+const debouncedFindGameRender = debounce(renderList, 150);
+
+elQ.addEventListener('change', () => {
+  renderList();
+  fgSaveFilters();
+});
 document.getElementById('btnMinus').addEventListener('click', ()=>changeLine(-1));
 document.getElementById('btnPlus').addEventListener('click', ()=>changeLine(1));
 document.getElementById('btnClose').addEventListener('click', ()=>{
@@ -2971,7 +3124,7 @@ firebase.auth().onAuthStateChanged(async user => {
     fgSites = siteResult.sites || [];
 
     await fgListen();
-
+    fgRestoreFilters();
   } catch (error) {
     console.error('Find Game initialization:', error);
     fgProfile = null;
@@ -2983,6 +3136,17 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 });
 
+
+/* ==========================================
+   FIND GAME - SAVE ON PAGE EXIT
+   ========================================== */
+
+window.addEventListener("pagehide", () => {
+  // Icon refresh sedang reset filter.
+  if (fgResetPending()) return;
+
+  fgSaveFilters();
+});
 
 /* First paint */
 renderList();
