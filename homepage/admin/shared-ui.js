@@ -3242,46 +3242,25 @@ function refreshTab(tab) {
   const uid = getCurrentUserStorageSuffix();
   if (!uid) return;
 
+  // Satu format LocalStorage untuk semua halaman.
   const stateKey =
-    `5g88.tabState.v1:${uid}:${targetFile}`;
+    `5g88.pageState.v1:${uid}:${targetFile}`;
 
-  const resetKey =
-    `5g88.tabReset.v2:${uid}:${targetFile}`;
-
-  // Jangan biarkan halaman aktif menyimpan
-  // state lama semula semasa pagehide.
-  if (getCurrentFile() === targetFile) {
-    window.clear5G88TabState?.();
-  }
-
-  // Padam state tab yang dipilih sahaja.
+  // Reset state halaman yang dipilih sahaja.
   localStorage.removeItem(stateKey);
 
-  // Beritahu halaman sasaran bahawa ini reset.
-  sessionStorage.setItem(resetKey, "1");
-
+  // Kekalkan loading apabila refresh tab aktif.
   if (getCurrentFile() === targetFile) {
     sessionStorage.setItem(
       "5g88.showRefreshLoading",
       "1"
     );
 
-if (targetFile === "linkdownload.html") {
-  const uid = getCurrentUserStorageSuffix();
-
-  if (uid) {
-    localStorage.removeItem(
-      `5g88.linkdownload.filters.v1:${uid}:linkdownload.html`
-    );
-  }
-}
-
     window.location.reload();
   } else {
     navigateToTab(tab);
   }
 }
-
 
 
     function createTabActions(tab) {
