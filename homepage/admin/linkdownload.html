@@ -274,8 +274,27 @@ function getLdFilterKey() {
   return `${LD_FILTER_PREFIX}:${user.uid}:linkdownload.html`;
 }
 
+
+function getLdResetKey() {
+  const key = getLdFilterKey();
+  if (!key) return null;
+
+  return key.replace(
+    "5g88.pageState.v1:",
+    "5g88.pageReset.v1:"
+  );
+}
+
+function isLdResetPending() {
+  const key = getLdResetKey();
+
+  return !!key &&
+    sessionStorage.getItem(key) === "1";
+}
+
 function saveLdFilter() {
-  if (!ldFilterReady) return;
+  // Jangan simpan semasa restore/reset.
+  if (!ldFilterReady || isLdResetPending()) return;
 
   const key = getLdFilterKey();
   if (!key) return;
@@ -289,7 +308,10 @@ function saveLdFilter() {
       })
     );
   } catch (error) {
-    console.warn("[Link Download] Save failed:", error);
+    console.warn(
+      "[Link Download] Save failed:",
+      error
+    );
   }
 }
 
@@ -299,6 +321,24 @@ function restoreLdFilter() {
   const key = getLdFilterKey();
   if (!key) return;
 
+  const resetKey = getLdResetKey();
+
+  // Icon refresh tab meminta reset.
+  if (isLdResetPending()) {
+    localStorage.removeItem(key);
+
+    search.value = "";
+    chip?.setValue?.([]);
+
+    ldFilterReady = true;
+
+    // Buang marker hanya selepas reset siap.
+    sessionStorage.removeItem(resetKey);
+
+    render();
+    return;
+  }
+
   let saved = null;
 
   try {
@@ -306,7 +346,10 @@ function restoreLdFilter() {
       localStorage.getItem(key) || "null"
     );
   } catch (error) {
-    console.warn("[Link Download] Restore failed:", error);
+    console.warn(
+      "[Link Download] Restore failed:",
+      error
+    );
   }
 
   if (saved && typeof saved === "object") {
@@ -321,22 +364,58 @@ function restoreLdFilter() {
         .filter(Boolean)
     );
 
-    const selectedPlatforms = Array.isArray(saved.platforms)
-      ? saved.platforms.filter(value =>
-          availablePlatforms.has(value)
-        )
-      : [];
+    const selectedPlatforms =
+      Array.isArray(saved.platforms)
+        ? saved.platforms.filter(value =>
+            availablePlatforms.has(value)
+          )
+        : [];
 
     chip?.setValue?.(selectedPlatforms);
   }
 
   ldFilterReady = true;
 }
+
   
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
 function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
-function refreshOptions(){const values=[...new Set(Object.values(records).filter(v=>isCard(v)&&visibleForSite(v)).map(x=>clean(x.platform)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const previous=chip?.getValue?.()||[];chip?.setOptions?.(values.map(x=>({value:x,label:x})));chip?.setValue?.(previous.filter(x=>values.includes(x)));}
-function render(){
+
+function refreshOptions() {
+  const values = [
+    ...new Set(
+      Object.values(records)
+        .filter(card =>
+          isCard(card) && visibleForSite(card)
+        )
+        .map(card => clean(card.platform))
+        .filter(Boolean)
+    )
+  ].sort((a, b) => a.localeCompare(b));
+
+  const previous = chip?.getValue?.() || [];
+
+  // Tahan Auto Save semasa options berubah.
+  const wasReady = ldFilterReady;
+  ldFilterReady = false;
+
+  try {
+    chip?.setOptions?.(
+      values.map(value => ({
+        value,
+        label: value
+      }))
+    );
+
+    chip?.setValue?.(
+      previous.filter(value => values.includes(value))
+    );
+  } finally {
+    ldFilterReady = wasReady;
+  }
+}
+
+  function render(){
  if(loading||!siteAccessReady)return;
  const q=search.value.trim().toLowerCase(), selected=new Set(chip?.getValue?.()||[]);
  const entries=Object.entries(records).filter(([,v])=>isCard(v)&&visibleForSite(v))
@@ -572,6 +651,8 @@ db.ref(PATH).on('value', snap => {
 }
 
 window.addEventListener("pagehide", () => {
+  if (isLdResetPending()) return;
+
   saveLdFilter();
 });
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
