@@ -249,6 +249,90 @@ const visibleForSite = card =>
     id => card.siteVisibility?.[id] === true
   );
 const grid=$('#ldGrid'),search=$('#ldSearch');
+
+/* ==========================================
+   LINK DOWNLOAD - SAVE & RESTORE FILTER
+   ========================================== */
+
+const LD_FILTER_PREFIX = "5g88.linkdownload.filters.v1";
+let ldFilterReady = false;
+
+function getLdFilterKey() {
+  const user = firebase.auth().currentUser;
+  const sessionUid = sessionStorage.getItem(
+    "5g88.adminSession"
+  );
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    user.uid !== sessionUid
+  ) {
+    return null;
+  }
+
+  return `${LD_FILTER_PREFIX}:${user.uid}:linkdownload.html`;
+}
+
+function saveLdFilter() {
+  if (!ldFilterReady) return;
+
+  const key = getLdFilterKey();
+  if (!key) return;
+
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        search: search.value,
+        platforms: chip?.getValue?.() || []
+      })
+    );
+  } catch (error) {
+    console.warn("[Link Download] Save failed:", error);
+  }
+}
+
+function restoreLdFilter() {
+  if (ldFilterReady) return;
+
+  const key = getLdFilterKey();
+  if (!key) return;
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(key) || "null"
+    );
+  } catch (error) {
+    console.warn("[Link Download] Restore failed:", error);
+  }
+
+  if (saved && typeof saved === "object") {
+    search.value = String(saved.search ?? "");
+
+    const availablePlatforms = new Set(
+      Object.values(records)
+        .filter(card =>
+          isCard(card) && visibleForSite(card)
+        )
+        .map(card => clean(card.platform))
+        .filter(Boolean)
+    );
+
+    const selectedPlatforms = Array.isArray(saved.platforms)
+      ? saved.platforms.filter(value =>
+          availablePlatforms.has(value)
+        )
+      : [];
+
+    chip?.setValue?.(selectedPlatforms);
+  }
+
+  ldFilterReady = true;
+}
+  
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
 function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
 function refreshOptions(){const values=[...new Set(Object.values(records).filter(v=>isCard(v)&&visibleForSite(v)).map(x=>clean(x.platform)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const previous=chip?.getValue?.()||[];chip?.setOptions?.(values.map(x=>({value:x,label:x})));chip?.setValue?.(previous.filter(x=>values.includes(x)));}
@@ -396,9 +480,29 @@ function setupTheme(){const apply=theme=>{document.body.classList.toggle('light-
 async function start(){
  setupTheme();showEmpty('No Data');window.HISTORY_TAB_NAME='LINK DOWNLOAD';
  document.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;const name=(button.textContent||button.title||'').trim().slice(0,40);if(name)window.parent?.postMessage({type:'user-tab-action',tab:window.HISTORY_TAB_NAME,action:name,time:Date.now()},'https://5g88-main.vercel.app');},true);
- chip=NewUI.chips('#ldPlatforms',{placeholder:'All Platforms',options:[],onChange:render});
+ 
+chip = NewUI.chips('#ldPlatforms', {
+  placeholder: 'Select Platforms',
+  options: [],
+
+  onChange: () => {
+    render();
+    saveLdFilter();
+  }
+});
+
  NewUI.syncSearch(search,{onSearch:async()=>{await new Promise(resolve=>setTimeout(resolve,450));render();}});
- search.addEventListener('input',render);
+ 
+search.addEventListener('input', () => {
+  render();
+  saveLdFilter();
+});
+
+search.addEventListener('change', () => {
+  render();
+  saveLdFilter();
+});
+
  const createButton=$('#ldCreate');createButton.hidden=true;
  createButton.onclick=()=>openEditor();
  try{
@@ -443,9 +547,33 @@ sites = Object.fromEntries(
 
 createButton.hidden = !can('create');
   siteAccessReady=true;
-  db.ref(PATH).on('value',snap=>{records=snap.val()||{};loading=false;refreshOptions();render();},err=>{loading=false;showEmpty('Unable to load cards');toast(err.message,'error');});
+ 
+db.ref(PATH).on('value', snap => {
+  records = snap.val() || {};
+  loading = false;
+
+
+  refreshOptions();
+
+
+  if (!ldFilterReady) {
+    restoreLdFilter();
+  }
+
+  render();
+
+}, err => {
+  loading = false;
+  showEmpty('Unable to load cards');
+  toast(err.message, 'error');
+});
+
  }catch(err){loading=false;showEmpty('Access unavailable');console.error(err);toast(err.message,'error');}
 }
+
+window.addEventListener("pagehide", () => {
+  saveLdFilter();
+});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 
