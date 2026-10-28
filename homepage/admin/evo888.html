@@ -1705,6 +1705,84 @@ let manualWinAmount = 0;
 const gameData = {};
 
 /* ==========================================
+   EVO888 - AUTO SAVE ALL INPUTS
+   ========================================== */
+
+const EVO_INPUT_KEY = "gameLogDataEvo888";
+
+const EVO_INPUT_IDS = [
+  "manualTime",
+  "freeGameInput",
+  "manualScore",
+  "manualJackpot",
+  "manualScoreInput",
+  "manualWinInput"
+];
+
+function evoSaveAllInputs() {
+  if (isEvoResetPending() || isRestoringSelection) return;
+
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(EVO_INPUT_KEY) || "{}"
+    ) || {};
+  } catch (error) {
+    console.warn("[EVO888] Invalid saved data:", error);
+  }
+
+  const inputs = { ...(saved.inputs || {}) };
+
+  EVO_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) inputs[id] = el.value;
+  });
+
+  localStorage.setItem(
+    EVO_INPUT_KEY,
+    JSON.stringify({
+      ...saved,
+      inputs
+    })
+  );
+}
+
+function evoRestoreAllInputs() {
+  if (isEvoResetPending()) return;
+
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(EVO_INPUT_KEY) || "{}"
+    ) || {};
+  } catch {
+    return;
+  }
+
+  EVO_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+
+    if (el && saved.inputs?.[id] !== undefined) {
+      el.value = saved.inputs[id];
+    }
+  });
+}
+
+function evoInstallInputAutosave() {
+  EVO_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("input", evoSaveAllInputs);
+    el.addEventListener("change", evoSaveAllInputs);
+  });
+
+  evoRestoreAllInputs();
+}
+
+/* ==========================================
    EVO888 - WORKSPACE RESET
    ========================================== */
 
@@ -1893,6 +1971,7 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
 
   const formatted = `${mm}/${dd}/${yyyy} ${hours}:${minutes}:${seconds} ${ampm}`;
   document.getElementById("manualTime").value = formatted;
+  evoSaveAllInputs();
 }
   let globalTime = null;
 
@@ -2297,7 +2376,20 @@ applyFreeGame({ randomizePosition: true });
       lastWinRowIndex,
       manualWinAmount,
     };
-    localStorage.setItem("gameLogDataEvo888", JSON.stringify(savedData));
+    
+const previousData = JSON.parse(
+  localStorage.getItem("gameLogDataEvo888") || "{}"
+);
+
+localStorage.setItem(
+  "gameLogDataEvo888",
+  JSON.stringify({
+    ...previousData,
+    ...savedData,
+    inputs: previousData.inputs || {}
+  })
+);
+
   }, 50);
 }
 
@@ -2701,6 +2793,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   applyFreeGame();
+  evoRestoreAllInputs();
 });
 function showToast(message, type = "success", duration = 3500) {
   if (window.NewUI && typeof window.NewUI.showToast === "function") {
@@ -3702,6 +3795,7 @@ function mgManager() {
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-new-ui-input]').forEach(el=>window.NewUI?.input?.(el));
+  evoInstallInputAutosave();
   mgStart();
   const tbody=document.querySelector('#gameLog tbody');
   const refresh=()=>{
