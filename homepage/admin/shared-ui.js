@@ -3266,6 +3266,16 @@ function refreshTab(tab) {
       "1"
     );
 
+if (targetFile === "linkdownload.html") {
+  const uid = getCurrentUserStorageSuffix();
+
+  if (uid) {
+    localStorage.removeItem(
+      `5g88.linkdownload.filters.v1:${uid}:linkdownload.html`
+    );
+  }
+}
+
     window.location.reload();
   } else {
     navigateToTab(tab);
