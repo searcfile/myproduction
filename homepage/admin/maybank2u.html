@@ -1788,14 +1788,26 @@
             state = render(state);
           });
         
-          resetBtn.addEventListener("click", () => {
-            localStorage.removeItem(LS_KEY);
-            state = structuredClone(DEFAULT_STATE);
-            state = ensureAccountsForBank(state, state.bank);
-            state = render(state);
-            localStorage.removeItem("maybank.receipt.visible");
-            updateMaybankEmptyState(false);
-          });
+
+resetBtn.addEventListener("click", () => {
+  // Buang state lama
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem("maybank.receipt.visible");
+
+  // Kembali kepada default
+  state = structuredClone(DEFAULT_STATE);
+
+  // Reset input
+  state = ensureAccountsForBank(state, state.bank);
+  state = render(state);
+
+  // Sync custom dropdown
+  bankSelect._sharedDropdown?.refresh?.();
+
+  // Sembunyikan receipt
+  updateMaybankEmptyState(false);
+});
+
         }
         /* ==========================================
            MAYBANK2U - NO DATA CONTROLLER
@@ -1851,6 +1863,53 @@
         window.NewUI?.init?.(document);
         
         updateMaybankEmptyState(hasSavedReceipt);
+       
+/* ==========================================
+   MAYBANK2U - TAB SVG REFRESH RESET
+   Ctrl+R / F5 = Keep Data
+   SVG Refresh = Clear Workspace
+   ========================================== */
+
+function maybankClearTabWorkspace() {
+  // Reset melalui fungsi Reset asal
+  // supaya semua state dan input diselaraskan
+  resetBtn.click();
+
+  // Pastikan receipt tidak muncul selepas refresh
+  localStorage.removeItem("maybank.receipt.visible");
+
+  // Paparkan No Data card
+  updateMaybankEmptyState(false);
+
+  // Refresh label custom bank dropdown
+  bankSelect._sharedDropdown?.refresh?.();
+
+  console.log("[MAYBANK2U] Tab workspace cleared");
+}
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user || user.isAnonymous) return;
+
+  // Nama fail diambil terus daripada URL tab semasa
+  const pageFile = window.location.pathname
+    .split("/")
+    .pop()
+    .toLowerCase();
+
+  // Key yang dihantar oleh shared-ui.js
+  const resetKey =
+    `5g88.pageReset.v1:${user.uid}:${pageFile}`;
+
+  if (sessionStorage.getItem(resetKey) !== "1") {
+    return;
+  }
+
+  // Buang arahan reset supaya tidak berulang
+  sessionStorage.removeItem(resetKey);
+
+  maybankClearTabWorkspace();
+});
+
         /* ==========================================================
            MAINAN KANAK2 - FIREBASE BANK MANAGEMENT
            CREATE / EDIT / DELETE / REALTIME SYNC
