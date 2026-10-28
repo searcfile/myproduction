@@ -2469,8 +2469,29 @@ document.getElementById("pecahanSelect").addEventListener("change", function () 
   saveCurrentSelectionOnly();
 });
 
+
 window.addEventListener("DOMContentLoaded", () => {
-  const savedAuto = localStorage.getItem("autoFreeGameOnMega888");
+
+  // Jika refresh datang daripada ikon SVG tab,
+  // buang data generator sebelum restore bermula.
+  const sessionUid =
+    sessionStorage.getItem("5g88.adminSession");
+
+  if (sessionUid) {
+    const resetKey =
+      `5g88.pageReset.v1:${sessionUid}:mega888.html`;
+
+    if (sessionStorage.getItem(resetKey) === "1") {
+      localStorage.removeItem("gameLogDataMega888");
+      localStorage.removeItem("jackpotInsertedMap");
+      localStorage.removeItem("autoFreeGameOnMega888");
+      localStorage.removeItem("autoAddScoreOnMega888");
+    }
+  }
+
+  const savedAuto =
+    localStorage.getItem("autoFreeGameOnMega888");
+
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
 
@@ -3077,6 +3098,7 @@ async function mgReload() {
   mgApplyCatalog(catalog);
 }
 
+
 function mgStart() {
   const create = document.getElementById("mgCreate");
   const manage = document.getElementById("mgManage");
@@ -3092,57 +3114,116 @@ function mgStart() {
     return;
   }
 
+  let loadVersion = 0;
 
   firebase.auth().onAuthStateChanged(async user => {
-
-    // Jika SVG refresh ditekan, jalankan Reset Log asal.
-    if (user && !user.isAnonymous) {
-      applyMegaWorkspaceReset(user);
-    }
+    const version = ++loadVersion;
 
     mgAccess = { role: "", actions: [] };
-
     mgSites = [];
     mgSyncPermission();
 
-    if (!user) {
+    if (!user || user.isAnonymous) {
+      mgCatalogLoaded = false;
       mgApplyCatalog({});
       return;
     }
 
-    try {
-      const [access, sites] = await Promise.all([
-        mgApi("/access"),
-        mgApi("/sites")
-      ]);
+    // Reset generator jika ikon SVG ditekan.
+    applyMegaWorkspaceReset(user);
 
-      if (firebase.auth().currentUser?.uid !== user.uid) {
-        return;
+    // Game Catalog dimuat tanpa menunggu
+    // Access dan Sites selesai.
+    const gamesPromise = (async () => {
+      try {
+        const result = await mgApi("/games");
+
+        if (
+          version !== loadVersion ||
+          firebase.auth().currentUser?.uid !== user.uid
+        ) return;
+
+        if (!Array.isArray(result.games)) {
+          throw new Error("Invalid Game Catalog response");
+        }
+
+        const catalog = {};
+
+        for (const game of result.games) {
+          if (game && game.id != null) {
+            catalog[game.id] = game;
+          }
+        }
+
+        mgApplyCatalog(catalog);
+
+        console.log(
+          "[MEGA888] Game Catalog ready:",
+          Object.keys(gameData).length
+        );
+
+      } catch (error) {
+        console.error(
+          "[MEGA888] Games loading failed:",
+          error
+        );
+
+        if (version === loadVersion) {
+          mgToast(
+            "Failed to load games: " + error.message,
+            "error"
+          );
+        }
+      }
+    })();
+
+    // Access dan Sites dimuat secara berasingan.
+    const permissionsPromise = (async () => {
+      const [accessResult, sitesResult] =
+        await Promise.allSettled([
+          mgApi("/access"),
+          mgApi("/sites")
+        ]);
+
+      if (
+        version !== loadVersion ||
+        firebase.auth().currentUser?.uid !== user.uid
+      ) return;
+
+      if (accessResult.status === "fulfilled") {
+        const access = accessResult.value || {};
+
+        mgAccess = {
+          role: access.role || "",
+          actions: Array.isArray(access.actions)
+            ? access.actions
+            : []
+        };
+      } else {
+        console.error(
+          "[MEGA888] Access failed:",
+          accessResult.reason
+        );
       }
 
-      mgAccess = {
-        role: access.role,
-        actions: access.actions || []
-      };
-
-      mgSites = sites.sites || [];
-
-      await mgReload();
-      mgSyncPermission();
-
-
-    } catch (error) {
-      console.error(
-        "[MEGA888] Failed to load game catalog:",
-        error
-      );
+      if (sitesResult.status === "fulfilled") {
+        mgSites = Array.isArray(sitesResult.value?.sites)
+          ? sitesResult.value.sites
+          : [];
+      } else {
+        console.error(
+          "[MEGA888] Sites failed:",
+          sitesResult.reason
+        );
+      }
 
       mgSyncPermission();
-      mgToast(
-        "Game loading failed: " + error.message,
-        "error"
-      );
-    }
+    })();
+
+    await Promise.allSettled([
+      gamesPromise,
+      permissionsPromise
+    ]);
   });
 }
 
