@@ -1462,6 +1462,8 @@ const LS_DRAFT = 'txn_editor_draft_v1';
 const LS_CARD  = 'txn_card_snapshot_v1';
 const LS_BLUR  = 'txn_card_blur_v1'; 
 
+
+
 function saveDraft(){
   const data = {
     amount: inAmount.value,
@@ -1658,15 +1660,14 @@ function updateBankIslamEmptyState() {
     }
   }
 }
-function resetLocal(){
+
+function resetLocal() {
   localStorage.removeItem(LS_DRAFT);
   localStorage.removeItem(LS_CARD);
   localStorage.removeItem(LS_BLUR);
-
-  updateBankIslamEmptyState();
-
   location.reload();
 }
+
   document.getElementById("btnReset")?.addEventListener(
   "click",
   resetLocal
@@ -2269,6 +2270,44 @@ document.getElementById("biManageBanks")
 
     biOpenManageBanks();
   });
+
+
+/* ==========================================
+   BANK ISLAM - SVG TAB REFRESH RESET
+   F5 / Ctrl+R = Keep Data
+   SVG Refresh = Clear Data
+   ========================================== */
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user || user.isAnonymous) return;
+
+  const pageFile = window.location.pathname
+    .split("/")
+    .pop()
+    .toLowerCase();
+
+  const resetKey =
+    `5g88.pageReset.v1:${user.uid}:${pageFile}`;
+
+  if (sessionStorage.getItem(resetKey) !== "1") {
+    return;
+  }
+
+  // Buang reset flag supaya tidak berulang
+  sessionStorage.removeItem(resetKey);
+
+  // Padam data editor dan resit sahaja
+  localStorage.removeItem(LS_DRAFT);
+  localStorage.removeItem(LS_CARD);
+  localStorage.removeItem(LS_BLUR);
+
+  console.log("[BANK ISLAM] SVG Refresh: Data cleared");
+
+  // Reload supaya semua input dan preview
+  // kembali kepada keadaan asal
+  window.location.reload();
+});
+
 
 /* START BANK ISLAM ACCESS & DATA */
 firebase.auth().onAuthStateChanged(async user => {
