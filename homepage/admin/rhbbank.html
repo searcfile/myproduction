@@ -1174,12 +1174,17 @@ function resetAll(){
   el.toName.value = '';
   el.toId.value   = '0';
   el.bankSel.value = el.bankSel.options[1]?.value || "";
-  el.bankSel._sharedDropdown?.refresh();
   el.payType.value= 'Fund Transfer';
   el.amount.value = '0.00';
   el.ref.value    = 'Payment';
   el.letterSel.value = '';
   el.binSel.value    = '';
+    [
+  el.bankSel,
+  el.letterSel,
+  el.binSel].forEach(select => {
+  select?._sharedDropdown?.refresh?.();
+});
 el.autoName.checked = false;
 el.autoBank.checked = false;
 el.autoAcct.checked = false;
