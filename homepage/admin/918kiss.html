@@ -1500,13 +1500,64 @@ select:focus-visible{
 <script defer src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
-  let hiddenRow = null;
+
+let hiddenRow = null;
 let lastWinRowIndex = -1;
-const MAX_FREE_GAME_ROWS = 10;   // maksimum 10 baris free game
+let manualWinAmount = 0;
+const MAX_FREE_GAME_ROWS = 10;
+
 let autoFreeGameOn = false;   // ✅ status AUTO (off default)
 let autoAddScoreOn = false;
 let isRestoringSelection = false;
 const gameData = {};
+  
+/* ==========================================
+   918KISS - WORKSPACE SAVE & RESET
+   ========================================== */
+
+const KISS_RESET_PAGE = "918kiss.html";
+
+function getKissResetKey(uid) {
+  return `5g88.pageReset.v1:${uid}:${KISS_RESET_PAGE}`;
+}
+
+function clearKissSavedGenerator() {
+  localStorage.removeItem("gameLogData918kiss");
+  localStorage.removeItem("jackpotInsertedMap918kiss");
+  localStorage.removeItem("autoFreeGameOn918kiss");
+  localStorage.removeItem("autoAddScoreOn918kiss");
+}
+
+function applyKissWorkspaceReset(user) {
+  if (!user || user.isAnonymous) return false;
+
+  const sessionUid =
+    sessionStorage.getItem("5g88.adminSession");
+
+  if (sessionUid !== user.uid) return false;
+
+  const resetKey = getKissResetKey(user.uid);
+
+  if (sessionStorage.getItem(resetKey) !== "1") {
+    return false;
+  }
+
+  sessionStorage.removeItem(resetKey);
+
+  // Reset menggunakan fungsi Reset Log asal 918KISS.
+  resetLog();
+
+  // Pastikan perubahan event tidak menyimpan semula
+  // data lama selepas reset.
+  clearKissSavedGenerator();
+
+  gameCS?.refresh?.();
+  betCS?.refresh?.();
+  winCS?.refresh?.();
+
+  return true;
+}
+
 function updateAutoAddScoreButtonUI() {
   const input = document.getElementById("autoAddScoreBtn");
   if (!input) return;
@@ -1515,7 +1566,7 @@ function updateAutoAddScoreButtonUI() {
 }
   let jackpotInsertedMap = JSON.parse(localStorage.getItem("jackpotInsertedMap918kiss")) || {};
 function saveCurrentSelectionOnly() {
-  if (isRestoringSelection) return;
+  if (isRestoringSelection || !mgCatalogLoaded) return;
 
   const oldData = JSON.parse(localStorage.getItem("gameLogData918kiss") || "{}");
 
@@ -2459,8 +2510,22 @@ function resetLog() {
   manualWinAmount = 0;
 }
 
+
 window.addEventListener("DOMContentLoaded", () => {
-  const savedAuto = localStorage.getItem("autoFreeGameOn918kiss");
+
+  // SVG refresh: padam simpanan sebelum restore.
+  const uid = sessionStorage.getItem("5g88.adminSession");
+
+  if (
+    uid &&
+    sessionStorage.getItem(getKissResetKey(uid)) === "1"
+  ) {
+    clearKissSavedGenerator();
+  }
+
+  const savedAuto =
+    localStorage.getItem("autoFreeGameOn918kiss");
+
   autoFreeGameOn = (savedAuto === "1");
   updateAutoFreeGameButtonUI();
 
@@ -2492,16 +2557,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const freeGameInput = document.getElementById("freeGameInput");
   const tbody = document.querySelector("#gameLog tbody");
 
-  if (manualTimeInput) {
-    manualTimeInput.value = data.manualTime || "";
-  }
+if (manualTimeInput) {
+  manualTimeInput.value =
+    data.inputs?.manualTime ?? data.manualTime ?? "";
+}
 
   if (manualScoreInput) {
-    manualScoreInput.value = Number(data.manualScore) > 0 ? data.manualScore : "";
+    manualScoreInput.value =
+  data.inputs?.manualScore ?? (
+    Number(data.manualScore) > 0 ? data.manualScore : ""
+  );
   }
 
   if (freeGameInput && typeof data.freeGame !== "undefined") {
-    freeGameInput.value = Number(data.freeGame) > 0 ? data.freeGame : "";
+    freeGameInput.value =
+  data.inputs?.freeGameInput ?? (
+    Number(data.freeGame) > 0 ? data.freeGame : ""
+  );
   }
 
   isRestoringSelection = true;
@@ -2529,9 +2601,73 @@ window.addEventListener("DOMContentLoaded", () => {
     tbody.innerHTML = data.logs || "";
   }
 
+
   applyFreeGame();
+
+  // Pulihkan input tambahan.
+  const extraInputs = [
+    "manualScore",
+    "manualJackpot",
+    "manualScoreInput",
+    "manualWinInput"
+  ];
+
+  for (const id of extraInputs) {
+    const input = document.getElementById(id);
+    if (input && data.inputs?.[id] !== undefined) {
+      input.value = data.inputs[id];
+    }
+  }
+
   saveCurrentSelectionOnly();
 });
+
+/* Simpan input generator 918KISS ketika ditaip */
+const kissInputIds = [
+  "manualTime",
+  "manualScore",
+  "manualJackpot",
+  "manualScoreInput",
+  "manualWinInput",
+  "freeGameInput"
+];
+
+function saveKissInputs() {
+  const saved = (() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("gameLogData918kiss") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  })();
+
+  const inputs = {};
+
+  for (const id of kissInputIds) {
+    inputs[id] = document.getElementById(id)?.value || "";
+  }
+
+  saved.inputs = inputs;
+  saved.manualTime = inputs.manualTime;
+  saved.manualScore = inputs.manualScore;
+  saved.freeGame = inputs.freeGameInput;
+
+  localStorage.setItem(
+    "gameLogData918kiss",
+    JSON.stringify(saved)
+  );
+}
+
+for (const id of kissInputIds) {
+  const input = document.getElementById(id);
+  if (!input) continue;
+
+  input.addEventListener("input", saveKissInputs);
+  input.addEventListener("change", saveKissInputs);
+}
+
 function showToast(message, type = "success", duration = 3500) {
   if (typeof window.NewUI?.showToast === "function") {
     return window.NewUI.showToast(message, type, duration);
@@ -2952,7 +3088,8 @@ mgGameIds = {};
  mgCatalogLoaded=true;
 }
 
-async function mgStart() {
+
+function mgStart() {
   const create = document.getElementById("mgCreate");
   const manage = document.getElementById("mgManage");
 
@@ -2962,36 +3099,133 @@ async function mgStart() {
   create.addEventListener("click", () => mgEditor());
   manage.addEventListener("click", mgManager);
 
-  try {
-    await new Promise((resolve, reject) => {
-      const unsubscribe = firebase.auth().onAuthStateChanged(user => {
-        unsubscribe();
-        user ? resolve() : reject(Error("Please login"));
-      });
-    });
+  if (!window.firebase?.apps?.length) {
+    mgToast("Firebase not initialized", "error");
+    return;
+  }
 
-    const [access, siteResult] = await Promise.all([
-      mgApi("/access"),
-      mgApi("/sites")
-    ]);
+  let loadVersion = 0;
 
-    mgAccess = {
-      role: access.role,
-      actions: access.actions || []
-    };
+  firebase.auth().onAuthStateChanged(async user => {
+    const version = ++loadVersion;
 
-    mgSites = siteResult.sites || [];
-
-    mgSyncPermission();
-    await mgReload();
-
-  } catch (error) {
-    mgAccess = {role:"", actions:[]};
+    mgAccess = { role: "", actions: [] };
     mgSites = [];
     mgSyncPermission();
-    mgToast("Game loading failed: " + error.message, "error");
-  }
+
+    if (!user || user.isAnonymous) {
+      mgCatalogLoaded = false;
+      mgApplyCatalog({});
+      return;
+    }
+
+    // SVG refresh: reset generator sebelum load katalog.
+    try {
+      applyKissWorkspaceReset(user);
+    } catch (error) {
+      console.error("[918KISS] Reset failed:", error);
+    }
+
+    // Game Catalog dimuat secara bebas.
+    const gamesPromise = (async () => {
+      try {
+        const startedAt = performance.now();
+
+        const result = await mgApi("/games");
+
+        if (
+          version !== loadVersion ||
+          firebase.auth().currentUser?.uid !== user.uid
+        ) return;
+
+        if (!Array.isArray(result.games)) {
+          throw new Error("Invalid Game Catalog response");
+        }
+
+        const catalog = {};
+        mgRecords = {};
+
+        for (const game of result.games) {
+          if (game && game.id != null) {
+            catalog[game.id] = game;
+            mgRecords[game.name] = game;
+          }
+        }
+
+        mgApplyCatalog(catalog);
+
+        console.log(
+          "[918KISS] Game Catalog ready:",
+          Object.keys(gameData).length,
+          "Time:",
+          Math.round(performance.now() - startedAt) + "ms"
+        );
+
+      } catch (error) {
+        console.error(
+          "[918KISS] Game Catalog failed:",
+          error
+        );
+
+        if (version === loadVersion) {
+          mgToast(
+            "Failed to load games: " + error.message,
+            "error"
+          );
+        }
+      }
+    })();
+
+    // Permissions dan Sites dimuat berasingan.
+    const permissionsPromise = (async () => {
+      const [accessResult, sitesResult] =
+        await Promise.allSettled([
+          mgApi("/access"),
+          mgApi("/sites")
+        ]);
+
+      if (
+        version !== loadVersion ||
+        firebase.auth().currentUser?.uid !== user.uid
+      ) return;
+
+      if (accessResult.status === "fulfilled") {
+        const access = accessResult.value || {};
+
+        mgAccess = {
+          role: access.role || "",
+          actions: Array.isArray(access.actions)
+            ? access.actions
+            : []
+        };
+      } else {
+        console.error(
+          "[918KISS] Access failed:",
+          accessResult.reason
+        );
+      }
+
+      if (sitesResult.status === "fulfilled") {
+        mgSites = Array.isArray(sitesResult.value?.sites)
+          ? sitesResult.value.sites
+          : [];
+      } else {
+        console.error(
+          "[918KISS] Sites failed:",
+          sitesResult.reason
+        );
+      }
+
+      mgSyncPermission();
+    })();
+
+    await Promise.allSettled([
+      gamesPromise,
+      permissionsPromise
+    ]);
+  });
 }
+
 
 function mgEditor(oldName=''){
  if (!mgCan(oldName ? "edit" : "create")) {
