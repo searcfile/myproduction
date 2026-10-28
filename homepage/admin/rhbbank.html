@@ -1144,9 +1144,30 @@ function applyState(s){
   window.SharedActiveSwitch?.sync(el[k]);
 });
 }
-function loadState(){
-  try{ applyState(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')); }catch{}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "null"
+    );
+
+    if (!saved) return;
+
+    applyState(saved);
+
+    [
+      el.bankSel,
+      el.letterSel,
+      el.binSel
+    ].forEach(select => {
+      select?._sharedDropdown?.refresh?.();
+    });
+
+  } catch (error) {
+    console.warn("RHB restore failed:", error);
+  }
 }
+
 function resetAll(){
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
@@ -1334,32 +1355,11 @@ function makeAccountFor(bank) {
 /* ---------- Render ---------- */
 function render() {
 
-  // Auto pilih bank
-  if (el.autoBank.checked) {
-    const options = Array.from(el.bankSel.options)
-      .map(option => option.value)
-      .filter(Boolean);
-
-    if (options.length) {
-      el.bankSel.value = pick(options);
-      el.bankSel._sharedDropdown?.refresh();
-    }
-  }
-
-  // Auto generate account
-  if (el.autoAcct.checked) {
-    el.toId.value = makeAccountFor(el.bankSel.value);
-  }
-
-  // Auto generate recipient name
-  if (el.autoName.checked) {
-    el.toName.value = makeRandomName();
-  }
-
   // Update receipt preview
   const nameFrag = maskNameFirst2(el.toName.value);
   const idFrag = maskAccountKeepDashes(el.toId.value);
 
+  // Update receipt preview
   el.toLine.innerHTML =
     `${nameFrag}<span class="dot">•</span>${idFrag}`;
 
@@ -1438,14 +1438,38 @@ el.bankSel.addEventListener('change', ()=>{
   saveState(); render();
 });
 // tombol
+
 el.createBtn.addEventListener("click", () => {
+  if (el.autoBank.checked) {
+    const options = Array.from(el.bankSel.options)
+      .map(option => option.value)
+      .filter(Boolean);
+
+    if (options.length) {
+      el.bankSel.value = pick(options);
+      el.bankSel._sharedDropdown?.refresh?.();
+    }
+  }
+
+  if (el.autoAcct.checked) {
+    el.toId.value = makeAccountFor(el.bankSel.value);
+  }
+
+  if (el.autoName.checked) {
+    el.toName.value = makeRandomName();
+  }
+
   render();
   saveState();
 
-  localStorage.setItem(RHB_RECEIPT_VISIBLE_KEY, "true");
+  localStorage.setItem(
+    RHB_RECEIPT_VISIBLE_KEY,
+    "true"
+  );
 
   updateRhbEmptyState();
 });
+
 el.resetBtn.addEventListener('click', resetAll);
 
 /* ==========================================
@@ -1493,26 +1517,42 @@ function rhbNormalizeBank(value) {
   };
 }
 
+
 function rhbRefreshBankDropdown() {
-  const selected = el.bankSel.value;
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "{}"
+    ) || {};
+  } catch (error) {
+    console.warn("RHB saved state error:", error);
+  }
+
+  const wantedBank = saved.bankSel || el.bankSel.value;
 
   const banks = Object.values(RHB_BANK_RECORDS)
     .filter(bank => bank.active)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  el.bankSel.replaceChildren(new Option("Select bank", ""));
+  el.bankSel.replaceChildren(
+    new Option("Select bank", "")
+  );
 
   for (const bank of banks) {
     el.bankSel.add(new Option(bank.name, bank.name));
   }
 
-  el.bankSel.value = banks.some(b => b.name === selected)
-    ? selected
+  const matched = banks.find(
+    bank => bank.name === wantedBank
+  );
+
+  el.bankSel.value = matched
+    ? matched.name
     : (banks[0]?.name || "");
 
-  el.bankSel._sharedDropdown?.refresh();
+  el.bankSel._sharedDropdown?.refresh?.();
 
-  saveState();
   render();
 }
 
@@ -1999,9 +2039,40 @@ document.getElementById("rhbManageBank")
     rhbManageBanksModal();
   });
 
+
+
 /* ---------- Init ---------- */
-loadState();
-render();
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user || user.isAnonymous) return;
+
+  const pageFile = location.pathname
+    .split("/")
+    .pop()
+    .toLowerCase();
+
+  const resetKey =
+    `5g88.pageReset.v1:${user.uid}:${pageFile}`;
+
+  const shouldReset =
+    sessionStorage.getItem(resetKey) === "1";
+
+  if (shouldReset) {
+    sessionStorage.removeItem(resetKey);
+    resetAll();
+  } else {
+    loadState();
+  }
+
+  el.bankSel._sharedDropdown?.refresh?.();
+  el.letterSel._sharedDropdown?.refresh?.();
+  el.binSel._sharedDropdown?.refresh?.();
+
+  render();
+  updateRhbEmptyState();
+});
+
+
 
 updateRhbEmptyState();
 rhbUpdateBankButtons();
