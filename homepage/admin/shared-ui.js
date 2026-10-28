@@ -3227,6 +3227,7 @@ if (!verifiedProfileReady) {
 
 
 
+
 function refreshTab(tab) {
   if (!verifiedProfileReady) return;
   if (!tab?.file) return;
@@ -3242,14 +3243,19 @@ function refreshTab(tab) {
   const uid = getCurrentUserStorageSuffix();
   if (!uid) return;
 
-  // Satu format LocalStorage untuk semua halaman.
   const stateKey =
     `5g88.pageState.v1:${uid}:${targetFile}`;
 
-  // Reset state halaman yang dipilih sahaja.
+  const resetKey =
+    `5g88.pageReset.v1:${uid}:${targetFile}`;
+
+  // Beritahu halaman supaya tidak save
+  // semula filter lama semasa reload.
+  sessionStorage.setItem(resetKey, "1");
+
+  // Padam filter halaman ini sahaja.
   localStorage.removeItem(stateKey);
 
-  // Kekalkan loading apabila refresh tab aktif.
   if (getCurrentFile() === targetFile) {
     sessionStorage.setItem(
       "5g88.showRefreshLoading",
