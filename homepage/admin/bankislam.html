@@ -1287,35 +1287,33 @@ function biEscape(value) {
 }
 
 
+
 function biRefreshBankDropdown() {
   const draft = loadDraft();
-  const previous = draft?.bank ?? inBank.value ?? "";
+  const wantedBank = draft?.bank || "";
 
   BANKS = Object.values(biBankRecords)
     .filter(bank => bank.active !== false)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Bina semula pilihan daripada backend
+  // Bina semula senarai bank daripada API
   inBank.replaceChildren(
     new Option("Random Bank", "")
   );
 
   BANKS.forEach(bank => {
-    inBank.add(
-      new Option(bank.name, bank.name)
-    );
+    inBank.add(new Option(bank.name, bank.name));
   });
 
-  // Restore selepas semua option tersedia
-  const bankExists = BANKS.some(
-    bank => bank.name === previous
+  // Pilih semula bank yang tersimpan
+  const matchedBank = BANKS.find(
+    bank => bank.name === wantedBank
   );
 
-  inBank.value = bankExists ? previous : "";
-
-  // Update custom dropdown UI
+  inBank.value = matchedBank ? matchedBank.name : "";
   inBank._sharedDropdown?.refresh?.();
 }
+
 
 async function biStartBankListener() {
   if (biBankLoading) return;
@@ -1475,18 +1473,29 @@ const LS_BLUR  = 'txn_card_blur_v1';
 
 
 
-function saveDraft(){
+
+function saveDraft() {
+  const previous = loadDraft() || {};
+
+  // Ketika API belum siap, jangan timpa bank lama
+  // dengan nilai kosong daripada dropdown.
+  const bankValue = biBanksLoaded
+    ? inBank.value
+    : (previous.bank || "");
+
   const data = {
     amount: inAmount.value,
-    date:   inDate.value,
+    date: inDate.value,
     prefix: inPrefix.value,
-    len:    inLen.value,
-bank:   inBank.value,
-alpha:  document.getElementById("nmAlpha")?.value || "",
-name:   inName.value,
+    len: inLen.value,
+    bank: bankValue,
+    alpha: document.getElementById("nmAlpha")?.value || previous.alpha || "",
+    name: inName.value
   };
+
   localStorage.setItem(LS_DRAFT, JSON.stringify(data));
 }
+
 
 function loadDraft(){
   try { return JSON.parse(localStorage.getItem(LS_DRAFT) || 'null'); }
@@ -1529,10 +1538,16 @@ function restoreFromStorage(){
     if (d.prefix != null) inPrefix.value = d.prefix;
     if (d.len    != null) inLen.value    = d.len;
 
-if (d.bank != null) {
-  // Bank akan dipilih semula setelah API selesai load
-  inBank.value = d.bank;
+if (d.bank != null && biBanksLoaded) {
+  const bankAvailable = Array.from(inBank.options)
+    .some(option => option.value === d.bank);
+
+  if (bankAvailable) {
+    inBank.value = d.bank;
+    inBank._sharedDropdown?.refresh?.();
+  }
 }
+
 
 if (d.alpha != null) {
   document.getElementById("nmAlpha").value = d.alpha;
@@ -1726,9 +1741,17 @@ window.addEventListener('load', () => {
   // Restore semua input daripada localStorage
   restoreFromStorage();
 
-  updatePrefixFromDate();
 
-  inLen.value = DEFAULT_REF_TOTAL;
+updatePrefixFromDate();
+
+if (!loadDraft()?.len) {
+  inLen.value = String(DEFAULT_REF_TOTAL);
+}
+
+if (biBanksLoaded) {
+  biRefreshBankDropdown();
+}
+
 
   inLen.closest('.fld')?.style &&
     (inLen.closest('.fld').style.display = 'none');
