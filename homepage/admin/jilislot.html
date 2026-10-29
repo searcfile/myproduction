@@ -21,7 +21,7 @@
   }
 
 /* JILI UI UPGRADE: SETTINGS ONLY. Do not style .game-log-table or its descendants. */
-.jili-settings,.jili-log-panel,.jili-empty-panel{margin:12px;padding:16px;border:1px solid var(--border-input);border-radius:10px;background:var(--page-input);box-sizing:border-box;}
+.jili-settings,.jili-log-panel,.jili-empty-panel{margin:12px 12px 0;padding:16px;border:1px solid var(--border-input);border-radius:10px;background:var(--page-input);box-sizing:border-box;}
 .jili-settings{overflow:visible;}
 .jili-settings .mg-panel-title,.jili-log-panel .mg-panel-title{font-size:15px;font-weight:700;margin:0 0 14px;color:var(--page-text);}
 .jili-divider{height:1px;background:var(--border-input);opacity:.65;margin:16px 0;}
@@ -40,7 +40,7 @@
 .jili-settings .btn-reset:hover{background:#ff4d4f;}
 .jili-log-panel{overflow:visible;}
 .jili-log-panel .table-wrap{margin:0;max-width:100%;overflow-x:auto;}
-.jili-empty-panel{min-height:185px;display:flex;align-items:center;justify-content:center;}
+.jili-empty-panel{height:160px;display:flex;align-items:center;justify-content:center;}
 .jili-empty-panel #jiliEmpty{width:100%;}
 @media(max-width:900px){.jili-top{grid-template-columns:repeat(3,minmax(0,1fr));}.jili-top .input-date{grid-column:span 2;}.jili-middle{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;}}
 @media(max-width:600px){.jili-settings,.jili-log-panel,.jili-empty-panel{margin:10px;padding:12px;}.jili-top{grid-template-columns:1fr;}.jili-top .input-date{grid-column:auto;}.jili-middle{grid-template-columns:minmax(0,1fr) auto;}.jili-middle .input-manual-win{grid-column:1;}.jili-middle .btn-set-win{grid-column:2;}.jili-actions{grid-template-columns:repeat(2,minmax(0,1fr));}.jili-actions button{width:100%;}}
@@ -487,7 +487,7 @@ input[type="number"] {
     <div id="betInput" class="jili-dropdown-slot"></div>
     <div id="totalWinInput" class="jili-dropdown-slot"></div>
     <input data-new-ui-input id="dateInput" class="input-date" type="text" placeholder="Set Time">
-    <button class="btn-now" onclick="setNow()">Click Now</button>
+    <button class="btn-primary-new" onclick="setNow()">Click Now</button>
   </div>
   <div class="jili-divider"></div>
   <div class="mg-panel-title">Score & Winner Controls</div>
@@ -498,14 +498,14 @@ input[type="number"] {
       <span class="shared-active-track"><span class="shared-active-text">Inactive</span><span class="shared-active-knob" aria-hidden="true"></span></span>
     </label>
     <input data-new-ui-input id="manualWinInput" class="input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
-    <button class="btn-set-win" onclick="setRandomWin()">Set Win</button>
+    <button class="btn-primary-new" onclick="setRandomWin()">Set Win</button>
   </div>
   <div class="jili-divider"></div>
   <div class="jili-controls jili-actions">
-    <button class="btn-change" onclick="changeLog()">Change</button>
-    <button class="btn-add-score" onclick="addScoreRow()">Add Score Row</button>
-    <button class="btn-copy" onclick="copyTableImage()">Copy Image</button>
-    <button class="btn-reset" onclick="resetTable()">Reset Log</button>
+    <button class="btn-primary-new" onclick="changeLog()">Change</button>
+    <button class="btn-primary-new" onclick="addScoreRow()">Add Score Row</button>
+    <button class="btn-primary-new" onclick="copyTableImage()">Copy Image</button>
+    <button class="reset-button" onclick="resetTable()">Reset Log</button>
   </div>
 </section>
 <section class="mg-panel jili-log-panel" id="jiliGameLogCard">
