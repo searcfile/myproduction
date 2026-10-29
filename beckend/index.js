@@ -1981,6 +1981,344 @@ app.delete("/api/918kiss/games/:id",
 
 
 /* =====================================================
+   JILI GAME CATALOG — BACKEND CRUD
+   ===================================================== */
+
+const JILI_MODULE = "jilislot.html";
+const JILI_PATH = "jili/games";
+
+const jiliIdOK = id => /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+function jiliVisible(game, profile) {
+  if (profile.role === "superadmin") return true;
+  if (game?.active === false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  if (!assigned.length) return false;
+
+  // Game lama dianggap global sehingga dimigrasi.
+  if (game?.visibleToAllSites !== false) return true;
+
+  return assigned.some(id =>
+    game?.siteVisibility?.[id] === true
+  );
+}
+
+function jiliEditable(game, profile) {
+  if (profile.role === "superadmin") return true;
+
+  // Global dan legacy hanya boleh diurus Super Admin.
+  if (game?.visibleToAllSites !== false) return false;
+
+  const assigned = Array.isArray(profile.siteIds)
+    ? profile.siteIds : [];
+
+  const selected = Object.keys(game?.siteVisibility || {})
+    .filter(id => game.siteVisibility[id] === true);
+
+  return selected.length > 0 &&
+    selected.every(id => assigned.includes(id));
+}
+
+function jiliValidate(body) {
+  const name = String(body?.name || "").trim();
+  const bets = body?.bets;
+  const pecahan = body?.pecahan;
+  const siteVisibility = body?.siteVisibility ?? {};
+
+  if (!name || name.length > 120) {
+    throw Error("Invalid game name");
+  }
+
+  if (
+    !Array.isArray(bets) ||
+    !bets.length ||
+    bets.length > 200 ||
+    bets.some(n => typeof n !== "number" ||
+      !Number.isFinite(n) || n <= 0) ||
+    new Set(bets).size !== bets.length
+  ) {
+    throw Error("Invalid bets");
+  }
+
+  if (
+    !pecahan ||
+    typeof pecahan !== "object" ||
+    Array.isArray(pecahan) ||
+    Object.keys(pecahan).length !== bets.length
+  ) {
+    throw Error("Invalid win options");
+  }
+
+  for (const bet of bets) {
+    const values = pecahan[String(bet)];
+
+    if (
+      !Array.isArray(values) ||
+      !values.length ||
+      values.length > 200 ||
+      values.some(n =>
+        typeof n !== "number" ||
+        !Number.isFinite(n) ||
+        n < 0
+      )
+    ) {
+      throw Error("Invalid win values for bet " + bet);
+    }
+  }
+
+  if (
+    typeof body?.active !== "boolean" ||
+    typeof body?.visibleToAllSites !== "boolean"
+  ) {
+    throw Error("Invalid game status");
+  }
+
+  if (
+    !siteVisibility ||
+    typeof siteVisibility !== "object" ||
+    Array.isArray(siteVisibility) ||
+    Object.keys(siteVisibility).length > 100 ||
+    !Object.entries(siteVisibility).every(
+      ([id, value]) => siteIdOK(id) && value === true
+    )
+  ) {
+    throw Error("Invalid site visibility");
+  }
+
+  if (
+    !body.visibleToAllSites &&
+    !Object.keys(siteVisibility).length
+  ) {
+    throw Error("Select at least one site");
+  }
+
+  return {
+    name,
+    bets,
+    pecahan,
+    active: body.active,
+    visibleToAllSites: body.visibleToAllSites,
+    siteVisibility
+  };
+}
+
+async function jiliCheckSites(data, profile) {
+  const all = (await db.ref("sites").once("value")).val() || {};
+  const ids = Object.keys(data.siteVisibility);
+
+  if (!ids.every(id => all[id]?.active === true)) {
+    throw Error("Site missing or inactive");
+  }
+
+  if (profile.role !== "superadmin") {
+    const assigned = Array.isArray(profile.siteIds)
+      ? profile.siteIds : [];
+
+    if (
+      !assigned.length ||
+      data.visibleToAllSites ||
+      ids.some(id => !assigned.includes(id))
+    ) {
+      throw Error("Site selection not permitted");
+    }
+  }
+}
+
+// GET — Current permissions
+app.get(
+  "/api/jili/access",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "view"),
+  (req, res) => {
+    const p = req.admin.profile;
+
+    const actions = p.role === "superadmin"
+      ? ["show", "view", "create", "edit", "delete"]
+      : p.permissions?.["jilislot_html"] || [];
+
+    return res.json({ ok: true, role: p.role, actions });
+  }
+);
+
+// GET — Available sites
+app.get(
+  "/api/jili/sites",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (await db.ref("sites").once("value")).val() || {};
+      const p = req.admin.profile;
+      const assigned = Array.isArray(p.siteIds)
+        ? p.siteIds : [];
+
+      const sites = Object.entries(all)
+        .filter(([id, site]) =>
+          site?.active === true &&
+          (p.role === "superadmin" || assigned.includes(id))
+        )
+        .map(([id, site]) => ({
+          id,
+          name: site.name || id
+        }));
+
+      return res.json({ ok: true, sites });
+    } catch (e) {
+      console.error("JILI sites:", e);
+      return fail(res, 500, "Cannot load sites");
+    }
+  }
+);
+
+// GET — Games
+app.get(
+  "/api/jili/games",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "view"),
+  async (req, res) => {
+    try {
+      const all = (await db.ref(JILI_PATH).once("value")).val() || {};
+
+      const games = Object.entries(all)
+        .filter(([, game]) => jiliVisible(game, req.admin.profile))
+        .map(([id, game]) => ({ ...game, id }));
+
+      return res.json({ ok: true, games });
+    } catch (e) {
+      console.error("JILI list:", e);
+      return fail(res, 500, "Cannot load games");
+    }
+  }
+);
+
+// POST — Create Game
+app.post(
+  "/api/jili/games",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = jiliValidate(req.body);
+      await jiliCheckSites(data, req.admin.profile);
+
+      const all = (await db.ref(JILI_PATH).once("value")).val() || {};
+
+      if (Object.values(all).some(game =>
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      const ref = db.ref(JILI_PATH).push();
+
+      await ref.set({
+        ...data,
+        createdAt: now(),
+        updatedAt: now(),
+        createdBy: req.admin.uid
+      });
+
+      return res.status(201).json({ ok: true, id: ref.key });
+    } catch (e) {
+      console.error("JILI create:", e);
+      return fail(res, 400, e.message);
+    }
+  }
+);
+
+// PATCH — Edit Game
+app.patch(
+  "/api/jili/games/:id",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!jiliIdOK(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${JILI_PATH}/${id}`);
+      const old = (await ref.once("value")).val();
+
+      if (!old) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!jiliEditable(old, req.admin.profile)) {
+        return fail(res, 403, "Game edit not permitted");
+      }
+
+      const data = jiliValidate(req.body);
+      await jiliCheckSites(data, req.admin.profile);
+
+      const all = (await db.ref(JILI_PATH).once("value")).val() || {};
+
+      if (Object.entries(all).some(([otherId, game]) =>
+        otherId !== id &&
+        String(game?.name || "").toLowerCase() ===
+        data.name.toLowerCase()
+      )) {
+        return fail(res, 409, "Game name already exists");
+      }
+
+      await ref.update({
+        ...data,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+    } catch (e) {
+      console.error("JILI edit:", e);
+      return fail(res, 400, e.message);
+    }
+  }
+);
+
+// DELETE — Delete Game
+app.delete(
+  "/api/jili/games/:id",
+  requireAdmin,
+  requirePermission(JILI_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+
+      if (!jiliIdOK(id)) {
+        return fail(res, 400, "Invalid game ID");
+      }
+
+      const ref = db.ref(`${JILI_PATH}/${id}`);
+      const game = (await ref.once("value")).val();
+
+      if (!game) {
+        return fail(res, 404, "Game not found");
+      }
+
+      if (!jiliEditable(game, req.admin.profile)) {
+        return fail(res, 403, "Game delete not permitted");
+      }
+
+      await ref.remove();
+      return res.json({ ok: true });
+    } catch (e) {
+      console.error("JILI delete:", e);
+      return fail(res, 500, "Cannot delete game");
+    }
+  }
+);
+
+/* =====================================================
+   END JILI GAME API
+   ===================================================== */
+
+/* =====================================================
    MEGA888 GAME CATALOG — BACKEND CRUD
    ===================================================== */
 
