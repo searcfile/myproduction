@@ -721,32 +721,29 @@ const STORAGE_KEY = "jili_game_log_state_v1";
 
 /* ===== JILI RESET FROM ADMIN TAB REFRESH ===== */
 
+
+/* ===== RESET HANYA APABILA ADMIN MEMINTA ===== */
+
 function jiliCheckTabRefresh() {
   const sessionUid = sessionStorage.getItem("5g88.adminSession");
 
-  const resetKey = sessionUid
-    ? `5g88.pageReset.v1:${sessionUid}:jilislot.html`
-    : null;
+  if (!sessionUid) return false;
 
-  const requestedByAdmin =
-    resetKey !== null &&
-    sessionStorage.getItem(resetKey) === "1";
+  const resetKey =
+    `5g88.pageReset.v1:${sessionUid}:jilislot.html`;
 
-  const navigation = performance.getEntriesByType("navigation")[0];
-  const browserReload = navigation?.type === "reload";
+  if (sessionStorage.getItem(resetKey) !== "1") {
+    return false;
+  }
 
-  if (!requestedByAdmin && !browserReload) return;
-
-  // Reset generator sahaja, jangan buang database games.
+  sessionStorage.removeItem(resetKey);
   localStorage.removeItem(STORAGE_KEY);
 
-  if (resetKey) {
-    sessionStorage.removeItem(resetKey);
-  }
+  return true;
 }
 
-// Jalankan sebelum loadState().
-jiliCheckTabRefresh();
+const jiliWasTabRefreshed = jiliCheckTabRefresh();
+
 
 let currentRoundPrefix = "";
 let currentRoundSuffix = "";
@@ -764,6 +761,8 @@ function showToast(message, type = "success") {
   console.info(`[${type}] ${message}`);
 }
 let gameData = {};
+
+let jiliGamesReady = false;
 
 const gaps = [4,5,7,9,12,15,17,18];
 const scoreGaps = [3,5,7,9,12,25,35];
@@ -875,22 +874,39 @@ function makeCustomSelect(id, items, value, labelFn, onChange, placeholder){
 }
 }
 
-function initGameDropdown(savedGame, savedBet, savedWin){
+
+function initGameDropdown(savedGame, savedBet, savedWin) {
   const games = Object.keys(gameData);
-  selectedGame = savedGame && gameData[savedGame] ? savedGame : "";
 
-makeCustomSelect("gameSelect", games, selectedGame, v => v, function(v){
-  selectedGame = v;
+  selectedGame =
+    savedGame && gameData[savedGame] ? savedGame : "";
 
-  const firstBet = gameData[selectedGame]?.bets?.[0];
-  const firstKey = findPecahanKey(gameData[selectedGame].pecahan, firstBet);
-  const firstWin = gameData[selectedGame].pecahan[firstKey][0];
+  makeCustomSelect(
+    "gameSelect",
+    games,
+    selectedGame,
+    v => v,
+    function(v) {
+      selectedGame = v;
 
-  updateBetDropdown(firstBet, firstWin);
-}, "Select Game");
+      const firstBet = gameData[v]?.bets?.[0];
+      const firstKey = findPecahanKey(
+        gameData[v]?.pecahan || {},
+        firstBet
+      );
+
+      const firstWin = firstKey !== undefined
+        ? gameData[v].pecahan[firstKey]?.[0] ?? ""
+        : "";
+
+      updateBetDropdown(firstBet ?? "", firstWin);
+    },
+    "Select Game"
+  );
 
   updateBetDropdown(savedBet, savedWin);
 }
+
 
 function updateBetDropdown(savedBet, savedWin){
   const bets = selectedGame ? gameData[selectedGame].bets.map(Number) : [];
@@ -1208,7 +1224,7 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-const saved = loadState();
+const saved = jiliWasTabRefreshed ? {} : loadState();
 
 if(saved.date){
   document.getElementById("dateInput").value = saved.date;
@@ -1228,7 +1244,11 @@ if(saved.autoScoreEnabled){
 
   syncAutoScoreSwitch();
 }
-initGameDropdown(saved.game, saved.bet, saved.win);
+
+if (jiliGamesReady) {
+  initGameDropdown(saved.game, saved.bet, saved.win);
+}
+
 
 if(saved.tableHTML){
   document.getElementById("logBody").innerHTML = saved.tableHTML;
@@ -1446,28 +1466,31 @@ function jiliOpenModal(title, html) {
 }
 
 
+
+
 function jiliRebuildDropdown() {
+  jiliGamesReady = true;
+
   const saved = loadState();
 
-  const game =
-    selectedGame && gameData[selectedGame]
+  const game = gameData[saved.game]
+    ? saved.game
+    : gameData[selectedGame]
       ? selectedGame
-      : saved.game && gameData[saved.game]
-        ? saved.game
-        : "";
+      : "";
 
-  const bet =
-    selectedBet !== ""
-      ? selectedBet
-      : (saved.bet ?? "");
+  const bet = game
+    ? (saved.bet ?? selectedBet ?? "")
+    : "";
 
-  const win =
-    selectedTotalWin !== ""
-      ? selectedTotalWin
-      : (saved.win ?? "");
+  const win = game
+    ? (saved.win ?? selectedTotalWin ?? "")
+    : "";
 
   initGameDropdown(game, bet, win);
 }
+
+
 function jiliApplyDatabase() {
   gameData = {};
 
