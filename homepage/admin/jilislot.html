@@ -718,25 +718,36 @@ const DEFAULT_EMAIL = "585630940@app-888.game";
 const STORAGE_KEY = "jili_game_log_state_v1";
 /* ===== JILI RESET FROM ADMIN TAB SVG REFRESH ===== */
 
+
+/* ===== JILI RESET FROM ADMIN TAB REFRESH ===== */
+
 function jiliCheckTabRefresh() {
   const sessionUid = sessionStorage.getItem("5g88.adminSession");
 
-  if (!sessionUid) return;
+  const resetKey = sessionUid
+    ? `5g88.pageReset.v1:${sessionUid}:jilislot.html`
+    : null;
 
-  const resetKey =
-    `5g88.pageReset.v1:${sessionUid}:jilislot.html`;
+  const requestedByAdmin =
+    resetKey !== null &&
+    sessionStorage.getItem(resetKey) === "1";
 
-  if (sessionStorage.getItem(resetKey) !== "1") return;
+  const navigation = performance.getEntriesByType("navigation")[0];
+  const browserReload = navigation?.type === "reload";
 
-  // Bersihkan hanya data generator JILI.
+  if (!requestedByAdmin && !browserReload) return;
+
+  // Reset generator sahaja, jangan buang database games.
   localStorage.removeItem(STORAGE_KEY);
 
-  // Kosongkan penanda supaya tidak reset berulang.
-  sessionStorage.removeItem(resetKey);
+  if (resetKey) {
+    sessionStorage.removeItem(resetKey);
+  }
 }
 
-// WAJIB dijalankan sebelum loadState().
+// Jalankan sebelum loadState().
 jiliCheckTabRefresh();
+
 let currentRoundPrefix = "";
 let currentRoundSuffix = "";
 let selectedGame = "";
