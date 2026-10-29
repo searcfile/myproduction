@@ -760,7 +760,7 @@ const gameData = {
     }
   },
     "100_Super Rich": {
-    bets:[0.30,1.00,2.00,3.00,5.00,10.00,15.00,20.00,30.00,40.00,60.00,80.00,120,00,160.00],
+    bets:[0.30,1.00,2.00,3.00,5.00,10.00,15.00,20.00,30.00,40.00,60.00,80.00,120.00,160.00],
     pecahan:{
       0.30:[50.00,100.00,200.00,300.00,500.00,800.00,1000.00,1200.00,1500.00],
       1.00:[50.00,100.00,200.00,300.00,500.00,800.00,1000.00,1200.00,1500.00],
@@ -1261,6 +1261,9 @@ function makeCustomSelect(id, items, value, labelFn, onChange, placeholder){
   window.createSharedDropdown(select, { placeholder });
 } else if (typeof window.NewUI?.dropdown === "function") {
   window.NewUI.dropdown(select, { placeholder });
+} else {
+  // Keep native dropdown usable if shared component is unavailable.
+  select.style.cssText = "width:100%;height:32px;background:var(--page-input);color:var(--page-text);border:1px solid var(--border-input);border-radius:6px;padding:0 10px";
 }
 }
 
@@ -1398,6 +1401,17 @@ function toggleAutoScore(checked){
   syncAutoScoreSwitch();
   saveState();
 }
+// Functions used by inline HTML handlers must be available on window
+Object.assign(window, {
+  setNow,
+  toggleAutoScore,
+  changeLog,
+  addScoreRow,
+  copyTableImage,
+  resetTable,
+  setRandomWin
+});
+
 function generateRows(){
   if(!selectedGame || selectedBet === "" || selectedTotalWin === ""){
    showToast("Please Select game first.", "error");
