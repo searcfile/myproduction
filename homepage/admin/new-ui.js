@@ -1765,12 +1765,12 @@ let headerSiteSearch = null;
 if (isHeaderSite) {
   headerSiteSearch = document.createElement("input");
 
-  headerSiteSearch.type = "text";
+  headerSiteSearch.type = "search";
   headerSiteSearch.className = "header-site-search-input";
   headerSiteSearch.placeholder = config.placeholder;
   
   // Prevent browser autofill on Select Site search
-  headerSiteSearch.autocomplete = "new-password";
+  headerSiteSearch.autocomplete = "off";
   headerSiteSearch.name = "site_lookup_no_autofill";
   headerSiteSearch.setAttribute("autocorrect", "off");
   headerSiteSearch.setAttribute("autocapitalize", "off");
