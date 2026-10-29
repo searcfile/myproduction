@@ -60,7 +60,7 @@ body { min-width:0; }
 .control-panel input,
 .control-panel .custom-select,
 .control-panel .cs-display,
-.control-panel button { height:38px; min-height:38px; font:inherit; }
+.control-panel button { height:32px;; font:inherit; }
 .control-panel input,
 .control-panel .cs-display {
   border:1px solid var(--jili-ui-line);
@@ -80,9 +80,9 @@ body { min-width:0; }
 .control-panel .cs-item { padding:9px 12px; border-radius:7px; }
 .control-panel .cs-search { background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
 .control-panel button {
-  border-radius:9px;
-  padding:0 17px;
-  font-weight:600;
+  border-radius:4px;
+  padding:5px 12px;
+  font-weight:400;
   transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
 }
 .control-panel button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,104,220,.2); }
@@ -445,26 +445,7 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
-:where(button, a, .btn, [tabindex]):focus-visible{
-  outline: 3px solid #15325b;
-  outline-offset: 1px;
-  transition: outline-offset 0s, outline 0s;
-}
-:where(.input, input, select, textarea, [tabindex]):focus{
-  border-color: #1668dc !important;
-  outline: 0 !important;
-  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
-  transition: all .2s ease;
-}
-select:focus,
-select:focus-visible{
-  border-color: #1668dc !important;
-  outline: none !important;
-  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
-  transition: all .2s ease;
-}
+
 .no-data-row td{
   text-align:center;
   color:#999;
@@ -557,7 +538,7 @@ input[type="number"] {
 </style>
 <style>
 /* JILI shared components: page settings only; Game Log unchanged */
-.control-panel .shared-input {background:var(--input) !important; color:var(--text) !important; border-color:var(--input-line); height:38px; border-radius:9px;}
+.control-panel .shared-input {background:var(--input) !important; color:var(--text) !important; border-color:var(--input-line); height:32px; border-radius:8px;}
 .control-panel .shared-input:focus {background:var(--input) !important; border-color:var(--input-line-focus) !important;}
 .control-panel .shared-dropdown-trigger {background:var(--input); border-color:var(--input-line);}
 .control-panel .shared-dropdown-input {color:var(--text) !important; background:transparent !important;}
