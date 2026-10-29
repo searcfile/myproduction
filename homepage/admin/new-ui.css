@@ -1282,7 +1282,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   background:
     var(--dropdown-bg-active);
 
-  font-weight:600;
+  font-weight:400;
 }
 
 
@@ -1290,9 +1290,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 
 .shared-chip-dropdown-option-check {
   display:none;
-
   color:#1677ff;
-
   font-size:14px;
 }
 
