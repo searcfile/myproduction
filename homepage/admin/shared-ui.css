@@ -3276,14 +3276,11 @@ max-width: 170px;
   box-shadow: none;
 }
 
-
-/* SELECT SITE - GUNA WARNA PLACEHOLDER CUSTOM */
 #headerSiteCustom .header-site-search-input::placeholder {
-  color: var(--placeholder, rgba(255,255,255,.85)) !important;
-  opacity: 1 !important;
+  color: rgba(255,255,255,.85) !important;
+  opacity: 1;
 }
 
-/* Bila site sudah dipilih, sembunyikan placeholder */
 #headerSiteCustom.has-value
 .header-site-search-input::placeholder {
   color: transparent !important;
