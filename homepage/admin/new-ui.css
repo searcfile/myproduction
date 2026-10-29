@@ -1141,13 +1141,16 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   height:14px;
   display:block;
 
-  fill:
-    #ffffffd1;
+  fill:var(--placeholder);
 
   transition:
     all .2s ease;
 }
-
+/* SELECT SITE - ICON SVG SAHAJA */
+#headerSiteCustom .shared-chip-dropdown-icon svg {
+  fill: #ffffffd1 !important;
+  color: #ffffffd1 !important;
+}
 
 .shared-chip-dropdown-icon-search,
 .shared-chip-dropdown-icon-clear {
