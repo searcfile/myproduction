@@ -2591,3 +2591,6 @@ html.new-ui-modal-open {
   text-align: center;
 }
 
+input::placeholder{
+  color:var(--blur) !important;
+}
