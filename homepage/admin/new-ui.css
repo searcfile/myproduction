@@ -483,7 +483,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   display:flex;
   align-items:center;
   justify-content:center;
-  color:var(--text2);
+  color:var(--placeholder);
   transform:translateY(-50%);
   cursor:pointer;
   pointer-events:auto;
@@ -495,7 +495,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   width:12px;
   height:12px;
   flex:none;
-  fill:var(--text2);
+  fill:var(--placeholder);
 }
 
 .shared-dropdown-icon {
@@ -503,15 +503,6 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
     color .15s ease;
 }
 
-
-.shared-dropdown-icon:hover {
-  color:var(--muted);
-}
-
-
-.shared-dropdown-icon:hover svg {
-  fill: var(--muted);
-}
 /* =========================================================
    DROPDOWN PANEL
 ========================================================= */
