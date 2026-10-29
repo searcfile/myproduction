@@ -169,6 +169,9 @@ body { min-width:0; }
 <link rel="stylesheet" href="./shared-ui.css">
 <link rel="stylesheet" href="./admin.css">
 <link rel="stylesheet" href="./new-ui.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --page-bg: #000;
@@ -202,8 +205,27 @@ body { min-width:0; }
     --list-active:#e6f4ff;
     --list-hover:rgba(0,0,0,0.08);
   }
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
-body{margin:0;background:var(--page-bg);font-family:'Source Sans Pro',Arial,sans-serif;font-size:14px;color:var(--page-text)}
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--page-text);
+  font-family: 'Source Sans 3', Arial, sans-serif;
+  font-size: 14px;
+}
+
+/* Semua komponen settings menggunakan Source Sans 3 */
+.control-panel,
+.control-panel input,
+.control-panel button,
+.control-panel select,
+.control-panel .shared-dropdown,
+.control-panel .shared-dropdown-input,
+.control-panel .shared-dropdown-option,
+.control-panel .cs-display,
+.control-panel .cs-item,
+.control-panel .cs-search {
+  font-family: 'Source Sans 3', Arial, sans-serif !important;
+}
 
 .control-panel{
   display:grid;
