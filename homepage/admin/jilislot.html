@@ -1221,6 +1221,18 @@ function resetTable() {
 }
 
 
+/* Reset JILI apabila menerima arahan refresh dari tab utama */
+window.addEventListener("message", function (event) {
+  if (event.origin !== "https://5g88-main.vercel.app") return;
+
+  const data = event.data || {};
+
+  if (data.type === "5g88-reset-jili-tab") {
+    resetTable();
+    console.log("[JILI] Tab refreshed and Reset Log executed");
+  }
+});
+
 async function copyTableImage(){
   const area = document.getElementById("captureArea");
   const canvas = await html2canvas(area,{backgroundColor:"#ffffff",scale:2});
