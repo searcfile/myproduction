@@ -1085,7 +1085,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   min-width:0;
   padding-left:8px;
   color:
-    var(--text);
+    var(--blur);
   font-size:14px;
   line-height:1;
   text-align:left;
