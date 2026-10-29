@@ -1132,9 +1132,16 @@ function createShell() {
       id="headerTabSearchMobileInput"
       class="header-tab-search-mobile-input"
       type="text"
-      placeholder="Select Tab"
-      autocomplete="off"
-      aria-label="Search tabs"
+      placeholder="Search"
+      name="mobile_tab_lookup_no_autofill"
+autocomplete="new-password"
+autocorrect="off"
+autocapitalize="off"
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true"
+aria-label="Search tabs"
+      aria-label="Search"
     >
 
   <!-- ARROW DOWN -->
