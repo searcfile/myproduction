@@ -1768,7 +1768,16 @@ if (isHeaderSite) {
   headerSiteSearch.type = "text";
   headerSiteSearch.className = "header-site-search-input";
   headerSiteSearch.placeholder = config.placeholder;
-  headerSiteSearch.autocomplete = "off";
+  
+  // Prevent browser autofill on Select Site search
+  headerSiteSearch.autocomplete = "new-password";
+  headerSiteSearch.name = "site_lookup_no_autofill";
+  headerSiteSearch.setAttribute("autocorrect", "off");
+  headerSiteSearch.setAttribute("autocapitalize", "off");
+  headerSiteSearch.setAttribute("spellcheck", "false");
+  headerSiteSearch.setAttribute("data-lpignore", "true");
+  headerSiteSearch.setAttribute("data-1p-ignore", "true");
+
   headerSiteSearch.setAttribute(
     "aria-label",
     "Search sites"
