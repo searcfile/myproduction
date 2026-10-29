@@ -1784,7 +1784,24 @@ if (isHeaderSite) {
   );
 
   trigger.insertBefore(headerSiteSearch, iconButton);
+// Kurangkan pengesanan Search sebagai medan login oleh Chrome.
+headerSiteSearch.setAttribute("readonly", "readonly");
+headerSiteSearch.setAttribute("autocomplete", "off");
+headerSiteSearch.setAttribute("data-lpignore", "true");
+headerSiteSearch.setAttribute("data-1p-ignore", "true");
 
+// Buka input hanya apabila pengguna berinteraksi.
+headerSiteSearch.addEventListener("pointerdown", () => {
+  headerSiteSearch.removeAttribute("readonly");
+});
+
+headerSiteSearch.addEventListener("keydown", () => {
+  headerSiteSearch.removeAttribute("readonly");
+});
+
+headerSiteSearch.addEventListener("blur", () => {
+  headerSiteSearch.setAttribute("readonly", "readonly");
+});
   const filterHeaderSites = () => {
     const keyword = headerSiteSearch.value
       .trim()
