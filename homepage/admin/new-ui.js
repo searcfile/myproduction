@@ -1765,43 +1765,39 @@ let headerSiteSearch = null;
 if (isHeaderSite) {
   headerSiteSearch = document.createElement("input");
 
-  headerSiteSearch.type = "search";
-  headerSiteSearch.className = "header-site-search-input";
-  headerSiteSearch.placeholder = config.placeholder;
-  
-  // Prevent browser autofill on Select Site search
-  headerSiteSearch.autocomplete = "off";
-  headerSiteSearch.name = "site_lookup_no_autofill";
-  headerSiteSearch.setAttribute("autocorrect", "off");
-  headerSiteSearch.setAttribute("autocapitalize", "off");
-  headerSiteSearch.setAttribute("spellcheck", "false");
-  headerSiteSearch.setAttribute("data-lpignore", "true");
-  headerSiteSearch.setAttribute("data-1p-ignore", "true");
 
-  headerSiteSearch.setAttribute(
-    "aria-label",
-    "Search sites"
-  );
+headerSiteSearch.type = "text";
+headerSiteSearch.className = "header-site-search-input";
+headerSiteSearch.placeholder = config.placeholder;
 
-  trigger.insertBefore(headerSiteSearch, iconButton);
-// Kurangkan pengesanan Search sebagai medan login oleh Chrome.
-headerSiteSearch.setAttribute("readonly", "readonly");
-headerSiteSearch.setAttribute("autocomplete", "off");
+// Kurangkan autofill dan suggestion browser.
+headerSiteSearch.name = "site_filter_" + Math.random().toString(36).slice(2);
+headerSiteSearch.autocomplete = "off";
+headerSiteSearch.setAttribute("autocorrect", "off");
+headerSiteSearch.setAttribute("autocapitalize", "off");
+headerSiteSearch.setAttribute("spellcheck", "false");
 headerSiteSearch.setAttribute("data-lpignore", "true");
 headerSiteSearch.setAttribute("data-1p-ignore", "true");
+headerSiteSearch.setAttribute("aria-label", "Search sites");
 
-// Buka input hanya apabila pengguna berinteraksi.
+// Jangan aktifkan input secara automatik.
+headerSiteSearch.readOnly = true;
+
+trigger.insertBefore(headerSiteSearch, iconButton);
+
+// Hanya aktif apabila pengguna mahu menaip.
 headerSiteSearch.addEventListener("pointerdown", () => {
-  headerSiteSearch.removeAttribute("readonly");
+  headerSiteSearch.readOnly = false;
 });
 
 headerSiteSearch.addEventListener("keydown", () => {
-  headerSiteSearch.removeAttribute("readonly");
+  headerSiteSearch.readOnly = false;
 });
 
 headerSiteSearch.addEventListener("blur", () => {
-  headerSiteSearch.setAttribute("readonly", "readonly");
+  headerSiteSearch.readOnly = true;
 });
+
   const filterHeaderSites = () => {
     const keyword = headerSiteSearch.value
       .trim()
@@ -2153,9 +2149,12 @@ trigger.addEventListener("click", event => {
 
   event.stopPropagation();
 
-  if (isHeaderSite && headerSiteSearch) {
-    headerSiteSearch.focus();
-  }
+
+if (isHeaderSite && headerSiteSearch) {
+  headerSiteSearch.readOnly = false;
+  headerSiteSearch.focus();
+}
+
 
   toggle();
 
@@ -2391,12 +2390,15 @@ iconButton.addEventListener("click", event => {
 
   toggle();
 
-  if (
-    headerSiteSearch &&
-    container.classList.contains("open")
-  ) {
-    headerSiteSearch.focus();
-  }
+
+if (
+  headerSiteSearch &&
+  container.classList.contains("open")
+) {
+  headerSiteSearch.readOnly = false;
+  headerSiteSearch.focus();
+}
+
 });
 
 
