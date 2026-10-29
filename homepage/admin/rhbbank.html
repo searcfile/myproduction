@@ -1173,7 +1173,7 @@ function resetAll(){
   localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
   el.toName.value = '';
   el.toId.value   = '0';
-  el.bankSel.value = el.bankSel.options[1]?.value || "";
+  el.bankSel.value = "";
   el.payType.value= 'Fund Transfer';
   el.amount.value = '0.00';
   el.ref.value    = 'Payment';
@@ -1534,7 +1534,7 @@ function rhbRefreshBankDropdown() {
     console.warn("RHB saved state error:", error);
   }
 
-  const wantedBank = saved.bankSel || el.bankSel.value;
+  const wantedBank = el.bankSel.value || saved.bankSel || "";
 
   const banks = Object.values(RHB_BANK_RECORDS)
     .filter(bank => bank.active)
@@ -1552,9 +1552,7 @@ function rhbRefreshBankDropdown() {
     bank => bank.name === wantedBank
   );
 
-  el.bankSel.value = matched
-    ? matched.name
-    : (banks[0]?.name || "");
+ el.bankSel.value = matched ? matched.name : "";
 
   el.bankSel._sharedDropdown?.refresh?.();
 
@@ -2048,7 +2046,7 @@ document.getElementById("rhbManageBank")
 
 /* ---------- Init ---------- */
 
-firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(async user => {
   if (!user || user.isAnonymous) return;
 
   const pageFile = location.pathname
@@ -2064,24 +2062,33 @@ firebase.auth().onAuthStateChanged(user => {
 
   if (shouldReset) {
     sessionStorage.removeItem(resetKey);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
+  }
+
+  // Tunggu bank daripada backend siap dimuat dahulu
+  await rhbLoadBanks();
+
+  if (shouldReset) {
     resetAll();
   } else {
     loadState();
   }
 
-  el.bankSel._sharedDropdown?.refresh?.();
-  el.letterSel._sharedDropdown?.refresh?.();
-  el.binSel._sharedDropdown?.refresh?.();
+  [
+    el.bankSel,
+    el.letterSel,
+    el.binSel
+  ].forEach(select => {
+    select?._sharedDropdown?.refresh?.();
+  });
 
   render();
   updateRhbEmptyState();
 });
 
-
-
 updateRhbEmptyState();
 rhbUpdateBankButtons();
-rhbLoadBanks();
   (function () {
   const THEME_KEY = "siteTheme";
 
