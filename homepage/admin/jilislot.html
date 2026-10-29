@@ -716,7 +716,27 @@ html body .shared-active-switch {
 const MAX_ROWS = 22;
 const DEFAULT_EMAIL = "585630940@app-888.game";
 const STORAGE_KEY = "jili_game_log_state_v1";
+/* ===== JILI RESET FROM ADMIN TAB SVG REFRESH ===== */
 
+function jiliCheckTabRefresh() {
+  const sessionUid = sessionStorage.getItem("5g88.adminSession");
+
+  if (!sessionUid) return;
+
+  const resetKey =
+    `5g88.pageReset.v1:${sessionUid}:jilislot.html`;
+
+  if (sessionStorage.getItem(resetKey) !== "1") return;
+
+  // Bersihkan hanya data generator JILI.
+  localStorage.removeItem(STORAGE_KEY);
+
+  // Kosongkan penanda supaya tidak reset berulang.
+  sessionStorage.removeItem(resetKey);
+}
+
+// WAJIB dijalankan sebelum loadState().
+jiliCheckTabRefresh();
 let currentRoundPrefix = "";
 let currentRoundSuffix = "";
 let selectedGame = "";
@@ -1115,6 +1135,7 @@ function saveState(){
     win:selectedTotalWin,
     date:document.getElementById("dateInput").value,
     score:document.getElementById("scoreInput").value,
+      manualWin:document.getElementById("manualWinInput").value,
     autoScoreEnabled:autoScoreEnabled,
     tableHTML:document.getElementById("logBody").innerHTML
   };
@@ -1167,7 +1188,8 @@ async function copyTableImage(){
 
 document.getElementById("dateInput").addEventListener("input", saveState);
 document.getElementById("scoreInput").addEventListener("input", saveState);
-
+document.getElementById("manualWinInput")
+  .addEventListener("input", saveState);
 document.addEventListener("keydown", function(e){
   if(e.ctrlKey && e.key.toLowerCase() === "c"){
     e.preventDefault();
@@ -1185,6 +1207,10 @@ if(saved.date){
 
 if(saved.score){
   document.getElementById("scoreInput").value = saved.score;
+}
+if (saved.manualWin !== undefined) {
+  document.getElementById("manualWinInput").value =
+    saved.manualWin;
 }
 if(saved.autoScoreEnabled){
   autoScoreEnabled = true;
@@ -1409,9 +1435,16 @@ function jiliOpenModal(title, html) {
 }
 
 
-function jiliRebuildDropdown(){
- const oldGame=selectedGame,oldBet=selectedBet,oldWin=selectedTotalWin;
- initGameDropdown(oldGame,oldBet,oldWin);
+function jiliRebuildDropdown() {
+  const saved = loadState();
+
+  const game = selectedGame || saved.game || "";
+  const bet = selectedBet !== "" ? selectedBet : (saved.bet ?? "");
+  const win = selectedTotalWin !== ""
+    ? selectedTotalWin
+    : (saved.win ?? "");
+
+  initGameDropdown(game, bet, win);
 }
 function jiliApplyDatabase() {
   gameData = {};
