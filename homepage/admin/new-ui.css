@@ -1142,7 +1142,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   display:block;
 
   fill:
-    currentColor;
+    #ffffffd1;
 
   transition:
     all .2s ease;
