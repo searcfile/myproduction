@@ -555,6 +555,19 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 </style>
+<style>
+/* JILI shared components: page settings only; Game Log unchanged */
+.control-panel .shared-input {background:var(--input) !important; color:var(--text) !important; border-color:var(--input-line); height:38px; border-radius:9px;}
+.control-panel .shared-input:focus {background:var(--input) !important; border-color:var(--input-line-focus) !important;}
+.control-panel .shared-dropdown-trigger {background:var(--input); border-color:var(--input-line);}
+.control-panel .shared-dropdown-input {color:var(--text) !important; background:transparent !important;}
+.control-panel .jili-auto-switch {align-self:center; justify-self:center; min-width:105px;}
+.control-panel .jili-auto-switch .shared-active-track {height:28px; min-width:105px; max-width:none;}
+.control-panel .jili-auto-switch .shared-active-knob {top:6px;}
+.control-panel .shared-active-switch input[type=checkbox] {height:1px; width:1px; padding:0;}
+.no-data-row .shared-empty {min-height:110px; width:100%;}
+.no-data-row td.shared-empty-table-cell {min-width:900px; padding:0 !important;}
+</style>
 </head>
 
 <body>
@@ -563,14 +576,14 @@ input[type="number"] {
   <select id="gameSelect" class="jili-native-select input-game" data-shared-dropdown data-placeholder="Select Game"></select>
   <select id="betInput" class="jili-native-select input-bet" data-shared-dropdown data-placeholder="Select Bet"></select>
   <select id="totalWinInput" class="jili-native-select input-win" data-shared-dropdown data-placeholder="Select Win"></select>
-  <input id="dateInput" class="input-date" type="text" placeholder="Set Time">
+  <input id="dateInput" class="shared-input input-date" type="text" placeholder="Set Time">
   <button class="btn-now" onclick="setNow()">Click Now</button>
 </div>
 
 <div class="control-panel row-mid">
-  <input id="scoreInput" class="input-score" type="number" placeholder="Add Score">
-  <button id="autoScoreBtn" class="btn-auto-score" onclick="toggleAutoScore()">AUTO OFF</button>
-  <input id="manualWinInput" class="input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
+  <input id="scoreInput" class="shared-input input-score" type="number" placeholder="Add Score">
+  <label class="shared-active-switch jili-auto-switch" title="Auto Add Score"><input id="autoScoreBtn" type="checkbox" data-active-label="AUTO ON" data-inactive-label="AUTO OFF"><span class="shared-active-track"><span class="shared-active-text">AUTO OFF</span><span class="shared-active-knob" aria-hidden="true"></span></span></label>
+  <input id="manualWinInput" class="shared-input input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
   <button class="btn-set-win" onclick="setRandomWin()">Set Win</button>
 </div>
 
@@ -607,34 +620,7 @@ let currentUserEmail = DEFAULT_EMAIL;
 let autoScoreEnabled = false;
 
 const ARROW_SVG = `<svg class="cs-arrow" viewBox="0 0 1024 1024"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg>`;
-function showToast(message, type = "success"){
-  const icons = {
-    success:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M7 12l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>`,
-    error:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 9l6 6M15 9l-6 6" stroke-linecap="round"></path></svg>`,
-    info:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8h.01M11 11h2v5h-2" stroke-linecap="round"></path></svg>`
-  };
-
-  const el = document.createElement("div");
-  el.className = `toast ${type}`;
-  el.innerHTML = `
-    <span class="icon">${icons[type] || icons.success}</span>
-    <span class="msg">${message}</span>
-    <span class="close">&times;</span>
-  `;
-
-  document.body.appendChild(el);
-  requestAnimationFrame(()=>el.classList.add("show"));
-
-  el.querySelector(".close").onclick = ()=>{
-    el.classList.remove("show");
-    setTimeout(()=>el.remove(),350);
-  };
-
-  setTimeout(()=>{
-    el.classList.remove("show");
-    setTimeout(()=>el.remove(),350);
-  },3500);
-}
+const showToast = (message, type="success") => window.NewUI?.showToast?.(message, type);
 const gameData = {
   "49_Super Ace": {
     bets:[0.10,1.00,2.00,3.00,5.00,10.00,20.00,30.00,40.00,50.00,80.00,100.00,200.00],
@@ -1261,6 +1247,13 @@ function formatDate(d){
          pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
 }
 
+// Inline button handlers must be explicitly exported from a module.
+window.setNow = (...args) => setNow(...args);
+window.changeLog = (...args) => changeLog(...args);
+window.addScoreRow = (...args) => addScoreRow(...args);
+window.copyTableImage = (...args) => copyTableImage(...args);
+window.resetTable = (...args) => resetTable(...args);
+window.setRandomWin = (...args) => setRandomWin(...args);
 function setNow(){
   document.getElementById("dateInput").value = formatDate(new Date());
   saveState();
@@ -1356,10 +1349,10 @@ function initGameDropdown(savedGame, savedBet, savedWin){
 makeCustomSelect("gameSelect", games, selectedGame, v => v, function(v){
   selectedGame = v;
 
+  if (!selectedGame || !gameData[selectedGame]) { updateBetDropdown("", ""); return; }
   const firstBet = gameData[selectedGame].bets[0];
   const firstKey = findPecahanKey(gameData[selectedGame].pecahan, firstBet);
-  const firstWin = gameData[selectedGame].pecahan[firstKey][0];
-
+  const firstWin = gameData[selectedGame].pecahan[firstKey]?.[0] ?? "";
   updateBetDropdown(firstBet, firstWin);
 }, "Select Game");
 
@@ -1371,8 +1364,8 @@ function updateBetDropdown(savedBet, savedWin){
   selectedBet = selectedGame && savedBet !== "" && savedBet !== undefined && bets.some(b=>Number(b)===Number(savedBet)) ? Number(savedBet) : "";
 
 makeCustomSelect("betInput", bets, selectedBet, v => money(v), function(v){
-  selectedBet = Number(v);
-
+  selectedBet = v === "" ? "" : Number(v);
+  if(selectedBet === "") { updateWinDropdown(""); return; }
   const pecahan = gameData[selectedGame].pecahan;
   const key = findPecahanKey(pecahan, selectedBet);
   const firstWin = key ? pecahan[key][0] : "";
@@ -1395,7 +1388,7 @@ function updateWinDropdown(savedWin){
   selectedTotalWin = selectedGame && selectedBet !== "" && savedWin !== "" && savedWin !== undefined && wins.some(w=>Number(w)===Number(savedWin)) ? Number(savedWin) : "";
 
   makeCustomSelect("totalWinInput", wins, selectedTotalWin, v => money(v), function(v){
-    selectedTotalWin = Number(v);
+    selectedTotalWin = v === "" ? "" : Number(v);
   }, "Select Win");
 }
 
@@ -1471,22 +1464,13 @@ function randomAutoScore(){
 }
 
 function toggleAutoScore(){
-  autoScoreEnabled = !autoScoreEnabled;
-
-  const btn = document.getElementById("autoScoreBtn");
-  const scoreInput = document.getElementById("scoreInput");
-
-  if(autoScoreEnabled){
-    btn.textContent = "AUTO ON";
-    btn.classList.add("auto-on");
-    scoreInput.value = randomAutoScore();
-  }else{
-    btn.textContent = "AUTO OFF";
-    btn.classList.remove("auto-on");
-  }
-
+  const input = document.getElementById("autoScoreBtn");
+  autoScoreEnabled = input.checked;
+  window.SharedActiveSwitch?.sync(input);
+  if(autoScoreEnabled) document.getElementById("scoreInput").value = randomAutoScore();
   saveState();
 }
+document.getElementById("autoScoreBtn").addEventListener("change", toggleAutoScore);
 function generateRows(){
   if(!selectedGame || selectedBet === "" || selectedTotalWin === ""){
    showToast("Please Select game first.", "error");
@@ -1641,14 +1625,11 @@ function resetTable(){
 
   document.getElementById("logBody").innerHTML = `
     <tr class="no-data-row">
-      <td colspan="12">No data</td>
+      <td colspan="12" class="shared-empty-table-cell">${window.createEmptyState?.("No data", "", "center") || "No data"}</td>
     </tr>
   `;
 const autoBtn = document.getElementById("autoScoreBtn");
-if(autoBtn){
-  autoBtn.textContent = "AUTO OFF";
-  autoBtn.classList.remove("auto-on");
-}
+if(autoBtn){ autoBtn.checked = false; window.SharedActiveSwitch?.sync(autoBtn); }
   saveState();
 }
 
@@ -1694,10 +1675,7 @@ if(saved.autoScoreEnabled){
   autoScoreEnabled = true;
 
   const btn = document.getElementById("autoScoreBtn");
-  if(btn){
-    btn.textContent = "AUTO ON";
-    btn.classList.add("auto-on");
-  }
+  if(btn){ btn.checked = true; window.SharedActiveSwitch?.sync(btn); }
 }
 initGameDropdown(saved.game, saved.bet, saved.win);
 
@@ -1706,7 +1684,7 @@ if(saved.tableHTML){
 }else{
   document.getElementById("logBody").innerHTML = `
     <tr class="no-data-row">
-      <td colspan="12">No data</td>
+      <td colspan="12" class="shared-empty-table-cell">${window.createEmptyState?.("No data", "", "center") || "No data"}</td>
     </tr>
   `;
 }
