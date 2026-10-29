@@ -1146,6 +1146,11 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   transition:
     all .2s ease;
 }
+/* CHIP DROPDOWN - CLEAR ICON NORMAL */
+.shared-chip-dropdown-icon-clear:hover {
+  fill: var(--muted);
+  transition: fill .2s ease;
+}
 /* SELECT SITE - SVG ICON SAHAJA */
 #headerSiteCustom svg.shared-chip-dropdown-icon {
   fill: #ffffffd1 !important;
