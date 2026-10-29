@@ -1536,21 +1536,26 @@ function rhbNormalizeBank(value) {
 }
 
 
+
 function rhbRefreshBankDropdown() {
-  let saved = {};
+  let saved = null;
 
   try {
     saved = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "{}"
-    ) || {};
+      localStorage.getItem(STORAGE_KEY) || "null"
+    );
   } catch (error) {
-    console.warn("RHB saved state error:", error);
+    console.warn("RHB draft error:", error);
   }
 
-  const wantedBank = el.bankSel.value || saved.bankSel || "";
+  const currentBank = el.bankSel.value;
+
+  const wantedBank = rhbRestoring
+    ? (saved?.bankSel ?? "")
+    : (currentBank || saved?.bankSel || "");
 
   const banks = Object.values(RHB_BANK_RECORDS)
-    .filter(bank => bank.active)
+    .filter(bank => bank.active !== false)
     .sort((a, b) => a.name.localeCompare(b.name));
 
   el.bankSel.replaceChildren(
@@ -1561,11 +1566,11 @@ function rhbRefreshBankDropdown() {
     el.bankSel.add(new Option(bank.name, bank.name));
   }
 
-  const matched = banks.find(
+  const exists = banks.some(
     bank => bank.name === wantedBank
   );
 
- el.bankSel.value = matched ? matched.name : "";
+  el.bankSel.value = exists ? wantedBank : "";
 
   el.bankSel._sharedDropdown?.refresh?.();
 
