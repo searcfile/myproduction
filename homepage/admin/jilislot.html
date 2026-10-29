@@ -520,7 +520,7 @@ input[type="number"] {
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
-<script defer src="./shared-ui.js"></script>
+<script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
 const MAX_ROWS = 22;
@@ -1257,7 +1257,11 @@ function makeCustomSelect(id, items, value, labelFn, onChange, placeholder){
     onChange(select.value);
     saveState();
   });
-  if (window.NewUI?.dropdown) window.NewUI.dropdown(select, {placeholder});
+  if (typeof window.createSharedDropdown === "function") {
+  window.createSharedDropdown(select, { placeholder });
+} else if (typeof window.NewUI?.dropdown === "function") {
+  window.NewUI.dropdown(select, { placeholder });
+}
 }
 
 function initGameDropdown(savedGame, savedBet, savedWin){
@@ -1613,9 +1617,13 @@ function updateJiliEmptyCard(){
   log.style.display = hasRows ? "" : "none";
   empty.style.display = hasRows ? "none" : "";
   if (!hasRows && !target.dataset.rendered) {
-    if (typeof window.showEmptyState === "function") {
-      window.showEmptyState(target, "No data", "large", "center", false);
-    } else target.textContent = "No data";
+if (typeof window.showEmptyState === "function") {
+  window.showEmptyState(target, "No data", "large", "center", false);
+} else if (typeof window.createEmptyState === "function") {
+  target.innerHTML = window.createEmptyState("No data", "large", "center");
+} else {
+  target.textContent = "No data";
+}
     target.dataset.rendered = "true";
   }
 }
