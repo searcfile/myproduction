@@ -1061,20 +1061,22 @@ function createShell() {
   onsubmit="return false;">
         <div class="header-tab-search-input-wrap">
 
-          <input
-            id="headerTabSearchInput"
-            class="header-tab-search-input"
-            type="text"
-            name="header_tab_search_no_autofill_923"
-            placeholder="🏢 🔍 Search"
-            autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            inputmode="search"
-            readonly
-            onfocus="this.removeAttribute('readonly');"
-          >
+
+<input
+  id="headerTabSearchInput"
+  class="header-tab-search-input"
+  type="search"
+  name="site_filter_query"
+  placeholder="🏢 🔍 Search"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  data-lpignore="true"
+  data-1p-ignore="true"
+  aria-label="Search sites"
+>
+
 
 
 <svg
