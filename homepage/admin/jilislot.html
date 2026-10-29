@@ -23,13 +23,13 @@
 
 /* JILI shared dropdown integration; scoped to settings only */
 .control-panel .shared-dropdown { min-width:0; width:100%; }
-.control-panel .shared-dropdown-trigger { height:38px; border-radius:9px; background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
+.control-panel .shared-dropdown-trigger { height:32px; border-radius:6px; background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
 .control-panel .shared-dropdown-input { height:100%; background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 30px 0 12px; }
 .control-panel .shared-dropdown-panel { z-index:10001; }
 .control-panel.row-top { position:relative; z-index:5; }
 .control-panel.row-mid { position:relative; z-index:2; }
 .control-panel.row-bottom { position:relative; z-index:1; }
-.control-panel .shared-dropdown-option { height:auto; min-height:32px; }
+.control-panel .shared-dropdown-option { height:auto;height:32px; }
 @media (max-width:760px) { .control-panel.row-top > .shared-dropdown:first-child { grid-column:1/-1; } }
 
 /* ==============================================================
@@ -42,8 +42,8 @@ body { min-width:0; }
 .control-panel {
   box-sizing:border-box;
   width:calc(100% - 28px);
-  margin:14px 14px 0;
-  padding:16px !important;
+  margin:12px 12px 0;
+  padding:12px !important;
   border:1px solid var(--jili-ui-line);
   border-radius:14px;
   background:var(--jili-ui-surface);
@@ -64,7 +64,7 @@ body { min-width:0; }
 .control-panel input,
 .control-panel .cs-display {
   border:1px solid var(--jili-ui-line);
-  border-radius:9px;
+  border-radius:8px;
   background:var(--jili-ui-soft);
   color:var(--page-text);
   padding:0 12px;
