@@ -747,6 +747,10 @@ function jiliCheckTabRefresh() {
 
 const jiliWasTabRefreshed = jiliCheckTabRefresh();
 
+if (jiliWasTabRefreshed) {
+  sessionStorage.setItem("jili.pendingReset", "1");
+}
+
 
 let currentRoundPrefix = "";
 let currentRoundSuffix = "";
@@ -1322,19 +1326,12 @@ new MutationObserver(updateJiliEmptyCard).observe(document.getElementById("logBo
 
 syncAutoScoreSwitch();
 updateJiliEmptyCard();
+// Jalankan reset yang sama dengan tombol Reset Log.
+if (sessionStorage.getItem("jili.pendingReset") === "1") {
+  sessionStorage.removeItem("jili.pendingReset");
+  resetTable();
 
-// Kosongkan input apabila refresh melalui ikon SVG.
-if (jiliWasTabRefreshed) {
-  const clearRefreshInputs = () => {
-    document.getElementById("dateInput").value = "";
-    document.getElementById("scoreInput").value = "";
-    document.getElementById("manualWinInput").value = "";
-  };
-
-  clearRefreshInputs();
-
-  // Pastikan browser tidak memulihkan nilai input lama.
-  window.addEventListener("pageshow", clearRefreshInputs);
+  console.log("[JILI] SVG Refresh -> resetTable() executed");
 }
 
 (function () {
