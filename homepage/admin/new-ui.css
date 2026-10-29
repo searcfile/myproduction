@@ -1148,6 +1148,10 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 }
 /* CHIP DROPDOWN - CLEAR ICON NORMAL */
 .shared-chip-dropdown-icon-clear:hover {
+  fill: var(--text);
+  transition: fill .2s ease;
+}
+.shared-chip-dropdown-icon-clear:active {
   fill: var(--muted);
   transition: fill .2s ease;
 }
