@@ -19,6 +19,99 @@
     z-index: 2147483647;
     pointer-events: auto;
   }
+
+/* ==============================================================
+   5G88 / JILI — SETTINGS UI REFRESH (2026)
+   Scope: control panels ONLY. Game Log table remains untouched.
+   ============================================================== */
+:root { --jili-ui-surface:#14171e; --jili-ui-line:#333b4c; --jili-ui-soft:#1b202b; }
+body.light-theme { --jili-ui-surface:#fff; --jili-ui-line:#d9e0eb; --jili-ui-soft:#f4f7fc; }
+body { min-width:0; }
+.control-panel {
+  box-sizing:border-box;
+  width:calc(100% - 28px);
+  margin:14px 14px 0;
+  padding:16px !important;
+  border:1px solid var(--jili-ui-line);
+  border-radius:14px;
+  background:var(--jili-ui-surface);
+  box-shadow:0 5px 22px rgba(0,0,0,.13);
+  display:grid;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.control-panel.row-top { grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto; }
+.control-panel.row-mid { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto; margin-top:10px; }
+.control-panel.row-bottom { grid-template-columns:repeat(4,max-content); justify-content:start; margin-top:10px; }
+.control-panel > * { min-width:0; max-width:100%; box-sizing:border-box; }
+.control-panel input,
+.control-panel .custom-select,
+.control-panel .cs-display,
+.control-panel button { height:38px; min-height:38px; font:inherit; }
+.control-panel input,
+.control-panel .cs-display {
+  border:1px solid var(--jili-ui-line);
+  border-radius:9px;
+  background:var(--jili-ui-soft);
+  color:var(--page-text);
+  padding:0 12px;
+  width:100%;
+  box-shadow:none;
+}
+.control-panel input::placeholder { color:var(--blur) !important; }
+.control-panel .cs-display { gap:8px; }
+.control-panel .cs-text { flex:1; min-width:0; }
+.control-panel .custom-select.open .cs-display,
+.control-panel input:focus { border-color:var(--blue) !important; box-shadow:0 0 0 3px rgba(22,104,220,.13); outline:none; }
+.control-panel .cs-list { top:calc(100% + 5px); border:1px solid var(--jili-ui-line); border-radius:10px; background:var(--jili-ui-surface); box-shadow:0 14px 35px rgba(0,0,0,.25); }
+.control-panel .cs-item { padding:9px 12px; border-radius:7px; }
+.control-panel .cs-search { background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
+.control-panel button {
+  border-radius:9px;
+  padding:0 17px;
+  font-weight:600;
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.control-panel button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,104,220,.2); }
+.control-panel button:active { transform:translateY(0); box-shadow:none; }
+.control-panel .btn-auto-score { background:#414a59; }
+.control-panel .btn-auto-score.auto-on { background:var(--blue); }
+.control-panel .btn-change { background:#364254; }
+.control-panel .btn-change:hover { background:#465a74; }
+.control-panel .btn-copy { background:#16865b; }
+.control-panel .btn-copy:hover { background:#1ca36e; }
+.control-panel .btn-reset { background:#b42335; }
+.control-panel .btn-reset:hover { background:#d02c40; }
+@media(max-width:1100px) {
+  .control-panel.row-top { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .control-panel.row-top .input-date { grid-column:span 2; }
+  .control-panel.row-mid { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto; }
+}
+@media(max-width:760px) {
+  .control-panel { width:calc(100% - 20px); margin:10px 10px 0; padding:12px !important; gap:10px; }
+  .control-panel.row-top { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:none; }
+  .control-panel.row-top > * { grid-area:auto !important; }
+  .control-panel.row-top .input-game { grid-column:1 / -1; }
+  .control-panel.row-top .input-date { grid-column:1; }
+  .control-panel.row-top .btn-now { grid-column:2; width:100%; }
+  .control-panel.row-mid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .control-panel.row-mid > * { width:100%; }
+  .control-panel.row-bottom { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .control-panel.row-bottom > button { width:100%; }
+}
+@media(max-width:460px) {
+  .control-panel.row-top { grid-template-columns:1fr; }
+  .control-panel.row-top > * { grid-column:1 / -1 !important; }
+  .control-panel.row-mid { grid-template-columns:1fr 1fr; }
+  .control-panel.row-mid .input-score,
+  .control-panel.row-mid .input-manual-win { grid-column:1 / -1; }
+  .control-panel.row-mid .btn-auto-score,
+  .control-panel.row-mid .btn-set-win { grid-column:1 / -1; }
+  .control-panel.row-bottom { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .control-panel button { padding:0 10px; font-size:13px; }
+}
+
 </style>
 
 <script>
