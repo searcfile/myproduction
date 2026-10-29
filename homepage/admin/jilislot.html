@@ -20,109 +20,30 @@
     pointer-events: auto;
   }
 
-
-/* JILI shared dropdown integration; scoped to settings only */
-.control-panel .shared-dropdown { min-width:0; width:100%; }
-.control-panel .shared-dropdown-trigger { height:32px; border-radius:6px; background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
-.control-panel .shared-dropdown-input { height:100%; background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 30px 0 12px; }
-.control-panel .shared-dropdown-panel { z-index:10001; }
-.control-panel.row-top { position:relative; z-index:5; }
-.control-panel.row-mid { position:relative; z-index:2; }
-.control-panel.row-bottom { position:relative; z-index:1; }
-.control-panel .shared-dropdown-option { 
- height:32px;
- padding:5px 12px;
- border-radius:4px;
-}
-@media (max-width:760px) { .control-panel.row-top > .shared-dropdown:first-child { grid-column:1/-1; } }
-
-/* ==============================================================
-   5G88 / JILI — SETTINGS UI REFRESH (2026)
-   Scope: control panels ONLY. Game Log table remains untouched.
-   ============================================================== */
-:root { --jili-ui-surface:#14171e; --jili-ui-line:#333b4c; --jili-ui-soft:#1b202b; }
-body.light-theme { --jili-ui-surface:#fff; --jili-ui-line:#d9e0eb; --jili-ui-soft:#f4f7fc; }
-body { min-width:0; }
-.control-panel {
-  box-sizing:border-box;
-  width:calc(100% - 24px);
-  margin:12px 12px 0;
-  padding:12px !important;
-  border:1px solid var(--jili-ui-line);
-  border-radius:12px;
-  background:var(--jili-ui-surface);
-  display:grid;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-.control-panel.row-top { grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto; }
-.control-panel.row-mid { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto; margin-top:10px; }
-.control-panel.row-bottom { grid-template-columns:repeat(4,max-content); justify-content:start; margin-top:10px; }
-.control-panel > * { min-width:0; max-width:100%; box-sizing:border-box; }
-.control-panel input,
-.control-panel .custom-select,
-.control-panel .cs-display,
-.control-panel input,
-.control-panel .cs-display {
-  border:1px solid var(--jili-ui-line);
-  border-radius:8px;
-  background:var(--jili-ui-soft);
-  color:var(--page-text);
-  padding:0 12px;
-  width:100%;
-  box-shadow:none;
-}
-.control-panel input::placeholder { color:var(--blur) !important; }
-.control-panel .cs-display { gap:8px; }
-.control-panel .cs-text { flex:1; min-width:0; }
-.control-panel .custom-select.open .cs-display,
-.control-panel input:focus { border-color:var(--blue) !important; box-shadow:0 0 0 3px rgba(22,104,220,.13); outline:none; }
-.control-panel .cs-list { top:calc(100% + 5px); border:1px solid var(--jili-ui-line); border-radius:10px; background:var(--jili-ui-surface); box-shadow:0 14px 35px rgba(0,0,0,.25); }
-.control-panel .cs-item { padding:9px 12px; border-radius:7px; }
-.control-panel .cs-search { background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
-.control-panel button {
-  border-radius:8px;
-  padding:0 15px;
-  font-weight:400;
-  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
-}
-.control-panel .btn-auto-score { background:#414a59; }
-.control-panel .btn-auto-score.auto-on { background:var(--blue); }
-.control-panel .btn-change { background:#364254; }
-.control-panel .btn-change:hover { background:#465a74; }
-.control-panel .btn-copy { background:#16865b; }
-.control-panel .btn-copy:hover { background:#1ca36e; }
-.control-panel .btn-reset { background:#b42335; }
-.control-panel .btn-reset:hover { background:#d02c40; }
-@media(max-width:1100px) {
-  .control-panel.row-top { grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .control-panel.row-top .input-date { grid-column:span 2; }
-  .control-panel.row-mid { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto; }
-}
-@media(max-width:760px) {
-  .control-panel { width:calc(100% - 20px); margin:10px 10px 0; padding:12px !important; gap:10px; }
-  .control-panel.row-top { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:none; }
-  .control-panel.row-top > * { grid-area:auto !important; }
-  .control-panel.row-top .input-game { grid-column:1 / -1; }
-  .control-panel.row-top .input-date { grid-column:1; }
-  .control-panel.row-top .btn-now { grid-column:2; width:100%; }
-  .control-panel.row-mid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .control-panel.row-mid > * { width:100%; }
-  .control-panel.row-bottom { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .control-panel.row-bottom > button { width:100%; }
-}
-@media(max-width:460px) {
-  .control-panel.row-top { grid-template-columns:1fr; }
-  .control-panel.row-top > * { grid-column:1 / -1 !important; }
-  .control-panel.row-mid { grid-template-columns:1fr 1fr; }
-  .control-panel.row-mid .input-score,
-  .control-panel.row-mid .input-manual-win { grid-column:1 / -1; }
-  .control-panel.row-mid .btn-auto-score,
-  .control-panel.row-mid .btn-set-win { grid-column:1 / -1; }
-  .control-panel.row-bottom { grid-template-columns:repeat(2,minmax(0,1fr)); }
-}
-
+/* JILI UI UPGRADE: SETTINGS ONLY. Do not style .game-log-table or its descendants. */
+.jili-settings,.jili-log-panel,.jili-empty-panel{margin:12px;padding:16px;border:1px solid var(--border-input);border-radius:10px;background:var(--page-input);box-sizing:border-box;}
+.jili-settings{overflow:visible;}
+.jili-settings .mg-panel-title,.jili-log-panel .mg-panel-title{font-size:15px;font-weight:700;margin:0 0 14px;color:var(--page-text);}
+.jili-divider{height:1px;background:var(--border-input);opacity:.65;margin:16px 0;}
+.jili-controls{display:grid;gap:10px;align-items:center;}
+.jili-top{grid-template-columns:minmax(130px,1.5fr) minmax(110px,1fr) minmax(110px,1fr) minmax(160px,1.2fr) auto;}
+.jili-middle{grid-template-columns:minmax(120px,1fr) auto minmax(140px,1fr) auto;justify-content:start;}
+.jili-actions{grid-template-columns:repeat(4,max-content);}
+.jili-settings .jili-dropdown-slot{min-width:0;position:relative;}
+.jili-settings .shared-dropdown{width:100%;}
+.jili-settings input:not([type=checkbox]),.jili-settings button{height:32px;min-width:0;box-sizing:border-box;font-size:14px;}
+.jili-settings input:not([type=checkbox]){width:100%;}
+.jili-settings .shared-dropdown-input{padding:0 24px 0 11px!important;border:0!important;background:transparent!important;box-shadow:none!important;}
+.jili-settings .shared-dropdown-trigger{height:32px;}
+.jili-settings .jili-switch{justify-self:start;}
+.jili-settings .btn-reset{background:#d9363e;}
+.jili-settings .btn-reset:hover{background:#ff4d4f;}
+.jili-log-panel{overflow:visible;}
+.jili-log-panel .table-wrap{margin:0;max-width:100%;overflow-x:auto;}
+.jili-empty-panel{min-height:185px;display:flex;align-items:center;justify-content:center;}
+.jili-empty-panel #jiliEmpty{width:100%;}
+@media(max-width:900px){.jili-top{grid-template-columns:repeat(3,minmax(0,1fr));}.jili-top .input-date{grid-column:span 2;}.jili-middle{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;}}
+@media(max-width:600px){.jili-settings,.jili-log-panel,.jili-empty-panel{margin:10px;padding:12px;}.jili-top{grid-template-columns:1fr;}.jili-top .input-date{grid-column:auto;}.jili-middle{grid-template-columns:minmax(0,1fr) auto;}.jili-middle .input-manual-win{grid-column:1;}.jili-middle .btn-set-win{grid-column:2;}.jili-actions{grid-template-columns:repeat(2,minmax(0,1fr));}.jili-actions button{width:100%;}}
 </style>
 
 <script>
@@ -169,23 +90,7 @@ body { min-width:0; }
 <link rel="stylesheet" href="./shared-ui.css">
 <link rel="stylesheet" href="./admin.css">
 <link rel="stylesheet" href="./new-ui.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* ==========================================
-   JILI GAME LOG — FORCE SOURCE SANS 3
-   ========================================== */
-
-html body .game-log-table,
-html body .game-log-table *,
-html body .game-log-table td,
-html body .game-log-table th,
-html body .game-log-table a,
-html body .game-log-table span,
-html body .game-log-table .badge {
-  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
-}
   :root{
     --page-bg: #000;
     --page-text: rgba(255,255,255,0.85);
@@ -218,27 +123,8 @@ html body .game-log-table .badge {
     --list-active:#e6f4ff;
     --list-hover:rgba(0,0,0,0.08);
   }
-body {
-  margin: 0;
-  background: var(--page-bg);
-  color: var(--page-text);
-  font-family: 'Source Sans 3', Arial, sans-serif;
-  font-size: 14px;
-}
-
-/* Semua komponen settings menggunakan Source Sans 3 */
-.control-panel,
-.control-panel input,
-.control-panel button,
-.control-panel select,
-.control-panel .shared-dropdown,
-.control-panel .shared-dropdown-input,
-.control-panel .shared-dropdown-option,
-.control-panel .cs-display,
-.control-panel .cs-item,
-.control-panel .cs-search {
-  font-family: 'Source Sans 3', Arial, sans-serif !important;
-}
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+body{margin:0;background:var(--page-bg);font-family:'Source Sans Pro',Arial,sans-serif;font-size:14px;color:var(--page-text)}
 
 .control-panel{
   display:grid;
@@ -479,7 +365,26 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
-
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input, select, textarea, [tabindex]):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: transparent;
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
+  background-color: transparent;
+  transition: all .2s ease;
+}
 .no-data-row td{
   text-align:center;
   color:#999;
@@ -570,57 +475,46 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 </style>
-<style>
-/* JILI shared components: page settings only; Game Log unchanged */
-.control-panel .shared-input {background:var(--input) !important; color:var(--text) !important; border-color:var(--input-line); height:32px; border-radius:6px;}
-.control-panel .shared-input:focus {background:var(--input) !important; border-color:var(--input-line-focus) !important;}
-.control-panel .shared-dropdown-trigger {background:var(--input); border-color:var(--input-line);}
-.control-panel .shared-dropdown-input {color:var(--text) !important; background:transparent !important;}
-.control-panel .jili-auto-switch {align-self:center; justify-self:center;}
-.control-panel .shared-active-switch input[type=checkbox] {height:1px; width:1px; padding:0;}
-.no-data-row .shared-empty {min-height:110px; width:100%;}
-.no-data-row td.shared-empty-table-cell {min-width:900px; padding:0 !important;}
-<style>
-/* ==========================================
-   JILI SLOTS — GLOBAL FONT OVERRIDE
-   ========================================== */
-
-html body,
-html body *:not(svg):not(path) {
-  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
-}
-</style>
-
+</head>
 
 <body>
 
-<div class="control-panel row-top">
-  <select id="gameSelect" class="jili-native-select input-game" data-shared-dropdown data-placeholder="Select Game"></select>
-  <select id="betInput" class="jili-native-select input-bet" data-shared-dropdown data-placeholder="Select Bet"></select>
-  <select id="totalWinInput" class="jili-native-select input-win" data-shared-dropdown data-placeholder="Select Win"></select>
-  <input id="dateInput" class="shared-input input-date" type="text" placeholder="Set Time">
-  <button class="btn-primary-new" onclick="setNow()">Click Now</button>
-</div>
-
-<div class="control-panel row-mid">
-  <input id="scoreInput" class="shared-input input-score" type="number" placeholder="Add Score">
-  <label class="shared-active-switch jili-auto-switch" title="Auto Add Score"><input id="autoScoreBtn" type="checkbox" data-active-label="AUTO ON" data-inactive-label="AUTO OFF"><span class="shared-active-track"><span class="shared-active-text">AUTO OFF</span><span class="shared-active-knob" aria-hidden="true"></span></span></label>
-  <input id="manualWinInput" class="shared-input input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
-  <button class="btn-primary-new" onclick="setRandomWin()">Set Win</button>
-</div>
-
-<div class="control-panel row-bottom">
-  <button class="btn-primary-new" onclick="changeLog()">Change</button>
-  <button class="btn-primary-new" onclick="addScoreRow()">Add Score Row</button>
-  <button class="btn-primary-new" onclick="copyTableImage()">Copy Image</button>
-  <button class="reset-button" onclick="resetTable()">Reset Log</button>
-</div>
-
-<div class="table-wrap" id="captureArea">
-  <table class="game-log-table">
-    <tbody id="logBody"></tbody>
-  </table>
-</div>
+<!-- JILI SETTINGS: MEGA888-style controls; original Game Log table is unchanged -->
+<section class="jili-settings mg-panel">
+  <div class="mg-panel-title">Game Settings</div>
+  <div class="jili-controls jili-top">
+    <div id="gameSelect" class="jili-dropdown-slot"></div>
+    <div id="betInput" class="jili-dropdown-slot"></div>
+    <div id="totalWinInput" class="jili-dropdown-slot"></div>
+    <input data-new-ui-input id="dateInput" class="input-date" type="text" placeholder="Set Time">
+    <button class="btn-now" onclick="setNow()">Click Now</button>
+  </div>
+  <div class="jili-divider"></div>
+  <div class="mg-panel-title">Score & Winner Controls</div>
+  <div class="jili-controls jili-middle">
+    <input data-new-ui-input id="scoreInput" class="input-score" type="number" placeholder="Add Score">
+    <label class="shared-active-switch jili-switch" title="Auto Add Score">
+      <input id="autoScoreBtn" type="checkbox" onchange="toggleAutoScore(this.checked)">
+      <span class="shared-active-track"><span class="shared-active-text">Inactive</span><span class="shared-active-knob" aria-hidden="true"></span></span>
+    </label>
+    <input data-new-ui-input id="manualWinInput" class="input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
+    <button class="btn-set-win" onclick="setRandomWin()">Set Win</button>
+  </div>
+  <div class="jili-divider"></div>
+  <div class="jili-controls jili-actions">
+    <button class="btn-change" onclick="changeLog()">Change</button>
+    <button class="btn-add-score" onclick="addScoreRow()">Add Score Row</button>
+    <button class="btn-copy" onclick="copyTableImage()">Copy Image</button>
+    <button class="btn-reset" onclick="resetTable()">Reset Log</button>
+  </div>
+</section>
+<section class="mg-panel jili-log-panel" id="jiliGameLogCard">
+  <div class="mg-panel-title">Game Log</div>
+  <div class="table-wrap" id="captureArea">
+    <table class="game-log-table"><tbody id="logBody"></tbody></table>
+  </div>
+</section>
+<section class="mg-panel jili-empty-panel" id="jiliEmptyCard" style="display:none"><div id="jiliEmpty"></div></section>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -642,7 +536,12 @@ let currentUserEmail = DEFAULT_EMAIL;
 let autoScoreEnabled = false;
 
 const ARROW_SVG = `<svg class="cs-arrow" viewBox="0 0 1024 1024"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg>`;
-const showToast = (message, type="success") => window.NewUI?.showToast?.(message, type);
+function showToast(message, type = "success") {
+  if (typeof window.NewUI?.showToast === "function") {
+    return window.NewUI.showToast(message, type);
+  }
+  console.info(`[${type}] ${message}`);
+}
 const gameData = {
   "49_Super Ace": {
     bets:[0.10,1.00,2.00,3.00,5.00,10.00,20.00,30.00,40.00,50.00,80.00,100.00,200.00],
@@ -861,7 +760,7 @@ const gameData = {
     }
   },
     "100_Super Rich": {
-    bets:[0.30,1.00,2.00,3.00,5.00,10.00,15.00,20.00,30.00,40.00,60.00,80.00,120.00,160.00],
+    bets:[0.30,1.00,2.00,3.00,5.00,10.00,15.00,20.00,30.00,40.00,60.00,80.00,120,00,160.00],
     pecahan:{
       0.30:[50.00,100.00,200.00,300.00,500.00,800.00,1000.00,1200.00,1500.00],
       1.00:[50.00,100.00,200.00,300.00,500.00,800.00,1000.00,1200.00,1500.00],
@@ -1269,13 +1168,6 @@ function formatDate(d){
          pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
 }
 
-// Inline button handlers must be explicitly exported from a module.
-window.setNow = (...args) => setNow(...args);
-window.changeLog = (...args) => changeLog(...args);
-window.addScoreRow = (...args) => addScoreRow(...args);
-window.copyTableImage = (...args) => copyTableImage(...args);
-window.resetTable = (...args) => resetTable(...args);
-window.setRandomWin = (...args) => setRandomWin(...args);
 function setNow(){
   document.getElementById("dateInput").value = formatDate(new Date());
   saveState();
@@ -1343,25 +1235,29 @@ function findPecahanKey(pecahan, bet){
   return Object.keys(pecahan).find(key => Number(key) === Number(bet));
 }
 
-// JILI: use the existing 5G88 shared searchable dropdown component.
-// Keep the original game/bet/win state and calculation callbacks unchanged.
-function makeCustomSelect(id, items, value, labelFn, onChange, placeholder) {
-  const select = document.getElementById(id);
-  if (!select) return;
-  const valid = items.some(item => String(item) === String(value));
-  const selected = valid ? String(value) : "";
+function makeCustomSelect(id, items, value, labelFn, onChange, placeholder){
+  const mount = document.getElementById(id);
+  if (!mount) return;
+  // Rebuild only the settings dropdown; the original JILI Game Log stays untouched.
+  mount.innerHTML = "";
+  const select = document.createElement("select");
+  select.className = "jili-native-select";
   select.dataset.placeholder = placeholder;
-  select.replaceChildren(new Option(placeholder, ""));
-  items.forEach(item => select.add(new Option(String(labelFn(item)), String(item))));
-  select.value = selected;
-  select.onchange = () => {
+  select.setAttribute("data-shared-dropdown", "");
+  const blank = new Option(placeholder, "");
+  select.appendChild(blank);
+  items.forEach(v => select.appendChild(new Option(String(labelFn(v)), String(v))));
+  const hasValue = value !== "" && value !== null && value !== undefined;
+  select.value = hasValue && items.some(v => String(v) === String(value)) ? String(value) : "";
+  mount.dataset.value = select.value;
+  mount.appendChild(select);
+  select.addEventListener("change", () => {
+    mount.dataset.value = select.value;
+    if (!select.value) return;
     onChange(select.value);
     saveState();
-  };
-  if (!select._sharedDropdown && typeof window.createSharedDropdown === "function") {
-    window.createSharedDropdown(select, {placeholder});
-  }
-  select._sharedDropdown?.refresh?.();
+  });
+  if (window.NewUI?.dropdown) window.NewUI.dropdown(select, {placeholder});
 }
 
 function initGameDropdown(savedGame, savedBet, savedWin){
@@ -1371,10 +1267,10 @@ function initGameDropdown(savedGame, savedBet, savedWin){
 makeCustomSelect("gameSelect", games, selectedGame, v => v, function(v){
   selectedGame = v;
 
-  if (!selectedGame || !gameData[selectedGame]) { updateBetDropdown("", ""); return; }
   const firstBet = gameData[selectedGame].bets[0];
   const firstKey = findPecahanKey(gameData[selectedGame].pecahan, firstBet);
-  const firstWin = gameData[selectedGame].pecahan[firstKey]?.[0] ?? "";
+  const firstWin = gameData[selectedGame].pecahan[firstKey][0];
+
   updateBetDropdown(firstBet, firstWin);
 }, "Select Game");
 
@@ -1386,8 +1282,8 @@ function updateBetDropdown(savedBet, savedWin){
   selectedBet = selectedGame && savedBet !== "" && savedBet !== undefined && bets.some(b=>Number(b)===Number(savedBet)) ? Number(savedBet) : "";
 
 makeCustomSelect("betInput", bets, selectedBet, v => money(v), function(v){
-  selectedBet = v === "" ? "" : Number(v);
-  if(selectedBet === "") { updateWinDropdown(""); return; }
+  selectedBet = Number(v);
+
   const pecahan = gameData[selectedGame].pecahan;
   const key = findPecahanKey(pecahan, selectedBet);
   const firstWin = key ? pecahan[key][0] : "";
@@ -1410,7 +1306,7 @@ function updateWinDropdown(savedWin){
   selectedTotalWin = selectedGame && selectedBet !== "" && savedWin !== "" && savedWin !== undefined && wins.some(w=>Number(w)===Number(savedWin)) ? Number(savedWin) : "";
 
   makeCustomSelect("totalWinInput", wins, selectedTotalWin, v => money(v), function(v){
-    selectedTotalWin = v === "" ? "" : Number(v);
+    selectedTotalWin = Number(v);
   }, "Select Win");
 }
 
@@ -1485,14 +1381,19 @@ function randomAutoScore(){
   return amount.toFixed(2);
 }
 
-function toggleAutoScore(){
+function syncAutoScoreSwitch(){
   const input = document.getElementById("autoScoreBtn");
-  autoScoreEnabled = input.checked;
-  window.SharedActiveSwitch?.sync(input);
-  if(autoScoreEnabled) document.getElementById("scoreInput").value = randomAutoScore();
+  if (!input) return;
+  input.checked = autoScoreEnabled;
+  const text = input.closest(".shared-active-switch")?.querySelector(".shared-active-text");
+  if (text) text.textContent = autoScoreEnabled ? "Active" : "Inactive";
+}
+function toggleAutoScore(checked){
+  autoScoreEnabled = typeof checked === "boolean" ? checked : !autoScoreEnabled;
+  if (autoScoreEnabled) document.getElementById("scoreInput").value = randomAutoScore();
+  syncAutoScoreSwitch();
   saveState();
 }
-document.getElementById("autoScoreBtn").addEventListener("change", toggleAutoScore);
 function generateRows(){
   if(!selectedGame || selectedBet === "" || selectedTotalWin === ""){
    showToast("Please Select game first.", "error");
@@ -1645,13 +1546,10 @@ function resetTable(){
   document.getElementById("dateInput").value = "";
   document.getElementById("scoreInput").value = "";
 
-  document.getElementById("logBody").innerHTML = `
-    <tr class="no-data-row">
-      <td colspan="12" class="shared-empty-table-cell">${window.createEmptyState?.("No data", "", "center") || "No data"}</td>
-    </tr>
-  `;
-const autoBtn = document.getElementById("autoScoreBtn");
-if(autoBtn){ autoBtn.checked = false; window.SharedActiveSwitch?.sync(autoBtn); }
+  document.getElementById("manualWinInput").value = "";
+  document.getElementById("logBody").innerHTML = "";
+  syncAutoScoreSwitch();
+  updateJiliEmptyCard();
   saveState();
 }
 
@@ -1696,20 +1594,35 @@ if(saved.score){
 if(saved.autoScoreEnabled){
   autoScoreEnabled = true;
 
-  const btn = document.getElementById("autoScoreBtn");
-  if(btn){ btn.checked = true; window.SharedActiveSwitch?.sync(btn); }
+  syncAutoScoreSwitch();
 }
 initGameDropdown(saved.game, saved.bet, saved.win);
 
 if(saved.tableHTML){
   document.getElementById("logBody").innerHTML = saved.tableHTML;
 }else{
-  document.getElementById("logBody").innerHTML = `
-    <tr class="no-data-row">
-      <td colspan="12" class="shared-empty-table-cell">${window.createEmptyState?.("No data", "", "center") || "No data"}</td>
-    </tr>
-  `;
+  document.getElementById("logBody").innerHTML = "";
 }
+function updateJiliEmptyCard(){
+  const log = document.getElementById("jiliGameLogCard");
+  const empty = document.getElementById("jiliEmptyCard");
+  const target = document.getElementById("jiliEmpty");
+  const tbody = document.getElementById("logBody");
+  if (!log || !empty || !target || !tbody) return;
+  const hasRows = Array.from(tbody.rows).some(row => !row.classList.contains("no-data-row"));
+  log.style.display = hasRows ? "" : "none";
+  empty.style.display = hasRows ? "none" : "";
+  if (!hasRows && !target.dataset.rendered) {
+    if (typeof window.showEmptyState === "function") {
+      window.showEmptyState(target, "No data", "large", "center", false);
+    } else target.textContent = "No data";
+    target.dataset.rendered = "true";
+  }
+}
+new MutationObserver(updateJiliEmptyCard).observe(document.getElementById("logBody"), {childList:true});
+syncAutoScoreSwitch();
+updateJiliEmptyCard();
+
 (function () {
   const THEME_KEY = "siteTheme";
 
