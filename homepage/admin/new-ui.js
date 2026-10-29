@@ -2678,7 +2678,9 @@ function initSharedDropdowns(
 /* Custom input: automatic search/clear icons and password eye toggles. */
 const NEW_UI_ICONS = {
   search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
-  clear: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m9 9 6 6m0-6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+  
+clear: '<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.09-.05l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 000-.07z"/></svg>',
+
   eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',
   eyeOff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3 21 21M9.9 6.3A11.7 11.7 0 0 1 12 6c6.4 0 10 6 10 6a16 16 0 0 1-3 3.4M6.3 8C3.6 9.7 2 12 2 12s3.6 6 10 6c1.3 0 2.5-.2 3.5-.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>'
 };
@@ -2698,7 +2700,7 @@ function createNewInput(target, options={}) {
   function refresh() {
     const hasValue=!!input.value;
     if(isPassword){icon.innerHTML=visible?NEW_UI_ICONS.eyeOff:NEW_UI_ICONS.eye; icon.style.display='flex';icon.setAttribute('aria-label',visible?'Hide password':'Show password');}
-    else if(hasValue){icon.innerHTML=NEW_UI_ICONS.clear;icon.style.display='flex';icon.setAttribute('aria-label','Clear input');}
+   else if(hasValue){icon.innerHTML=NEW_UI_ICONS.clear;icon.style.display='flex';icon.setAttribute('aria-label','Clear input');}
     else if(searchable){icon.innerHTML=NEW_UI_ICONS.search;icon.style.display='flex';icon.setAttribute('aria-label','Search');}
     else icon.style.display='none';
     icon.disabled=input.disabled;
