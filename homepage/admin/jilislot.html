@@ -717,23 +717,38 @@ const MAX_ROWS = 22;
 const DEFAULT_EMAIL = "585630940@app-888.game";
 const STORAGE_KEY = "jili_game_log_state_v1";
 
+
 function jiliCheckTabRefresh() {
+  const params = new URLSearchParams(window.location.search);
+
+  // Refresh yang dihantar oleh tab utama.
+  const refreshedByTab = params.has("_tabrefresh");
+
+  // Sokongan untuk sistem reset flag sedia ada.
   const sessionUid = sessionStorage.getItem("5g88.adminSession");
 
-  if (!sessionUid) return false;
+  const resetKey = sessionUid
+    ? `5g88.pageReset.v1:${sessionUid}:jilislot.html`
+    : null;
 
-  const resetKey =
-    `5g88.pageReset.v1:${sessionUid}:jilislot.html`;
+  const refreshedByFlag = resetKey
+    ? sessionStorage.getItem(resetKey) === "1"
+    : false;
 
-  if (sessionStorage.getItem(resetKey) !== "1") {
+  if (!refreshedByTab && !refreshedByFlag) {
     return false;
   }
 
-  sessionStorage.removeItem(resetKey);
+  if (resetKey) {
+    sessionStorage.removeItem(resetKey);
+  }
+
+  // Buang semua state Game Log JILI yang tersimpan.
   localStorage.removeItem(STORAGE_KEY);
 
   return true;
 }
+
 
 const jiliWasTabRefreshed = jiliCheckTabRefresh();
 
@@ -1170,24 +1185,43 @@ function loadState(){
   }
 }
 
-function resetTable(){
+
+function resetTable() {
+  // Padam state lama.
   localStorage.removeItem(STORAGE_KEY);
 
+  // Reset pilihan Game.
   selectedGame = "";
   selectedBet = "";
   selectedTotalWin = "";
-  autoScoreEnabled = false;
-  initGameDropdown("", "", "");
 
+  // Reset data sementara.
+  currentRoundPrefix = "";
+  currentRoundSuffix = "";
+  currentUserEmail = DEFAULT_EMAIL;
+
+  // Reset Auto Add Score.
+  autoScoreEnabled = false;
+
+  // Kosongkan semua input.
   document.getElementById("dateInput").value = "";
   document.getElementById("scoreInput").value = "";
-
   document.getElementById("manualWinInput").value = "";
+
+  // Kosongkan Game Log.
   document.getElementById("logBody").innerHTML = "";
+
+  // Bina semula dropdown dengan placeholder.
+  initGameDropdown("", "", "");
+
+  // Kemas kini toggle dan empty state.
   syncAutoScoreSwitch();
   updateJiliEmptyCard();
+
+  // Simpan state kosong supaya tidak restore data lama.
   saveState();
 }
+
 
 async function copyTableImage(){
   const area = document.getElementById("captureArea");
@@ -1217,26 +1251,32 @@ document.addEventListener("keydown", function(e){
   }
 });
 
+
 const saved = jiliWasTabRefreshed ? {} : loadState();
 
-if(saved.date){
-  document.getElementById("dateInput").value = saved.date;
-}else{
-  document.getElementById("dateInput").value = "";
-}
+// Reset semua nilai input sebelum restore.
+document.getElementById("dateInput").value = "";
+document.getElementById("scoreInput").value = "";
+document.getElementById("manualWinInput").value = "";
 
-if(saved.score){
-  document.getElementById("scoreInput").value = saved.score;
-}
-if (saved.manualWin !== undefined) {
+autoScoreEnabled = false;
+
+// Restore hanya jika bukan refresh tab.
+if (!jiliWasTabRefreshed) {
+  document.getElementById("dateInput").value =
+    saved.date ?? "";
+
+  document.getElementById("scoreInput").value =
+    saved.score ?? "";
+
   document.getElementById("manualWinInput").value =
-    saved.manualWin;
-}
-if(saved.autoScoreEnabled){
-  autoScoreEnabled = true;
+    saved.manualWin ?? "";
 
-  syncAutoScoreSwitch();
+  autoScoreEnabled = saved.autoScoreEnabled === true;
 }
+
+syncAutoScoreSwitch();
+
 
 
 initGameDropdown(saved.game, saved.bet, saved.win);
