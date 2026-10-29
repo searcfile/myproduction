@@ -1438,20 +1438,52 @@ function jiliOpenModal(title, html) {
 function jiliRebuildDropdown() {
   const saved = loadState();
 
-  const game = selectedGame || saved.game || "";
-  const bet = selectedBet !== "" ? selectedBet : (saved.bet ?? "");
-  const win = selectedTotalWin !== ""
-    ? selectedTotalWin
-    : (saved.win ?? "");
+  const game =
+    selectedGame && gameData[selectedGame]
+      ? selectedGame
+      : saved.game && gameData[saved.game]
+        ? saved.game
+        : "";
+
+  const bet =
+    selectedBet !== ""
+      ? selectedBet
+      : (saved.bet ?? "");
+
+  const win =
+    selectedTotalWin !== ""
+      ? selectedTotalWin
+      : (saved.win ?? "");
 
   initGameDropdown(game, bet, win);
 }
 function jiliApplyDatabase() {
   gameData = {};
 
+  let inactive = 0;
+  let invalid = 0;
+
   Object.values(jiliDbRecords).forEach(game => {
-    if (!game?.name || game.active === false) return;
-    if (!Array.isArray(game.bets) || !game.pecahan) return;
+    if (!game || !game.name) {
+      invalid++;
+      return;
+    }
+
+    if (game.active === false) {
+      inactive++;
+      return;
+    }
+
+    if (
+      !Array.isArray(game.bets) ||
+      !game.bets.length ||
+      !game.pecahan ||
+      typeof game.pecahan !== "object"
+    ) {
+      console.warn("[JILI] Invalid game:", game);
+      invalid++;
+      return;
+    }
 
     gameData[game.name] = {
       bets: game.bets,
@@ -1459,31 +1491,58 @@ function jiliApplyDatabase() {
     };
   });
 
+  console.log("[JILI] Database games:",
+    Object.keys(jiliDbRecords).length
+  );
+
+  console.log("[JILI] Active games:",
+    Object.keys(gameData).length
+  );
+
+  console.log("[JILI] Inactive games:", inactive);
+  console.log("[JILI] Invalid games:", invalid);
+
   jiliRebuildDropdown();
 }
 async function jiliLoadGames() {
   try {
     const result = await jiliApi();
 
-    const records = result.games ?? result.data ?? result;
-
-    if (Array.isArray(records)) {
-      jiliDbRecords = Object.fromEntries(
-        records.map((game) => [
-          String(game.id || game._id || game.name),
-          game
-        ])
+    if (!Array.isArray(result.games)) {
+      throw new Error(
+        "Invalid JILI API response: games must be an array"
       );
-    } else {
-      jiliDbRecords = records || {};
     }
 
+    const records = result.games;
+
+    console.log("[JILI] API response:", result);
+    console.log("[JILI] Games received:", records.length);
+
+    jiliDbRecords = Object.fromEntries(
+      records.map(game => [
+        String(game.id || game._id || game.name),
+        game
+      ])
+    );
+
     jiliDbLoaded = true;
+
     jiliApplyDatabase();
 
+    return true;
+
   } catch (err) {
-    console.error("JILI API:", err);
-    showToast(err.message || "Could not load JILI games", "error");
+    jiliDbLoaded = false;
+
+    console.error("[JILI] Load failed:", err);
+
+    showToast(
+      "Cannot load JILI games: " + err.message,
+      "error"
+    );
+
+    return false;
   }
 }
 function jiliNumberList(value){
