@@ -3280,7 +3280,9 @@ max-width: 170px;
   color: rgba(255,255,255,.85) !important;
   opacity: 1;
 }
-
+input::placeholder{
+  color:var(--blur) !important;
+}
 #headerSiteCustom.has-value
 .header-site-search-input::placeholder {
   color: transparent !important;
