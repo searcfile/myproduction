@@ -1133,10 +1133,10 @@ function createShell() {
     <input
       id="headerTabSearchMobileInput"
       class="header-tab-search-mobile-input"
-      type="text"
+      type="search"
       placeholder="Search"
       name="mobile_tab_lookup_no_autofill"
-autocomplete="new-password"
+autocomplete="off"
 autocorrect="off"
 autocapitalize="off"
 spellcheck="false"
