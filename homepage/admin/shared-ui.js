@@ -3250,8 +3250,23 @@ function refreshTab(tab) {
   // Tandakan reset untuk halaman sasaran.
   sessionStorage.setItem(resetKey, "1");
 
-  // Padam state filter halaman sahaja.
+
+  // Padam state umum halaman sasaran.
   localStorage.removeItem(stateKey);
+
+  // Padam draft khusus halaman sasaran sahaja.
+  // Jangan gunakan localStorage.clear().
+  const draftKeysByPage = {
+    "rhbbank.html": [
+      "blurMask.payment.v1",
+      "rhb.receipt.visible.v1"
+    ]
+  };
+
+  for (const key of draftKeysByPage[targetFile] || []) {
+    localStorage.removeItem(key);
+  }
+
 
   if (getCurrentFile() === targetFile) {
     // Kekalkan loading overlay sedia ada.
@@ -4956,6 +4971,26 @@ function handleLogout() {
       localStorage.removeItem("autoLogout.expireAt");
       localStorage.removeItem("gmailLogin");
       localStorage.removeItem("useremail");
+       
+      // Buang semua draft admin yang sudah didaftarkan.
+      // Jangan buang theme, bank catalog atau konfigurasi.
+      const adminDraftKeys = [
+        "blurMask.payment.v1",
+        "rhb.receipt.visible.v1"
+      ];
+
+      adminDraftKeys.forEach(key => {
+        localStorage.removeItem(key);
+      });
+
+      // Buang state halaman yang menggunakan
+      // format 5g88.pageState.v1.
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("5g88.pageState.v1:")) {
+          localStorage.removeItem(key);
+        }
+      });
+
     } catch (error) {
       console.warn("Clear session failed:", error);
     }
