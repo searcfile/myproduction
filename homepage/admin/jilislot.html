@@ -90,6 +90,9 @@
 <link rel="stylesheet" href="./shared-ui.css">
 <link rel="stylesheet" href="./admin.css">
 <link rel="stylesheet" href="./new-ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --page-bg: #000;
@@ -123,7 +126,43 @@
     --list-active:#e6f4ff;
     --list-hover:rgba(0,0,0,0.08);
   }
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+    <style id="jili-source-sans-font">
+/* =================================================
+   JILI FONT OVERRIDE
+   Source Sans Pro untuk seluruh halaman
+   termasuk Game Log
+   ================================================= */
+
+html body,
+html body *:not(svg):not(path) {
+  font-family: 'Source Sans Pro', Arial, sans-serif !important;
+}
+
+/* Game Log asal — font sahaja */
+html body .game-log-table,
+html body .game-log-table th,
+html body .game-log-table td,
+html body .game-log-table td *,
+html body #logBody,
+html body #logBody td,
+html body #logBody td * {
+  font-family: 'Source Sans Pro', Arial, sans-serif !important;
+}
+
+/* Custom input, dropdown, button dan toggle */
+html body input,
+html body select,
+html body textarea,
+html body button,
+html body .shared-dropdown,
+html body .shared-dropdown-input,
+html body .shared-dropdown-option,
+html body .cs-display,
+html body .cs-item,
+html body .shared-active-switch {
+  font-family: 'Source Sans Pro', Arial, sans-serif !important;
+}
+</style>
 body{margin:0;background:var(--page-bg);font-family:'Source Sans Pro',Arial,sans-serif;font-size:14px;color:var(--page-text)}
 
 .control-panel{
