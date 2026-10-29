@@ -719,35 +719,26 @@ const STORAGE_KEY = "jili_game_log_state_v1";
 
 
 
+
 function jiliCheckTabRefresh() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("_tabrefresh");
 
-  // Tiada token = bukan refresh SVG.
   if (!token) return false;
 
   const tokenKey = "jili.lastTabRefreshToken.v2";
   const previousToken = sessionStorage.getItem(tokenKey);
 
-  const navigation =
-    performance.getEntriesByType("navigation")[0];
-
-  // F5 / Ctrl+R tidak boleh dianggap sebagai reset baru.
-  if (navigation?.type === "reload") {
-    sessionStorage.setItem(tokenKey, token);
-    return false;
-  }
-
-  // Token yang sama sudah diproses.
+  // Token sama = F5 / Ctrl+R, jangan reset.
   if (previousToken === token) {
     return false;
   }
 
-  // Token baru = refresh daripada tab utama.
+  // Token baru = refresh daripada ikon SVG.
   sessionStorage.setItem(tokenKey, token);
   localStorage.removeItem(STORAGE_KEY);
 
-  console.log("[JILI] Tab reset detected:", token);
+  console.log("[JILI] SVG tab refresh detected:", token);
 
   return true;
 }
@@ -1316,10 +1307,26 @@ if (typeof window.showEmptyState === "function") {
   }
 }
 new MutationObserver(updateJiliEmptyCard).observe(document.getElementById("logBody"), {childList:true});
+
 syncAutoScoreSwitch();
 updateJiliEmptyCard();
 
+// Kosongkan input apabila refresh melalui ikon SVG.
+if (jiliWasTabRefreshed) {
+  const clearRefreshInputs = () => {
+    document.getElementById("dateInput").value = "";
+    document.getElementById("scoreInput").value = "";
+    document.getElementById("manualWinInput").value = "";
+  };
+
+  clearRefreshInputs();
+
+  // Pastikan browser tidak memulihkan nilai input lama.
+  window.addEventListener("pageshow", clearRefreshInputs);
+}
+
 (function () {
+
   const THEME_KEY = "siteTheme";
 
   function applyChildTheme(theme) {
