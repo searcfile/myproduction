@@ -1127,7 +1127,20 @@ function readState(){
     autoAcct: el.autoAcct.checked
   };
 }
-function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(readState())); }catch{} }
+let rhbRestoring = true;
+
+function saveState() {
+  if (rhbRestoring) return;
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(readState())
+    );
+  } catch (error) {
+    console.warn("RHB save failed:", error);
+  }
+}
 function applyState(s){
   if(!s) return;
   el.toName.value = s.toName ?? el.toName.value;
@@ -2049,6 +2062,8 @@ document.getElementById("rhbManageBank")
 firebase.auth().onAuthStateChanged(async user => {
   if (!user || user.isAnonymous) return;
 
+  rhbRestoring = true;
+
   const pageFile = location.pathname
     .split("/")
     .pop()
@@ -2066,13 +2081,25 @@ firebase.auth().onAuthStateChanged(async user => {
     localStorage.removeItem(RHB_RECEIPT_VISIBLE_KEY);
   }
 
-  // Tunggu bank daripada backend siap dimuat dahulu
+  // Ambil snapshot draft sebelum backend mula loading
+  let savedDraft = null;
+
+  if (!shouldReset) {
+    try {
+      savedDraft = JSON.parse(
+        localStorage.getItem(STORAGE_KEY) || "null"
+      );
+    } catch (error) {
+      console.warn("Invalid RHB draft:", error);
+    }
+  }
+
   await rhbLoadBanks();
 
   if (shouldReset) {
     resetAll();
-  } else {
-    loadState();
+  } else if (savedDraft) {
+    applyState(savedDraft);
   }
 
   [
@@ -2085,6 +2112,8 @@ firebase.auth().onAuthStateChanged(async user => {
 
   render();
   updateRhbEmptyState();
+
+  rhbRestoring = false;
 });
 
 updateRhbEmptyState();
