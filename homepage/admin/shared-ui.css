@@ -3277,7 +3277,7 @@ max-width: 170px;
 }
 
 #headerSiteCustom .header-site-search-input::placeholder {
-  color: rgba(255,255,255,.85) !important;
+  color: #ffffffd1 !important;
   opacity: 1;
 }
 input::placeholder{
