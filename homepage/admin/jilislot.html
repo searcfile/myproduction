@@ -716,13 +716,6 @@ html body .shared-active-switch {
 const MAX_ROWS = 22;
 const DEFAULT_EMAIL = "585630940@app-888.game";
 const STORAGE_KEY = "jili_game_log_state_v1";
-/* ===== JILI RESET FROM ADMIN TAB SVG REFRESH ===== */
-
-
-/* ===== JILI RESET FROM ADMIN TAB REFRESH ===== */
-
-
-/* ===== RESET HANYA APABILA ADMIN MEMINTA ===== */
 
 function jiliCheckTabRefresh() {
   const sessionUid = sessionStorage.getItem("5g88.adminSession");
@@ -1245,9 +1238,9 @@ if(saved.autoScoreEnabled){
   syncAutoScoreSwitch();
 }
 
-if (jiliGamesReady) {
-  initGameDropdown(saved.game, saved.bet, saved.win);
-}
+
+initGameDropdown(saved.game, saved.bet, saved.win);
+
 
 
 if(saved.tableHTML){
@@ -1568,6 +1561,15 @@ async function jiliLoadGames() {
 
   } catch (err) {
     jiliDbLoaded = false;
+
+jiliGamesReady = false;
+
+// Pastikan dropdown masih dipaparkan walaupun API gagal.
+initGameDropdown(
+  selectedGame,
+  selectedBet,
+  selectedTotalWin
+);
 
     console.error("[JILI] Load failed:", err);
 
