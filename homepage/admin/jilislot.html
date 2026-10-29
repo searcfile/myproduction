@@ -1170,14 +1170,11 @@ function recalcBalanceFromBottom(){
 
   
 function saveState(){
-  // Jangan simpan dropdown kosong semasa API loading.
-  if (!jiliGamesReady) return;
-
   const state = {
 
-    game:selectedGame,
-    bet:selectedBet,
-    win:selectedTotalWin,
+    game: jiliGamesReady ? selectedGame : (loadState().game ?? ""),
+    bet: jiliGamesReady ? selectedBet : (loadState().bet ?? ""),
+    win: jiliGamesReady ? selectedTotalWin : (loadState().win ?? ""),
     date:document.getElementById("dateInput").value,
     score:document.getElementById("scoreInput").value,
       manualWin:document.getElementById("manualWinInput").value,
@@ -1509,6 +1506,48 @@ function jiliOpenModal(title, html) {
 }
 
 
+
+function jiliRebuildDropdown() {
+  // Ambil pilihan yang sedang aktif.
+  const currentGame = selectedGame;
+  const currentBet = selectedBet;
+  const currentWin = selectedTotalWin;
+
+  // Kalau belum ada pilihan, cuba restore dari localStorage.
+  const saved = jiliWasTabRefreshed ? {} : loadState();
+
+  const game =
+    currentGame && gameData[currentGame]
+      ? currentGame
+      : saved.game && gameData[saved.game]
+        ? saved.game
+        : "";
+
+  const bet =
+    game === currentGame && currentBet !== ""
+      ? currentBet
+      : saved.bet ?? "";
+
+  const win =
+    game === currentGame && currentWin !== ""
+      ? currentWin
+      : saved.win ?? "";
+
+  // Halang dropdown kosong daripada menimpa state.
+  jiliGamesReady = false;
+
+  // Gunakan fungsi dropdown JILI yang memang sudah wujud.
+  initGameDropdown(game, bet, win);
+
+  // Dropdown sudah siap.
+  jiliGamesReady = true;
+
+  console.log("[JILI] Dropdown rebuilt:", {
+    game: selectedGame,
+    bet: selectedBet,
+    win: selectedTotalWin
+  });
+}
 
 function jiliApplyDatabase() {
   gameData = {};
