@@ -718,36 +718,40 @@ const DEFAULT_EMAIL = "585630940@app-888.game";
 const STORAGE_KEY = "jili_game_log_state_v1";
 
 
+
 function jiliCheckTabRefresh() {
   const params = new URLSearchParams(window.location.search);
+  const token = params.get("_tabrefresh");
 
-  // Refresh yang dihantar oleh tab utama.
-  const refreshedByTab = params.has("_tabrefresh");
+  // Tiada token = bukan refresh SVG.
+  if (!token) return false;
 
-  // Sokongan untuk sistem reset flag sedia ada.
-  const sessionUid = sessionStorage.getItem("5g88.adminSession");
+  const tokenKey = "jili.lastTabRefreshToken.v2";
+  const previousToken = sessionStorage.getItem(tokenKey);
 
-  const resetKey = sessionUid
-    ? `5g88.pageReset.v1:${sessionUid}:jilislot.html`
-    : null;
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
 
-  const refreshedByFlag = resetKey
-    ? sessionStorage.getItem(resetKey) === "1"
-    : false;
-
-  if (!refreshedByTab && !refreshedByFlag) {
+  // F5 / Ctrl+R tidak boleh dianggap sebagai reset baru.
+  if (navigation?.type === "reload") {
+    sessionStorage.setItem(tokenKey, token);
     return false;
   }
 
-  if (resetKey) {
-    sessionStorage.removeItem(resetKey);
+  // Token yang sama sudah diproses.
+  if (previousToken === token) {
+    return false;
   }
 
-  // Buang semua state Game Log JILI yang tersimpan.
+  // Token baru = refresh daripada tab utama.
+  sessionStorage.setItem(tokenKey, token);
   localStorage.removeItem(STORAGE_KEY);
+
+  console.log("[JILI] Tab reset detected:", token);
 
   return true;
 }
+
 
 
 const jiliWasTabRefreshed = jiliCheckTabRefresh();
@@ -1163,8 +1167,14 @@ function recalcBalanceFromBottom(){
     runningBalance -= profit;
   });
 }
+
+  
 function saveState(){
+  // Jangan simpan dropdown kosong semasa API loading.
+  if (!jiliGamesReady) return;
+
   const state = {
+
     game:selectedGame,
     bet:selectedBet,
     win:selectedTotalWin,
@@ -1500,30 +1510,6 @@ function jiliOpenModal(title, html) {
 
 
 
-
-function jiliRebuildDropdown() {
-  jiliGamesReady = true;
-
-  const saved = loadState();
-
-  const game = gameData[saved.game]
-    ? saved.game
-    : gameData[selectedGame]
-      ? selectedGame
-      : "";
-
-  const bet = game
-    ? (saved.bet ?? selectedBet ?? "")
-    : "";
-
-  const win = game
-    ? (saved.win ?? selectedTotalWin ?? "")
-    : "";
-
-  initGameDropdown(game, bet, win);
-}
-
-
 function jiliApplyDatabase() {
   gameData = {};
 
@@ -1604,12 +1590,7 @@ async function jiliLoadGames() {
 
 jiliGamesReady = false;
 
-// Pastikan dropdown masih dipaparkan walaupun API gagal.
-initGameDropdown(
-  selectedGame,
-  selectedBet,
-  selectedTotalWin
-);
+
 
     console.error("[JILI] Load failed:", err);
 
