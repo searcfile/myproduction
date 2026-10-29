@@ -515,6 +515,35 @@ html body .shared-active-switch {
   font-family: 'Source Sans Pro', Arial, sans-serif !important;
 }
 </style>
+
+<style id="jili-management-style">
+.jili-bottom-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.jili-bottom-actions .jili-actions{display:flex;gap:10px;flex-wrap:wrap}
+.jili-manage-actions{display:flex;gap:10px;margin-left:auto}
+.jili-manage-actions button{height:32px}
+.jili-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:2147483000;display:none;align-items:center;justify-content:center;padding:15px}
+.jili-modal-backdrop.is-open{display:flex}
+.jili-modal-box{background:var(--page-input,#141414);color:var(--page-text,#fff);border:1px solid var(--border-input,#424242);border-radius:12px;width:min(720px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 18px 60px #0008}
+.jili-modal-head,.jili-modal-actions,.jili-manager-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.jili-modal-head{margin-bottom:16px}.jili-modal-head h3{margin:0;font-size:17px}
+.jili-modal-head button{background:transparent;color:inherit;font-size:24px;padding:0 8px}
+.jili-field{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.jili-field label{font-size:13px;font-weight:600}
+.jili-field input,.jili-field textarea{width:100%;min-height:32px;background:var(--page-input,#141414);color:var(--page-text,#fff);border:1px solid var(--border-input,#424242);border-radius:6px;padding:8px 10px;box-sizing:border-box;font:inherit}
+.jili-field textarea{min-height:95px;resize:vertical}
+.jili-help{font-size:12px;opacity:.7;line-height:1.5}
+.jili-modal-actions{justify-content:flex-end;margin-top:18px}
+.jili-modal-actions .jili-cancel{background:#333}
+.jili-game-list{display:grid;gap:8px;margin-top:12px;max-height:52vh;overflow:auto}
+.jili-game-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid var(--border-input,#424242);border-radius:7px}
+.jili-game-entry small{opacity:.65;display:block;margin-top:4px}
+.jili-game-entry .jili-row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.jili-game-entry button{padding:0 10px}
+.jili-game-entry .jili-danger{background:#d9363e}
+.jili-modal-box input[type=checkbox]{accent-color:#1668dc;width:18px;height:18px}
+.jili-switch-line{display:flex;align-items:center;gap:10px;margin:12px 0}
+@media(max-width:600px){.jili-bottom-actions{display:block}.jili-bottom-actions .jili-actions,.jili-manage-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 10px;width:100%}.jili-bottom-actions button{width:100%}.jili-game-entry{align-items:flex-start;flex-direction:column}.jili-modal-box{padding:14px}}
+</style>
 </head>
 
 <body>
@@ -541,11 +570,17 @@ html body .shared-active-switch {
     <button class="btn-primary-new" onclick="setRandomWin()">Set Win</button>
   </div>
   <div class="jili-divider"></div>
-  <div class="jili-controls jili-actions">
-    <button class="btn-primary-new" onclick="changeLog()">Change</button>
-    <button class="btn-primary-new" onclick="addScoreRow()">Add Score Row</button>
-    <button class="btn-primary-new" onclick="copyTableImage()">Copy Image</button>
-    <button class="reset-button" onclick="resetTable()">Reset Log</button>
+  <div class="jili-bottom-actions">
+    <div class="jili-controls jili-actions">
+      <button class="btn-primary-new" onclick="changeLog()">Change</button>
+      <button class="btn-primary-new" onclick="addScoreRow()">Add Score Row</button>
+      <button class="btn-primary-new" onclick="copyTableImage()">Copy Image</button>
+      <button class="reset-button" onclick="resetTable()">Reset Log</button>
+    </div>
+    <div class="jili-manage-actions">
+      <button type="button" class="btn-primary-new" id="jiliManageBtn">Manage Games</button>
+      <button type="button" class="btn-primary-new" id="jiliCreateBtn">+ Create Game</button>
+    </div>
   </div>
 </section>
 <section class="mg-panel jili-log-panel" id="jiliGameLogCard">
@@ -555,6 +590,13 @@ html body .shared-active-switch {
   </div>
 </section>
 <section class="mg-panel jili-empty-panel" id="jiliEmptyCard" style="display:none"><div id="jiliEmpty"></div></section>
+
+<div id="jiliCrudModal" class="jili-modal-backdrop" role="presentation">
+  <div class="jili-modal-box" role="dialog" aria-modal="true" aria-labelledby="jiliCrudTitle">
+    <div class="jili-modal-head"><h3 id="jiliCrudTitle">Manage Games</h3><button type="button" id="jiliCrudClose" aria-label="Close">×</button></div>
+    <div id="jiliCrudContent"></div>
+  </div>
+</div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -582,7 +624,7 @@ function showToast(message, type = "success") {
   }
   console.info(`[${type}] ${message}`);
 }
-const gameData = {
+const legacyGameData = {
   "49_Super Ace": {
     bets:[0.10,1.00,2.00,3.00,5.00,10.00,20.00,30.00,40.00,50.00,80.00,100.00,200.00],
     pecahan:{
@@ -1197,6 +1239,8 @@ const gameData = {
   }
 };
 
+let gameData = structuredClone(legacyGameData);
+
 const gaps = [4,5,7,9,12,15,17,18];
 const scoreGaps = [3,5,7,9,12,25,35];
 
@@ -1314,7 +1358,7 @@ function initGameDropdown(savedGame, savedBet, savedWin){
 makeCustomSelect("gameSelect", games, selectedGame, v => v, function(v){
   selectedGame = v;
 
-  const firstBet = gameData[selectedGame].bets[0];
+  const firstBet = gameData[selectedGame]?.bets?.[0];
   const firstKey = findPecahanKey(gameData[selectedGame].pecahan, firstBet);
   const firstWin = gameData[selectedGame].pecahan[firstKey][0];
 
@@ -1771,6 +1815,152 @@ document.addEventListener("copy", function() {
     method: "copy-event"
   });
 }, true);
+
+/* ===== JILI GAME MANAGER (settings only; Game Log rendering untouched) ===== */
+const JILI_GAMES_REF = "jili/games";
+const jiliCrudModal = document.getElementById("jiliCrudModal");
+const jiliCrudContent = document.getElementById("jiliCrudContent");
+const jiliCrudTitle = document.getElementById("jiliCrudTitle");
+let jiliDbRecords = {};
+let jiliDbLoaded = false;
+let jiliEditorId = null;
+const jiliEsc = (v) => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function jiliCloseModal(){jiliCrudModal.classList.remove("is-open");}
+function jiliOpenModal(title, html){jiliCrudTitle.textContent=title;jiliCrudContent.innerHTML=html;jiliCrudModal.classList.add("is-open");}
+document.getElementById("jiliCrudClose").addEventListener("click",jiliCloseModal);
+jiliCrudModal.addEventListener("click",e=>{if(e.target===jiliCrudModal)jiliCloseModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&jiliCrudModal.classList.contains("is-open"))jiliCloseModal();});
+function jiliGetAuth(){
+ const user=window.firebase?.auth()?.currentUser;
+ if(!user || user.isAnonymous)throw new Error("Admin login required. Please login again.");
+ return user;
+}
+function jiliDb(){jiliGetAuth();return window.firebase.database().ref(JILI_GAMES_REF);}
+function jiliRebuildDropdown(){
+ const oldGame=selectedGame,oldBet=selectedBet,oldWin=selectedTotalWin;
+ initGameDropdown(oldGame,oldBet,oldWin);
+}
+function jiliApplyDatabase(){
+ // Once at least one record exists, the database becomes authoritative.
+ // Legacy list stays available until imported explicitly.
+ const records=Object.values(jiliDbRecords).filter(x=>x&&x.name);
+ if(!records.length){gameData=structuredClone(legacyGameData);}
+ else {
+   gameData={};
+   records.filter(x=>x.active!==false).forEach(x=>{
+     if(!Array.isArray(x.bets)||!x.pecahan)return;
+     gameData[x.name]={bets:x.bets,pecahan:x.pecahan};
+   });
+ }
+ jiliRebuildDropdown();
+}
+async function jiliLoadGames(){
+ try{
+   const snap=await jiliDb().once("value");
+   jiliDbRecords=snap.val()||{};jiliDbLoaded=true;
+   jiliApplyDatabase();
+ }catch(e){console.warn("JILI games database unavailable:",e);showToast("Could not load JILI games: "+e.message,"error");}
+}
+function jiliNumberList(value){
+ const values=String(value).split(/[,\n;]+/).map(x=>Number(x.trim())).filter(x=>Number.isFinite(x)&&x>=0);
+ return [...new Set(values)];
+}
+function jiliFormatWinMap(record){
+ const bets=record?.bets||[];
+ return bets.map(b=>`${Number(b).toFixed(4)}: ${(record.pecahan?.[String(b)]||record.pecahan?.[b]||[]).join(", ")}`).join("\n");
+}
+function jiliParseMap(text,bets){
+ const map={};
+ String(text).split(/\r?\n/).filter(Boolean).forEach(line=>{
+   const i=line.indexOf(":");if(i<0)throw new Error("Win format must be BET: WIN1, WIN2");
+   const key=Number(line.slice(0,i).trim());
+   if(!Number.isFinite(key)||!bets.some(b=>b===key))throw new Error("Unknown bet in win list: "+line.slice(0,i));
+   const vals=jiliNumberList(line.slice(i+1));
+   if(!vals.length)throw new Error("Each bet needs at least one Win Amount");
+   map[String(key)]=vals;
+ });
+ bets.forEach(b=>{if(!map[String(b)])throw new Error("Missing Win Amount for bet "+b);});
+ return map;
+}
+function jiliOpenEditor(id=null){
+ jiliEditorId=id;
+ const r=id?jiliDbRecords[id]:null;
+ jiliOpenModal(id?"Edit JILI Game":"Create JILI Game",`
+ <form id="jiliGameForm">
+ <div class="jili-field"><label for="jiliGameName">Game Name</label><input id="jiliGameName" required maxlength="100" value="${jiliEsc(r?.name||"")}" placeholder="Example: 49_Super Ace"></div>
+ <div class="jili-field"><label for="jiliGameBets">Bet Amounts</label><textarea id="jiliGameBets" required placeholder="0.10, 1.00, 2.00">${jiliEsc((r?.bets||[]).join(", "))}</textarea><span class="jili-help">Separate each Bet Amount with a comma.</span></div>
+ <div class="jili-field"><label for="jiliGameWins">Win Amount per Bet</label><textarea id="jiliGameWins" required placeholder="0.1000: 50, 100, 200&#10;1.0000: 50, 100, 200">${jiliEsc(jiliFormatWinMap(r))}</textarea><span class="jili-help">One line per bet. Example: 0.10: 50, 100, 200</span></div>
+ <label class="jili-switch-line shared-active-switch"><input type="checkbox" id="jiliGameActive" ${r?.active===false?"":"checked"}><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span><span>Game Active</span></label>
+ <div class="jili-modal-actions"><button type="button" class="jili-cancel" id="jiliCancelGame">Cancel</button><button type="submit" class="btn-primary-new" id="jiliSaveGame">Save Game</button></div>
+ </form>`);
+ document.getElementById("jiliCancelGame").addEventListener("click",jiliCloseModal);
+ document.getElementById("jiliGameForm").addEventListener("submit",jiliSaveGame);
+}
+async function jiliSaveGame(e){
+ e.preventDefault();const btn=document.getElementById("jiliSaveGame");
+ try{
+   const name=document.getElementById("jiliGameName").value.trim();
+   const bets=jiliNumberList(document.getElementById("jiliGameBets").value);
+   if(!name||!bets.length)throw new Error("Game Name and Bet Amounts are required");
+   const pecahan=jiliParseMap(document.getElementById("jiliGameWins").value,bets);
+   const active=document.getElementById("jiliGameActive").checked;
+   const dup=Object.entries(jiliDbRecords).find(([id,x])=>id!==jiliEditorId&&x?.name?.toLowerCase()===name.toLowerCase());
+   if(dup)throw new Error("Game name already exists");
+   btn.disabled=true;
+   if(window.NewUI?.setButtonLoading)window.NewUI.setButtonLoading(btn,true);
+   else btn.textContent="Saving...";
+   const ref=jiliEditorId?jiliDb().child(jiliEditorId):jiliDb().push();
+   await ref.update({name,bets,pecahan,active,updatedAt:firebase.database.ServerValue.TIMESTAMP,...(!jiliEditorId?{createdAt:firebase.database.ServerValue.TIMESTAMP}:{})});
+   await jiliLoadGames();jiliCloseModal();showToast("Game saved successfully","success");
+ }catch(err){showToast(err.message||"Save failed","error");}
+ finally{btn.disabled=false;if(window.NewUI?.setButtonLoading)window.NewUI.setButtonLoading(btn,false);else btn.textContent="Save Game";}
+}
+function jiliOpenManager(query=""){
+ const records=Object.entries(jiliDbRecords).filter(([,x])=>x?.name).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+ jiliOpenModal("Manage JILI Games",`
+ <div class="jili-manager-toolbar"><input id="jiliManagerSearch" data-new-ui-input placeholder="Search game..." value="${jiliEsc(query)}"><button id="jiliImportGames" type="button" class="btn-primary-new">Import Legacy Games</button></div>
+ <div class="jili-help" style="margin-top:8px">${records.length} games in database. Import legacy games once to replace the hardcoded catalog.</div>
+ <div id="jiliGameList" class="jili-game-list"></div>
+ <div class="jili-modal-actions"><button type="button" class="btn-primary-new" id="jiliManagerCreate">+ Create Game</button></div>`);
+ const list=document.getElementById("jiliGameList");
+ const render=(term)=>{
+   const found=records.filter(([,r])=>r.name.toLowerCase().includes(term.toLowerCase()));
+   list.innerHTML=found.length?found.map(([id,r])=>`<div class="jili-game-entry"><div><strong>${jiliEsc(r.name)}</strong><small>${r.bets?.length||0} bets · ${r.active===false?"Inactive":"Active"}</small></div><div class="jili-row-actions"><button type="button" data-edit="${jiliEsc(id)}">Edit</button><button type="button" class="jili-danger" data-delete="${jiliEsc(id)}">Delete</button></div></div>`).join(""):'<div class="jili-help" style="padding:20px;text-align:center">No data</div>';
+ };
+ render(query);
+ document.getElementById("jiliManagerSearch").addEventListener("input",e=>render(e.target.value));
+ list.addEventListener("click",async e=>{
+   const edit=e.target.closest("[data-edit]");if(edit){jiliOpenEditor(edit.dataset.edit);return;}
+   const del=e.target.closest("[data-delete]");if(!del)return;
+   const id=del.dataset.delete;
+   if(!window.confirm("Delete game '"+jiliDbRecords[id]?.name+"'?"))return;
+   try{await jiliDb().child(id).remove();await jiliLoadGames();showToast("Game deleted","success");jiliOpenManager();}
+   catch(err){showToast(err.message||"Delete failed","error");}
+ });
+ document.getElementById("jiliManagerCreate").addEventListener("click",()=>jiliOpenEditor());
+ document.getElementById("jiliImportGames").addEventListener("click",jiliImportLegacy);
+}
+async function jiliImportLegacy(){
+ if(!window.confirm("Import existing hardcoded JILI games to Firebase? Existing database game names will be kept."))return;
+ const btn=document.getElementById("jiliImportGames");btn.disabled=true;btn.textContent="Importing...";
+ try{
+   const existing=new Set(Object.values(jiliDbRecords).map(x=>x?.name?.toLowerCase()));
+   const changes={};
+   for(const [name,data] of Object.entries(legacyGameData)){
+     if(existing.has(name.toLowerCase()))continue;
+     const id=jiliDb().push().key;
+     changes[id]={name,bets:data.bets,pecahan:data.pecahan,active:true,createdAt:firebase.database.ServerValue.TIMESTAMP,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+   }
+   if(Object.keys(changes).length)await jiliDb().update(changes);
+   await jiliLoadGames();showToast("Legacy games imported","success");jiliOpenManager();
+ }catch(err){showToast(err.message||"Import failed","error");btn.disabled=false;btn.textContent="Import Legacy Games";}
+}
+document.getElementById("jiliCreateBtn").addEventListener("click",()=>jiliOpenEditor());
+document.getElementById("jiliManageBtn").addEventListener("click",()=>jiliOpenManager());
+// Wait for Firebase auth; do not attempt to read a protected database anonymously.
+window.firebase?.auth().onAuthStateChanged(user=>{if(user&&!user.isAnonymous)jiliLoadGames();});
+/* ===== END JILI GAME MANAGER ===== */
+
 </script>
 
 </body>
