@@ -80,8 +80,8 @@ body { min-width:0; }
 .control-panel .cs-item { padding:9px 12px; border-radius:7px; }
 .control-panel .cs-search { background:var(--jili-ui-soft); border-color:var(--jili-ui-line); }
 .control-panel button {
-  border-radius:4px;
-  padding:5px 12px;
+  border-radius:8px;
+  padding:0 15px;
   font-weight:400;
   transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
 }
@@ -121,7 +121,6 @@ body { min-width:0; }
   .control-panel.row-mid .btn-auto-score,
   .control-panel.row-mid .btn-set-win { grid-column:1 / -1; }
   .control-panel.row-bottom { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .control-panel button { padding:0 10px; font-size:13px; }
 }
 
 </style>
@@ -543,7 +542,7 @@ input[type="number"] {
 .control-panel .shared-dropdown-trigger {background:var(--input); border-color:var(--input-line);}
 .control-panel .shared-dropdown-input {color:var(--text) !important; background:transparent !important;}
 .control-panel .jili-auto-switch {align-self:center; justify-self:center; min-width:105px;}
-.control-panel .jili-auto-switch .shared-active-track {height:28px; min-width:105px; max-width:none;}
+
 .control-panel .jili-auto-switch .shared-active-knob {top:6px;}
 .control-panel .shared-active-switch input[type=checkbox] {height:1px; width:1px; padding:0;}
 .no-data-row .shared-empty {min-height:110px; width:100%;}
@@ -558,21 +557,21 @@ input[type="number"] {
   <select id="betInput" class="jili-native-select input-bet" data-shared-dropdown data-placeholder="Select Bet"></select>
   <select id="totalWinInput" class="jili-native-select input-win" data-shared-dropdown data-placeholder="Select Win"></select>
   <input id="dateInput" class="shared-input input-date" type="text" placeholder="Set Time">
-  <button class="btn-now" onclick="setNow()">Click Now</button>
+  <button class="btn-primary-new" onclick="setNow()">Click Now</button>
 </div>
 
 <div class="control-panel row-mid">
   <input id="scoreInput" class="shared-input input-score" type="number" placeholder="Add Score">
   <label class="shared-active-switch jili-auto-switch" title="Auto Add Score"><input id="autoScoreBtn" type="checkbox" data-active-label="AUTO ON" data-inactive-label="AUTO OFF"><span class="shared-active-track"><span class="shared-active-text">AUTO OFF</span><span class="shared-active-knob" aria-hidden="true"></span></span></label>
   <input id="manualWinInput" class="shared-input input-manual-win" type="number" step="0.0001" placeholder="Win Amount">
-  <button class="btn-set-win" onclick="setRandomWin()">Set Win</button>
+  <button class="btn-primary-new" onclick="setRandomWin()">Set Win</button>
 </div>
 
 <div class="control-panel row-bottom">
-  <button class="btn-change" onclick="changeLog()">Change</button>
-  <button class="btn-add-score" onclick="addScoreRow()">Add Score Row</button>
-  <button class="btn-copy" onclick="copyTableImage()">Copy Image</button>
-  <button class="btn-reset" onclick="resetTable()">Reset Log</button>
+  <button class="btn-primary-new" onclick="changeLog()">Change</button>
+  <button class="btn-primary-new" onclick="addScoreRow()">Add Score Row</button>
+  <button class="btn-primary-new" onclick="copyTableImage()">Copy Image</button>
+  <button class="reset-button" onclick="resetTable()">Reset Log</button>
 </div>
 
 <div class="table-wrap" id="captureArea">
