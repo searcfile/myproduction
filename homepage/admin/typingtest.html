@@ -814,15 +814,128 @@ select:focus-visible{
 .toolbar-left > .shared-dropdown .shared-dropdown-panel { z-index:10010; }
 .toolbar-left > .shared-dropdown .shared-dropdown-trigger { background:var(--page-input); }
 .typing-input.shared-input { min-height:54px; }
-.shared-modal-backdrop .shared-modal:has(.typing-in-shared-modal) { width:min(100%, 1100px); max-height:90vh; }
-.shared-modal-backdrop .shared-modal-body:has(.typing-in-shared-modal) { overflow:auto; min-height:0; }
 .shared-modal-backdrop .result-modal.typing-in-shared-modal,
 .shared-modal-backdrop .champion-modal.typing-in-shared-modal { width:100%; max-width:none; max-height:none; overflow:visible; padding:0; background:transparent; border:0; box-shadow:none; }
 .shared-modal-backdrop .result-modal.typing-in-shared-modal .result-head h2 { display:none; }
 .shared-modal-backdrop .champion-modal.typing-in-shared-modal .champion-close-btn { display:none; }
 @media(max-width:600px){
  .toolbar-left > .shared-dropdown,.toolbar-left > .shared-dropdown:first-child { width:calc(50% - 5px); min-width:0; }
- .shared-modal-backdrop .shared-modal:has(.typing-in-shared-modal) { max-height:94vh; }
+}
+      /* ==========================================
+   TYPING TEST - CUSTOM MODAL FIX
+   ========================================== */
+
+/* Modal ikut saiz skrin */
+.shared-modal-backdrop
+.shared-modal:has(.typing-in-shared-modal) {
+  width: min(1100px, calc(100vw - 32px)) !important;
+  max-width: 1100px !important;
+  max-height: min(90dvh, 900px) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
+
+/* Kandungan scroll di dalam modal */
+.shared-modal-backdrop
+.shared-modal-body:has(.typing-in-shared-modal) {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+/* Buang ukuran modal lama */
+.shared-modal-backdrop
+.result-modal.typing-in-shared-modal {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Empat statistik sebaris di desktop */
+.result-modal.typing-in-shared-modal
+.result-main {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+/* Tiga summary sebaris di desktop */
+.result-modal.typing-in-shared-modal
+.advanced-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Elakkan kandungan melebihi lebar modal */
+.result-modal.typing-in-shared-modal
+.result-stat,
+.result-modal.typing-in-shared-modal
+.advanced-card,
+.result-modal.typing-in-shared-modal
+.mini-panel {
+  min-width: 0 !important;
+}
+
+/* Tablet */
+@media (max-width: 850px) {
+  .result-modal.typing-in-shared-modal
+  .result-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .advanced-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Telefon */
+@media (max-width: 600px) {
+  .shared-modal-backdrop
+  .shared-modal:has(.typing-in-shared-modal) {
+    width: calc(100vw - 20px) !important;
+    max-height: 92dvh !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .result-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .advanced-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .result-stat {
+    padding: 12px !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .result-stat .big {
+    font-size: 26px !important;
+  }
+
+  .result-modal.typing-in-shared-modal
+  .result-head {
+    flex-wrap: wrap;
+  }
 }
 </style>
 </head>
