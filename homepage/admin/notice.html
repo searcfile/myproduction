@@ -117,6 +117,17 @@ html::-webkit-scrollbar{width:7px}
 html::-webkit-scrollbar-track{background:#141414}
 html::-webkit-scrollbar-thumb{background:#424242;border-radius:10px}
 
+
+/* Notice single-scroll layout: only the document scrolls */
+html { overflow-y:auto !important; overflow-x:hidden !important; height:auto !important; }
+body { overflow:visible !important; height:auto !important; min-height:100% !important; }
+.notice-app { min-height:100vh !important; height:auto !important; align-items:start !important; }
+.notice-side,.notice-main { height:auto !important; max-height:none !important; min-height:0 !important; overflow:visible !important; }
+.notice-list { height:auto !important; max-height:none !important; min-height:0 !important; overflow:visible !important; overscroll-behavior:auto !important; }
+@media (max-width:1000px) {
+ .notice-side,.notice-main { height:auto !important; max-height:none !important; }
+ .notice-list { max-height:none !important; overflow:visible !important; }
+}
 </style></head><body>
 <div class="notice-app">
 <section class="notice-card notice-side" aria-label="Saved notices">
