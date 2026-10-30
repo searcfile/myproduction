@@ -770,6 +770,42 @@ select:focus-visible{
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
   transition: all .2s ease;
 }
+
+/* 5G88 Typing Test 2026: responsive workspace and single-panel leaderboard */
+:root{--typing-accent:#1668dc;--typing-soft:rgba(22,104,220,.12)}
+.app{max-width:1900px;margin-inline:auto;padding:clamp(12px,1.5vw,24px)}
+.layout{grid-template-columns:minmax(0,1.6fr) minmax(340px,.85fr);gap:16px;align-items:start}
+.panel{min-width:0;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.left-panel,.right-panel{min-width:0;height:auto}
+.right-panel{gap:0;overflow:visible}
+.right-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(145px,.65fr);gap:10px}
+.right-header .user-card,.right-header .online-card{min-width:0;padding:12px}
+.right-tests-card{padding:12px;border-radius:10px;background:var(--page-input)}
+.right-tests-card .v{font-size:20px;font-weight:750;margin-top:5px}
+.typing-leaderboard-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0 12px}
+.typing-leaderboard-heading h3{margin:4px 0;font-size:19px;letter-spacing:-.025em}
+.typing-leaderboard-heading p{margin:0;font-size:12px;color:var(--color-stat)}
+.typing-eyebrow{color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.13em}
+.typing-live-dot{font-size:11px;color:#22c55e;background:rgba(34,197,94,.09);border:1px solid rgba(34,197,94,.24);padding:6px 10px;border-radius:30px;white-space:nowrap}
+.typing-live-dot:before{content:'●';font-size:8px;margin-right:6px}
+.typing-leaderboard-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:5px;background:var(--page-input);border:1px solid var(--border-input);border-radius:11px;margin-bottom:12px}
+.typing-leaderboard-tab{border:0;background:transparent;color:var(--color-stat);padding:10px 12px;min-width:0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;transition:background .2s,color .2s}
+.typing-leaderboard-tab:hover{color:var(--page-text)}
+.typing-leaderboard-tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(22,104,220,.25)}
+.leaderboard-grid{display:block;min-width:0}
+.leaderboard-panel{min-width:0;display:flex;flex-direction:column}
+.leaderboard-panel[hidden]{display:none!important}
+.leaderboard-panel .section-title{margin-bottom:8px}
+.leaderboard-scroll{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--border-input);border-radius:10px}
+.leaderboard-table{min-width:510px;width:100%;table-layout:auto}
+.leaderboard-table th,.leaderboard-table td{white-space:nowrap}
+.leaderboard-table tbody tr:hover{background:var(--typing-soft)}
+.toolbar{gap:12px}.toolbar-left{min-width:0}.toolbar-left select{max-width:100%}
+.typing-settings-panel{max-width:min(780px,calc(100vw - 24px))}
+@media(max-width:1250px){.layout{grid-template-columns:1fr}.right-panel{width:100%}.right-header{grid-template-columns:minmax(0,1fr) minmax(170px,.5fr)}}
+@media(max-width:700px){.app{padding:10px}.layout{gap:12px}.left-panel,.right-panel{padding:12px}.right-header{grid-template-columns:1fr}.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.right-tests-card{padding:10px 7px}.right-tests-card .k{font-size:10px}.right-tests-card .v{font-size:18px}.typing-leaderboard-heading h3{font-size:17px}.typing-leaderboard-heading p{max-width:230px;line-height:1.5}.typing-settings-panel{position:fixed;top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:75dvh;z-index:2000}.typing-settings-row{grid-template-columns:1fr;gap:7px}.line-count-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.toolbar-left{flex:1 1 100%}.toolbar-left select{flex:1;min-width:0}.leaderboard-scroll{border-radius:8px}}
+@media(max-width:380px){.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr))}.typing-live-dot{font-size:0}.typing-live-dot:before{font-size:10px;margin:0}}
+
   </style>
 </head>
 <body>
@@ -985,8 +1021,13 @@ select:focus-visible{
   </div>
 </div>
   
+<div class="typing-leaderboard-heading"><div><span class="typing-eyebrow">LIVE RANKINGS</span><h3>Leaderboards</h3><p>Compare your best typing scores with the team.</p></div><span class="typing-live-dot">Realtime</span></div>
+<div class="typing-leaderboard-tabs" role="tablist" aria-label="Leaderboard category">
+<button type="button" class="typing-leaderboard-tab active" id="typingTabAll" role="tab" aria-selected="true" aria-controls="typingPanelAll">All Time</button>
+<button type="button" class="typing-leaderboard-tab" id="typingTabNumbers" role="tab" aria-selected="false" aria-controls="typingPanelNumbers">Numbers</button>
+</div>
 <div class="leaderboard-grid">
-  <div class="leaderboard-panel">
+  <div class="leaderboard-panel" id="typingPanelAll" role="tabpanel" aria-labelledby="typingTabAll">
     <div class="section-title">
       <h3>All Time Leaderboard</h3>
       <span>All user</span>
@@ -1013,7 +1054,7 @@ select:focus-visible{
     </div>
   </div>
 
-  <div class="leaderboard-panel">
+  <div class="leaderboard-panel" id="typingPanelNumbers" role="tabpanel" aria-labelledby="typingTabNumbers" hidden>
     <div class="section-title">
       <h3>Numbers Leaderboard</h3>
       <span>Numbers only</span>
@@ -1547,19 +1588,70 @@ bindRealtime();
 restoreLastSessionUI({ applySavedPrefs: true });
 }
 
-    function loadUserFromStorage(){
+    // Modern admin login: Firebase Auth + verified 2nd PIN session + adminUsers profile.
+    // Do not use legacy gmailLogin or user-login messages as identity sources.
+    let typingAuthSequence = 0;
+    let typingBoundUid = null;
+    async function loadCurrentAdminUser() {
+      const seq = ++typingAuthSequence;
       try {
-        const login = JSON.parse(localStorage.getItem('gmailLogin') || '{}');
-        if (login?.email) setUser(login);
-      } catch(_){}
+        const auth = firebase.auth();
+        auth.onAuthStateChanged(async user => {
+          const run = ++typingAuthSequence;
+          if (!user || user.isAnonymous) return;
+          const expiry = Number(localStorage.getItem('autoLogout.expireAt'));
+          if (sessionStorage.getItem('5g88.adminSession') !== user.uid || !Number.isFinite(expiry) || expiry <= Date.now()) return;
+          try {
+            const token = await user.getIdTokenResult();
+            if (run !== typingAuthSequence) return;
+            if (token.claims.secondVerified !== true || !Number.isSafeInteger(token.claims.pinVersion)) return;
+            const snap = await db.ref('adminUsers/' + user.uid).once('value');
+            if (run !== typingAuthSequence) return;
+            const profile = snap.val();
+            if (!profile || profile.active !== true || profile.secondPasswordEnabled !== true ||
+                !['superadmin','siteadmin'].includes(profile.role) ||
+                token.claims.pinVersion !== profile.pinVersion) return;
+            const email = user.email || profile.email;
+            if (!email) return;
+            if (typingBoundUid === user.uid) return;
+            typingBoundUid = user.uid;
+            setUser({
+              name: profile.displayName || profile.username || email.split('@')[0],
+              email,
+              photo: user.photoURL || ''
+            });
+          } catch (err) { console.warn('[Typing Test] Admin profile:', err); }
+        });
+      } catch (err) { console.warn('[Typing Test] Auth:', err); }
     }
 
-    window.addEventListener('message', (e) => {
-      const data = e.data || {};
-      if (data.type === 'user-login' && data.user?.email) {
-        setUser(data.user);
+    function initLeaderboardTabs() {
+      const tabs = [document.getElementById('typingTabAll'), document.getElementById('typingTabNumbers')];
+      const panels = [document.getElementById('typingPanelAll'), document.getElementById('typingPanelNumbers')];
+      function activate(index) {
+        tabs.forEach((tab, i) => {
+          const selected = i === index;
+          tab.classList.toggle('active', selected);
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+          panels[i].hidden = !selected;
+        });
+        try { sessionStorage.setItem('typingTest.leaderboardTab', String(index)); } catch (_) {}
       }
-    });
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => activate(i));
+        tab.addEventListener('keydown', e => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          e.preventDefault();
+          const next = (i + (e.key === 'ArrowRight' ? 1 : 1)) % tabs.length;
+          activate(next);
+          tabs[next].focus();
+        });
+      });
+      let saved = 0;
+      try { saved = Number(sessionStorage.getItem('typingTest.leaderboardTab')) === 1 ? 1 : 0; } catch (_) {}
+      activate(saved);
+    }
 
 function buildPrompt() {
   const bank = WORD_BANK[state.language];
@@ -3292,7 +3384,8 @@ document.addEventListener('visibilitychange', () => {
 });
     
 initFirebase();
-loadUserFromStorage();
+loadCurrentAdminUser();
+initLeaderboardTabs();
 buildPrompt();
 resetTest(false);
 focusTypingInput(80);
@@ -3320,68 +3413,14 @@ focusTypingInput(80);
     }
   });
 })();
-  // ✅ Tukar ikut page
-window.HISTORY_TAB_NAME = "TYPING TEST";
-// ✅ Hantar ke main page
+// Typing Test: direct central History (no postMessage, no duplicate click logger).
+window.HISTORY_TAB_NAME = 'TYPING TEST';
 function sendUserAction(actionName, extra = {}) {
-  if (!actionName) return;
-  window.parent.postMessage({
-    type: "user-tab-action",
-    tab: window.HISTORY_TAB_NAME,
-    action: actionName,
-    extra,
-    time: Date.now()
-  }, "https://5g88-main.vercel.app");
-}
-/* =========================
-   AUTO TRACK CLICK - COUNT SEMUA CLICK
-========================= */
-document.addEventListener("click", function(e) {
-  const el = e.target.closest("button, [onclick], a, .btn, [data-action]");
-  if (!el) return;
-
-  if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
-
-  let name =
-    el.getAttribute("data-action") ||
-    el.getAttribute("title") ||
-    el.getAttribute("aria-label") ||
-    el.innerText ||
-    el.textContent ||
-    el.id ||
-    "";
-
-  name = String(name)
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!name || name.length < 2) return;
-
-  name = name.slice(0, 40);
-
-  sendUserAction(name);
-}, true);
-/* =========================
-   AUTO TRACK CTRL + C / COPY IMAGE
-========================= */
-document.addEventListener("keydown", function(e) {
-  const key = String(e.key || "").toLowerCase();
-
-  if ((e.ctrlKey || e.metaKey) && key === "c") {
-    sendUserAction("COPY IMAGE", {
-      method: "keyboard",
-      shortcut: "Ctrl+C"
-    });
+  if (typeof window.G88History?.log === 'function') {
+    window.G88History.log(actionName, {page:'typingtest.html', kind:extra.kind || 'interaction'});
   }
-}, true);
-/* =========================
-   AUTO TRACK BROWSER COPY EVENT
-========================= */
-document.addEventListener("copy", function() {
-  sendUserAction("COPY IMAGE", {
-    method: "copy-event"
-  });
-}, true);
+}
+
   </script>
 </body>
 </html>
