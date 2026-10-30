@@ -1271,10 +1271,10 @@ historyLineRanges: [],
 testSaved: false
     };
 
-    const els = {
-      userAvatar: document.getElementById('userAvatar'),
-      userName: document.getElementById('userName'),
-      userEmail: document.getElementById('userEmail'),
+const els = {
+  userAvatar: document.getElementById('userAvatar'),
+  userName: document.querySelector('.right-panel .user-card #userName'),
+  userEmail: document.querySelector('.right-panel .user-card #userEmail'),
       onlineCount: document.getElementById('onlineCount'),
       syncState: document.getElementById('syncState'),
       languageSelect: document.getElementById('languageSelect'),
