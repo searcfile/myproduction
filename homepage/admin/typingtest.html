@@ -1535,14 +1535,26 @@ function getLeaderboardPointColor(value, min, max) {
 
   return `rgb(${r},${g},${b})`;
 }
-function initFirebase(){
+function initFirebase() {
   try {
-    state.dbReady = !!db;
-    els.syncState.textContent = 'Total user online';
-  } catch(err){
-    console.warn('Firebase init failed:', err);
+    if (typeof firebase === "undefined" || !firebase.apps.length) {
+      throw new Error("Firebase app belum initialized");
+    }
+
+    db = firebase.database();
+
+    state.dbReady = true;
+    els.syncState.textContent = "Total user online";
+
+    console.log("[Typing Test] Firebase Database connected");
+
+  } catch (error) {
+    db = null;
     state.dbReady = false;
-    els.syncState.textContent = 'Firebase unavailable';
+
+    els.syncState.textContent = "Firebase unavailable";
+
+    console.error("[Typing Test] Firebase initialization failed:", error);
   }
 }
 
