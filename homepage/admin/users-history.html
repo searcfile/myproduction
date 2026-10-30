@@ -1300,8 +1300,18 @@ async function openDeleteConfirm(userKey, anchor){
 userSearch.addEventListener("input", renderUsers);
 NewUI.syncSearch(userSearch, {
   onSearch: async () => {
+    // Beri browser peluang untuk memaparkan spinner
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
+
+    // Jalankan filter user
     renderUsers();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    // Pastikan animasi spinner dapat dilihat
+    await new Promise(resolve => setTimeout(resolve, 450));
   }
 });
 NewUI.init(document);
