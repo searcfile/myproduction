@@ -1689,37 +1689,6 @@ function loadCurrentAdminUser() {
   }
 }
 
-      const seq = ++typingAuthSequence;
-      try {
-        const auth = firebase.auth();
-        auth.onAuthStateChanged(async user => {
-          const run = ++typingAuthSequence;
-          if (!user || user.isAnonymous) return;
-          const expiry = Number(localStorage.getItem('autoLogout.expireAt'));
-          if (sessionStorage.getItem('5g88.adminSession') !== user.uid || !Number.isFinite(expiry) || expiry <= Date.now()) return;
-          try {
-            const token = await user.getIdTokenResult();
-            if (run !== typingAuthSequence) return;
-            if (token.claims.secondVerified !== true || !Number.isSafeInteger(token.claims.pinVersion)) return;
-            const snap = await db.ref('adminUsers/' + user.uid).once('value');
-            if (run !== typingAuthSequence) return;
-            const profile = snap.val();
-            if (!profile || profile.active !== true || profile.secondPasswordEnabled !== true ||
-                !['superadmin','siteadmin'].includes(profile.role) ||
-                token.claims.pinVersion !== profile.pinVersion) return;
-            const email = user.email || profile.email;
-            if (!email) return;
-            if (typingBoundUid === user.uid) return;
-            typingBoundUid = user.uid;
-            setUser({
-              name: profile.displayName || profile.username || email.split('@')[0],
-              email,
-              photo: user.photoURL || ''
-            });
-          } catch (err) { console.warn('[Typing Test] Admin profile:', err); }
-        });
-      } catch (err) { console.warn('[Typing Test] Auth:', err); }
-    }
 
     function initLeaderboardTabs() {
       const tabs = [document.getElementById('typingTabAll'), document.getElementById('typingTabNumbers')];
