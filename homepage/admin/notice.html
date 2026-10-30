@@ -128,6 +128,10 @@ body { overflow:visible !important; height:auto !important; min-height:100% !imp
  .notice-side,.notice-main { height:auto !important; max-height:none !important; }
  .notice-list { max-height:none !important; overflow:visible !important; }
 }
+/* Notice modal responsive */
+.shared-modal {
+  max-width: min(720px, calc(100vw - 24px)) !important;
+}
 </style></head><body>
 <div class="notice-app">
 <section class="notice-card notice-side" aria-label="Saved notices">
@@ -182,7 +186,11 @@ function openEditor(record=null){const editing=!!record,sc=record?getSchedule(re
   </span>
 </label>
 </div><div class="notice-modal-row"><div class="notice-field"><label for="noticeScheduleTime">Send At</label><input id="noticeScheduleTime" class="notice-input" type="text" placeholder="Select date & time" autocomplete="off" readonly></div><div class="notice-field"><label for="noticeQuickDays">Quick Schedule</label><select id="noticeQuickDays" data-shared-dropdown data-placeholder="Choose days"><option value="">Select days</option><option value="1">In 1 day</option><option value="2">In 2 days</option><option value="3">In 3 days</option><option value="7">In 7 days</option><option value="14">In 14 days</option><option value="30">In 30 days</option></select></div></div><span class="notice-schedule-note">Auto send runs only when this browser page is open. It does not run on the server.</span></div><div class="notice-modal-actions"><button id="noticeCancel" class="notice-btn" type="button">Cancel</button><button id="noticeSave" class="notice-btn primary" type="button">${editing?'Save Changes':'Create Notice'}</button></div>`;
-noticeModal=window.NewUI.modal.open({title:editing?'Manage Notice':'Create Notice',content:wrap,width:560});const q=s=>wrap.querySelector(s);q('#noticeTitleInput').value=record?.title||'';q('#noticeMessageInput').value=record?.text||'';q('#noticeScheduleEnabled').checked=!!sc.enabled;q('#noticeScheduleTime').value=sc.time||'';q('#noticeCancel').onclick=()=>noticeModal.close();const days=q('#noticeQuickDays');window.createSharedDropdown?.(days,{placeholder:'Choose days'});
+noticeModal = window.NewUI.modal.open({
+  title: editing ? 'Manage Notice' : 'Create Notice',
+  content: wrap,
+  width: 720
+});const q=s=>wrap.querySelector(s);q('#noticeTitleInput').value=record?.title||'';q('#noticeMessageInput').value=record?.text||'';q('#noticeScheduleEnabled').checked=!!sc.enabled;q('#noticeScheduleTime').value=sc.time||'';q('#noticeCancel').onclick=()=>noticeModal.close();const days=q('#noticeQuickDays');window.createSharedDropdown?.(days,{placeholder:'Choose days'});
 const scheduleToggle = q('#noticeScheduleEnabled');
 const timeInput = q('#noticeScheduleTime');
 
