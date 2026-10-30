@@ -1222,7 +1222,7 @@ function renderTabList() {
   document.getElementById('filterSummary').textContent = `${filtered.length} of ${allSessions.length} sessions`;
   if (!filtered.some(x => x.sessionId === selectedSessionId)) selectedSessionId = filtered[0]?.sessionId || '';
   if (!filtered.length) {
-    tabList.innerHTML = historyEmpty(allSessions.length ? 'No matching sessions' : 'No saved sessions yet — activity appears only when other pages record it');
+    tabList.innerHTML = historyEmpty(allSessions.length ? 'No matching sessions' : 'No saved sessions yet. Open another admin tab to begin tracking.');
     renderDetail();
     return;
   }
@@ -1247,7 +1247,7 @@ function renderTabList() {
 function renderDetail() {
   const item = filteredSessions().find(x => x.sessionId === selectedSessionId);
   if (!item) {
-    detailWrap.innerHTML = `<div class="history-welcome"><div class="history-welcome-icon">◷</div><h2>${allSessions.length ? 'No matching session' : 'No activity yet'}</h2><p>${allSessions.length ? 'Try another search or date range.' : 'No saved activity found. Opening tabs alone does not create Firebase history records.'}</p></div>`;
+    detailWrap.innerHTML = `<div class="history-welcome"><div class="history-welcome-icon">◷</div><h2>${allSessions.length ? 'No matching session' : 'No activity yet'}</h2><p>${allSessions.length ? 'Try another search or date range.' : 'No activity recorded yet. Open another admin tab to begin tracking.'}</p></div>`;
     return;
   }
   const { actions, labels } = getSessionActions(item);
