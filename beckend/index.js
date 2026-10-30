@@ -362,19 +362,21 @@ app.post('/api/account/change-pin', requireAdmin, async (req, res) => {
       ? crypto.randomBytes(16).toString('hex')
       : null;
 
-    const transaction = await factorRef.transaction(current => {
-      if (!current ||
-          current.hash !== factor.hash ||
-          current.salt !== factor.salt ||
-          (current.lockedUntil || 0) > now()) {
-        return;
-      }
+const transaction = await factorRef.transaction(current => {
+  const data = current === null ? factor : current;
 
-      if (!correct) {
-        const attempts = (current.failedAttempts || 0) + 1;
+  if (!data ||
+      data.hash !== factor.hash ||
+      data.salt !== factor.salt ||
+      (data.lockedUntil || 0) > now()) {
+    return;
+  }
 
-        return {
-          ...current,
+if (!correct) {
+  const attempts = (data.failedAttempts || 0) + 1;
+
+  return {
+    ...data,
           failedAttempts: attempts,
           lockedUntil: attempts >= 5
             ? now() + 15 * 60_000
@@ -382,9 +384,9 @@ app.post('/api/account/change-pin', requireAdmin, async (req, res) => {
         };
       }
 
-      return {
-        ...current,
-        salt: newSalt,
+return {
+  ...data,
+  salt: newSalt,
         hash: pinHash(uid, newPin, newSalt),
         updatedAt: now(),
         failedAttempts: 0,
