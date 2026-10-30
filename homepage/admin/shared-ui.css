@@ -3577,3 +3577,47 @@ input::placeholder{
     cursor: text;
   }
 }
+/* =========================================
+   PASSWORD MODALS - NEW UI
+   ========================================= */
+
+.shared-modal #cpBody,
+.shared-modal #cp2Body {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.shared-modal #cpFoot,
+.shared-modal #cp2Foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Follow NewUI modal close icon */
+.shared-modal .shared-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shared-modal .shared-modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .shared-modal #cpFoot,
+  .shared-modal #cp2Foot {
+    flex-wrap: wrap;
+  }
+}
