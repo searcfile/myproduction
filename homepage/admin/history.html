@@ -809,18 +809,35 @@ body.light-theme .history-page { --hist-surface:#fff; --hist-soft:#f5f8fd; --his
 @media(max-width:760px){.history-page{padding:12px}.history-hero{padding:14px;margin-bottom:12px}.history-hero-mark{width:42px;height:42px;font-size:27px}.history-live{display:none}.history-layout{grid-template-columns:minmax(0,1fr);gap:12px}.history-page .tab-list{max-height:270px}.history-page .right-panel{padding:12px;min-height:280px}.history-page .detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.history-page .range-picker{position:fixed;left:8px!important;top:70px!important;width:calc(100vw - 16px);max-height:calc(100dvh - 90px);overflow-y:auto;z-index:999999}}
 @media(max-width:420px){.history-page .detail-grid{gap:7px}.history-page .stat-card{padding:11px}.history-page .stat-value{font-size:13px}.history-page .log-row{flex-direction:column;align-items:flex-start;gap:4px}.history-hero p{font-size:11px}}
 
+
+/* History compact layout — no decorative page header */
+.history-page {padding:14px; background:var(--bg-main); min-height:100vh;}
+.history-layout {grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:12px;}
+.history-page .left-panel,.history-page .right-panel {background:var(--backgroundbtn);border:1px solid var(--border2);border-radius:10px;box-shadow:none;}
+.history-page .right-panel {padding:18px;}
+.history-page .panel-head {padding:15px 16px;font-size:14px;}
+.history-page .tab-item {background:var(--backgrounddrop);border:1px solid var(--border4);border-radius:8px;padding:13px;}
+.history-page .tab-item.active {border-color:#1668dc;background:rgba(22,104,220,.09);box-shadow:inset 3px 0 #1668dc;}
+.history-page .stat-card {background:var(--backgrounddrop);border:1px solid var(--border4);border-radius:8px;}
+.history-page .stat-value {color:var(--text-soft);}
+.history-page .tab-list {max-height:calc(100dvh - 185px);}
+.history-page .history-welcome {min-height:300px;}
+.history-page .history-welcome-icon {width:48px;height:48px;border-radius:12px;font-size:26px;}
+.history-page .history-list-caption {padding-top:12px;}
+.history-page .search-box .shared-sync-search {width:100%;max-width:100%;}
+.history-page .search-box input {font-size:13px;}
+.history-page .history-help {padding:11px 14px;margin:0 12px 12px;border-radius:8px;border:1px solid var(--border4);background:var(--backgrounddrop);font-size:11px;line-height:1.55;color:var(--text-dim);}
+.history-page .history-help strong {color:var(--text-soft);}
+.history-page .history-help a {color:#66a4ff;}
+@media(max-width:760px){.history-page{padding:10px}.history-layout{grid-template-columns:minmax(0,1fr);gap:10px}.history-page .tab-list{max-height:320px}.history-page .right-panel{padding:12px}.history-page .detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.history-page .stat-value{font-size:12px}.history-page .date-range-line{grid-template-columns:minmax(0,1fr) 36px}}
+
 </style>
 </head>
 
 <body>
 <div class="history-page">
-  <header class="history-hero">
-    <div class="history-hero-mark" aria-hidden="true">◷</div>
-    <div class="history-hero-copy"><div class="history-eyebrow">ACTIVITY CENTER</div><h1>My History</h1><p>Review your recent workspace sessions, actions and activity timeline.</p></div>
-    <div class="history-live"><span class="history-live-dot"></span> Session activity</div>
-  </header>
-
-  <div class="history-layout">
+<div class="history-layout">
     <aside class="left-panel">
       <div class="panel-head history-side-heading"><span>Session History</span><span id="sessionCount" class="history-count">0</span></div>
 <div class="search-box">
@@ -872,8 +889,9 @@ body.light-theme .history-page { --hist-surface:#fff; --hist-soft:#f5f8fd; --his
     <button type="button" data-range="lastMonth">Last Month</button>
   </div>
 </div>
-      <div class="history-list-caption"><span>YOUR SESSIONS</span><span id="filterSummary">Most recent first</span></div>
+      <div class="history-list-caption"><span>YOUR SESSIONS</span><span id="filterSummary">All dates</span></div>
       <div id="tabList" class="tab-list" aria-live="polite"></div>
+      <div class="history-help"><strong>History source:</strong> Saved activity in Firebase. Opening a tab or clicking Create/Edit does not automatically create a record unless that page logs the action.</div>
     </aside>
 
     <main class="right-panel">
@@ -1229,7 +1247,7 @@ function renderTabList() {
 function renderDetail() {
   const item = filteredSessions().find(x => x.sessionId === selectedSessionId);
   if (!item) {
-    detailWrap.innerHTML = `<div class="history-welcome"><div class="history-welcome-icon">◷</div><h2>${allSessions.length ? 'No matching session' : 'No activity yet'}</h2><p>${allSessions.length ? 'Try another search or date range.' : 'Your session history will appear here once available.'}</p></div>`;
+    detailWrap.innerHTML = `<div class="history-welcome"><div class="history-welcome-icon">◷</div><h2>${allSessions.length ? 'No matching session' : 'No activity yet'}</h2><p>${allSessions.length ? 'Try another search or date range.' : 'No saved activity found. Opening tabs alone does not create Firebase history records.'}</p></div>`;
     return;
   }
   const { actions, labels } = getSessionActions(item);
