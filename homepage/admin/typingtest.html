@@ -1003,13 +1003,20 @@ select:focus-visible{
   overflow: visible !important;
 }
 
+/* Dropdown panel - jangan buat scrollbar kedua */
 .shared-modal-backdrop #typingSettingsPanel .shared-dropdown-panel {
   z-index: 10020 !important;
-  max-height: min(260px, 45dvh) !important;
-  overflow-y: auto !important;
-  overscroll-behavior: contain;
+  max-height: none !important;
+  overflow: hidden !important;
 }
 
+/* Gunakan scrollbar custom asal 5G88 sahaja */
+.shared-modal-backdrop #typingSettingsPanel .shared-dropdown-options {
+  max-height: 220px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+}
 /* Pastikan dropdown aktif berada di atas baris lain */
 .shared-modal-backdrop #typingSettingsPanel .typing-settings-row {
   position: relative;
