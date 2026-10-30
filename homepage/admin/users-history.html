@@ -690,6 +690,29 @@ select:focus-visible{
   background-color: var(--backgroundbtn);
   transition: all .2s ease;
 }
+
+/* User History — local improvements; common components from NewUI */
+html,body{min-height:100%;scrollbar-width:thin;scrollbar-color:#555 transparent}
+body{font-family:inherit}
+.admin-history{min-width:0;grid-template-columns:minmax(290px,360px) minmax(0,1fr);gap:12px;padding:12px;max-width:100%;height:100dvh;overflow:hidden}
+.admin-history>.panel,.main-area,.main-area>.panel{min-width:0}
+.panel{border-radius:10px}
+.search-wrap{z-index:3;display:flex;flex-direction:column;gap:10px}
+.search-wrap>input{width:100%}
+.search-wrap .shared-sync-search{width:100%}
+.search-wrap .custom-range-wrap{z-index:4}
+.user-list{height:auto;min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain}
+.admin-history>aside.panel{display:flex;flex-direction:column;min-height:0}
+.user-btn{transition:background .2s,border-color .2s}
+.user-btn:hover{background:var(--tab-bg)}
+.user-btn.active{background:rgba(22,104,220,.12)}
+.delete-btn{min-width:62px}
+.main-area{grid-template-rows:minmax(220px,32%) minmax(0,1fr);gap:12px}
+.detail-grid{min-height:0}
+.date-line{margin-top:0}
+.range-picker{max-height:calc(100dvh - 48px);overflow:auto}
+@media(max-width:900px){.admin-history{height:auto;min-height:100dvh;overflow:visible;grid-template-columns:minmax(0,1fr)}.admin-history>aside.panel{min-height:0}.user-list{max-height:340px;min-height:120px}.main-area{grid-template-rows:auto auto}.session-panel{height:320px}.detail-panel{height:auto;min-height:480px}.detail-grid{min-height:440px}}
+@media(max-width:700px){.admin-history{padding:12px;gap:12px}.detail-grid{grid-template-columns:minmax(0,1fr);height:auto}.detail-box{height:270px}.range-picker{left:12px;top:64px;width:calc(100vw - 24px)}.panel-head{min-width:0}.panel-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
 </head>
 
@@ -702,11 +725,11 @@ select:focus-visible{
     </div>
 
 <div class="search-wrap">
-  <input id="userSearch" type="text" placeholder="Search user...">
+  <input id="userSearch" type="text" placeholder="Search user..." autocomplete="off">
 
 <div class="custom-range-wrap">
   <div class="date-line">
-    <input id="dateRangeInput" type="text" readonly placeholder="YYYY-MM-DD → YYYY-MM-DD">
+    <input id="dateRangeInput" type="text" readonly data-new-ui-input placeholder="YYYY-MM-DD → YYYY-MM-DD">
     <button type="button" id="rangeToggleBtn" class="range-toggle-btn">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
         <path d="M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z"></path>
@@ -813,16 +836,6 @@ select:focus-visible{
   </main>
 </div>
 
-<div id="confirmMask" class="confirm-mask">
-  <div class="confirm-box">
-    <div class="confirm-title">Delete User History?</div>
-    <div id="confirmText" class="confirm-text"></div>
-    <div class="confirm-actions">
-      <button id="cancelDeleteBtn" class="small-btn" type="button">Cancel</button>
-      <button id="confirmDeleteBtn" class="small-btn danger" type="button">Delete</button>
-    </div>
-  </div>
-</div>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -842,10 +855,6 @@ const logList = document.getElementById("logList");
 const detailTitle = document.getElementById("detailTitle");
 const selectedInfo = document.getElementById("selectedInfo");
 
-const confirmMask = document.getElementById("confirmMask");
-const confirmText = document.getElementById("confirmText");
-const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 const dateRangeInput = document.getElementById("dateRangeInput");
 const rangeToggleBtn = document.getElementById("rangeToggleBtn");
 const rangeButtonsWrap = document.getElementById("rangeButtons");
@@ -872,7 +881,7 @@ let activeRange = {
 let historyData = {};
 let selectedUserKey = "";
 let selectedSessionId = "";
-let deleteTargetKey = "";
+
 
 function escapeHtml(str){
   return String(str || "")
@@ -1135,7 +1144,7 @@ function renderUsers(){
   userCount.textContent = String(filtered.length);
 
   if (!filtered.length) {
-    userList.innerHTML = `<div class="empty">No user history found.</div>`;
+    userList.innerHTML = createEmptyState("No user history found.", "", "center");
     return;
   }
 
@@ -1171,7 +1180,7 @@ function renderUsers(){
   userList.querySelectorAll("[data-delete]").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      openDeleteConfirm(btn.dataset.delete);
+      openDeleteConfirm(btn.dataset.delete, btn);
     });
   });
 }
@@ -1180,7 +1189,7 @@ function renderSessions(){
   if (!selectedUserKey) {
     sessionTitle.textContent = "Sessions";
     sessionCount.textContent = "0";
-    sessionTbody.innerHTML = `<tr><td colspan="5" class="empty">Select user from left side.</td></tr>`;
+    sessionTbody.innerHTML = `<tr><td colspan="5" class="shared-empty-table-cell">${createEmptyState("Select user from left side.", "", "center")}</td></tr>`;
     return;
   }
 
@@ -1192,7 +1201,7 @@ function renderSessions(){
   sessionCount.textContent = String(sessions.length);
 
   if (!sessions.length) {
-    sessionTbody.innerHTML = `<tr><td colspan="5" class="empty">No sessions found.</td></tr>`;
+    sessionTbody.innerHTML = `<tr><td colspan="5" class="shared-empty-table-cell">${createEmptyState("No sessions found.", "", "center")}</td></tr>`;
     return;
   }
 
@@ -1225,8 +1234,8 @@ function renderSessions(){
 function renderEmptyDetail(){
   detailTitle.textContent = "Action Detail";
   selectedInfo.textContent = "-";
-  actionTbody.innerHTML = `<tr><td colspan="2" class="empty">No session selected.</td></tr>`;
-  logList.innerHTML = `<div class="empty">No logs.</div>`;
+  actionTbody.innerHTML = `<tr><td colspan="2" class="shared-empty-table-cell">${createEmptyState("No session selected.", "", "center")}</td></tr>`;
+  logList.innerHTML = createEmptyState("No logs.", "", "center");
 }
 
 function renderDetail(){
@@ -1252,7 +1261,7 @@ function renderDetail(){
       </tr>
     `).join("");
 
-  actionTbody.innerHTML = actionRows || `<tr><td colspan="2" class="empty">No action.</td></tr>`;
+  actionTbody.innerHTML = actionRows || `<tr><td colspan="2" class="shared-empty-table-cell">${createEmptyState("No action.", "", "center")}</td></tr>`;
 
   const logs = Object.values(session.logs || {})
     .sort((a,b) => Number(b.time || 0) - Number(a.time || 0));
@@ -1264,49 +1273,39 @@ function renderDetail(){
           <span>${formatTime(log.time)}</span>
         </div>
       `).join("")
-    : `<div class="empty">No logs.</div>`;
+    : createEmptyState("No logs.", "", "center");
 }
 
-function openDeleteConfirm(userKey){
-  deleteTargetKey = userKey;
-  confirmText.innerHTML = `
-    You are going to delete all history for:<br>
-    <b>${escapeHtml(userKey)}</b><br><br>
-    This will remove <b>tabHistory/${escapeHtml(userKey)}</b>.
-  `;
-  confirmMask.style.display = "flex";
-}
-
-function closeDeleteConfirm(){
-  deleteTargetKey = "";
-  confirmMask.style.display = "none";
-}
-
-cancelDeleteBtn.addEventListener("click", closeDeleteConfirm);
-
-confirmDeleteBtn.addEventListener("click", () => {
-  if (!deleteTargetKey) return;
-
- db.ref(`tabHistory/${deleteTargetKey}`).remove()
-    .then(() => {
-      if (selectedUserKey === deleteTargetKey) {
-        selectedUserKey = "";
-        selectedSessionId = "";
+async function openDeleteConfirm(userKey, anchor){
+  if (!window.NewUI?.confirm) return;
+  await NewUI.confirm({
+    target: anchor,
+    title: 'Delete User History?',
+    message: `Delete all history for ${userKey}? This permanently removes tabHistory/${userKey}.`,
+    confirmText: 'Delete',
+    loadingText: 'Deleting...',
+    onConfirm: async () => {
+      await db.ref(`tabHistory/${userKey}`).remove();
+      if (selectedUserKey === userKey) {
+        selectedUserKey = '';
+        selectedSessionId = '';
         renderSessions();
         renderEmptyDetail();
       }
-      closeDeleteConfirm();
-    })
-    .catch(err => {
-      alert("Delete failed: " + err.message);
-    });
-});
-
-confirmMask.addEventListener("click", (e) => {
-  if (e.target === confirmMask) closeDeleteConfirm();
-});
+      NewUI.showToast('User history deleted successfully', 'success');
+    }
+  });
+}
 
 userSearch.addEventListener("input", renderUsers);
+NewUI.syncSearch(userSearch, {
+  onSearch: async () => {
+    renderUsers();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+  }
+});
+NewUI.init(document);
+
 rangeToggleBtn?.addEventListener("click", (e) => {
   e.stopPropagation();
   rangeButtonsWrap.classList.toggle("show");
