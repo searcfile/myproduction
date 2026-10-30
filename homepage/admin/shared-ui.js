@@ -5786,7 +5786,7 @@ const openPw = () => {
     content: body,
     footer: footer,
     width: 550,
-    closeOnBackdrop: false,
+    closeOnBackdrop: true,
 
     onClose: () => {
       oldDialog.append(body, footer);
@@ -5941,7 +5941,7 @@ const openPw2 = () => {
     content: body,
     footer: footer,
     width: 550,
-    closeOnBackdrop: false,
+    closeOnBackdrop: true,
 
     onClose: () => {
       oldDialog.append(body, footer);
