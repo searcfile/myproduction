@@ -1488,33 +1488,30 @@ aria-label="Search tabs"
         <div
           id="dropdownContent"
           class="dropdown-content">
+<label
+  id="themeToggleBtn"
+  class="theme-toggle-btn theme-custom-row">
 
-          <button
-            id="themeToggleBtn"
-            type="button"
-            class="theme-toggle-btn"
-            aria-label="Toggle theme"
-            title="Toggle theme">
+  <span
+    id="themeToggleLabel"
+    class="theme-toggle-label">
+    Light Theme
+  </span>
 
-            <span
-              id="themeToggleLabel"
-              class="theme-toggle-label">
-              Light Mode
-            </span>
+  <span class="shared-active-switch">
 
-            <span
-              id="themeToggleSwitch"
-              class="theme-toggle-switch">
+    <input
+      id="themeToggleInput"
+      type="checkbox"
+      aria-label="Toggle theme">
 
-              <span
-                id="themeToggleKnob"
-                class="theme-toggle-knob">
-              </span>
+    <span class="shared-active-track">
+      <span class="shared-active-knob"></span>
+    </span>
 
-            </span>
+  </span>
 
-          </button>
-
+</label>
 
           <button
             id="changePwBtn"
@@ -4723,33 +4720,34 @@ mobileInput.addEventListener("blur", () => {
      THEME
      ========================================================== */
 
-  function applyTheme() {
+function applyTheme() {
 
-    const saved =
-      localStorage.getItem(
-        "adminTheme"
-      ) || "dark";
+  const saved =
+    localStorage.getItem("adminTheme") || "dark";
 
-    document.body.classList.toggle(
-      "light-theme",
-      saved === "light"
-    );
+  const isLight = saved === "light";
 
+  document.body.classList.toggle(
+    "light-theme",
+    isLight
+  );
 
-    const label =
-      document.querySelector(
-        ".theme-toggle-label"
-      );
+  const label =
+    document.getElementById("themeToggleLabel");
 
-    if (label) {
-
-      label.textContent =
-        saved === "light"
-          ? "Dark Theme"
-          : "Light Theme";
-    }
+  if (label) {
+    label.textContent = isLight
+      ? "Dark Theme"
+      : "Light Theme";
   }
 
+  const toggle =
+    document.getElementById("themeToggleInput");
+
+  if (toggle) {
+    toggle.checked = isLight;
+  }
+}
 
   function toggleTheme() {
 
@@ -5102,14 +5100,9 @@ sessionStorage.removeItem(
       );
 
 
-    document
-      .getElementById(
-        "themeToggleBtn"
-      )
-      ?.addEventListener(
-        "click",
-        toggleTheme
-      );
+document
+  .getElementById("themeToggleInput")
+  ?.addEventListener("change", toggleTheme);
 
 
     document
