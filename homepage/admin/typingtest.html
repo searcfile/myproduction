@@ -937,6 +937,83 @@ select:focus-visible{
     flex-wrap: wrap;
   }
 }
+      /* =========================================
+   TYPING SETTINGS - CUSTOM DROPDOWN 5G88
+   ========================================= */
+
+.shared-modal-backdrop
+.shared-modal:has(#typingSettingsPanel) {
+  width: min(560px, calc(100vw - 24px)) !important;
+  max-width: 560px !important;
+  max-height: 90dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.shared-modal-backdrop
+.shared-modal-body:has(#typingSettingsPanel) {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.shared-modal-backdrop #typingSettingsPanel {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .typing-settings-row {
+  display: grid !important;
+  grid-template-columns: 110px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: center !important;
+  margin-bottom: 14px !important;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .typing-settings-label {
+  padding: 0 !important;
+  font-size: 14px;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .shared-dropdown {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .shared-dropdown-trigger {
+  height: 32px;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .shared-dropdown-panel {
+  z-index: 10020;
+}
+
+@media (max-width: 600px) {
+  .shared-modal-backdrop
+  .shared-modal:has(#typingSettingsPanel) {
+    width: calc(100vw - 20px) !important;
+    max-height: 92dvh !important;
+  }
+
+  .shared-modal-backdrop
+  #typingSettingsPanel .typing-settings-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -979,65 +1056,80 @@ select:focus-visible{
       </svg>
     </button>
 
-    <div id="typingSettingsPanel" class="typing-settings-panel hidden">
-      <div class="typing-settings-row">
-        <div class="typing-settings-label">Font Style</div>
-        <div class="typing-settings-options" id="fontFamilyOptions">
-          <button type="button" class="ts-opt active" data-font="inter">Inter</button>
-          <button type="button" class="ts-opt" data-font="arial">Arial</button>
-          <button type="button" class="ts-opt" data-font="georgia">Georgia</button>
-          <button type="button" class="ts-opt" data-font="monospace">Monospace</button>
-        </div>
-      </div>
+ <div id="typingSettingsPanel" class="typing-settings-panel hidden">
 
-      <div class="typing-settings-row">
-        <div class="typing-settings-label">Font Size</div>
-        <div class="typing-settings-options" id="fontSizeOptions">
-          <button type="button" class="ts-opt" data-size="xs">XS</button>
-          <button type="button" class="ts-opt" data-size="sm">SM</button>
-          <button type="button" class="ts-opt active" data-size="md">MD</button>
-          <button type="button" class="ts-opt" data-size="lg">LG</button>
-          <button type="button" class="ts-opt" data-size="xl">XL</button>
-        </div>
-      </div>
+  <div class="typing-settings-row">
+    <label class="typing-settings-label" for="typingFontFamily">
+      Font Style
+    </label>
 
-      <div class="typing-settings-row">
-        <div class="typing-settings-label">Line Count</div>
-        <div class="typing-settings-options line-count-grid" id="lineCountOptions">
-          <button type="button" class="ts-opt" data-lines="1">1</button>
-          <button type="button" class="ts-opt active" data-lines="2">2</button>
-          <button type="button" class="ts-opt" data-lines="3">3</button>
-          <button type="button" class="ts-opt" data-lines="4">4</button>
-          <button type="button" class="ts-opt" data-lines="5">5</button>
-          <button type="button" class="ts-opt" data-lines="6">6</button>
-          <button type="button" class="ts-opt" data-lines="7">7</button>
-          <button type="button" class="ts-opt" data-lines="8">8</button>
-          <button type="button" class="ts-opt" data-lines="9">9</button>
-          <button type="button" class="ts-opt" data-lines="10">10</button>
-          <button type="button" class="ts-opt" data-lines="11">11</button>
-          <button type="button" class="ts-opt" data-lines="12">12</button>
-          <button type="button" class="ts-opt" data-lines="13">13</button>
-          <button type="button" class="ts-opt" data-lines="14">14</button>
-          <button type="button" class="ts-opt" data-lines="15">15</button>
-          <button type="button" class="ts-opt" data-lines="16">16</button>
-          <button type="button" class="ts-opt" data-lines="17">17</button>
-          <button type="button" class="ts-opt" data-lines="18">18</button>
-          <button type="button" class="ts-opt" data-lines="19">19</button>
-          <button type="button" class="ts-opt" data-lines="20">20</button>
-          <button type="button" class="ts-opt" data-lines="21">21</button>
-          <button type="button" class="ts-opt" data-lines="22">22</button>
-          <button type="button" class="ts-opt" data-lines="23">23</button>
-          <button type="button" class="ts-opt" data-lines="24">24</button>
-          <button type="button" class="ts-opt" data-lines="25">25</button>
-          <button type="button" class="ts-opt" data-lines="26">26</button>
-          <button type="button" class="ts-opt" data-lines="27">27</button>
-          <button type="button" class="ts-opt" data-lines="28">28</button>
-          <button type="button" class="ts-opt" data-lines="29">29</button>
-          <button type="button" class="ts-opt" data-lines="30">30</button>
-        </div>
-      </div>
-    </div>
+    <select id="typingFontFamily"
+            data-shared-dropdown
+            data-placeholder="Select Font">
+      <option value="inter">Inter</option>
+      <option value="arial">Arial</option>
+      <option value="georgia">Georgia</option>
+      <option value="monospace">Monospace</option>
+    </select>
   </div>
+
+  <div class="typing-settings-row">
+    <label class="typing-settings-label" for="typingFontSize">
+      Font Size
+    </label>
+
+    <select id="typingFontSize"
+            data-shared-dropdown
+            data-placeholder="Select Size">
+      <option value="xs">XS</option>
+      <option value="sm">SM</option>
+      <option value="md">MD</option>
+      <option value="lg">LG</option>
+      <option value="xl">XL</option>
+    </select>
+  </div>
+
+  <div class="typing-settings-row">
+    <label class="typing-settings-label" for="typingLineCount">
+      Line Count
+    </label>
+
+    <select id="typingLineCount"
+            data-shared-dropdown
+            data-placeholder="Select Lines">
+      <option value="1">1 Line</option>
+      <option value="2">2 Lines</option>
+      <option value="3">3 Lines</option>
+      <option value="4">4 Lines</option>
+      <option value="5">5 Lines</option>
+      <option value="6">6 Lines</option>
+      <option value="7">7 Lines</option>
+      <option value="8">8 Lines</option>
+      <option value="9">9 Lines</option>
+      <option value="10">10 Lines</option>
+      <option value="11">11 Lines</option>
+      <option value="12">12 Lines</option>
+      <option value="13">13 Lines</option>
+      <option value="14">14 Lines</option>
+      <option value="15">15 Lines</option>
+      <option value="16">16 Lines</option>
+      <option value="17">17 Lines</option>
+      <option value="18">18 Lines</option>
+      <option value="19">19 Lines</option>
+      <option value="20">20 Lines</option>
+      <option value="21">21 Lines</option>
+      <option value="22">22 Lines</option>
+      <option value="23">23 Lines</option>
+      <option value="24">24 Lines</option>
+      <option value="25">25 Lines</option>
+      <option value="26">26 Lines</option>
+      <option value="27">27 Lines</option>
+      <option value="28">28 Lines</option>
+      <option value="29">29 Lines</option>
+      <option value="30">30 Lines</option>
+    </select>
+  </div>
+
 </div>
 
         <div class="stats-grid">
@@ -2172,17 +2264,24 @@ prompt.style.minHeight = `${promptHeight}px`;
 prompt.style.maxHeight = `${promptHeight}px`;
 prompt.style.overflow = 'hidden';
 
-  document.querySelectorAll('#fontFamilyOptions .ts-opt').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.font === state.fontFamily);
-  });
+  const fontFamilySelect = document.getElementById('typingFontFamily');
+  const fontSizeSelect = document.getElementById('typingFontSize');
+  const lineCountSelect = document.getElementById('typingLineCount');
 
-  document.querySelectorAll('#fontSizeOptions .ts-opt').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.size === state.fontSize);
-  });
+  if (fontFamilySelect) {
+    fontFamilySelect.value = state.fontFamily;
+    fontFamilySelect._sharedDropdown?.refresh?.();
+  }
 
-  document.querySelectorAll('#lineCountOptions .ts-opt').forEach(btn => {
-    btn.classList.toggle('active', Number(btn.dataset.lines || 0) === Number(state.textLineCount));
-  });
+  if (fontSizeSelect) {
+    fontSizeSelect.value = state.fontSize;
+    fontSizeSelect._sharedDropdown?.refresh?.();
+  }
+
+  if (lineCountSelect) {
+    lineCountSelect.value = String(state.textLineCount);
+    lineCountSelect._sharedDropdown?.refresh?.();
+  }
 }
     function resetTest(full=true){
       clearInterval(state.timer);
@@ -3465,6 +3564,11 @@ function openTypingSettingsModal() {
     }
   });
   typingSharedModals.settings = api;
+      if (typeof window.initSharedDropdowns === 'function') {
+    window.initSharedDropdowns(typingSettingsPanel);
+  }
+
+  updateTypingSettingsUI();
   return true;
 }
 const typingSettingsBtn = document.getElementById('typingSettingsBtn');
@@ -3493,34 +3597,26 @@ document.addEventListener('click', (e) => {
     typingSettingsPanel.classList.add('hidden');
   }
 });
-document.querySelectorAll('#fontFamilyOptions .ts-opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    state.fontFamily = btn.dataset.font || 'inter';
-    saveTypingPrefsToStorage();
-    updateTypingSettingsUI();
-  });
+document.getElementById('typingFontFamily').addEventListener('change', e => {
+  state.fontFamily = e.target.value;
+  saveTypingPrefsToStorage();
+  updateTypingSettingsUI();
 });
 
-document.querySelectorAll('#fontSizeOptions .ts-opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    state.fontSize = btn.dataset.size || 'md';
-    saveTypingPrefsToStorage();
-    buildPrompt();
-    updateTypingSettingsUI();
-    resetTest(false);
-    focusTypingInput(80);
-  });
+document.getElementById('typingFontSize').addEventListener('change', e => {
+  state.fontSize = e.target.value;
+  saveTypingPrefsToStorage();
+  buildPrompt();
+  updateTypingSettingsUI();
+  resetTest(false);
 });
 
-document.querySelectorAll('#lineCountOptions .ts-opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    state.textLineCount = Number(btn.dataset.lines || 2);
-    saveTypingPrefsToStorage();
-    buildPrompt();
-    updateTypingSettingsUI();
-    resetTest(false);
-    focusTypingInput(80);
-  });
+document.getElementById('typingLineCount').addEventListener('change', e => {
+  state.textLineCount = Number(e.target.value);
+  saveTypingPrefsToStorage();
+  buildPrompt();
+  updateTypingSettingsUI();
+  resetTest(false);
 });
 els.restartBtn.addEventListener('click', () => {
   els.restartBtn.classList.remove('spinning');
