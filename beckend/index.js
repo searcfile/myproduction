@@ -267,7 +267,157 @@ const used = await challengeRef.transaction(v => {
   return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
 });
+/* =====================================================
+   CHANGE OWN PASSWORD / 2ND PASSWORD
+   ===================================================== */
 
+app.post('/api/account/change-password', requireAdmin, async (req, res) => {
+  const oldPassword = req.body?.oldPassword;
+  const newPassword = req.body?.newPassword;
+
+  if (typeof oldPassword !== 'string' || !passwordOK(newPassword)) {
+    return fail(res, 400, 'Invalid password or new password is too short');
+  }
+
+  if (oldPassword === newPassword) {
+    return fail(res, 400, 'New password must be different');
+  }
+
+  try {
+    const profile = req.admin.profile;
+
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(process.env.FIREBASE_WEB_API_KEY)}`,
+      {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          email: profile.email,
+          password: oldPassword,
+          returnSecureToken: true
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.localId !== req.admin.uid) {
+      return fail(res, 401, 'Wrong current password');
+    }
+
+    await auth.updateUser(req.admin.uid, {
+      password: newPassword
+    });
+
+    await auth.revokeRefreshTokens(req.admin.uid);
+
+    return res.json({
+      ok: true,
+      message: 'Password changed successfully. Please log in again.'
+    });
+
+  } catch (error) {
+    console.error('Change password:', error.message);
+    return fail(res, 500, 'Failed to change password');
+  }
+});
+
+
+app.post('/api/account/change-pin', requireAdmin, async (req, res) => {
+  const oldPin = String(req.body?.oldPin ?? '');
+  const newPin = String(req.body?.newPin ?? '');
+
+  if (!pinOK(oldPin) || !pinOK(newPin)) {
+    return fail(res, 400, 'PIN must contain exactly 6 digits');
+  }
+
+  if (oldPin === newPin) {
+    return fail(res, 400, 'New PIN must be different');
+  }
+
+  try {
+    const uid = req.admin.uid;
+    const factorRef = db.ref(`privateSecondFactors/${uid}`);
+    const snapshot = await factorRef.once('value');
+    const factor = snapshot.val();
+
+    if (!factor) {
+      return fail(res, 404, '2nd password is not configured');
+    }
+
+    if ((factor.lockedUntil || 0) > now()) {
+      return fail(res, 429, 'PIN temporarily locked');
+    }
+
+    const expected = Buffer.from(factor.hash, 'hex');
+    const actual = Buffer.from(
+      pinHash(uid, oldPin, factor.salt), 'hex'
+    );
+
+    const correct =
+      expected.length === actual.length &&
+      crypto.timingSafeEqual(expected, actual);
+
+    const newSalt = correct
+      ? crypto.randomBytes(16).toString('hex')
+      : null;
+
+    const transaction = await factorRef.transaction(current => {
+      if (!current ||
+          current.hash !== factor.hash ||
+          current.salt !== factor.salt ||
+          (current.lockedUntil || 0) > now()) {
+        return;
+      }
+
+      if (!correct) {
+        const attempts = (current.failedAttempts || 0) + 1;
+
+        return {
+          ...current,
+          failedAttempts: attempts,
+          lockedUntil: attempts >= 5
+            ? now() + 15 * 60_000
+            : 0
+        };
+      }
+
+      return {
+        ...current,
+        salt: newSalt,
+        hash: pinHash(uid, newPin, newSalt),
+        updatedAt: now(),
+        failedAttempts: 0,
+        lockedUntil: 0
+      };
+    }, undefined, false);
+
+    if (!transaction.committed) {
+      return fail(res, 409, 'PIN changed or temporarily locked. Please retry.');
+    }
+
+    if (!correct) {
+      return fail(res, 401, 'Wrong current 2nd password');
+    }
+
+    // Invalidate sessions that were verified using the old PIN.
+    const version = now();
+    await db.ref(`adminUsers/${uid}`).update({
+      pinVersion: version
+    });
+
+    await auth.revokeRefreshTokens(uid);
+
+    return res.json({
+      ok: true,
+      message: '2nd password changed successfully. Please log in again.'
+    });
+
+  } catch (error) {
+    console.error('Change PIN:', error.message);
+    return fail(res, 500, 'Failed to change 2nd password');
+  }
+});
 app.get('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  try{
   const profiles=(await db.ref('adminUsers').once('value')).val()||{};
