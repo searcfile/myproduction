@@ -5744,34 +5744,58 @@ const showErr = message => {
 const showOk = message => {
   window.NewUI.showToast(message, "success", 3500);
 };
-    const closePw = () => {
-      if (modal) modal.style.display = "none";
-      setBtnLoading(submit, false, "Change");
-      if (cancel) cancel.disabled = false;
-    };
+let passwordModalUI = null;
 
-    const openPw = () => {
-      if (!modal) return;
+const closePw = () => {
+  passwordModalUI?.close();
+};
 
-      if (errBox) {
-        errBox.style.display = "none";
-        errBox.textContent = "";
-      }
-      if (okBox) {
-        okBox.style.display = "none";
-        okBox.textContent = "";
-      }
+const openPw = () => {
+  if (passwordModalUI) return;
 
-      if (oldInput) oldInput.value = "";
-      if (newInput) newInput.value = "";
-      if (confirmInput) confirmInput.value = "";
+  if (!window.NewUI?.modal?.open) {
+    console.error("NewUI modal is not available.");
+    return;
+  }
 
-      setBtnLoading(submit, false, "Change");
-      if (cancel) cancel.disabled = false;
+  if (errBox) {
+    errBox.style.display = "none";
+    errBox.textContent = "";
+  }
 
-      modal.style.display = "flex";
-      setTimeout(() => oldInput?.focus(), 0);
-    };
+  if (okBox) {
+    okBox.style.display = "none";
+    okBox.textContent = "";
+  }
+
+  if (oldInput) oldInput.value = "";
+  if (newInput) newInput.value = "";
+  if (confirmInput) confirmInput.value = "";
+
+  setBtnLoading(submit, false, "Change");
+  if (cancel) cancel.disabled = false;
+
+  const body = document.getElementById("cpBody");
+  const footer = document.getElementById("cpFoot");
+  const oldDialog = document.getElementById("cpDialog");
+
+  if (!body || !footer || !oldDialog) return;
+
+  passwordModalUI = window.NewUI.modal.open({
+    title: "Change Password",
+    content: body,
+    footer: footer,
+    width: 550,
+    closeOnBackdrop: false,
+
+    onClose: () => {
+      oldDialog.append(body, footer);
+      passwordModalUI = null;
+    }
+  });
+
+  setTimeout(() => oldInput?.focus(), 0);
+};
 
 const changePw = async () => {
    if (submit?.disabled) return;
@@ -5875,35 +5899,59 @@ const showErr2 = message => {
 const showOk2 = message => {
   window.NewUI.showToast(message, "success", 3500);
 };
-    const closePw2 = () => {
-      if (modal2) modal2.style.display = "none";
-      setBtnLoading(submit2, false, "Save");
-      if (cancel2) cancel2.disabled = false;
-    };
 
-    const openPw2 = () => {
-      if (!modal2) return;
+let secondPasswordModalUI = null;
 
-      if (err2) {
-        err2.style.display = "none";
-        err2.textContent = "";
-      }
-      if (ok2) {
-        ok2.style.display = "none";
-        ok2.textContent = "";
-      }
+const closePw2 = () => {
+  secondPasswordModalUI?.close();
+};
 
-      [old2, new2, confirm2].filter(Boolean).forEach(input => {
-        input.value = "";
-      });
+const openPw2 = () => {
+  if (secondPasswordModalUI) return;
 
-      setBtnLoading(submit2, false, "Save");
-      if (cancel2) cancel2.disabled = false;
+  if (!window.NewUI?.modal?.open) {
+    console.error("NewUI modal is not available.");
+    return;
+  }
 
-      modal2.style.display = "flex";
-      setTimeout(() => old2?.focus(), 0);
-    };
+  if (err2) {
+    err2.style.display = "none";
+    err2.textContent = "";
+  }
 
+  if (ok2) {
+    ok2.style.display = "none";
+    ok2.textContent = "";
+  }
+
+  [old2, new2, confirm2].filter(Boolean).forEach(input => {
+    input.value = "";
+  });
+
+  setBtnLoading(submit2, false, "Save");
+  if (cancel2) cancel2.disabled = false;
+
+  const body = document.getElementById("cp2Body");
+  const footer = document.getElementById("cp2Foot");
+  const oldDialog = document.getElementById("cp2Dialog");
+
+  if (!body || !footer || !oldDialog) return;
+
+  secondPasswordModalUI = window.NewUI.modal.open({
+    title: "Change 2nd Password",
+    content: body,
+    footer: footer,
+    width: 550,
+    closeOnBackdrop: false,
+
+    onClose: () => {
+      oldDialog.append(body, footer);
+      secondPasswordModalUI = null;
+    }
+  });
+
+  setTimeout(() => old2?.focus(), 0);
+};
 const changePw2 = async () => {
      if (submit2?.disabled) return;
   const oldPin = old2?.value || "";
