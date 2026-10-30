@@ -1549,13 +1549,19 @@ function initFirebase(){
 function setUser(user){
   if (!user?.email) return;
 
-  state.user = {
-    name: user.name || '',
-    email: String(user.email).toLowerCase(),
-    photo: user.photo || ''
-  };
+state.user = {
+  uid: String(user.uid || "").trim(),
+  name: user.name || '',
+  email: String(user.email).toLowerCase(),
+  photo: user.photo || ''
+};
 
-  state.userKey = sanitizeEmail(state.user.email);
+  state.userKey = String(user.uid || "").trim();
+
+if (!state.userKey) {
+  console.error("[Typing Test] Firebase UID missing");
+  return;
+}
 
   console.log('TypingTest setUser email:', state.user.email);
   console.log('TypingTest setUser userKey:', state.userKey);
@@ -1665,11 +1671,12 @@ function loadCurrentAdminUser() {
 
         typingBoundUid = user.uid;
 
-        setUser({
-          name: profile.username || profile.displayName || email.split("@")[0],
-          email: email,
-          photo: user.photoURL || ""
-        });
+setUser({
+  uid: user.uid,
+  name: profile.username || profile.displayName || email.split("@")[0],
+  email: email,
+  photo: user.photoURL || ""
+});
 
         console.log("[Typing Test] Logged in as:", profile.username);
 
