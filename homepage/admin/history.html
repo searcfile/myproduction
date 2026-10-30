@@ -19,6 +19,24 @@
     z-index: 2147483647;
     pointer-events: auto;
   }
+/* History V2 refined interface */
+.history-page{--hist-surface:#10151e;--hist-soft:#171e2a;--hist-stroke:#293343;--hist-ink:#eef3fc;--hist-muted:#9daabd;--hist-glow:rgba(51,121,238,.12);background:linear-gradient(145deg,#080c13,#101724 65%,#0c111a);}
+body.light-theme .history-page{--hist-surface:#fff;--hist-soft:#f4f7fc;--hist-stroke:#dde5ef;--hist-ink:#1d293b;--hist-muted:#65758d;--hist-glow:rgba(51,121,238,.09);background:#f5f7fb;}
+.history-hero{background:var(--hist-surface);border-radius:12px;box-shadow:none;border-color:var(--hist-stroke);padding:18px 20px;}
+.history-hero-mark{border-radius:11px;background:rgba(42,113,228,.13);border:1px solid rgba(67,139,251,.3);color:#6ba8ff;font-size:28px;}
+.history-hero h1{font-size:23px;letter-spacing:-.5px;}
+.history-page .left-panel,.history-page .right-panel{border-radius:12px;box-shadow:0 5px 22px rgba(0,0,0,.08);}
+.history-page .tab-item{border-radius:9px;box-shadow:none;}
+.history-page .tab-item.active{box-shadow:inset 3px 0 #4c92ff;}
+.history-page .stat-card{border-radius:9px;}
+.history-page .search-box{padding:14px 15px;}
+.history-page .search-box input{height:36px;border-radius:7px;}
+.history-page .range-toggle-btn{height:36px;border-radius:7px;}
+.history-page .date-range-line #dateRangeInput{height:36px;border-radius:7px;}
+.history-page .table-wrap,.history-page .log-list{border-radius:9px;}
+.history-page .log-row{padding:12px 14px;}
+@media(max-width:760px){.history-page{padding:12px}.history-hero{padding:14px}.history-page .tab-list{max-height:330px}}
+
 </style>
 
 <script>
@@ -898,7 +916,7 @@ let tempEndDate = null;
 let activeRange = {
   start: null,
   end: null,
-  key: "today"
+  key: "all"
 };
 let allSessions = [];
 let selectedSessionId = "";
@@ -997,17 +1015,17 @@ function getRangeByKey(key) {
   return { start, end };
 }
 
-function setActiveRange(key = "today") {
-  const range = getRangeByKey(key);
+function setActiveRange(key = "all") {
+  const range = key === "all" ? {start: null, end: null} : getRangeByKey(key);
 
   activeRange = {
     key,
-    start: range.start.getTime(),
-    end: range.end.getTime()
+    start: range.start ? range.start.getTime() : null,
+    end: range.end ? range.end.getTime() : null
   };
 
 if (dateRangeInput) {
-  dateRangeInput.value = `${toYMD(range.start)} → ${toYMD(range.end)}`;
+  dateRangeInput.value = range.start ? `${toYMD(range.start)} → ${toYMD(range.end)}` : "All dates";
 }
 
   rangeButtons.forEach(btn => {
@@ -1186,7 +1204,7 @@ function renderTabList() {
   document.getElementById('filterSummary').textContent = `${filtered.length} of ${allSessions.length} sessions`;
   if (!filtered.some(x => x.sessionId === selectedSessionId)) selectedSessionId = filtered[0]?.sessionId || '';
   if (!filtered.length) {
-    tabList.innerHTML = historyEmpty(allSessions.length ? 'No matching sessions' : 'No history data yet');
+    tabList.innerHTML = historyEmpty(allSessions.length ? 'No matching sessions' : 'No saved sessions yet — activity appears only when other pages record it');
     renderDetail();
     return;
   }
@@ -1235,35 +1253,64 @@ function renderDetail() {
 
 let historyListenerRef = null;
 let historyListenerCallback = null;
-function startHistoryListener() {
-  const login = getLoginData();
-
-  if (!login.email) {
-    detailWrap.innerHTML = historyEmpty("No login data found");
+let historyUserKey = "";
+function stopHistoryListener() {
+  if (historyListenerRef && historyListenerCallback) historyListenerRef.off("value", historyListenerCallback);
+  historyListenerRef = null;
+  historyListenerCallback = null;
+}
+function showHistoryMessage(message, details = "") {
+  tabList.innerHTML = historyEmpty(message);
+  detailWrap.innerHTML = `<div class="history-welcome"><div class="history-welcome-icon">◷</div><h2>${escapeHtml(message)}</h2><p>${escapeHtml(details)}</p></div>`;
+  document.getElementById("sessionCount").textContent = "0";
+  document.getElementById("filterSummary").textContent = "";
+}
+function startHistoryListener(email) {
+  if (!email) {
+    stopHistoryListener();
+    showHistoryMessage("Login required", "Sign in to view your history.");
     return;
   }
-
-  const emailKey = historyEmailKey(login.email);
-
-  if (historyListenerRef && historyListenerCallback) historyListenerRef.off("value", historyListenerCallback);
+  const emailKey = historyEmailKey(email);
+  if (historyUserKey === emailKey && historyListenerRef) return;
+  stopHistoryListener();
+  historyUserKey = emailKey;
+  allSessions = [];
+  selectedSessionId = "";
+  showHistoryMessage("Loading history...", "Fetching your saved sessions.");
   historyListenerRef = db.ref(`tabHistory/${emailKey}/sessions`);
   historyListenerCallback = snap => {
     const data = snap.val() || {};
-
-    allSessions = Object.values(data).sort((a, b) => {
-      return Number(b.openedAt || 0) - Number(a.openedAt || 0);
-    });
-
-    if (selectedSessionId && !allSessions.some(x => x.sessionId === selectedSessionId)) {
-      selectedSessionId = "";
-    }
-
+    allSessions = Object.entries(data).map(([id, item]) => ({
+      ...(item && typeof item === "object" ? item : {}),
+      sessionId: (item && item.sessionId) || id
+    })).sort((a,b) => Number(b.openedAt || 0) - Number(a.openedAt || 0));
     renderTabList();
   };
   historyListenerRef.on("value", historyListenerCallback, error => {
     console.error("History load failed:", error);
-    tabList.innerHTML = historyEmpty("Unable to load history");
-    detailWrap.innerHTML = historyEmpty("Please try again later");
+    showHistoryMessage("Unable to load history", error?.code === "PERMISSION_DENIED"
+      ? "Firebase permission denied. Check the tabHistory read rules for your account."
+      : "Check your connection or Firebase database configuration.");
+  });
+}
+function initHistoryAuth() {
+  if (typeof auth === "undefined" || !auth || typeof auth.onAuthStateChanged !== "function") {
+    showHistoryMessage("Authentication unavailable", "Check firebase.js and Firebase initialization.");
+    return;
+  }
+  auth.onAuthStateChanged(user => {
+    if (user && !user.isAnonymous) {
+      startHistoryListener(user.email || getLoginData().email);
+    } else {
+      historyUserKey = "";
+      stopHistoryListener();
+      allSessions = [];
+      showHistoryMessage("Login required", "Please sign in to access your activity history.");
+    }
+  }, error => {
+    console.error("History authentication failed:", error);
+    showHistoryMessage("Authentication error", "Unable to verify your login session.");
   });
 }
 
@@ -1333,7 +1380,7 @@ clearRangeBtn?.addEventListener("click", (e) => {
   e.stopPropagation();
   tempStartDate = null;
   tempEndDate = null;
-  setActiveRange("today");
+  setActiveRange("all");
   closeRangePicker();
 });
 
@@ -1354,23 +1401,10 @@ document.addEventListener("click", (e) => {
     }
   }
 });
-window.addEventListener("message", function(e) {
-  const allowedOrigins = [
-    "https://5g88-main.vercel.app"
-  ];
 
-  if (!allowedOrigins.includes(e.origin)) return;
 
-  const data = e.data || {};
-
-  if (data.type === "user-login" && data.user) {
-    localStorage.setItem("gmailLogin", JSON.stringify(data.user));
-    startHistoryListener();
-  }
-});
-
-setActiveRange("today");
-startHistoryListener();
+setActiveRange("all");
+initHistoryAuth();
   (function () {
   const THEME_KEY = "siteTheme";
 
