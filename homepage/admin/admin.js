@@ -15,6 +15,108 @@
   document.head.appendChild(script);
 })();
 
+/* ============================================================
+   5G88 CENTRAL HISTORY V1 — uses existing tabHistory schema.
+   Does not store form values, passwords, generated numbers or URLs.
+   ============================================================ */
+(function () {
+  "use strict";
+  if (window.G88History) return;
+  const skipPages = new Set(["login.html"]);
+  const file = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const pageName = file.replace(/\.html$/, "").replace(/[-_]/g, " ");
+  const ignoredRoots = new Set(["tabHistory", "singleSessions", "adminPresence", "users", "chats", "notifikasi", "notifications", "logins", "adminUsers", "adminUsernameIndex", "privateSecondFactors", "loginChallenges", "blocked_users", "admin_override"]);
+  const pageId = (window.crypto?.randomUUID?.() || (Date.now().toString(36) + Math.random().toString(36).slice(2))).replace(/[^a-zA-Z0-9-]/g, "");
+  let ready = false, userKey = "", sessionRef = null, lastInteraction = new Map(), active = false;
+  const queue = [];
+  const clean = value => String(value || "").trim().slice(0, 90);
+  const keyify = value => clean(value).toLowerCase().replace(/[.#$[\]/\s]/g, "_");
+  function getDb() { try { return window.firebase?.apps?.length ? firebase.database() : null; } catch (_) { return null; } }
+  function getUser() { try { return window.firebase?.apps?.length ? firebase.auth().currentUser : null; } catch (_) { return null; } }
+  function verifiedUser() {
+    const user = getUser();
+    if (!user || user.isAnonymous || sessionStorage.getItem("5g88.adminSession") !== user.uid) return null;
+    const expires = Number(localStorage.getItem("autoLogout.expireAt"));
+    if (!Number.isFinite(expires) || expires <= Date.now()) return null;
+    return user;
+  }
+  function begin() {
+    if (ready || skipPages.has(file)) return;
+    const user = verifiedUser(), db = getDb();
+    if (!user || !db || !user.email) return;
+    userKey = keyify(user.email);
+    sessionRef = db.ref("tabHistory/" + userKey + "/sessions/" + pageId);
+    ready = true;
+    sessionRef.update({sessionId:pageId,tab:pageName,openedAt:firebase.database.ServerValue.TIMESTAMP,uid:user.uid,email:user.email,page:file,closedAt:null}).then(() => {
+      active = true;
+      flush();
+    }).catch(error => { console.warn("[5G88 History] session:", error); ready=false;sessionRef=null; });
+  }
+  function flush() { if (!active) return; while(queue.length) write(queue.shift()); }
+  function write(event) {
+    if (!active || !sessionRef) { if(queue.length<80) queue.push(event); return; }
+    const logRef = sessionRef.child("logs").push();
+    const actionKey = keyify(event.action);
+    // Write log first, then increment counter. Never log history's own writes.
+    logRef.set({action:event.action,time:firebase.database.ServerValue.TIMESTAMP,page:event.page || file,kind:event.kind || "interaction",target:event.target || ""})
+      .then(() => sessionRef.child("actions/" + actionKey).transaction(v => (Number(v)||0)+1,undefined,false))
+      .then(() => sessionRef.child("actionLabels/" + actionKey).set(event.action))
+      .catch(error => console.warn("[5G88 History] event:",error));
+  }
+  function log(action, opts={}) {
+    if (!verifiedUser()) return;
+    const event = {action:clean(action),page:clean(opts.page || file),kind:clean(opts.kind || "interaction"),target:clean(opts.target || "")};
+    if (!event.action) return;
+    if (!ready) begin();
+    write(event);
+  }
+  function once(action, opts={}, ms=1200) {
+    const key = action + ":" + (opts.target || "");
+    const now = Date.now(); if (now - (lastInteraction.get(key)||0) < ms) return;
+    lastInteraction.set(key,now);log(action,opts);
+  }
+  window.G88History = {log,once,begin};
+  function installFirebaseTracking() {
+    const db = getDb(); if (!db) return;
+    const proto = Object.getPrototypeOf(db.ref("/"));
+    if (!proto || proto.__g88HistoryWrapped) return;
+    Object.defineProperty(proto,"__g88HistoryWrapped",{value:true});
+    for (const method of ["set","update","remove"]) {
+      const original=proto[method];if(typeof original!=="function")continue;
+      proto[method]=function(...args) {
+        const path = String(this.toString()).split(".com/").pop().split(".app/").pop().replace(/^\//, "");
+        const root = decodeURIComponent(path.split("/")[0] || "");
+        const shouldTrack = root && !ignoredRoots.has(root) && !path.startsWith(".info/");
+        const result=original.apply(this,args);
+        if (shouldTrack && result && typeof result.then==="function") {
+          result.then(() => {
+            const action = method === "remove" || (method === "set" && args[0] === null) ? "Delete Data" : method === "update" ? "Update Data" : "Save Data";
+            log(action,{kind:"firebase-success",target:root});
+          },()=>{});
+        }
+        return result;
+      };
+    }
+  }
+  function installClicks() {
+    document.addEventListener("click", e => {
+      const el=e.target?.closest?.("button, [role=button], a");if(!el)return;
+      if (el.closest(".shared-modal") && /password|pin/i.test(el.textContent||""))return;
+      const label=clean(el.getAttribute("aria-label") || el.textContent).replace(/\s+/g," ");
+      if (!label || /password|pin|logout|sign out|delete user history/i.test(label))return;
+      const action = /\bcopy\b/i.test(label)?"Click Copy":/\bgenerat(e|or)\b/i.test(label)?"Click Generate":/\bcreate\b|\badd\b/i.test(label)?"Click Create":/\bedit\b/i.test(label)?"Click Edit":/\bdelete\b|\bremove\b/i.test(label)?"Click Delete":null;
+      if(action) once(action,{kind:"button-click",target:label.slice(0,48)},500);
+    },true);
+  }
+  function boot() {
+    installClicks();
+    try {firebase.auth().onAuthStateChanged(user => {if(user) {begin();installFirebaseTracking();}});}catch(_){}
+    installFirebaseTracking();begin();
+    window.addEventListener("pagehide",()=>{if(active&&sessionRef)sessionRef.child("closedAt").set(firebase.database.ServerValue.TIMESTAMP).catch(()=>{});});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+})();
+
 /* =============================================================
    5G88 Shared Admin Page Guard (integrated in admin.js)
    Generator/utility pages use only this lightweight branch.
