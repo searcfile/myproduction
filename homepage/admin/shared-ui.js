@@ -5688,11 +5688,19 @@ function initFloatingFab() {
     }
   }
 
-  function setBtnLoading(button, loading, label) {
-    if (!button) return;
-    button.disabled = !!loading;
-    button.textContent = label;
+async function setBtnLoading(button, loading, label) {
+  if (!button) return;
+
+  if (loading) {
+    await window.NewUI.setButtonLoading(button, true, {
+      text: label || "Saving..."
+    });
+  } else {
+    await window.NewUI.setButtonLoading(button, false, {
+      minDuration: 500
+    });
   }
+}
 
 function updateChangePwVisibility() {
   const pw = document.getElementById("changePwBtn");
@@ -5764,6 +5772,7 @@ const showOk = message => {
     };
 
 const changePw = async () => {
+   if (submit?.disabled) return;
   const oldPw = oldInput?.value || "";
   const newPw = newInput?.value || "";
   const newPw2 = confirmInput?.value || "";
@@ -5829,10 +5838,10 @@ const changePw = async () => {
 
   } catch (error) {
     showErr(error.message || "Failed to change password.");
-  } finally {
-    setBtnLoading(submit, false, "Change");
-    if (cancel) cancel.disabled = false;
-  }
+} finally {
+  await setBtnLoading(submit, false, "Change");
+  if (cancel) cancel.disabled = false;
+}
 };
 
     btn?.addEventListener("click", openPw);
@@ -5894,6 +5903,7 @@ const showOk2 = message => {
     };
 
 const changePw2 = async () => {
+     if (submit2?.disabled) return;
   const oldPin = old2?.value || "";
   const newPin = new2?.value || "";
   const confirmPin = confirm2?.value || "";
@@ -5959,10 +5969,10 @@ const changePw2 = async () => {
 
   } catch (error) {
     showErr2(error.message || "Failed to change 2nd password.");
-  } finally {
-    setBtnLoading(submit2, false, "Save");
-    if (cancel2) cancel2.disabled = false;
-  }
+} finally {
+  await setBtnLoading(submit2, false, "Save");
+  if (cancel2) cancel2.disabled = false;
+}
 };
 
     [old2, new2, confirm2].filter(Boolean).forEach(input => {
