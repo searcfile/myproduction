@@ -5770,66 +5770,77 @@ function updateChangePwVisibility() {
       setTimeout(() => oldInput?.focus(), 0);
     };
 
-    const changePw = async () => {
-      if (!sharedDb) {
-        showErr("Firebase database is not ready.");
-        return;
+const changePw = async () => {
+  const oldPw = oldInput?.value || "";
+  const newPw = newInput?.value || "";
+  const newPw2 = confirmInput?.value || "";
+
+  if (!oldPw || !newPw || !newPw2) {
+    return showErr("All fields are required.");
+  }
+
+  if (newPw.length < 6) {
+    return showErr("New password must be at least 6 characters.");
+  }
+
+  if (newPw !== newPw2) {
+    return showErr("Confirm password does not match.");
+  }
+
+  if (newPw === oldPw) {
+    return showErr("New password must be different.");
+  }
+
+  setBtnLoading(submit, true, "Changing...");
+  if (cancel) cancel.disabled = true;
+
+  try {
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+      "https://fiveg88-admin-backend-v2.onrender.com/api/account/change-password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          oldPassword: oldPw,
+          newPassword: newPw
+        })
       }
+    );
 
-      const oldPw = oldInput?.value.trim() || "";
-      const newPw = newInput?.value.trim() || "";
-      const newPw2 = confirmInput?.value.trim() || "";
+    const result = await response.json();
 
-      if (!oldPw || !newPw || !newPw2) return showErr("All fields are required to be filled in.");
-      if (newPw.length < 6) return showErr("New password must be at least 6 characters.");
-      if (newPw !== newPw2) return showErr("Confirm password does not match.");
-      if (newPw === oldPw) return showErr("New password cannot be the same as current.");
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "Failed to change password.");
+    }
 
-      setBtnLoading(submit, true, "Change...");
-      if (cancel) cancel.disabled = true;
+    showOk(result.message);
 
-      try {
-        const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-        const email = String(login.email || "").toLowerCase();
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if (!email.endsWith("@5g88.local")) {
-          return showErr("This account type cannot change password here.");
-        }
+    await firebase.auth().signOut();
+    sessionStorage.removeItem("5g88.adminSession");
+    localStorage.removeItem("autoLogout.expireAt");
 
-        const uname = email.split("@")[0];
-        const ref = sharedDb.ref(`logins/user_accounts/${uname}`);
-        const snap = await ref.get();
+    window.location.replace("./login.html?pw_changed=1");
 
-        if (!snap.exists()) return showErr("Username does not exist.");
-
-        const user = snap.val();
-        if (user.active === false) return showErr("This account is deactivated.");
-
-        if (await sha256Hex(oldPw) !== user.passwordHash) {
-          return showErr("Wrong current password.");
-        }
-
-        await ref.update({
-          passwordHash: await sha256Hex(newPw),
-          updatedAt: Date.now(),
-          passwordVersion: (user.passwordVersion || 0) + 1
-        });
-
-        showOk("Password changed successfully.");
-        await new Promise(resolve => setTimeout(resolve, 1200));
-
-        localStorage.removeItem("gmailLogin");
-        window.location.href = "./login.html?pw_changed=1";
-
-      } catch (err) {
-        showErr("Failed to change password. " + (err?.message || ""));
-      } finally {
-        if (modal?.style.display !== "none" && okBox?.style.display !== "block") {
-          setBtnLoading(submit, false, "Change");
-          if (cancel) cancel.disabled = false;
-        }
-      }
-    };
+  } catch (error) {
+    showErr(error.message || "Failed to change password.");
+  } finally {
+    setBtnLoading(submit, false, "Change");
+    if (cancel) cancel.disabled = false;
+  }
+};
 
     btn?.addEventListener("click", openPw);
     closeX?.addEventListener("click", closePw);
@@ -5889,70 +5900,81 @@ function updateChangePwVisibility() {
       setTimeout(() => old2?.focus(), 0);
     };
 
-    const changePw2 = async () => {
-      if (!sharedDb) {
-        showErr2("Firebase database is not ready.");
-        return;
+const changePw2 = async () => {
+  const oldPin = old2?.value || "";
+  const newPin = new2?.value || "";
+  const confirmPin = confirm2?.value || "";
+
+  if (!/^\d{6}$/.test(oldPin)) {
+    return showErr2("Current 2nd password must be 6 digits.");
+  }
+
+  if (!/^\d{6}$/.test(newPin)) {
+    return showErr2("New 2nd password must be 6 digits.");
+  }
+
+  if (newPin !== confirmPin) {
+    return showErr2("Confirm 2nd password does not match.");
+  }
+
+  if (newPin === oldPin) {
+    return showErr2("New 2nd password must be different.");
+  }
+
+  setBtnLoading(submit2, true, "Saving...");
+  if (cancel2) cancel2.disabled = true;
+
+  try {
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+      "https://fiveg88-admin-backend-v2.onrender.com/api/account/change-pin",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          oldPin,
+          newPin
+        })
       }
+    );
 
-      const oldPw = old2?.value.trim() || "";
-      const newPw = new2?.value.trim() || "";
-      const newPw2 = confirm2?.value.trim() || "";
+    const result = await response.json();
 
-      if (!/^\d{6}$/.test(oldPw)) return showErr2("Current 2nd password must be 6 digits.");
-      if (!/^\d{6}$/.test(newPw)) return showErr2("New 2nd password must be 6 digits.");
-      if (newPw !== newPw2) return showErr2("Confirm 2nd password does not match.");
-      if (newPw === oldPw) return showErr2("New 2nd password cannot be the same as current.");
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "Failed to change 2nd password.");
+    }
 
-      setBtnLoading(submit2, true, "Save...");
-      if (cancel2) cancel2.disabled = true;
+    if (ok2 && err2) {
+      ok2.textContent = result.message;
+      ok2.style.display = "block";
+      err2.style.display = "none";
+    }
 
-      try {
-        const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-        const email = String(login.email || "").toLowerCase();
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-        if (!email.endsWith("@5g88.local")) {
-          return showErr2("This account type cannot change 2nd password here.");
-        }
+    await firebase.auth().signOut();
+    sessionStorage.removeItem("5g88.adminSession");
+    localStorage.removeItem("autoLogout.expireAt");
 
-        const uname = email.split("@")[0];
-        const ref = sharedDb.ref(`logins/user_accounts/${uname}`);
-        const snap = await ref.get();
+    window.location.replace("./login.html?pin_changed=1");
 
-        if (!snap.exists()) return showErr2("Username does not exist.");
-
-        const user = snap.val();
-        if (user.active === false) return showErr2("This account is deactivated.");
-        if (!user.secondPasswordHash) return showErr2("2nd password is not set. Please contact admin.");
-
-        if (await sha256Hex(oldPw) !== user.secondPasswordHash) {
-          return showErr2("Wrong current 2nd password.");
-        }
-
-        await ref.update({
-          secondPasswordHash: await sha256Hex(newPw),
-          secondPasswordUpdatedAt: Date.now(),
-          secondPasswordVersion: (user.secondPasswordVersion || 0) + 1
-        });
-
-        if (ok2 && err2) {
-          ok2.textContent = "2nd password changed successfully.";
-          ok2.style.display = "block";
-          err2.style.display = "none";
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        closePw2();
-
-      } catch (err) {
-        showErr2("Failed to change 2nd password. " + (err?.message || ""));
-      } finally {
-        if (modal2?.style.display !== "none" && ok2?.style.display !== "block") {
-          setBtnLoading(submit2, false, "Save");
-          if (cancel2) cancel2.disabled = false;
-        }
-      }
-    };
+  } catch (error) {
+    showErr2(error.message || "Failed to change 2nd password.");
+  } finally {
+    setBtnLoading(submit2, false, "Save");
+    if (cancel2) cancel2.disabled = false;
+  }
+};
 
     [old2, new2, confirm2].filter(Boolean).forEach(input => {
       input.addEventListener("input", () => {
