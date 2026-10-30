@@ -5727,20 +5727,13 @@ function updateChangePwVisibility() {
     const errBox = document.getElementById("cpErr");
     const okBox = document.getElementById("cpOk");
 
-    const showErr = message => {
-      if (!errBox || !okBox) return;
-      errBox.textContent = message;
-      errBox.style.display = "block";
-      okBox.style.display = "none";
-    };
+const showErr = message => {
+  window.NewUI.showToast(message, "error", 3500);
+};
 
-    const showOk = message => {
-      if (!errBox || !okBox) return;
-      okBox.textContent = message;
-      okBox.style.display = "block";
-      errBox.style.display = "none";
-    };
-
+const showOk = message => {
+  window.NewUI.showToast(message, "success", 3500);
+};
     const closePw = () => {
       if (modal) modal.style.display = "none";
       setBtnLoading(submit, false, "Change");
@@ -5864,13 +5857,13 @@ const changePw = async () => {
     const err2 = document.getElementById("cp2Err");
     const ok2 = document.getElementById("cp2Ok");
 
-    const showErr2 = message => {
-      if (!err2 || !ok2) return;
-      err2.textContent = message;
-      err2.style.display = "block";
-      ok2.style.display = "none";
-    };
+const showErr2 = message => {
+  window.NewUI.showToast(message, "error", 3500);
+};
 
+const showOk2 = message => {
+  window.NewUI.showToast(message, "success", 3500);
+};
     const closePw2 = () => {
       if (modal2) modal2.style.display = "none";
       setBtnLoading(submit2, false, "Save");
@@ -5954,11 +5947,7 @@ const changePw2 = async () => {
       throw new Error(result.message || "Failed to change 2nd password.");
     }
 
-    if (ok2 && err2) {
-      ok2.textContent = result.message;
-      ok2.style.display = "block";
-      err2.style.display = "none";
-    }
+   showOk2(result.message);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
