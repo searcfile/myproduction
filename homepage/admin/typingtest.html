@@ -941,6 +941,7 @@ select:focus-visible{
    TYPING SETTINGS - CUSTOM DROPDOWN 5G88
    ========================================= */
 
+/* Modal Typing Settings - benarkan dropdown keluar */
 .shared-modal-backdrop
 .shared-modal:has(#typingSettingsPanel) {
   width: min(560px, calc(100vw - 24px)) !important;
@@ -948,15 +949,14 @@ select:focus-visible{
   max-height: 90dvh !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .shared-modal-backdrop
 .shared-modal-body:has(#typingSettingsPanel) {
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  overflow: visible !important;
 }
 
 .shared-modal-backdrop #typingSettingsPanel {
@@ -997,8 +997,26 @@ select:focus-visible{
   height: 32px;
 }
 
+/* Dropdown boleh keluar dari kawasan modal */
+.shared-modal-backdrop #typingSettingsPanel .shared-dropdown {
+  position: relative !important;
+  overflow: visible !important;
+}
+
 .shared-modal-backdrop #typingSettingsPanel .shared-dropdown-panel {
-  z-index: 10020;
+  z-index: 10020 !important;
+  max-height: min(260px, 45dvh) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+/* Pastikan dropdown aktif berada di atas baris lain */
+.shared-modal-backdrop #typingSettingsPanel .typing-settings-row {
+  position: relative;
+}
+
+.shared-modal-backdrop #typingSettingsPanel .typing-settings-row:focus-within {
+  z-index: 30;
 }
 
 @media (max-width: 600px) {
