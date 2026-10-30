@@ -98,15 +98,17 @@
     --blue-hover: #3c89e8;
     --blue-active: #1554ad;
   }
-  /* ==========================================
-   MEGA888 - FORCE SOURCE SANS 3 FONT
+/* ==========================================
+   MEGA888 - SOURCE SANS 3 FOR GAME LOG ONLY
    ========================================== */
 
-html body,
-html body *:not(svg):not(path) {
+#gameLog,
+#gameLog th,
+#gameLog td,
+#gameLog th *,
+#gameLog td * {
   font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
 }
-
 /* RESTORE ORIGINAL TABLE ID BADGE BOX MODEL */
 #gameLog .table-id-highlight {
   box-sizing: content-box;
@@ -116,7 +118,7 @@ html body *:not(svg):not(path) {
 }
 
 
-body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg) ;margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
+body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg) ;margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
   .screenshot-mode th {border: 1px solid #ddd !important;}
   html { scrollbar-width: none;-ms-overflow-style: none;}html.body::-webkit-scrollbar {display: none;}
 table {
@@ -1299,7 +1301,22 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   MEGA888 - SETTINGS USE ADMIN CSS FONT
+   ========================================== */
 
+.mg-panel:not(.mg-log-panel),
+.mg-panel:not(.mg-log-panel) button,
+.mg-panel:not(.mg-log-panel) input,
+.mg-panel:not(.mg-log-panel) select,
+.mg-panel:not(.mg-log-panel) textarea,
+.mg-panel:not(.mg-log-panel) .shared-dropdown,
+.mg-panel:not(.mg-log-panel) .shared-dropdown-input,
+.mg-panel:not(.mg-log-panel) .shared-dropdown-option,
+.mg-panel:not(.mg-log-panel) .cs-display,
+.mg-panel:not(.mg-log-panel) .cs-item {
+  font-family: inherit;
+}
 </style>
 <body>
 
