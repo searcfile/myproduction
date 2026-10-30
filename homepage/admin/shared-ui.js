@@ -5871,7 +5871,6 @@ const changePw = async () => {
 };
 
     btn?.addEventListener("click", openPw);
-    closeX?.addEventListener("click", closePw);
     cancel?.addEventListener("click", closePw);
     submit?.addEventListener("click", changePw);
 
@@ -6036,7 +6035,6 @@ const changePw2 = async () => {
     });
 
     btn2?.addEventListener("click", openPw2);
-    close2?.addEventListener("click", closePw2);
     cancel2?.addEventListener("click", closePw2);
     submit2?.addEventListener("click", changePw2);
 
