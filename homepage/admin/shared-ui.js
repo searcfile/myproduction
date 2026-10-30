@@ -1489,17 +1489,6 @@ aria-label="Search tabs"
           id="dropdownContent"
           class="dropdown-content">
 
-          <div class="dropdown-user-top">
-            <div id="userEmail"></div>
-          </div>
-
-          <hr style="
-            border:0;
-            border-top:1px solid #424242;
-            margin:8px 0;
-          ">
-
-
           <button
             id="themeToggleBtn"
             type="button"
