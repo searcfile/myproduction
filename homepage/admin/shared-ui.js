@@ -723,8 +723,10 @@ if (
       );
 
     if (index === -1) {
+      window.G88History?.log("Open Tab", {kind:"tab",target:targetFile});
       tabs.push(tab);
     } else {
+      window.G88History?.log("Switch Tab", {kind:"tab",target:targetFile});
       tabs[index] = {
         ...tabs[index],
         ...tab
@@ -772,6 +774,7 @@ requestAnimationFrame(() => {
       currentFile === target;
 
 tabs.splice(index, 1);
+window.G88History?.log("Close Tab", {kind:"tab",target});
 
 // Jika tab aktif ditutup, tetapkan destinasi baharu
 // sebelum menyimpan supaya Firebase menerima activeTabUrl betul.
