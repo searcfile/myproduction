@@ -1590,9 +1590,105 @@ restoreLastSessionUI({ applySavedPrefs: true });
 
     // Modern admin login: Firebase Auth + verified 2nd PIN session + adminUsers profile.
     // Do not use legacy gmailLogin or user-login messages as identity sources.
-    let typingAuthSequence = 0;
-    let typingBoundUid = null;
-    async function loadCurrentAdminUser() {
+
+let typingAuthSequence = 0;
+let typingBoundUid = null;
+
+function showTypingAuthStatus(message) {
+  els.userName.textContent = "Account unavailable";
+  els.userEmail.textContent = message;
+  els.userAvatar.src = getAvatarFallbackSvg("U");
+}
+
+function loadCurrentAdminUser() {
+  try {
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(async (user) => {
+      const run = ++typingAuthSequence;
+
+      if (!user || user.isAnonymous) {
+        showTypingAuthStatus("Please login to your admin account");
+        return;
+      }
+
+      const marker = sessionStorage.getItem("5g88.adminSession");
+      const expiry = Number(localStorage.getItem("autoLogout.expireAt"));
+
+      if (marker !== user.uid || !Number.isFinite(expiry) || expiry <= Date.now()) {
+        showTypingAuthStatus("Admin session expired or not verified");
+        console.warn("[Typing Test] Session check failed", {
+          markerMatches: marker === user.uid,
+          expiryValid: Number.isFinite(expiry) && expiry > Date.now()
+        });
+        return;
+      }
+
+      try {
+        const token = await user.getIdTokenResult();
+
+        if (run !== typingAuthSequence) return;
+
+        if (
+          token.claims.secondVerified !== true ||
+          !Number.isSafeInteger(token.claims.pinVersion)
+        ) {
+          showTypingAuthStatus("Second PIN verification required");
+          return;
+        }
+
+        const snap = await db.ref("adminUsers/" + user.uid).once("value");
+
+        if (run !== typingAuthSequence) return;
+
+        const profile = snap.val();
+
+        if (
+          !profile ||
+          profile.active !== true ||
+          profile.secondPasswordEnabled !== true ||
+          !["superadmin", "siteadmin"].includes(profile.role) ||
+          token.claims.pinVersion !== profile.pinVersion
+        ) {
+          showTypingAuthStatus("Admin profile verification failed");
+          return;
+        }
+
+        const email = user.email || profile.email;
+
+        if (!email) {
+          showTypingAuthStatus("Admin email not found");
+          return;
+        }
+
+        if (typingBoundUid === user.uid) return;
+
+        typingBoundUid = user.uid;
+
+        setUser({
+          name: profile.username || profile.displayName || email.split("@")[0],
+          email: email,
+          photo: user.photoURL || ""
+        });
+
+        console.log("[Typing Test] Logged in as:", profile.username);
+
+      } catch (error) {
+        console.error("[Typing Test] Profile load failed:", error);
+        showTypingAuthStatus("Unable to load admin profile");
+      }
+
+    }, (error) => {
+      console.error("[Typing Test] Auth listener failed:", error);
+      showTypingAuthStatus("Authentication unavailable");
+    });
+
+  } catch (error) {
+    console.error("[Typing Test] Initialization failed:", error);
+    showTypingAuthStatus("Firebase initialization failed");
+  }
+}
+
       const seq = ++typingAuthSequence;
       try {
         const auth = firebase.auth();
