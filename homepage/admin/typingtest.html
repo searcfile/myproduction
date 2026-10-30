@@ -806,7 +806,25 @@ select:focus-visible{
 @media(max-width:700px){.app{padding:10px}.layout{gap:12px}.left-panel,.right-panel{padding:12px}.right-header{grid-template-columns:1fr}.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.right-tests-card{padding:10px 7px}.right-tests-card .k{font-size:10px}.right-tests-card .v{font-size:18px}.typing-leaderboard-heading h3{font-size:17px}.typing-leaderboard-heading p{max-width:230px;line-height:1.5}.typing-settings-panel{position:fixed;top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:75dvh;z-index:2000}.typing-settings-row{grid-template-columns:1fr;gap:7px}.line-count-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.toolbar-left{flex:1 1 100%}.toolbar-left select{flex:1;min-width:0}.leaderboard-scroll{border-radius:8px}}
 @media(max-width:380px){.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr))}.typing-live-dot{font-size:0}.typing-live-dot:before{font-size:10px;margin:0}}
 
-  </style>
+  
+/* 5G88 custom components integration */
+.shared-modal-backdrop .typing-settings-panel { position:static; width:100%; max-height:none; overflow:visible; padding:0; border:0; box-shadow:none; }
+.toolbar-left > .shared-dropdown { flex:0 1 auto; width:155px; min-width:130px; }
+.toolbar-left > .shared-dropdown:first-child { width:125px; }
+.toolbar-left > .shared-dropdown .shared-dropdown-panel { z-index:10010; }
+.toolbar-left > .shared-dropdown .shared-dropdown-trigger { background:var(--page-input); }
+.typing-input.shared-input { min-height:54px; }
+.shared-modal-backdrop .shared-modal:has(.typing-in-shared-modal) { width:min(100%, 1100px); max-height:90vh; }
+.shared-modal-backdrop .shared-modal-body:has(.typing-in-shared-modal) { overflow:auto; min-height:0; }
+.shared-modal-backdrop .result-modal.typing-in-shared-modal,
+.shared-modal-backdrop .champion-modal.typing-in-shared-modal { width:100%; max-width:none; max-height:none; overflow:visible; padding:0; background:transparent; border:0; box-shadow:none; }
+.shared-modal-backdrop .result-modal.typing-in-shared-modal .result-head h2 { display:none; }
+.shared-modal-backdrop .champion-modal.typing-in-shared-modal .champion-close-btn { display:none; }
+@media(max-width:600px){
+ .toolbar-left > .shared-dropdown,.toolbar-left > .shared-dropdown:first-child { width:calc(50% - 5px); min-width:0; }
+ .shared-modal-backdrop .shared-modal:has(.typing-in-shared-modal) { max-height:94vh; }
+}
+</style>
 </head>
 <body>
   <div class="app">
@@ -814,14 +832,14 @@ select:focus-visible{
       <section class="panel left-panel">
 <div class="toolbar">
   <div class="toolbar-left">
-    <select id="languageSelect" class="select">
+    <select id="languageSelect" class="select" data-shared-dropdown data-placeholder="Select Language">
       <option value="english">English</option>
       <option value="indonesia">Indonesia</option>
       <option value="melayu">Malaysian</option>
       <option value="chinese">Chinese</option>
       <option value="thailand">Thailand</option>
     </select>
-    <select id="modeSelect" class="select">
+    <select id="modeSelect" class="select" data-shared-dropdown data-placeholder="Select Mode">
       <option value="words">Random Words</option>
       <option value="quote">Paragraph</option>
       <option value="numbers">Numbers</option>
@@ -932,7 +950,7 @@ select:focus-visible{
             <div class="test-status" id="testStatus">Start typing to begin.</div>
           </div>
           <div id="promptText" class="prompt-text"></div>
-          <input id="typingInput" class="typing-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Click here and start typing..." />
+          <input id="typingInput" class="typing-input shared-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Click here and start typing..." />
           <div class="hint">
             <span>Tracks wrong letters, speed per word, raw WPM, and advanced result.</span>
             <span id="lastSavedLabel">No result saved yet</span>
@@ -992,7 +1010,7 @@ select:focus-visible{
       <img id="userAvatar" class="avatar" alt="avatar" />
       <div class="user-meta">
        <strong id="userName">Guest User</strong>
-<span id="userEmail" style="display:none;"></span>
+<span id="userEmail" style="display:none;display:none;"></span>
       </div>
     </div>
 
@@ -1160,9 +1178,13 @@ select:focus-visible{
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
-<script defer src="./shared-ui.js"></script>
+<script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
+    // Original native selects stay as source of truth for existing game logic.
+    if (typeof window.initSharedDropdowns === 'function') {
+      window.initSharedDropdowns(document);
+    }
     const WORD_BANK = {
       english: {
         words: ["these","use","what","much","leave","man","who","against","two","one","help","very","why","most","week","work","time","system","then","there","government","really","need","small","life","case","part","few","good","hand","state","hear","only","while","also","like","which","after","before","where","think","world","sound","great","still","around","again","place","every","young","point","home","water","thing","group","under","never","start","right","house","become","friend","family","money","story","light","today","night","learn","power","order","among","change","follow","answer","study","close","country","example","during","important","simple","future","people","better","strong","quick","typing"],
@@ -2520,8 +2542,44 @@ function renderHistory() {
       drawLineChart(document.getElementById('resultCanvas'), state.secondSeries);
     }
 
-function openResultModal(){ els.resultOverlay.style.display = 'flex'; }
+
+// Use the existing 5G88 NewUI modal without rebuilding typing-test content.
+const typingSharedModals = {};
+function openTypingSharedModal(kind, overlay, title, width) {
+  if (!window.NewUI?.modal?.open || !overlay) return false;
+  const content = overlay.firstElementChild;
+  if (!content) return false;
+  if (typingSharedModals[kind]) return true;
+  const placeholder = document.createComment('typing-' + kind + '-original-position');
+  overlay.insertBefore(placeholder, content);
+  content.classList.add('typing-in-shared-modal');
+  const api = window.NewUI.modal.open({
+    title, width,
+    content,
+    onClose() {
+      if (placeholder.parentNode) placeholder.replaceWith(content);
+      content.classList.remove('typing-in-shared-modal');
+      delete typingSharedModals[kind];
+      if (kind === 'result') {
+        if (state.finished) resetTest(true);
+        focusTypingInput(80);
+      } else focusTypingInput(80);
+    }
+  });
+  typingSharedModals[kind] = api;
+  return true;
+}
+function closeTypingSharedModal(kind) {
+  if (!typingSharedModals[kind]) return false;
+  typingSharedModals[kind].close();
+  return true;
+}
+function openResultModal(){
+  if (openTypingSharedModal('result', els.resultOverlay, 'Advanced Result', '1100px')) return;
+  els.resultOverlay.style.display = 'flex';
+}
 function closeResultModal(){
+  if (closeTypingSharedModal('result')) return;
   els.resultOverlay.style.display = 'none';
 
   if (state.finished) {
@@ -2553,11 +2611,14 @@ function openChampionModal(rank){
   els.championBadge.textContent = badge;
   els.championTitle.textContent = title;
   els.championMessage.textContent = message;
-  els.championOverlay.classList.add('show');
+  if (!openTypingSharedModal('champion', els.championOverlay, 'Leaderboard Achievement', '480px')) {
+    els.championOverlay.classList.add('show');
+  }
 }
 
 function closeChampionModal(){
   if (!els.championOverlay) return;
+  if (closeTypingSharedModal('champion')) return;
   els.championOverlay.classList.remove('show');
   focusTypingInput(80);
 }
@@ -3277,17 +3338,40 @@ els.modeSelect.addEventListener('change', () => {
   resetTest(false);
   focusTypingInput(80);
 });
+
+function openTypingSettingsModal() {
+  if (!window.NewUI?.modal?.open) return false;
+  const marker = document.createComment('typing-settings-home');
+  typingSettingsPanel.parentNode.insertBefore(marker, typingSettingsPanel);
+  const api = window.NewUI.modal.open({
+    title: 'Typing Settings', width:'900px', content:typingSettingsPanel,
+    onClose(){
+      if (marker.parentNode) marker.replaceWith(typingSettingsPanel);
+      typingSettingsPanel.classList.add('hidden');
+      delete typingSharedModals.settings;
+    }
+  });
+  typingSharedModals.settings = api;
+  return true;
+}
 const typingSettingsBtn = document.getElementById('typingSettingsBtn');
 const typingSettingsPanel = document.getElementById('typingSettingsPanel');
 
 if (typingSettingsBtn && typingSettingsPanel) {
   typingSettingsBtn.addEventListener('click', () => {
-    typingSettingsPanel.classList.toggle('hidden');
+    if (typingSharedModals.settings) {
+      closeTypingSharedModal('settings');
+      return;
+    }
+    typingSettingsPanel.classList.remove('hidden');
+    if (!openTypingSettingsModal()) {
+      typingSettingsPanel.classList.toggle('hidden');
+    }
   });
 }
 document.addEventListener('click', (e) => {
   if (!typingSettingsBtn || !typingSettingsPanel) return;
-  if (typingSettingsPanel.classList.contains('hidden')) return;
+  if (typingSharedModals.settings || typingSettingsPanel.classList.contains('hidden')) return;
 
   const clickedInsidePanel = typingSettingsPanel.contains(e.target);
   const clickedButton = typingSettingsBtn.contains(e.target);
