@@ -1744,13 +1744,13 @@ aria-label="Search tabs"
     <div id="cpFoot">
 
       <button
-        class="cp-btn"
+        class="btn-cancel-new"
         id="cpCancel">
         Cancel
       </button>
 
       <button
-        class="cp-btn primary"
+        class="btn-primary-new"
         id="cpSubmit">
         Change
       </button>
@@ -1864,12 +1864,14 @@ aria-label="Search tabs"
 
       <button
         id="cp2Cancel"
+        class="btn-cancel-new"
         type="button">
         Cancel
       </button>
 
       <button
-        id="cp2Submit"
+        id="cp2Submit" 
+        class="btn-primary-new"
         type="button">
         Save
       </button>
