@@ -102,25 +102,14 @@
   }
 
 /* ==========================================
-   SCR888H5 - FORCE SOURCE SANS 3 FONT
+   SCR888H5 - GAME LOG FONT ONLY
    ========================================== */
 
-html body,
-html body *:not(svg):not(path) {
-  font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
-}
-
-/* Input, dropdown, button dan Game Log */
-html body input,
-html body select,
-html body textarea,
-html body button,
-html body .shared-dropdown-input,
-html body .shared-dropdown-option,
-html body .mg-panel,
-html body #gameLog,
-html body #gameLog th,
-html body #gameLog td {
+#gameLog,
+#gameLog th,
+#gameLog td,
+#gameLog th *,
+#gameLog td * {
   font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
 }
 
@@ -133,8 +122,18 @@ html body #gameLog td {
 }
 
 
-body {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif;font-size: 14px;line-height: 1.42857;font-weight: 400;background:var(--page-bg);margin:0 0 20px;overflow-x: hidden;scrollbar-width: none;-ms-overflow-style: none;}
-
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.42857;
+  font-weight: 400;
+  background: var(--page-bg);
+  margin: 0 0 20px;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 /* SCR888H5 - COPY IMAGE STYLING */
 #gameLog.screenshot-mode th {
   border: 1px solid #ddd !important;
