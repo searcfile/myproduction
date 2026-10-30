@@ -127,8 +127,12 @@
     --list-hover:rgba(0,0,0,0.08);
   }
 
-body{margin:0;background:var(--page-bg);font-family:'Source Sans Pro',Arial,sans-serif;font-size:14px;color:var(--page-text)}
-
+body {
+  margin: 0;
+  background: var(--page-bg);
+  font-size: 14px;
+  color: var(--page-text);
+}
 .control-panel{
   display:grid;
   gap:8px;
@@ -454,43 +458,22 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
-</style>
-    <style id="jili-source-sans-font">
-/* =================================================
-   JILI FONT OVERRIDE
-   Source Sans Pro untuk seluruh halaman
-   termasuk Game Log
-   ================================================= */
+<style id="jili-source-sans-font">
+/* ==========================================
+   JILI - GAME LOG FONT ONLY
+   ========================================== */
 
-html body,
-html body *:not(svg):not(path) {
+.game-log-table,
+.game-log-table th,
+.game-log-table td,
+.game-log-table th *,
+.game-log-table td *,
+#logBody,
+#logBody td,
+#logBody td * {
   font-family: 'Source Sans Pro', Arial, sans-serif !important;
 }
 
-/* Game Log asal — font sahaja */
-html body .game-log-table,
-html body .game-log-table th,
-html body .game-log-table td,
-html body .game-log-table td *,
-html body #logBody,
-html body #logBody td,
-html body #logBody td * {
-  font-family: 'Source Sans Pro', Arial, sans-serif !important;
-}
-
-/* Custom input, dropdown, button dan toggle */
-html body input,
-html body select,
-html body textarea,
-html body button,
-html body .shared-dropdown,
-html body .shared-dropdown-input,
-html body .shared-dropdown-option,
-html body .cs-display,
-html body .cs-item,
-html body .shared-active-switch {
-  font-family: 'Source Sans Pro', Arial, sans-serif !important;
-}
 </style>
 
 <style id="jili-management-style">
