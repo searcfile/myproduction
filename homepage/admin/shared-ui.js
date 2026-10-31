@@ -412,17 +412,16 @@ const SIDEBAR_PAGE_ICONS = {
   "item.html": ICON_SIDEBAR_ITEM
 };
 
-/* Pilih icon khas halaman, kemudian icon group */
+
 function getSidebarPageIcon(page) {
-  const file = String(page.file || "").toLowerCase();
-  const group = String(page.group || "main").toLowerCase();
+  const file = String(page?.file || "").toLowerCase();
 
   return (
     SIDEBAR_PAGE_ICONS[file] ||
-    SIDEBAR_GROUP_ICONS[group] ||
     ICON_SIDEBAR_ITEM
   );
 }
+
 
 
   /* ==========================================================
