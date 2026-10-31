@@ -679,7 +679,7 @@ html {
   .date-time{ display:none !important; 
   }
 }
-@media (max-width: 580px){
+@media (max-width: 420px){
    .header-refresh-btn {
     display: none !important;
   }
