@@ -3717,7 +3717,7 @@ input::placeholder{
   position: absolute;
 
   top: 2px;
-  left: 4px;
+  left: 2px;
 
   width: 18px;
   height: 18px;
@@ -3740,7 +3740,7 @@ input::placeholder{
 #themeToggleInput:checked
 + .theme-full-track
 .theme-full-knob {
-  left: calc(100% - 22px);
+  left: calc(100% - 20px);
 }
 
 /* Keyboard focus */
