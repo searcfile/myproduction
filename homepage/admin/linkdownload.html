@@ -555,45 +555,9 @@ async function removeCard(id) {
     return;
   }
 const card=records[id];if(!card)return;const yes=window.confirm('Delete "'+card.name+'"? This cannot be undone.');if(!yes)return;try{await db.ref(PATH+'/'+id).remove();toast('Card deleted');}catch(err){toast(err.message||'Delete failed','error');}}
-function setupTheme() {
 
-  const THEME_KEY = "adminTheme";
-
-  function applySavedTheme() {
-
-    const theme =
-      localStorage.getItem(THEME_KEY) === "light"
-        ? "light"
-        : "dark";
-
-    const isLight = theme === "light";
-
-    document.body.classList.toggle(
-      "light-theme",
-      isLight
-    );
-
-    document.body.classList.toggle(
-      "dark-theme",
-      !isLight
-    );
-
-    document.documentElement.setAttribute(
-      "data-admin-theme",
-      theme
-    );
-  }
-
-  applySavedTheme();
-
-  window.addEventListener("storage", event => {
-    if (event.key === THEME_KEY) {
-      applySavedTheme();
-    }
-  });
-}
 async function start(){
- setupTheme();showEmpty('No Data');window.HISTORY_TAB_NAME='LINK DOWNLOAD';
+ showEmpty('No Data');window.HISTORY_TAB_NAME='LINK DOWNLOAD';
  document.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;const name=(button.textContent||button.title||'').trim().slice(0,40);if(name)window.parent?.postMessage({type:'user-tab-action',tab:window.HISTORY_TAB_NAME,action:name,time:Date.now()},'https://5g88-main.vercel.app');},true);
  
 chip = NewUI.chips('#ldPlatforms', {
