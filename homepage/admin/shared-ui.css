@@ -898,11 +898,33 @@ a.tab-open .check-icon{
     visibility .3s ease;
 }
 
-.user-dropdown:hover .dropdown-content{
-  display:block;
-  opacity:1;
-  visibility:visible;
+
+/* USERNAME DROPDOWN - BUTTON HOVER ONLY */
+
+.user-dropdown {
+  width: max-content;
+  flex: 0 0 auto;
 }
+
+.user-dropdown > .user-button {
+  width: auto;
+  max-width: 100%;
+}
+
+/* Dropdown dibuka oleh JavaScript */
+.user-dropdown.account-dropdown-open > .dropdown-content {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Kekalkan apabila menggunakan keyboard */
+.user-dropdown:focus-within > .dropdown-content {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
 
 .dropdown-user-top{
   display:flex;
