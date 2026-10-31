@@ -1463,7 +1463,7 @@ select:focus-visible{
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="../firebase.js"></script>
 <script src="./new-ui.js"></script>
-<script defer src="./shared-ui.js"></script>
+<script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
 let hiddenRow = null;
@@ -2860,45 +2860,6 @@ document.querySelectorAll("button").forEach(btn => {
     });
   });
 
-/* ==========================================
-   MEGA888 - ADMIN THEME SYNC
-   ========================================== */
-
-(function () {
-  const THEME_KEY = "adminTheme";
-
-  function applySavedTheme() {
-    const theme =
-      localStorage.getItem(THEME_KEY) === "light"
-        ? "light"
-        : "dark";
-
-    const isLight = theme === "light";
-
-    document.body.classList.toggle(
-      "light-theme",
-      isLight
-    );
-
-    document.body.classList.toggle(
-      "dark-theme",
-      !isLight
-    );
-
-    document.documentElement.setAttribute(
-      "data-admin-theme",
-      theme
-    );
-  }
-
-  applySavedTheme();
-
-  window.addEventListener("storage", event => {
-    if (event.key === THEME_KEY) {
-      applySavedTheme();
-    }
-  });
-})();
 
 // ✅ Tukar ikut page
 window.HISTORY_TAB_NAME = "MEGA888";
