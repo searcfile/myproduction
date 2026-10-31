@@ -3622,54 +3622,90 @@ input::placeholder{
   }
 }
 /* =========================================
-   HEADER THEME - CUSTOM NEW UI SWITCH
+   HEADER THEME - FULL WIDTH SWITCH
    ========================================= */
 
-#dropdownContent .theme-custom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+#dropdownContent .theme-full-switch {
+  position: relative;
+  display: block;
 
   width: 100%;
-  min-height: 32px;
-  padding: 4px 10px;
+  height: 26px;
 
-  box-sizing: border-box;
+  margin: 0 0 8px;
+  padding: 0;
+
   cursor: pointer;
 }
 
-#dropdownContent .theme-custom-row
-.theme-toggle-label {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
+#dropdownContent #themeToggleInput {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
 }
 
-#dropdownContent .theme-custom-row
-.shared-active-switch {
-  flex: none;
+#dropdownContent .theme-full-track {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 999px;
+  background: #555;
+
+  transition: background .2s ease;
 }
 
-#dropdownContent .theme-custom-row
-.shared-active-track {
-  min-width: 38px;
-  width: 38px;
-  height: 20px;
-  padding: 0;
+#dropdownContent .theme-full-text {
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+
+  pointer-events: none;
 }
 
-#dropdownContent .theme-custom-row
-.shared-active-knob {
-  width: 14px;
-  height: 14px;
-  top: 3px;
-  left: 3px;
+#dropdownContent .theme-full-knob {
+  position: absolute;
+
+  top: 4px;
+  left: 4px;
+
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+  background: #fff;
+
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+
+  transition: left .2s ease;
 }
 
-#dropdownContent .theme-custom-row
-.shared-active-switch
-input:checked + .shared-active-track
-.shared-active-knob {
-  left: calc(100% - 17px);
+/* Dark Mode aktif */
+#dropdownContent
+#themeToggleInput:checked + .theme-full-track {
+  background: #1668dc;
+}
+
+#dropdownContent
+#themeToggleInput:checked
++ .theme-full-track
+.theme-full-knob {
+  left: calc(100% - 22px);
+}
+
+/* Keyboard focus */
+#dropdownContent
+#themeToggleInput:focus-visible + .theme-full-track {
+  outline: 2px solid #4096ff;
+  outline-offset: 2px;
 }
