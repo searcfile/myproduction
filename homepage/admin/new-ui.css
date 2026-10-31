@@ -13,6 +13,7 @@ html[data-admin-theme="light"] {
     --tx-surface: #ffffff;
     --tx-surface-soft: #f6f9fd;
     --tx-hover: #f8fbff;
+    --tx-slide:#00000073;
 
   --panel2:#fafafa;
 
@@ -56,7 +57,7 @@ html[data-admin-theme="light"] {
     --tx-surface: #152237;
     --tx-surface-soft: #1c2b42;
     --tx-hover: #1d304b;
-    
+    --tx-slide:rgba(255,255,255,0.25);
  
   --panel2: #171e28;
    
@@ -2217,7 +2218,7 @@ body.light-theme .shared-confirm-cancel:hover {
   border-radius: 999px;
   padding: 0 9px 0 23px;
 
-  background: #00000073;
+  background: var(--tx-slide);
   color: #fff;
   overflow: hidden;
 
