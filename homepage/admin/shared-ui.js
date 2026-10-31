@@ -1510,7 +1510,40 @@ aria-label="Search tabs"
   </span>
 
 </label>
+<div class="header-color-settings">
 
+  <div class="header-color-title">
+    Header Background
+  </div>
+
+  <div class="header-color-actions">
+
+    <label class="header-color-item">
+      <span>Color 1</span>
+      <input
+        type="color"
+        id="headerColor1"
+        value="#001529">
+    </label>
+
+    <label class="header-color-item">
+      <span>Color 2</span>
+      <input
+        type="color"
+        id="headerColor2"
+        value="#001529">
+    </label>
+
+  </div>
+
+  <button
+    type="button"
+    id="headerColorReset"
+    class="header-color-reset">
+    Reset Default
+  </button>
+
+</div>
           <button
             id="changePwBtn"
             class="btn-cpw">
@@ -4714,6 +4747,91 @@ mobileInput.addEventListener("blur", () => {
 }
 
 
+/* ==========================================================
+   5G88 HEADER BACKGROUND COLOR
+   ========================================================== */
+
+const HEADER_COLOR_KEY = "5g88.headerColors.v1";
+
+const DEFAULT_HEADER_COLORS = {
+  color1: "#001529",
+  color2: "#001529"
+};
+
+function getHeaderColors() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(HEADER_COLOR_KEY) || "null"
+    );
+
+    const valid = value =>
+      typeof value === "string" &&
+      /^#[0-9a-fA-F]{6}$/.test(value);
+
+    return {
+      color1: valid(saved?.color1)
+        ? saved.color1
+        : DEFAULT_HEADER_COLORS.color1,
+
+      color2: valid(saved?.color2)
+        ? saved.color2
+        : DEFAULT_HEADER_COLORS.color2
+    };
+  } catch (_) {
+    return { ...DEFAULT_HEADER_COLORS };
+  }
+}
+
+function applyHeaderColors() {
+  const colors = getHeaderColors();
+
+  document.documentElement.style.setProperty(
+    "--custom-header-color-1",
+    colors.color1
+  );
+
+  document.documentElement.style.setProperty(
+    "--custom-header-color-2",
+    colors.color2
+  );
+
+  const input1 = document.getElementById("headerColor1");
+  const input2 = document.getElementById("headerColor2");
+
+  if (input1) input1.value = colors.color1;
+  if (input2) input2.value = colors.color2;
+}
+
+function initHeaderColors() {
+  const input1 = document.getElementById("headerColor1");
+  const input2 = document.getElementById("headerColor2");
+  const reset = document.getElementById("headerColorReset");
+
+  applyHeaderColors();
+
+  function saveColors() {
+    if (!input1 || !input2) return;
+
+    localStorage.setItem(
+      HEADER_COLOR_KEY,
+      JSON.stringify({
+        color1: input1.value,
+        color2: input2.value
+      })
+    );
+
+    applyHeaderColors();
+  }
+
+  input1?.addEventListener("input", saveColors);
+  input2?.addEventListener("input", saveColors);
+
+  reset?.addEventListener("click", () => {
+    localStorage.removeItem(HEADER_COLOR_KEY);
+    applyHeaderColors();
+  });
+}
+
   /* ==========================================================
      THEME
      ========================================================== */
@@ -5128,7 +5246,8 @@ sessionStorage.removeItem(
 document
   .getElementById("themeToggleInput")
   ?.addEventListener("change", toggleTheme);
-
+// Initialize custom header colors
+initHeaderColors();
 
     document
       .getElementById(
