@@ -915,7 +915,7 @@ a.tab-open .check-icon{
    ========================================== */
 
 .header .user-dropdown > .dropdown-content{
-  top:calc(100% + 8px);
+  top:calc(100% + 12px);
   overflow:visible;
 }
 
