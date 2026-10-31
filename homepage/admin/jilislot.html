@@ -1297,31 +1297,39 @@ if (jiliWasTabRefreshed) {
   window.addEventListener("pageshow", clearRefreshInputs);
 }
 
+
+/* 5G88 - ADMIN THEME SYNC */
 (function () {
+  const THEME_KEY = "adminTheme";
 
-  const THEME_KEY = "siteTheme";
+  function applySavedTheme() {
+    const theme =
+      localStorage.getItem(THEME_KEY) === "light"
+        ? "light"
+        : "dark";
 
-  function applyChildTheme(theme) {
-    document.body.classList.remove("light-theme", "dark-theme");
-    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+    document.body.classList.toggle(
+      "light-theme", theme === "light"
+    );
+
+    document.body.classList.toggle(
+      "dark-theme", theme === "dark"
+    );
+
+    document.documentElement.setAttribute(
+      "data-admin-theme", theme
+    );
   }
 
-  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+  applySavedTheme();
 
-  window.addEventListener("message", function (e) {
-    const allowedOrigins = [
-      "https://5g88-main.vercel.app"
-    ];
-    if (!allowedOrigins.includes(e.origin)) return;
-
-    const data = e.data || {};
-    if (data.type === "theme-change") {
-      const theme = data.theme === "dark" ? "dark" : "light";
-      localStorage.setItem(THEME_KEY, theme);
-      applyChildTheme(theme);
+  window.addEventListener("storage", function (event) {
+    if (event.key === THEME_KEY) {
+      applySavedTheme();
     }
   });
 })();
+
 // ✅ Tukar ikut page
 window.HISTORY_TAB_NAME = "JILI SLOTS";
 // ✅ Hantar ke main page
