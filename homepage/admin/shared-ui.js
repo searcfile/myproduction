@@ -5257,18 +5257,62 @@ if (document.activeElement !== opacityInput) {
     saveCurrentColor();
   }
 
-  square.addEventListener("pointerdown", event => {
-    if (event.button !== 0) return;
 
+/* ==========================================
+   HEADER COLOR PICKER - SMOOTH DRAG FIX
+   ========================================== */
+
+let squareDragging = false;
+let squarePointerId = null;
+
+square.addEventListener("pointerdown", event => {
+  if (event.pointerType === "mouse" && event.button !== 0) {
+    return;
+  }
+
+  event.preventDefault();
+
+  squareDragging = true;
+  squarePointerId = event.pointerId;
+
+  try {
     square.setPointerCapture(event.pointerId);
-    updateSquare(event);
-  });
+  } catch (_) {}
 
-  square.addEventListener("pointermove", event => {
+  updateSquare(event);
+});
+
+square.addEventListener("pointermove", event => {
+  if (!squareDragging) return;
+  if (event.pointerId !== squarePointerId) return;
+
+  event.preventDefault();
+  updateSquare(event);
+});
+
+function stopSquareDragging(event) {
+  if (!squareDragging) return;
+  if (event.pointerId !== squarePointerId) return;
+
+  squareDragging = false;
+  squarePointerId = null;
+
+  try {
     if (square.hasPointerCapture(event.pointerId)) {
-      updateSquare(event);
+      square.releasePointerCapture(event.pointerId);
     }
-  });
+  } catch (_) {}
+}
+
+square.addEventListener("pointerup", stopSquareDragging);
+square.addEventListener("pointercancel", stopSquareDragging);
+
+square.addEventListener("lostpointercapture", event => {
+  if (event.pointerId === squarePointerId) {
+    squareDragging = false;
+    squarePointerId = null;
+  }
+});
 
   hueInput.addEventListener("input", () => {
     hsv.h = Number(hueInput.value);
