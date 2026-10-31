@@ -1176,63 +1176,91 @@ body.light-theme .theme-toggle-knob{
   transform:translateX(0);
 }
 
-.sidebar-inner{
-  position:relative;
 
-  flex:1;
+.sidebar-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
 
-  min-height:0;
-  height:100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 
-  overflow-y:auto;
-  overflow-x:hidden;
-
-  padding:0;
-
-  background:#001529;
-
-  scroll-behavior:smooth;
-
-  scrollbar-width:thin;
-  scrollbar-color:rgba(255,255,255,.25) transparent;
+  overflow: hidden;
+  padding: 0;
+  background: #001529;
 }
 
-.sidebar-inner::-webkit-scrollbar{
-  width:8px;
+/* Search Menu kekal di atas */
+.sidebar-top {
+  position: relative;
+  top: auto;
+  z-index: 2;
+  flex: 0 0 auto;
+
+  padding: 16px 14px 12px;
+  background: #001529;
+  border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
-.sidebar-inner::-webkit-scrollbar-track{
-  background:rgba(255,255,255,.04);
+/* Hanya sidebar items boleh scroll */
+.sidebar-menu-scroll {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
 
-  border-radius:10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 0;
+  background: #001529;
+
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.25) transparent;
 }
 
-.sidebar-inner::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,.25);
 
-  border-radius:10px;
 
-  border:1px solid rgba(255,255,255,.08);
+.sidebar-menu-scroll::-webkit-scrollbar {
+  width: 8px;
 }
 
-.sidebar-inner::-webkit-scrollbar-thumb:hover{
-  background:rgba(255,255,255,.45);
+.sidebar-menu-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.04);
+  border-radius: 10px;
 }
 
-
-/* ==========================================================
-   SIDEBAR TOP
-   ========================================================== */
-
-.sidebar-top{
-  position:sticky;
-  top:0;
-  padding:16px 14px 12px;
-  background:#001529;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  z-index:999;
+.sidebar-menu-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
 }
 
+.sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.45);
+}
+
+/* Sidebar fixed search + scrollable menu */
+#sidebar .sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#sidebar .sidebar-top {
+  position: relative;
+  top: auto;
+  flex-shrink: 0;
+}
+
+#sidebar .sidebar-menu-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
 /* ==========================================================
    SIDEBAR SEARCH
