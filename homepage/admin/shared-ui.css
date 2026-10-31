@@ -2226,10 +2226,6 @@ body.tab-dragging-active *{
 
 @media (max-width:915px){
 
-  .header .user-dropdown,
-  .header .user-button{
-    display:none !important;
-  }
 
   .sidebar .user-dropdown{
     display:block !important;
