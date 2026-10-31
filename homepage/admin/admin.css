@@ -304,6 +304,7 @@ html {
   flex-wrap: nowrap;
   transition: all .3s ease;
   height: 100%;
+  padding: 0 0 0 10px;
 }
 .user-text {
   gap: 16px;
