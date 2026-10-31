@@ -3823,16 +3823,14 @@ body .header {
    ========================================== */
 
 .header-color-swatch-btn {
-  width: 30px;
+  width: 24px;
   height: 22px;
-  padding: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
   border: 1px solid var(--border2);
-  border-radius: 5px;
+  border-radius: 4px;
   background: transparent;
   cursor: pointer;
 }
@@ -3840,7 +3838,6 @@ body .header {
 .header-color-swatch-btn:hover {
   border-color: var(--gold-hover);
 }
-
 .header-color-swatch {
   width: 100%;
   height: 100%;
