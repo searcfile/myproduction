@@ -3052,30 +3052,41 @@ document.querySelectorAll("button").forEach(btn => {
       btn.classList.add("clicked");
     });
   });
-(function () {
-  const THEME_KEY = "siteTheme";
 
-  function applyChildTheme(theme) {
-    document.body.classList.remove("light-theme", "dark-theme");
-    document.body.classList.add(theme === "light" ? "light-theme" : "dark-theme");
+/* ==========================================
+   5G88 - SHARED ADMIN THEME
+   ========================================== */
+(function () {
+  const THEME_KEY = "adminTheme";
+
+  function applySavedTheme() {
+    const theme =
+      localStorage.getItem(THEME_KEY) === "light"
+        ? "light"
+        : "dark";
+
+    const isLight = theme === "light";
+
+    document.body.classList.toggle("light-theme", isLight);
+    document.body.classList.toggle("dark-theme", !isLight);
+
+    document.documentElement.setAttribute(
+      "data-admin-theme",
+      theme
+    );
   }
 
-  applyChildTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+  // Apply tema semasa halaman dibuka / refresh
+  applySavedTheme();
 
-  window.addEventListener("message", function (e) {
-    const allowedOrigins = [
-      "https://5g88-main.vercel.app"
-    ];
-    if (!allowedOrigins.includes(e.origin)) return;
-
-    const data = e.data || {};
-    if (data.type === "theme-change") {
-      const theme = data.theme === "dark" ? "dark" : "light";
-      localStorage.setItem(THEME_KEY, theme);
-      applyChildTheme(theme);
+  // Sync jika tema berubah dari tab browser lain
+  window.addEventListener("storage", function (event) {
+    if (event.key === THEME_KEY) {
+      applySavedTheme();
     }
   });
 })();
+
 // ✅ Tukar ikut page
 window.HISTORY_TAB_NAME = "EVO888";
 // ✅ Hantar ke main page
