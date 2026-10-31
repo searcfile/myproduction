@@ -208,7 +208,6 @@ $('createNoticeBtn').onclick=async e=>{const btn=e.currentTarget;await loading(b
   filter = e.target.value || 'all';
   render();
 });window.createSharedDropdown?.($('noticeFilter'),{placeholder:'All Notices'});window.NewUI?.syncSearch?.($('noticeSearch'),{onSearch:async()=>{render();await new Promise(resolve=>setTimeout(resolve,450));}});composer.value=localStorage.getItem('lastNoticeMessage')||'';composer.addEventListener('input',()=>{localStorage.setItem('lastNoticeMessage',composer.value);updateStats()});composer.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey){e.preventDefault();broadcast(composer.value,$('sendBtn'))}});
-window.addEventListener('message',e=>{if(e.data?.type==='theme-change')document.body.classList.toggle('dark-theme',e.data.theme==='dark')});document.body.classList.toggle('dark-theme',(localStorage.getItem('siteTheme')||'light')==='dark');
 if(typeof db==='undefined'){toast('Firebase is not initialized','error');return}window.showLoadingState?.(list,'Loading notices...','large');db.ref('notifikasi/list').on('value',snapshot=>{const raw=snapshot.val()||{};records=Object.entries(raw).filter(([,v])=>v&&typeof v==='object').map(([id,v])=>({id,...v}));render();checkSchedules()},error=>{console.error(error);toast('Cannot load notices: '+error.message,'error');showEmpty()});clock=setInterval(()=>{tickCountdown();checkSchedules()},1000);updateStats();
 })();
 </script></body></html>
