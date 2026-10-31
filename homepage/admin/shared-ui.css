@@ -1355,25 +1355,22 @@ body.light-theme .theme-toggle-knob{
   white-space:nowrap;
 }
 
-.sidebar-arrow-icon{
-  width:10px;
-  height:10px;
 
-  flex-shrink:0;
-
-  color:rgba(255,255,255,.45);
-
-  transition:
-    transform .2s ease,
-    color .2s ease;
+.sidebar-arrow-icon {
+  width: 10px;
+  height: 10px;
+  display: block;
+  flex: 0 0 auto;
+  color: rgba(255,255,255,.45);
+  fill: currentColor;
+  transition: color .2s ease;
 }
 
 .sidebar a:hover .sidebar-arrow-icon,
-#customSidebarTabs a:hover .sidebar-arrow-icon{
-  color:#fff;
-
-  transform:translateX(2px);
+#customSidebarTabs a:hover .sidebar-arrow-icon {
+  color: #fff;
 }
+
 
 
 /* ==========================================================
