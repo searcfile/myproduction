@@ -168,7 +168,6 @@ html {
   box-shadow: -12px 0 32px #0000003d;
   transform: translateX(100%);
   transition: transform .18s ease, box-shadow .18s ease;
-  padding:8px;
   display: flex;
   flex-direction: column;
 }
