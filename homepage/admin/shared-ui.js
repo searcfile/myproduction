@@ -1510,40 +1510,42 @@ aria-label="Search tabs"
   </span>
 
 </label>
+
 <div class="header-color-settings">
 
-  <div class="header-color-title">
-    Header Background
-  </div>
+  <span class="header-color-title">
+    Header Color
+  </span>
 
   <div class="header-color-actions">
 
-    <label class="header-color-item">
-      <span>Color 1</span>
-      <input
-        type="color"
-        id="headerColor1"
-        value="#001529">
-    </label>
+    <input
+      type="color"
+      id="headerColor1"
+      value="#001529"
+      title="Header Color 1"
+      aria-label="Header Color 1">
 
-    <label class="header-color-item">
-      <span>Color 2</span>
-      <input
-        type="color"
-        id="headerColor2"
-        value="#001529">
-    </label>
+    <input
+      type="color"
+      id="headerColor2"
+      value="#001529"
+      title="Header Color 2"
+      aria-label="Header Color 2">
+
+    <button
+      type="button"
+      id="headerColorReset"
+      class="header-color-reset"
+      title="Reset Header Color"
+      aria-label="Reset Header Color">
+      &#8635;
+    </button>
 
   </div>
 
-  <button
-    type="button"
-    id="headerColorReset"
-    class="header-color-reset">
-    Reset Default
-  </button>
-
 </div>
+
           <button
             id="changePwBtn"
             class="btn-cpw">
