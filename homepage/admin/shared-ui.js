@@ -2069,13 +2069,13 @@ function renderSidebarTabs() {
       .map(el => el.dataset.group)
   );
 
-  const groupNames = {
-    main: "Main Menu",
-    gamelog: "Game Log",
-    bank: "Bank Settings",
-    list: "Game List",
-    tools: "Tools"
-  };
+const groupNames = {
+  main: "Main Menu",
+  gamelog: "Game Log",
+  bank: "Bank Receipt",
+  list: "List Type",
+  tools: "Tools"
+};
 
   const groupOrder = ["main", "gamelog", "bank", "list", "tools"];
   const pages = getVisibleAdminPages();
