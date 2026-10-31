@@ -945,9 +945,6 @@ a.tab-open .check-icon{
   background:transparent;
 }
 
-.header .user-dropdown > .dropdown-content{
-  top:calc(100% + 8px);
-}
 
 .header .user-dropdown.account-dropdown-open > .dropdown-content{
   display:block;
