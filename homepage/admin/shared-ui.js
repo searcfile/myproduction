@@ -4718,22 +4718,27 @@ mobileInput.addEventListener("blur", () => {
      THEME
      ========================================================== */
 
-function applyTheme() {
 
+function applyTheme() {
   const saved =
     localStorage.getItem("adminTheme") || "dark";
 
   const isLight = saved === "light";
 
-document.body.classList.toggle(
-  "dark-theme",
-  !isLight
-);
+  document.body.classList.toggle(
+    "light-theme",
+    isLight
+  );
 
-document.documentElement.setAttribute(
-  "data-admin-theme",
-  isLight ? "light" : "dark"
-);
+  document.body.classList.toggle(
+    "dark-theme",
+    !isLight
+  );
+
+  document.documentElement.setAttribute(
+    "data-admin-theme",
+    isLight ? "light" : "dark"
+  );
 
   const label =
     document.getElementById("themeToggleLabel");
@@ -4752,22 +4757,22 @@ document.documentElement.setAttribute(
   }
 }
 
-  function toggleTheme() {
 
-    const isLight =
-      document.body.classList.contains(
-        "light-theme"
-      );
 
-    localStorage.setItem(
-      "adminTheme",
-      isLight
-        ? "dark"
-        : "light"
-    );
+function toggleTheme() {
+  const currentTheme =
+    localStorage.getItem("adminTheme") || "dark";
 
-    applyTheme();
-  }
+  const nextTheme =
+    currentTheme === "dark" ? "light" : "dark";
+
+  localStorage.setItem(
+    "adminTheme",
+    nextTheme
+  );
+
+  applyTheme();
+}
 
 
   /* ==========================================================
