@@ -676,13 +676,14 @@ html {
   }
 }
 @media (max-width: 580px){
-  .date-time{ display:none !important; }
+  .date-time{ display:none !important; 
+  }
 }
 @media (max-width: 572px){
 .tab-sort-chosen{
   opacity: 0.15 !important;
+ }
 }
-
 .tab-sort-drag{
   opacity: 1 !important;
   background: var(--tab2) !important;
@@ -1657,7 +1658,8 @@ select:focus-visible{
   }
 }
 @media (max-width: 550px){
-   .header .user-dropdown, .header .user-button {
+   .header .user-dropdown, 
+   .header .user-button {
     display: none !important;
   }
 }
