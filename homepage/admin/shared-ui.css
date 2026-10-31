@@ -910,6 +910,41 @@ a.tab-open .check-icon{
   max-width:100%;
 }
 
+/* ==========================================
+   USERNAME DROPDOWN POSITION + ARROW
+   ========================================== */
+
+.header .user-dropdown > .dropdown-content{
+  top:calc(100% + 8px);
+  overflow:visible;
+}
+
+/* Segitiga arrow atas dropdown */
+.header .user-dropdown > .dropdown-content::before{
+  content:"";
+  position:absolute;
+  top:-6px;
+  left:50%;
+  width:12px;
+  height:12px;
+  background:var(--backgrounddrop);
+  transform:translateX(-50%) rotate(45deg);
+  border-radius:2px 0 0 0;
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* Kawasan sambungan invisible antara tombol dan dropdown */
+.header .user-dropdown > .dropdown-content::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:-9px;
+  height:9px;
+  background:transparent;
+}
+
 .header .user-dropdown > .dropdown-content{
   top:calc(100% + 8px);
 }
