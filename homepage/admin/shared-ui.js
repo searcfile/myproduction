@@ -1011,11 +1011,16 @@ function createShell() {
         </form>
 
       </div>
+
     </div>
 
-    <div id="customSidebarTabs"></div>
+    <!-- HANYA SIDEBAR ITEMS YANG SCROLL -->
+    <div class="sidebar-menu-scroll">
+      <div id="customSidebarTabs"></div>
+    </div>
 
   </div>
+
 
   <div
     id="sidebarVersionBox"
