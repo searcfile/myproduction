@@ -3718,59 +3718,108 @@ body .header {
   ) !important;
 }
 
-/* Header color settings */
+
+/* ==========================================
+   HEADER COLOR - SINGLE ROW BUTTON
+   ========================================== */
+
 .header-color-settings {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.85);
+  width: 100%;
+  min-height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  padding: 4px 10px;
+  margin-bottom: 8px;
+
+  background: var(--backgroundbtn);
+  color: var(--colorbtn);
+
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+
+  box-shadow: 0 2px 0 rgba(255,255,255,.04);
+  transition: border-color .2s ease;
+}
+
+.header-color-settings:hover {
+  border-color: var(--gold-hover);
 }
 
 .header-color-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 10px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 .header-color-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.header-color-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  cursor: pointer;
-}
+.header-color-actions input[type="color"] {
+  display: block;
 
-.header-color-item input[type="color"] {
-  width: 36px;
-  height: 30px;
+  width: 30px;
+  height: 26px;
   padding: 2px;
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 6px;
+
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+
   background: transparent;
   cursor: pointer;
 }
 
+.header-color-actions input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.header-color-actions input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+.header-color-actions input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
 .header-color-reset {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 7px 10px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 26px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+
+  background: transparent;
+  color: var(--colorbtn);
+
+  font-size: 21px;
+  line-height: 1;
+
   cursor: pointer;
+  transition: all .2s ease;
 }
 
 .header-color-reset:hover {
-  background: rgba(255,255,255,.15);
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
 }
