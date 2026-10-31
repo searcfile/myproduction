@@ -1519,19 +1519,27 @@ aria-label="Search tabs"
 
   <div class="header-color-actions">
 
-    <input
-      type="color"
-      id="headerColor1"
-      value="#001529"
-      title="Header Color 1"
-      aria-label="Header Color 1">
+<button
+  type="button"
+  id="headerColor1"
+  class="header-color-swatch-btn"
+  data-header-color="color1"
+  title="Header Color 1"
+  aria-label="Header Color 1">
 
-    <input
-      type="color"
-      id="headerColor2"
-      value="#001529"
-      title="Header Color 2"
-      aria-label="Header Color 2">
+  <span class="header-color-swatch"></span>
+</button>
+
+<button
+  type="button"
+  id="headerColor2"
+  class="header-color-swatch-btn"
+  data-header-color="color2"
+  title="Header Color 2"
+  aria-label="Header Color 2">
+
+  <span class="header-color-swatch"></span>
+</button>
 
 
 <button
@@ -4765,35 +4773,125 @@ mobileInput.addEventListener("blur", () => {
    5G88 HEADER BACKGROUND COLOR
    ========================================================== */
 
+
+/* ==========================================================
+   5G88 CUSTOM HEADER COLOR PICKER
+   ========================================================== */
+
 const HEADER_COLOR_KEY = "5g88.headerColors.v1";
 
 const DEFAULT_HEADER_COLORS = {
   color1: "#001529",
-  color2: "#001529"
+  color2: "#001529",
+  alpha1: 100,
+  alpha2: 100
 };
 
 function getHeaderColors() {
   try {
     const saved = JSON.parse(
       localStorage.getItem(HEADER_COLOR_KEY) || "null"
-    );
+    ) || {};
 
-    const valid = value =>
+    const validHex = value =>
       typeof value === "string" &&
-      /^#[0-9a-fA-F]{6}$/.test(value);
+      /^#[0-9a-f]{6}$/i.test(value);
+
+    const validAlpha = value =>
+      Number.isFinite(Number(value)) &&
+      Number(value) >= 0 &&
+      Number(value) <= 100;
 
     return {
-      color1: valid(saved?.color1)
+      color1: validHex(saved.color1)
         ? saved.color1
         : DEFAULT_HEADER_COLORS.color1,
 
-      color2: valid(saved?.color2)
+      color2: validHex(saved.color2)
         ? saved.color2
-        : DEFAULT_HEADER_COLORS.color2
+        : DEFAULT_HEADER_COLORS.color2,
+
+      alpha1: validAlpha(saved.alpha1)
+        ? Number(saved.alpha1)
+        : 100,
+
+      alpha2: validAlpha(saved.alpha2)
+        ? Number(saved.alpha2)
+        : 100
     };
   } catch (_) {
     return { ...DEFAULT_HEADER_COLORS };
   }
+}
+
+function hexToRgb(hex) {
+  const value = hex.replace("#", "");
+
+  return {
+    r: parseInt(value.slice(0, 2), 16),
+    g: parseInt(value.slice(2, 4), 16),
+    b: parseInt(value.slice(4, 6), 16)
+  };
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b]
+    .map(value =>
+      Math.round(Math.max(0, Math.min(255, value)))
+        .toString(16)
+        .padStart(2, "0")
+    )
+    .join("")
+    .toUpperCase();
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+
+  let h = 0;
+
+  if (delta !== 0) {
+    if (max === r) h = ((g - b) / delta) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  return {
+    h,
+    s: max === 0 ? 0 : delta / max,
+    v: max
+  };
+}
+
+function hsvToRgb(h, s, v) {
+  const c = v * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = v - c;
+
+  let rgb;
+
+  if (h < 60) rgb = [c, x, 0];
+  else if (h < 120) rgb = [x, c, 0];
+  else if (h < 180) rgb = [0, c, x];
+  else if (h < 240) rgb = [0, x, c];
+  else if (h < 300) rgb = [x, 0, c];
+  else rgb = [c, 0, x];
+
+  return rgb.map(value => Math.round((value + m) * 255));
+}
+
+function headerColorRgba(hex, alpha) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha / 100})`;
 }
 
 function applyHeaderColors() {
@@ -4801,48 +4899,296 @@ function applyHeaderColors() {
 
   document.documentElement.style.setProperty(
     "--custom-header-color-1",
-    colors.color1
+    headerColorRgba(colors.color1, colors.alpha1)
   );
 
   document.documentElement.style.setProperty(
     "--custom-header-color-2",
-    colors.color2
+    headerColorRgba(colors.color2, colors.alpha2)
   );
 
-  const input1 = document.getElementById("headerColor1");
-  const input2 = document.getElementById("headerColor2");
+  ["color1", "color2"].forEach(key => {
+    const button = document.getElementById(
+      key === "color1" ? "headerColor1" : "headerColor2"
+    );
 
-  if (input1) input1.value = colors.color1;
-  if (input2) input2.value = colors.color2;
+    const swatch = button?.querySelector(".header-color-swatch");
+
+    if (swatch) {
+      swatch.style.background = headerColorRgba(
+        colors[key],
+        colors[key === "color1" ? "alpha1" : "alpha2"]
+      );
+    }
+  });
 }
 
 function initHeaderColors() {
-  const input1 = document.getElementById("headerColor1");
-  const input2 = document.getElementById("headerColor2");
+  const buttons = [
+    document.getElementById("headerColor1"),
+    document.getElementById("headerColor2")
+  ];
+
   const reset = document.getElementById("headerColorReset");
 
   applyHeaderColors();
 
-  function saveColors() {
-    if (!input1 || !input2) return;
+  if (!buttons[0] || !buttons[1]) return;
+
+  // Elak duplicate picker.
+  document.getElementById("g88HeaderPicker")?.remove();
+
+  const picker = document.createElement("div");
+  picker.id = "g88HeaderPicker";
+  picker.className = "g88-header-picker";
+  picker.hidden = true;
+
+  picker.innerHTML = `
+    <div class="g88-picker-top">
+      <span id="g88PickerTitle">Header Color 1</span>
+      <button type="button" id="g88PickerClose" aria-label="Close">×</button>
+    </div>
+
+    <div class="g88-picker-square" id="g88PickerSquare">
+      <div class="g88-picker-square-white"></div>
+      <div class="g88-picker-square-black"></div>
+      <span class="g88-picker-cursor" id="g88PickerCursor"></span>
+    </div>
+
+    <div class="g88-picker-sliders">
+      <div class="g88-picker-preview" id="g88PickerPreview"></div>
+
+      <div class="g88-picker-range-group">
+        <input type="range" id="g88PickerHue"
+               min="0" max="359" value="0"
+               aria-label="Hue">
+
+        <input type="range" id="g88PickerAlpha"
+               min="0" max="100" value="100"
+               aria-label="Opacity">
+      </div>
+    </div>
+
+    <div class="g88-picker-fields">
+      <label>
+        <span>HEX</span>
+        <input id="g88PickerHex" maxlength="7"
+               spellcheck="false" value="#001529">
+      </label>
+
+      <label>
+        <span>Opacity</span>
+        <input id="g88PickerOpacity" type="number"
+               min="0" max="100" value="100">
+      </label>
+    </div>
+  `;
+
+  document.body.appendChild(picker);
+
+  const square = picker.querySelector("#g88PickerSquare");
+  const cursor = picker.querySelector("#g88PickerCursor");
+  const hueInput = picker.querySelector("#g88PickerHue");
+  const alphaInput = picker.querySelector("#g88PickerAlpha");
+  const hexInput = picker.querySelector("#g88PickerHex");
+  const opacityInput = picker.querySelector("#g88PickerOpacity");
+  const preview = picker.querySelector("#g88PickerPreview");
+  const title = picker.querySelector("#g88PickerTitle");
+
+  let activeKey = "color1";
+  let hsv = { h: 0, s: 1, v: 1 };
+  let alpha = 100;
+
+  function currentHex() {
+    return rgbToHex(...hsvToRgb(hsv.h, hsv.s, hsv.v));
+  }
+
+  function saveCurrentColor() {
+    const colors = getHeaderColors();
+
+    colors[activeKey] = currentHex();
+    colors[activeKey === "color1" ? "alpha1" : "alpha2"] = alpha;
 
     localStorage.setItem(
       HEADER_COLOR_KEY,
-      JSON.stringify({
-        color1: input1.value,
-        color2: input2.value
-      })
+      JSON.stringify(colors)
     );
 
     applyHeaderColors();
   }
 
-  input1?.addEventListener("input", saveColors);
-  input2?.addEventListener("input", saveColors);
+  function renderPicker() {
+    const hex = currentHex();
+    const rgb = hexToRgb(hex);
+
+    square.style.backgroundColor =
+      `hsl(${hsv.h}, 100%, 50%)`;
+
+    cursor.style.left = `${hsv.s * 100}%`;
+    cursor.style.top = `${(1 - hsv.v) * 100}%`;
+
+    hueInput.value = Math.round(hsv.h);
+    alphaInput.value = alpha;
+
+    hexInput.value = hex;
+    opacityInput.value = alpha;
+
+    preview.style.background =
+      headerColorRgba(hex, alpha);
+
+    alphaInput.style.background = `
+      linear-gradient(
+        90deg,
+        rgba(${rgb.r},${rgb.g},${rgb.b},0),
+        rgb(${rgb.r},${rgb.g},${rgb.b})
+      )
+    `;
+  }
+
+  function openPicker(key, button) {
+    activeKey = key;
+
+    const colors = getHeaderColors();
+    const rgb = hexToRgb(colors[key]);
+
+    hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    alpha = colors[key === "color1" ? "alpha1" : "alpha2"];
+
+    title.textContent =
+      key === "color1" ? "Header Color 1" : "Header Color 2";
+
+    picker.hidden = false;
+    renderPicker();
+
+    const rect = button.getBoundingClientRect();
+    const width = picker.offsetWidth;
+    const height = picker.offsetHeight;
+
+    picker.style.left = `${Math.max(
+      8,
+      Math.min(rect.right - width, window.innerWidth - width - 8)
+    )}px`;
+
+    const below = rect.bottom + 8;
+    const above = rect.top - height - 8;
+
+    picker.style.top = `${
+      below + height <= window.innerHeight
+        ? below
+        : Math.max(8, above)
+    }px`;
+  }
+
+  function closePicker() {
+    picker.hidden = true;
+  }
+
+  buttons.forEach((button, index) => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+
+      const key = index === 0 ? "color1" : "color2";
+
+      if (!picker.hidden && activeKey === key) {
+        closePicker();
+      } else {
+        openPicker(key, button);
+      }
+    });
+  });
+
+  function updateSquare(event) {
+    const rect = square.getBoundingClientRect();
+
+    hsv.s = Math.max(0, Math.min(
+      1, (event.clientX - rect.left) / rect.width
+    ));
+
+    hsv.v = 1 - Math.max(0, Math.min(
+      1, (event.clientY - rect.top) / rect.height
+    ));
+
+    renderPicker();
+    saveCurrentColor();
+  }
+
+  square.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+
+    square.setPointerCapture(event.pointerId);
+    updateSquare(event);
+  });
+
+  square.addEventListener("pointermove", event => {
+    if (square.hasPointerCapture(event.pointerId)) {
+      updateSquare(event);
+    }
+  });
+
+  hueInput.addEventListener("input", () => {
+    hsv.h = Number(hueInput.value);
+    renderPicker();
+    saveCurrentColor();
+  });
+
+  alphaInput.addEventListener("input", () => {
+    alpha = Number(alphaInput.value);
+    renderPicker();
+    saveCurrentColor();
+  });
+
+  hexInput.addEventListener("change", () => {
+    let hex = hexInput.value.trim();
+
+    if (/^#[0-9a-f]{3}$/i.test(hex)) {
+      hex = "#" + [...hex.slice(1)]
+        .map(char => char + char)
+        .join("");
+    }
+
+    if (/^#[0-9a-f]{6}$/i.test(hex)) {
+      const rgb = hexToRgb(hex);
+      hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      saveCurrentColor();
+    }
+
+    renderPicker();
+  });
+
+  opacityInput.addEventListener("change", () => {
+    alpha = Math.max(0, Math.min(
+      100, Number(opacityInput.value) || 0
+    ));
+
+    renderPicker();
+    saveCurrentColor();
+  });
+
+  picker.querySelector("#g88PickerClose")
+    .addEventListener("click", closePicker);
+
+  picker.addEventListener("pointerdown", event => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener("pointerdown", event => {
+    if (
+      !picker.hidden &&
+      !picker.contains(event.target) &&
+      !buttons.some(button => button.contains(event.target))
+    ) {
+      closePicker();
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closePicker();
+  });
 
   reset?.addEventListener("click", () => {
     localStorage.removeItem(HEADER_COLOR_KEY);
     applyHeaderColors();
+    closePicker();
   });
 }
 
