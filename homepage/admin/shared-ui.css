@@ -3967,45 +3967,152 @@ body .header {
   background: #555;
 }
 
-/* HEX + opacity inputs */
+
+/* ==========================================================
+   HEADER PICKER - HEX / HSB / RGB
+   ========================================================== */
 
 .g88-picker-fields {
-  display: grid;
-  grid-template-columns: 1fr 90px;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.g88-picker-fields label {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
   min-width: 0;
-  font-size: 11px;
-  color: #aaa;
 }
 
-.g88-picker-fields input {
+.g88-picker-format-wrap {
+  position: relative;
+  flex: 0 0 44px;
+}
+
+.g88-picker-format-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
   width: 100%;
   height: 30px;
-  padding: 0 8px;
-
-  border: 1px solid #424242;
-  border-radius: 5px;
-
-  background: #141414;
-  color: #fff;
-  font-size: 12px;
-  outline: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
 }
 
-.g88-picker-fields input:focus {
+.g88-picker-format-btn svg {
+  display: block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  transition: transform .2s ease;
+}
+
+.g88-picker-format-wrap.open
+.g88-picker-format-btn svg {
+  transform: rotate(180deg);
+}
+
+.g88-picker-format-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: -4px;
+  z-index: 100;
+  display: none;
+  min-width: 68px;
+  padding: 4px;
+  border-radius: 6px;
+  background: #1f1f1f;
+  box-shadow: 0 6px 16px rgba(0,0,0,.3);
+}
+
+.g88-picker-format-wrap.open
+.g88-picker-format-menu {
+  display: block;
+}
+
+.g88-picker-format-menu button {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.g88-picker-format-menu button:hover {
+  background: rgba(255,255,255,.08);
+}
+
+.g88-picker-format-menu button.active {
+  background: #111a2c;
+}
+
+/* COLOR VALUES */
+
+.g88-picker-values {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: 4px;
+}
+
+.g88-picker-values input,
+.g88-picker-opacity {
+  min-width: 0;
+  height: 30px;
+  padding: 0 5px;
+  border: 1px solid #424242;
+  border-radius: 5px;
+  background: #141414;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.g88-picker-values input {
+  flex: 1 1 0;
+  width: 0;
+  text-align: center;
+}
+
+.g88-picker-values #g88PickerHex {
+  text-align: left;
+  padding: 0 8px;
+}
+
+.g88-picker-opacity {
+  flex: 0 0 42px;
+  width: 42px;
+  text-align: center;
+  padding: 0 2px;
+}
+
+.g88-picker-values input:focus,
+.g88-picker-opacity:focus {
   border-color: #1668dc;
 }
 
-.g88-picker-fields input::-webkit-inner-spin-button {
+.g88-picker-values input::-webkit-inner-spin-button,
+.g88-picker-values input::-webkit-outer-spin-button {
   appearance: none;
   -webkit-appearance: none;
+  margin: 0;
+}
+
+.g88-picker-values input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 
