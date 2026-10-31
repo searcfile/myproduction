@@ -1384,6 +1384,114 @@ body.light-theme .theme-toggle-knob{
 }
 
 
+/* ==========================================
+   SIDEBAR GROUP ACCORDION
+   ========================================== */
+
+#customSidebarTabs .sidebar-group {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+#customSidebarTabs .sidebar-group[hidden],
+#customSidebarTabs .sidebar-group-inner a[hidden] {
+  display: none !important;
+}
+
+/* Group header */
+#customSidebarTabs .sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 8px);
+  min-height: 42px;
+  margin: 4px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255,255,255,.85);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+#customSidebarTabs .sidebar-group-toggle:hover {
+  background: #03203d;
+  color: #fff;
+}
+
+#customSidebarTabs .sidebar-group-title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Arrow 10px */
+#customSidebarTabs .sidebar-group-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: rgba(255,255,255,.65);
+  transition: transform .25s ease;
+}
+
+#customSidebarTabs .sidebar-group-arrow svg {
+  display: block;
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
+}
+
+/* Rotate when opened */
+#customSidebarTabs .sidebar-group.is-open
+.sidebar-group-arrow {
+  transform: rotate(180deg);
+}
+
+/* Expand downwards */
+#customSidebarTabs .sidebar-group-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows .25s ease,
+    opacity .2s ease;
+}
+
+#customSidebarTabs .sidebar-group.is-open
+.sidebar-group-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+#customSidebarTabs .sidebar-group-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Child menu */
+#customSidebarTabs .sidebar-group-inner a {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 2px 4px 2px 18px;
+  padding: 7px 12px;
+  border: 0;
+  border-left: 1px solid rgba(255,255,255,.15);
+  border-radius: 4px;
+  color: rgba(255,255,255,.65);
+  font-size: 13px;
+  transition: background .2s ease, color .2s ease;
+}
+
+#customSidebarTabs .sidebar-group-inner a:hover {
+  background: #03203d;
+  color: #fff;
+}
+
 /* ==========================================================
    SIDEBAR VERSION
    ========================================================== */
