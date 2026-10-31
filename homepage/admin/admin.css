@@ -600,7 +600,7 @@ html {
   .tab-bar{ margin-top:64px; }
 
   .user-text{
-    gap: 0;
+    gap: 8px;
   }
   .header-refresh-btn,.menu-icon{
     width:38px !important;
@@ -675,10 +675,10 @@ html {
     flex: 0 0 auto !important;
   }
 }
-
-@media (max-width: 572px){
+@media (max-width: 580px){
   .date-time{ display:none !important; }
 }
+@media (max-width: 572px){
 .tab-sort-chosen{
   opacity: 0.15 !important;
 }
@@ -1656,7 +1656,11 @@ select:focus-visible{
     width: 100% !important;
   }
 }
-
+@media (max-width: 550px){
+   .header .user-dropdown, .header .user-button {
+    display: none !important;
+  }
+}
 .header-tab-search-list{
   display: none;
   position: fixed;
