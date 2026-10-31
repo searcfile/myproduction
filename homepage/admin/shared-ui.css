@@ -3658,7 +3658,7 @@ input::placeholder{
   height: 100%;
 
   border-radius: 999px;
-  background: #555;
+  background: ##00000073;
 
   transition: background .2s ease;
 }
