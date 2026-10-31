@@ -4917,22 +4917,39 @@ window.dispatchEvent(
      CLOCK
      ========================================================== */
 
+
   function updateClock() {
     const element = document.getElementById("dateTime");
     if (!element) return;
 
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
 
-    element.textContent =
-      `Kuala_Lumpur: ${hours}:${minutes} ${monthNames[now.getMonth()]} ${day}`;
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kuala_Lumpur",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      day: "2-digit",
+      month: "short"
+    }).formatToParts(now);
+
+    const getPart = type =>
+      parts.find(part => part.type === type)?.value || "";
+
+    const time = `${getPart("hour")}:${getPart("minute")}`;
+    const date = `${getPart("month")} ${getPart("day")}`;
+
+    element.innerHTML = `
+      <div class="admin-clock">
+        <span class="admin-clock-city">Kuala Lumpur</span>
+        <div class="admin-clock-bottom">
+          <span class="admin-clock-time">${time}</span>
+          <span class="admin-clock-date">${date}</span>
+        </div>
+      </div>
+    `;
   }
+
 
 
 function handleLogout() {
