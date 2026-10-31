@@ -5817,13 +5817,20 @@ if (accountDropdown && accountButton && accountPanel) {
     accountButton.setAttribute("aria-expanded", "true");
   };
 
-  const closeAccountDropdown = () => {
-    accountDropdown.classList.remove(
-      "account-dropdown-open"
-    );
-    accountButton.setAttribute("aria-expanded", "false");
-  };
+const closeAccountDropdown = () => {
+  accountDropdown.classList.remove(
+    "account-dropdown-open"
+  );
 
+  accountButton.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+  if (document.activeElement === accountButton) {
+    accountButton.blur();
+  }
+};
   // Hover hanya pada tombol username
   accountButton.addEventListener(
     "mouseenter",
