@@ -820,7 +820,9 @@ a.tab-open .check-icon{
   position:relative;
   display:flex;
   align-items:center;
-  height:100%;
+  height:32px;
+  width:max-content;
+  flex:0 0 auto;
 }
 .user-button{
   display:flex;
@@ -899,31 +901,25 @@ a.tab-open .check-icon{
 }
 
 
+
 /* USERNAME DROPDOWN - BUTTON HOVER ONLY */
 
-.user-dropdown {
-  width: max-content;
-  flex: 0 0 auto;
+.header .user-dropdown > .user-button{
+  width:auto;
+  height:32px;
+  max-width:100%;
 }
 
-.user-dropdown > .user-button {
-  width: auto;
-  max-width: 100%;
+.header .user-dropdown > .dropdown-content{
+  top:calc(100% + 8px);
 }
 
-/* Dropdown dibuka oleh JavaScript */
-.user-dropdown.account-dropdown-open > .dropdown-content {
-  display: block;
-  opacity: 1;
-  visibility: visible;
+.header .user-dropdown.account-dropdown-open > .dropdown-content{
+  display:block;
+  opacity:1;
+  visibility:visible;
 }
 
-/* Kekalkan apabila menggunakan keyboard */
-.user-dropdown:focus-within > .dropdown-content {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-}
 
 
 .dropdown-user-top{
