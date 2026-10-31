@@ -4370,3 +4370,36 @@ body .header {
 .header-color-reset:hover svg {
   transform: rotate(-45deg);
 }
+
+/* ==========================================
+   SIDEBAR ICON - GROUP & STANDALONE
+   ========================================== */
+
+#customSidebarTabs .sidebar-link-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#customSidebarTabs .sidebar-item-icon {
+  display: block;
+  width: 19.2px;
+  height: 19.2px;
+  flex: 0 0 19.2px;
+  color: #ffffff;
+  fill: currentColor;
+}
+
+#customSidebarTabs .sidebar-link-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#customSidebarTabs .sidebar-standalone-link {
+  display: flex;
+  align-items: center;
+}
