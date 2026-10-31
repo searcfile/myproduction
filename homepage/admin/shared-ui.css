@@ -1314,7 +1314,8 @@ body.light-theme .theme-toggle-knob{
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  margin:10px 5px;
+  min-height:42px;
+  margin:4px;
   padding:4px 8px;
   color:rgba(255,255,255,.65);
   text-decoration:none;
