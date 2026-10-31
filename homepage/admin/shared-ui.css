@@ -2275,12 +2275,6 @@ body.tab-dragging-active *{
   width:38px !important;
 }
 
-/* Refresh header hide pada mobile */
-.header-refresh-btn{
-  display:none !important;
-}
-
-
   .user-text{
     gap:0;
   }
