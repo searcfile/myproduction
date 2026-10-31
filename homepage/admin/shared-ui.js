@@ -1514,7 +1514,7 @@ aria-label="Search tabs"
 <div class="header-color-settings">
 
   <span class="header-color-title">
-    Header Color
+    Header Background
   </span>
 
   <div class="header-color-actions">
