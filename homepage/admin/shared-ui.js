@@ -5791,6 +5791,79 @@ sessionStorage.removeItem(
 document
   .getElementById("themeToggleInput")
   ?.addEventListener("change", toggleTheme);
+     
+/* ==========================================
+   USERNAME DROPDOWN - HOVER BUTTON ONLY
+   ========================================== */
+
+const accountDropdown = document.querySelector(
+  ".user-dropdown"
+);
+
+const accountButton = document.getElementById(
+  "userName"
+);
+
+const accountPanel = document.getElementById(
+  "dropdownContent"
+);
+
+if (accountDropdown && accountButton && accountPanel) {
+
+  const openAccountDropdown = () => {
+    accountDropdown.classList.add(
+      "account-dropdown-open"
+    );
+    accountButton.setAttribute("aria-expanded", "true");
+  };
+
+  const closeAccountDropdown = () => {
+    accountDropdown.classList.remove(
+      "account-dropdown-open"
+    );
+    accountButton.setAttribute("aria-expanded", "false");
+  };
+
+  // Hover hanya pada tombol username
+  accountButton.addEventListener(
+    "mouseenter",
+    openAccountDropdown
+  );
+
+  // Tutup apabila keluar daripada kawasan dropdown
+  accountDropdown.addEventListener(
+    "mouseleave",
+    closeAccountDropdown
+  );
+
+  // Sokongan klik untuk touch/mobile
+  accountButton.addEventListener("click", event => {
+    event.stopPropagation();
+
+    if (accountDropdown.classList.contains(
+      "account-dropdown-open"
+    )) {
+      closeAccountDropdown();
+    } else {
+      openAccountDropdown();
+    }
+  });
+
+  // Klik di luar menutup dropdown
+  document.addEventListener("click", event => {
+    if (!accountDropdown.contains(event.target)) {
+      closeAccountDropdown();
+    }
+  });
+
+  // Escape menutup dropdown
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeAccountDropdown();
+    }
+  });
+}
+
 // Initialize custom header colors
 initHeaderColors();
 
