@@ -4725,10 +4725,15 @@ function applyTheme() {
 
   const isLight = saved === "light";
 
-  document.body.classList.toggle(
-    "light-theme",
-    isLight
-  );
+document.body.classList.toggle(
+  "dark-theme",
+  !isLight
+);
+
+document.documentElement.setAttribute(
+  "data-admin-theme",
+  isLight ? "light" : "dark"
+);
 
   const label =
     document.getElementById("themeToggleLabel");
