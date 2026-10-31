@@ -1297,11 +1297,6 @@ body.tab-dragging-active *{
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-#sidebar a:hover .sidebar-arrow-icon,
-#customSidebarTabs a:hover .sidebar-arrow-icon{
-  color: #ffffff;
-  transform: translateX(2px);
-}
 /* =========================
    APP UPDATE MODAL
 ========================= */
