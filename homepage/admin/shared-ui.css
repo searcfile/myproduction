@@ -1245,14 +1245,9 @@ body.light-theme .theme-toggle-knob{
 
 .sidebar-search-wrap{
   width:100%;
-
   display:flex;
   justify-content:center;
-
   margin:0;
-
-  padding:0 8px 8px;
-
   background:#001529;
 }
 
