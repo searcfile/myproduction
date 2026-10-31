@@ -3767,33 +3767,247 @@ body .header {
   flex-shrink: 0;
 }
 
-.header-color-actions input[type="color"] {
-  display: block;
 
+/* ==========================================
+   HEADER COLOR SWATCH BUTTONS
+   ========================================== */
+
+.header-color-swatch-btn {
   width: 30px;
   height: 26px;
-  padding: 2px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 
   border: 1px solid var(--border2);
   border-radius: 5px;
-
   background: transparent;
   cursor: pointer;
 }
 
-.header-color-actions input[type="color"]::-webkit-color-swatch-wrapper {
+.header-color-swatch-btn:hover {
+  border-color: var(--gold-hover);
+}
+
+.header-color-swatch {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 3px;
+  background: #001529;
+}
+
+/* ==========================================
+   CUSTOM COLOR PICKER POPUP
+   ========================================== */
+
+.g88-header-picker {
+  position: fixed;
+  z-index: 20000;
+
+  width: 270px;
+  padding: 12px;
+
+  background: #1f1f1f;
+  color: #fff;
+
+  border: 1px solid #424242;
+  border-radius: 10px;
+
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+
+  font-family: inherit;
+}
+
+.g88-header-picker[hidden] {
+  display: none !important;
+}
+
+.g88-picker-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#g88PickerClose {
+  width: 24px;
+  height: 24px;
   padding: 0;
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  font-size: 22px;
+  cursor: pointer;
 }
 
-.header-color-actions input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 3px;
+#g88PickerClose:hover {
+  color: #fff;
 }
 
-.header-color-actions input[type="color"]::-moz-color-swatch {
-  border: none;
-  border-radius: 3px;
+/* Main saturation/brightness square */
+
+.g88-picker-square {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
 }
+
+.g88-picker-square-white,
+.g88-picker-square-black {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.g88-picker-square-white {
+  background: linear-gradient(
+    90deg,
+    #fff,
+    transparent
+  );
+}
+
+.g88-picker-square-black {
+  background: linear-gradient(
+    0deg,
+    #000,
+    transparent
+  );
+}
+
+.g88-picker-cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 2px #000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Color preview + sliders */
+
+.g88-picker-sliders {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.g88-picker-preview {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1px solid #555;
+}
+
+.g88-picker-range-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#g88PickerHue,
+#g88PickerAlpha {
+  width: 100%;
+  height: 10px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+#g88PickerHue {
+  background: linear-gradient(
+    90deg,
+    red,
+    yellow,
+    lime,
+    cyan,
+    blue,
+    magenta,
+    red
+  );
+}
+
+#g88PickerHue::-webkit-slider-thumb,
+#g88PickerAlpha::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #555;
+  box-shadow: 0 0 3px #000;
+}
+
+#g88PickerHue::-moz-range-thumb,
+#g88PickerAlpha::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #555;
+}
+
+/* HEX + opacity inputs */
+
+.g88-picker-fields {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.g88-picker-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.g88-picker-fields input {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+
+  border: 1px solid #424242;
+  border-radius: 5px;
+
+  background: #141414;
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+}
+
+.g88-picker-fields input:focus {
+  border-color: #1668dc;
+}
+
+.g88-picker-fields input::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 
 .header-color-reset {
   display: flex;
