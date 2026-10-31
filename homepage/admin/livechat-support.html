@@ -3896,22 +3896,39 @@ document.addEventListener("keydown", (e) => {
     closeImageLightbox();
   }
 });
-  const THEME_KEY = "siteTheme";
 
-  function applyTheme(theme) {
-    const finalTheme = theme === "dark" ? "dark" : "light";
-    document.body.classList.toggle("dark-theme", finalTheme === "dark");
+/* 5G88 - LIVECHAT ADMIN THEME */
+(function () {
+  const THEME_KEY = "adminTheme";
+
+  function applySavedTheme() {
+    const theme =
+      localStorage.getItem(THEME_KEY) === "light"
+        ? "light"
+        : "dark";
+
+    document.body.classList.toggle(
+      "light-theme", theme === "light"
+    );
+
+    document.body.classList.toggle(
+      "dark-theme", theme === "dark"
+    );
+
+    document.documentElement.setAttribute(
+      "data-admin-theme", theme
+    );
   }
 
-  // apply masa mula load
-  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+  applySavedTheme();
 
-  // dengar dari parent
-  window.addEventListener("message", (event) => {
-    if (event.data?.type === "theme-change") {
-      applyTheme(event.data.theme);
+  window.addEventListener("storage", function (event) {
+    if (event.key === THEME_KEY) {
+      applySavedTheme();
     }
   });
+})();
+
 </script>
 </body>
 </html>
