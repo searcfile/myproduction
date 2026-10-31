@@ -987,11 +987,6 @@ function createShell() {
 
     <div class="sidebar-top">
 
-      <div
-        id="sidebarAccountSlot"
-        class="sidebar-account-slot">
-      </div>
-
       <div class="sidebar-search-wrap">
 
         <form
