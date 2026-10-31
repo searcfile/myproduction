@@ -1,20 +1,4 @@
 
-/* ==========================================
-   LOAD GLOBAL TAB STATE
-   ========================================== */
-(function () {
-  if (document.querySelector(
-    'script[data-5g88-tab-state]'
-  )) return;
-
-  const script = document.createElement("script");
-  script.src = "./tab-state.js";
-  script.defer = true;
-  script.dataset["5g88TabState"] = "true";
-
-  document.head.appendChild(script);
-})();
-
 /* ============================================================
    5G88 CENTRAL HISTORY V1 — uses existing tabHistory schema.
    Does not store form values, passwords, generated numbers or URLs.
