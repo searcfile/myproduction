@@ -340,6 +340,46 @@ const ICON_ARROW = `
 `;
 
 
+/* ==========================================
+   SIDEBAR PAGE ICON SYSTEM
+   ========================================== */
+
+const ICON_SIDEBAR_ITEM = `
+  <svg class="sidebar-item-icon"
+       viewBox="0 0 24 24"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="M20.04 8.71V4h-4.7L12 .69L8.71 4H4v4.71L.69 12L4 15.34v4.7h4.71L12 23.35l3.34-3.31h4.7v-4.7L23.35 12zM8.83 7.05c.98 0 1.77.79 1.77 1.78a1.77 1.77 0 0 1-1.77 1.77c-.99 0-1.78-.79-1.78-1.77c0-.99.79-1.78 1.78-1.78M15.22 17c-.98 0-1.77-.8-1.77-1.78a1.77 1.77 0 0 1 1.77-1.77c.98 0 1.78.79 1.78 1.77A1.78 1.78 0 0 1 15.22 17m-6.72.03L7 15.53L15.53 7l1.5 1.5z"/>
+  </svg>
+`;
+
+/* Icon default mengikut group */
+const SIDEBAR_GROUP_ICONS = {
+  main: ICON_SIDEBAR_ITEM,
+  gamelog: ICON_SIDEBAR_ITEM,
+  bank: ICON_SIDEBAR_ITEM,
+  list: ICON_SIDEBAR_ITEM,
+  tools: ICON_SIDEBAR_ITEM
+};
+
+/* Icon khas halaman - boleh tukar kemudian */
+const SIDEBAR_PAGE_ICONS = {
+  "linkdownload.html": ICON_SIDEBAR_ITEM,
+  "item.html": ICON_SIDEBAR_ITEM
+};
+
+/* Pilih icon khas halaman, kemudian icon group */
+function getSidebarPageIcon(page) {
+  const file = String(page.file || "").toLowerCase();
+  const group = String(page.group || "main").toLowerCase();
+
+  return (
+    SIDEBAR_PAGE_ICONS[file] ||
+    SIDEBAR_GROUP_ICONS[group] ||
+    ICON_SIDEBAR_ITEM
+  );
+}
+
 
   /* ==========================================================
      USER STORAGE
@@ -2088,10 +2128,22 @@ const groupNames = {
     .forEach(page => {
       const link = document.createElement("a");
 
-      link.href = `./${page.file}`;
-      link.className = "sidebar-standalone-link";
-      link.dataset.file = page.file;
-      link.textContent = page.name;
+
+link.href = `./${page.file}`;
+link.className = "sidebar-standalone-link";
+link.dataset.file = page.file;
+
+const left = document.createElement("span");
+left.className = "sidebar-link-left";
+
+const label = document.createElement("span");
+label.className = "sidebar-link-text";
+label.textContent = page.name;
+
+left.innerHTML = getSidebarPageIcon(page);
+left.appendChild(label);
+link.appendChild(left);
+
 
       link.addEventListener("click", event => {
         event.preventDefault();
@@ -2146,15 +2198,20 @@ const groupNames = {
       link.href = `./${page.file}`;
       link.dataset.file = page.file;
 
-      const left = document.createElement("span");
-      left.className = "sidebar-link-left";
 
-      const label = document.createElement("span");
-      label.className = "sidebar-link-text";
-      label.textContent = page.name;
+const left = document.createElement("span");
+left.className = "sidebar-link-left";
 
-      left.appendChild(label);
-      link.append(left);
+const label = document.createElement("span");
+label.className = "sidebar-link-text";
+label.textContent = page.name;
+
+/* SVG untuk setiap link dalam group */
+left.innerHTML = getSidebarPageIcon(page);
+
+left.appendChild(label);
+link.appendChild(left);
+
 
       link.addEventListener("click", event => {
         event.preventDefault();
