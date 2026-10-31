@@ -3901,6 +3901,7 @@ body .header {
 
 /* Main saturation/brightness square */
 
+
 .g88-picker-square {
   position: relative;
   width: 100%;
@@ -3908,7 +3909,26 @@ body .header {
   overflow: hidden;
   border-radius: 6px;
   cursor: crosshair;
+
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.g88-picker-square,
+.g88-picker-square * {
+  -webkit-user-drag: none;
+}
+
+.g88-picker-square-white,
+.g88-picker-square-black,
+.g88-picker-cursor {
+  pointer-events: none;
+}
+
+.g88-picker-square:active {
+  cursor: crosshair;
 }
 
 .g88-picker-square-white,
