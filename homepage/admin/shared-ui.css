@@ -1538,6 +1538,42 @@ body.light-theme .theme-toggle-knob{
   color: #fff;
 }
 
+
+/* ==========================================
+   FIX SIDEBAR PAGE ICON SIZE
+   ========================================== */
+
+#customSidebarTabs .sidebar-link-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#customSidebarTabs .sidebar-link-left > svg {
+  display: block;
+  width: 19.2px !important;
+  height: 19.2px !important;
+  min-width: 19.2px;
+  min-height: 19.2px;
+  max-width: 19.2px;
+  max-height: 19.2px;
+  flex: 0 0 19.2px;
+  fill: currentColor;
+  color: #ffffff;
+}
+
+#customSidebarTabs .sidebar-link-left > .sidebar-link-text {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ==========================================
    SIDEBAR STANDALONE ITEMS
    ========================================== */
