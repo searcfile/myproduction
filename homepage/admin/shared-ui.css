@@ -3699,3 +3699,78 @@ input::placeholder{
   outline: 2px solid #4096ff;
   outline-offset: 2px;
 }
+
+/* ==========================================
+   5G88 CUSTOM HEADER BACKGROUND
+   ========================================== */
+
+:root {
+  --custom-header-color-1: #001529;
+  --custom-header-color-2: #001529;
+}
+
+/* Override background header asal */
+body .header {
+  background: linear-gradient(
+    90deg,
+    var(--custom-header-color-1),
+    var(--custom-header-color-2)
+  ) !important;
+}
+
+/* Header color settings */
+.header-color-settings {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.85);
+}
+
+.header-color-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.header-color-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-color-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.header-color-item input[type="color"] {
+  width: 36px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.header-color-reset {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.header-color-reset:hover {
+  background: rgba(255,255,255,.15);
+}
