@@ -5792,78 +5792,80 @@ document
   .getElementById("themeToggleInput")
   ?.addEventListener("change", toggleTheme);
      
+
 /* ==========================================
-   USERNAME DROPDOWN - HOVER BUTTON ONLY
+   USERNAME DROPDOWN - HOVER WITH CLOSE DELAY
    ========================================== */
 
-const accountDropdown = document.querySelector(
-  ".user-dropdown"
-);
-
-const accountButton = document.getElementById(
-  "userName"
-);
-
-const accountPanel = document.getElementById(
-  "dropdownContent"
-);
+const accountDropdown = document.querySelector(".user-dropdown");
+const accountButton = document.getElementById("userName");
+const accountPanel = document.getElementById("dropdownContent");
 
 if (accountDropdown && accountButton && accountPanel) {
 
+  let accountCloseTimer = null;
+  const ACCOUNT_CLOSE_DELAY = 300;
+
+  const cancelAccountClose = () => {
+    if (accountCloseTimer !== null) {
+      clearTimeout(accountCloseTimer);
+      accountCloseTimer = null;
+    }
+  };
+
   const openAccountDropdown = () => {
-    accountDropdown.classList.add(
-      "account-dropdown-open"
-    );
+    cancelAccountClose();
+
+    accountDropdown.classList.add("account-dropdown-open");
     accountButton.setAttribute("aria-expanded", "true");
   };
 
-const closeAccountDropdown = () => {
-  accountDropdown.classList.remove(
-    "account-dropdown-open"
-  );
+  const closeAccountDropdown = () => {
+    cancelAccountClose();
 
-  accountButton.setAttribute(
-    "aria-expanded",
-    "false"
-  );
+    accountDropdown.classList.remove("account-dropdown-open");
+    accountButton.setAttribute("aria-expanded", "false");
+  };
 
-  if (document.activeElement === accountButton) {
-    accountButton.blur();
-  }
-};
-  // Hover hanya pada tombol username
-  accountButton.addEventListener(
-    "mouseenter",
-    openAccountDropdown
-  );
+  const scheduleAccountClose = () => {
+    cancelAccountClose();
 
-  // Tutup apabila keluar daripada kawasan dropdown
-  accountDropdown.addEventListener(
-    "mouseleave",
-    closeAccountDropdown
-  );
+    accountCloseTimer = setTimeout(() => {
+      closeAccountDropdown();
+    }, ACCOUNT_CLOSE_DELAY);
+  };
 
-  // Sokongan klik untuk touch/mobile
+  // Buka hanya bila hover tombol username
+  accountButton.addEventListener("mouseenter", openAccountDropdown);
+
+  // Bila mouse turun dari tombol, jangan tutup terus
+  accountButton.addEventListener("mouseleave", scheduleAccountClose);
+
+  // Masuk panel: batalkan timer supaya boleh klik
+  accountPanel.addEventListener("mouseenter", openAccountDropdown);
+
+  // Keluar panel: tunggu sebentar sebelum tutup
+  accountPanel.addEventListener("mouseleave", scheduleAccountClose);
+
+  // Sokongan klik untuk mobile / touch
   accountButton.addEventListener("click", event => {
     event.stopPropagation();
 
-    if (accountDropdown.classList.contains(
-      "account-dropdown-open"
-    )) {
+    if (accountDropdown.classList.contains("account-dropdown-open")) {
       closeAccountDropdown();
     } else {
       openAccountDropdown();
     }
   });
 
-  // Klik di luar menutup dropdown
+  // Klik luar: tutup terus
   document.addEventListener("click", event => {
     if (!accountDropdown.contains(event.target)) {
       closeAccountDropdown();
     }
   });
 
-  // Escape menutup dropdown
+  // Escape: tutup terus
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
       closeAccountDropdown();
