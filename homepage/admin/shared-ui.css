@@ -3823,3 +3823,18 @@ body .header {
   border-color: var(--gold-hover);
   color: var(--gold-hover);
 }
+
+/* HEADER COLOR RESET SVG */
+
+.header-color-reset svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: currentColor;
+  transition: transform .25s ease;
+}
+
+.header-color-reset:hover svg {
+  transform: rotate(-45deg);
+}
