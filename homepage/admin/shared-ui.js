@@ -1490,24 +1490,22 @@ aria-label="Search tabs"
           class="dropdown-content">
 <label
   id="themeToggleBtn"
-  class="theme-toggle-btn theme-custom-row">
+  class="theme-full-switch">
 
-  <span
-    id="themeToggleLabel"
-    class="theme-toggle-label">
-    Light Theme
-  </span>
+  <input
+    id="themeToggleInput"
+    type="checkbox"
+    aria-label="Toggle theme">
 
-  <span class="shared-active-switch">
+  <span class="theme-full-track">
 
-    <input
-      id="themeToggleInput"
-      type="checkbox"
-      aria-label="Toggle theme">
-
-    <span class="shared-active-track">
-      <span class="shared-active-knob"></span>
+    <span
+      id="themeToggleLabel"
+      class="theme-full-text">
+      Dark Mode
     </span>
+
+    <span class="theme-full-knob"></span>
 
   </span>
 
@@ -4737,15 +4735,15 @@ function applyTheme() {
 
   if (label) {
     label.textContent = isLight
-      ? "Dark Theme"
-      : "Light Theme";
+      ? "Light Mode"
+      : "Dark Mode";
   }
 
   const toggle =
     document.getElementById("themeToggleInput");
 
   if (toggle) {
-    toggle.checked = isLight;
+    toggle.checked = !isLight;
   }
 }
 
