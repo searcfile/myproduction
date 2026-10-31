@@ -2082,9 +2082,30 @@ function renderSidebarTabs() {
 
   container.replaceChildren();
 
+  /* STANDALONE SIDEBAR ITEMS */
+  pages
+    .filter(page => page.group === "standalone")
+    .forEach(page => {
+      const link = document.createElement("a");
+
+      link.href = `./${page.file}`;
+      link.className = "sidebar-standalone-link";
+      link.dataset.file = page.file;
+      link.textContent = page.name;
+
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        addTab(page);
+      });
+
+      container.appendChild(link);
+    });
+
   const groups = [...new Set([
     ...groupOrder,
-    ...pages.map(page => page.group || "main")
+    ...pages
+      .filter(page => page.group !== "standalone")
+      .map(page => page.group || "main")
   ])];
 
   groups.forEach(groupId => {
@@ -3902,6 +3923,15 @@ function filterSidebarGroups(value) {
         String(group.classList.contains("is-open"))
       );
     });
+   
+  /* Search untuk standalone items */
+  document.querySelectorAll(
+    "#customSidebarTabs .sidebar-standalone-link"
+  ).forEach(link => {
+    link.hidden = !!keyword &&
+      !link.textContent.toLowerCase().includes(keyword);
+  });
+
 }
 
 function setupSidebarSearch() {
