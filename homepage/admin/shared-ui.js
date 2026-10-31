@@ -4969,31 +4969,72 @@ function initHeaderColors() {
       </div>
     </div>
 
-    <div class="g88-picker-fields">
-      <label>
-        <span>HEX</span>
-        <input id="g88PickerHex" maxlength="7"
-               spellcheck="false" value="#001529">
-      </label>
 
-      <label>
-        <span>Opacity</span>
-        <input id="g88PickerOpacity" type="number"
-               min="0" max="100" value="100">
-      </label>
+<div class="g88-picker-fields">
+
+  <div class="g88-picker-format-wrap">
+
+    <button type="button"
+            class="g88-picker-format-btn"
+            id="g88PickerFormatBtn"
+            aria-expanded="false">
+
+      <span id="g88PickerFormatText">HEX</span>
+
+      <svg viewBox="64 64 896 896"
+           width="12"
+           height="12"
+           fill="currentColor"
+           aria-hidden="true">
+        <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/>
+      </svg>
+    </button>
+
+    <div class="g88-picker-format-menu"
+         id="g88PickerFormatMenu">
+
+      <button type="button" data-format="HEX" class="active">HEX</button>
+      <button type="button" data-format="HSB">HSB</button>
+      <button type="button" data-format="RGB">RGB</button>
+
     </div>
+  </div>
+
+  <div class="g88-picker-values"
+       id="g88PickerValues">
+
+    <input id="g88PickerHex"
+           maxlength="7"
+           spellcheck="false"
+           value="#001529">
+  </div>
+
+  <input id="g88PickerOpacity"
+         class="g88-picker-opacity"
+         type="text"
+         inputmode="numeric"
+         value="100%">
+</div>
+
   `;
 
   document.body.appendChild(picker);
 
-  const square = picker.querySelector("#g88PickerSquare");
-  const cursor = picker.querySelector("#g88PickerCursor");
-  const hueInput = picker.querySelector("#g88PickerHue");
-  const alphaInput = picker.querySelector("#g88PickerAlpha");
-  const hexInput = picker.querySelector("#g88PickerHex");
-  const opacityInput = picker.querySelector("#g88PickerOpacity");
-  const preview = picker.querySelector("#g88PickerPreview");
-  const title = picker.querySelector("#g88PickerTitle");
+const square = picker.querySelector("#g88PickerSquare");
+const cursor = picker.querySelector("#g88PickerCursor");
+const hueInput = picker.querySelector("#g88PickerHue");
+const alphaInput = picker.querySelector("#g88PickerAlpha");
+const opacityInput = picker.querySelector("#g88PickerOpacity");
+const preview = picker.querySelector("#g88PickerPreview");
+const title = picker.querySelector("#g88PickerTitle");
+
+const formatBtn = picker.querySelector("#g88PickerFormatBtn");
+const formatText = picker.querySelector("#g88PickerFormatText");
+const formatMenu = picker.querySelector("#g88PickerFormatMenu");
+const formatWrap = picker.querySelector(".g88-picker-format-wrap");
+const valueInputs = picker.querySelector("#g88PickerValues");
+
+let currentFormat = "HEX";
 
   let activeKey = "color1";
   let hsv = { h: 0, s: 1, v: 1 };
@@ -5002,6 +5043,105 @@ function initHeaderColors() {
   function currentHex() {
     return rgbToHex(...hsvToRgb(hsv.h, hsv.s, hsv.v));
   }
+
+function clampPickerValue(value, min, max) {
+  const number = Number(String(value).replace("%", ""));
+  return Number.isFinite(number)
+    ? Math.max(min, Math.min(max, number))
+    : min;
+}
+
+function renderFormatInputs() {
+  const hex = currentHex();
+
+  if (currentFormat === "HEX") {
+    valueInputs.innerHTML = `
+      <input id="g88PickerHex"
+             type="text"
+             maxlength="7"
+             spellcheck="false"
+             value="${hex}">
+    `;
+    return;
+  }
+
+  if (currentFormat === "RGB") {
+    const { r, g, b } = hexToRgb(hex);
+
+    valueInputs.innerHTML = `
+      <input data-rgb="r" aria-label="Red"
+             type="number" min="0" max="255" value="${r}">
+      <input data-rgb="g" aria-label="Green"
+             type="number" min="0" max="255" value="${g}">
+      <input data-rgb="b" aria-label="Blue"
+             type="number" min="0" max="255" value="${b}">
+    `;
+    return;
+  }
+
+  valueInputs.innerHTML = `
+    <input data-hsb="h" aria-label="Hue"
+           type="number" min="0" max="360"
+           value="${Math.round(hsv.h)}">
+
+    <input data-hsb="s" aria-label="Saturation"
+           type="number" min="0" max="100"
+           value="${Math.round(hsv.s * 100)}">
+
+    <input data-hsb="b" aria-label="Brightness"
+           type="number" min="0" max="100"
+           value="${Math.round(hsv.v * 100)}">
+  `;
+}
+
+function commitFormatInputs() {
+  if (currentFormat === "HEX") {
+    let hex = valueInputs.querySelector("#g88PickerHex")
+      ?.value.trim() || "";
+
+    if (/^#[0-9a-f]{3}$/i.test(hex)) {
+      hex = "#" + [...hex.slice(1)]
+        .map(char => char + char).join("");
+    }
+
+    if (/^#[0-9a-f]{6}$/i.test(hex)) {
+      const rgb = hexToRgb(hex);
+      hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    }
+  }
+
+  if (currentFormat === "RGB") {
+    const read = channel => clampPickerValue(
+      valueInputs.querySelector(`[data-rgb="${channel}"]`)?.value,
+      0, 255
+    );
+
+    const rgb = {
+      r: read("r"),
+      g: read("g"),
+      b: read("b")
+    };
+
+    hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+  }
+
+  if (currentFormat === "HSB") {
+    const read = (channel, max) => clampPickerValue(
+      valueInputs.querySelector(`[data-hsb="${channel}"]`)?.value,
+      0, max
+    );
+
+    hsv = {
+      h: read("h", 360) % 360,
+      s: read("s", 100) / 100,
+      v: read("b", 100) / 100
+    };
+  }
+
+  renderPicker();
+  saveCurrentColor();
+  renderFormatInputs();
+}
 
   function saveCurrentColor() {
     const colors = getHeaderColors();
@@ -5030,8 +5170,13 @@ function initHeaderColors() {
     hueInput.value = Math.round(hsv.h);
     alphaInput.value = alpha;
 
-    hexInput.value = hex;
-    opacityInput.value = alpha;
+if (!valueInputs.contains(document.activeElement)) {
+  renderFormatInputs();
+}
+
+if (document.activeElement !== opacityInput) {
+  opacityInput.value = `${alpha}%`;
+}
 
     preview.style.background =
       headerColorRgba(hex, alpha);
@@ -5137,32 +5282,72 @@ function initHeaderColors() {
     saveCurrentColor();
   });
 
-  hexInput.addEventListener("change", () => {
-    let hex = hexInput.value.trim();
 
-    if (/^#[0-9a-f]{3}$/i.test(hex)) {
-      hex = "#" + [...hex.slice(1)]
-        .map(char => char + char)
-        .join("");
-    }
+/* ==========================================================
+   HEX / HSB / RGB FORMAT DROPDOWN
+   ========================================================== */
 
-    if (/^#[0-9a-f]{6}$/i.test(hex)) {
-      const rgb = hexToRgb(hex);
-      hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-      saveCurrentColor();
-    }
+formatBtn.addEventListener("click", event => {
+  event.stopPropagation();
 
-    renderPicker();
+  const isOpen = formatWrap.classList.toggle("open");
+
+  formatBtn.setAttribute(
+    "aria-expanded",
+    String(isOpen)
+  );
+});
+
+formatMenu.querySelectorAll("[data-format]")
+  .forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+
+      currentFormat = button.dataset.format;
+      formatText.textContent = currentFormat;
+
+      formatMenu.querySelectorAll("[data-format]")
+        .forEach(item => {
+          item.classList.toggle(
+            "active",
+            item === button
+          );
+        });
+
+      formatWrap.classList.remove("open");
+      formatBtn.setAttribute("aria-expanded", "false");
+
+      renderFormatInputs();
+    });
   });
 
-  opacityInput.addEventListener("change", () => {
-    alpha = Math.max(0, Math.min(
-      100, Number(opacityInput.value) || 0
-    ));
+valueInputs.addEventListener("change", commitFormatInputs);
 
-    renderPicker();
-    saveCurrentColor();
-  });
+valueInputs.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    event.target.blur();
+  }
+});
+
+opacityInput.addEventListener("change", () => {
+  alpha = clampPickerValue(
+    opacityInput.value,
+    0,
+    100
+  );
+
+  renderPicker();
+  saveCurrentColor();
+});
+
+document.addEventListener("pointerdown", event => {
+  if (!formatWrap.contains(event.target)) {
+    formatWrap.classList.remove("open");
+    formatBtn.setAttribute("aria-expanded", "false");
+  }
+});
+
 
   picker.querySelector("#g88PickerClose")
     .addEventListener("click", closePicker);
