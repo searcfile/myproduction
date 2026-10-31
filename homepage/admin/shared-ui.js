@@ -2064,10 +2064,10 @@ function renderSidebarTabs() {
   const container = document.getElementById("customSidebarTabs");
   if (!container) return;
 
-  const oldOpenGroups = new Set(
-    [...container.querySelectorAll(".sidebar-group.is-open")]
-      .map(el => el.dataset.group)
-  );
+const oldOpenGroups = new Set(
+  [...container.querySelectorAll(".sidebar-group.is-open")]
+    .map(el => el.dataset.group)
+);
 
 const groupNames = {
   main: "Main Menu",
@@ -2177,11 +2177,7 @@ const groupNames = {
       setOpen(!group.classList.contains("is-open"));
     });
 
-    const hasActivePage = groupPages.some(
-      page => page.file.toLowerCase() === getCurrentFile()
-    );
-
-    setOpen(oldOpenGroups.has(groupId) || hasActivePage);
+  setOpen(oldOpenGroups.has(groupId));
   });
 
   updateOpenIndicators();
@@ -3909,13 +3905,11 @@ function filterSidebarGroups(value) {
 
       if (keyword) {
         group.classList.toggle("is-open", matchCount > 0);
-      } else {
-        const active = links.some(link =>
-          link.dataset.file?.toLowerCase() === getCurrentFile()
-        );
 
-        group.classList.toggle("is-open", active);
-      }
+} else {
+  group.classList.remove("is-open");
+}
+
 
       const toggle = group.querySelector(".sidebar-group-toggle");
       toggle?.setAttribute(
