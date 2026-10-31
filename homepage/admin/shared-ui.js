@@ -2059,55 +2059,117 @@ getVisibleAdminPages()
      SIDEBAR
      ========================================================== */
 
-  function renderSidebarTabs() {
 
-    const container =
-      document.getElementById(
-        "customSidebarTabs"
-      );
+function renderSidebarTabs() {
+  const container = document.getElementById("customSidebarTabs");
+  if (!container) return;
 
-    if (!container) return;
+  const oldOpenGroups = new Set(
+    [...container.querySelectorAll(".sidebar-group.is-open")]
+      .map(el => el.dataset.group)
+  );
 
-    container.innerHTML = "";
+  const groupNames = {
+    main: "Main Menu",
+    gamelog: "Game Log",
+    bank: "Bank Settings",
+    list: "Game List",
+    tools: "Tools"
+  };
 
-getVisibleAdminPages().forEach(page => {
+  const groupOrder = ["main", "gamelog", "bank", "list", "tools"];
+  const pages = getVisibleAdminPages();
 
-      const link =
-        document.createElement("a");
+  container.replaceChildren();
 
-      link.href =
-        `./${page.file}`;
+  const groups = [...new Set([
+    ...groupOrder,
+    ...pages.map(page => page.group || "main")
+  ])];
 
-      link.dataset.file =
-        page.file;
+  groups.forEach(groupId => {
+    const groupPages = pages.filter(
+      page => (page.group || "main") === groupId
+    );
 
-      link.innerHTML = `
-        <span class="sidebar-link-left">
-          <span class="sidebar-link-text">
-            ${page.name}
-          </span>
-        </span>
+    if (!groupPages.length) return;
 
-        ${ICON_ARROW}
-      `;
+    const group = document.createElement("section");
+    group.className = "sidebar-group";
+    group.dataset.group = groupId;
 
-      link.addEventListener(
-        "click",
-        event => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sidebar-group-toggle";
+    button.setAttribute("aria-expanded", "false");
 
-          event.preventDefault();
+    const title = document.createElement("span");
+    title.className = "sidebar-group-title";
+    title.textContent = groupNames[groupId] || groupId;
 
-          addTab(page);
+    const arrow = document.createElement("span");
+    arrow.className = "sidebar-group-arrow";
+    arrow.innerHTML = ICON_ARROW;
 
-        }
-      );
+    button.append(title, arrow);
 
-      container.appendChild(link);
+    const panel = document.createElement("div");
+    panel.className = "sidebar-group-panel";
 
+    const inner = document.createElement("div");
+    inner.className = "sidebar-group-inner";
+
+    groupPages.forEach(page => {
+      const link = document.createElement("a");
+
+      link.href = `./${page.file}`;
+      link.dataset.file = page.file;
+
+      const left = document.createElement("span");
+      left.className = "sidebar-link-left";
+
+      const label = document.createElement("span");
+      label.className = "sidebar-link-text";
+      label.textContent = page.name;
+
+      left.appendChild(label);
+      link.append(left);
+
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        addTab(page);
+      });
+
+      inner.appendChild(link);
     });
 
-    updateOpenIndicators();
+    panel.appendChild(inner);
+    group.append(button, panel);
+    container.appendChild(group);
+
+    const setOpen = open => {
+      group.classList.toggle("is-open", open);
+      button.setAttribute("aria-expanded", String(open));
+    };
+
+    button.addEventListener("click", () => {
+      setOpen(!group.classList.contains("is-open"));
+    });
+
+    const hasActivePage = groupPages.some(
+      page => page.file.toLowerCase() === getCurrentFile()
+    );
+
+    setOpen(oldOpenGroups.has(groupId) || hasActivePage);
+  });
+
+  updateOpenIndicators();
+
+  const search = document.getElementById("sidebarSearchInput");
+  if (search?.value.trim()) {
+    filterSidebarGroups(search.value);
   }
+}
 
 
   function openSidebar() {
@@ -3799,58 +3861,65 @@ function setupDropdown(buttonId, dropdownId) {
      SIDEBAR SEARCH
      ========================================================== */
 
-  function setupSidebarSearch() {
 
-    const input =
-      document.getElementById(
-        "sidebarSearchInput"
-      );
+function filterSidebarGroups(value) {
+  const keyword = String(value || "").trim().toLowerCase();
 
-    const form =
-      document.getElementById(
-        "sidebarSearchForm"
-      );
+  document.querySelectorAll("#customSidebarTabs .sidebar-group")
+    .forEach(group => {
+      const links = [...group.querySelectorAll(".sidebar-group-inner a")];
 
-    if (!input) return;
+      const groupTitle = group
+        .querySelector(".sidebar-group-title")
+        ?.textContent.toLowerCase() || "";
 
+      const groupMatches = groupTitle.includes(keyword);
+      let matchCount = 0;
 
-    form?.addEventListener(
-      "submit",
-      event => {
-        event.preventDefault();
-      }
-    );
+      links.forEach(link => {
+        const name = link.textContent.trim().toLowerCase();
+        const matches = !keyword || groupMatches || name.includes(keyword);
 
-
-    input.addEventListener(
-      "input",
-      () => {
-
-        const keyword =
-          input.value
-            .trim()
-            .toLowerCase();
-
-
-        document
-          .querySelectorAll(
-            "#customSidebarTabs a"
-          )
-          .forEach(link => {
-
-            const text =
-              link.textContent
-                .trim()
-                .toLowerCase();
-
-            link.style.display =
-              text.includes(keyword)
-                ? ""
-                : "none";
-          });
-
+        link.hidden = !matches;
+        if (matches) matchCount++;
       });
-  }
+
+      group.hidden = !!keyword && matchCount === 0;
+
+      if (keyword) {
+        group.classList.toggle("is-open", matchCount > 0);
+      } else {
+        const active = links.some(link =>
+          link.dataset.file?.toLowerCase() === getCurrentFile()
+        );
+
+        group.classList.toggle("is-open", active);
+      }
+
+      const toggle = group.querySelector(".sidebar-group-toggle");
+      toggle?.setAttribute(
+        "aria-expanded",
+        String(group.classList.contains("is-open"))
+      );
+    });
+}
+
+function setupSidebarSearch() {
+  const input = document.getElementById("sidebarSearchInput");
+  const form = document.getElementById("sidebarSearchForm");
+
+  if (!input) return;
+
+  form?.addEventListener("submit", event => {
+    event.preventDefault();
+  });
+
+  input.addEventListener("input", () => {
+    filterSidebarGroups(input.value);
+  });
+
+  filterSidebarGroups(input.value);
+}
 
 /* ==========================================================
    RESPONSIVE HEADER MORE
