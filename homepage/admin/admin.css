@@ -1034,6 +1034,7 @@ body.light-theme .theme-toggle-knob{
   position: relative;
   z-index: 1;
   background: #001529;
+  padding:8px;
 }
 /* FLOATING FAB */
 .floating-fab-wrap{
