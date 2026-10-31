@@ -1492,6 +1492,38 @@ body.light-theme .theme-toggle-knob{
   color: #fff;
 }
 
+/* ==========================================
+   SIDEBAR STANDALONE ITEMS
+   ========================================== */
+
+#customSidebarTabs .sidebar-standalone-link {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 8px);
+  min-height: 42px;
+  margin: 4px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+#customSidebarTabs .sidebar-standalone-link:hover {
+  background: #03203d;
+  color: #fff;
+}
+
+#customSidebarTabs .sidebar-standalone-link[hidden] {
+  display: none !important;
+}
+
 /* ==========================================================
    SIDEBAR VERSION
    ========================================================== */
