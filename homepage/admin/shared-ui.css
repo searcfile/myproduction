@@ -1476,14 +1476,13 @@ body.light-theme .theme-toggle-knob{
 #customSidebarTabs .sidebar-group-inner a {
   display: flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 42px;
   margin: 2px 4px 2px 18px;
   padding: 7px 12px;
   border: 0;
   border-left: 1px solid rgba(255,255,255,.15);
-  border-radius: 4px;
   color: rgba(255,255,255,.65);
-  font-size: 13px;
+  font-size: 14px;
   transition: background .2s ease, color .2s ease;
 }
 
