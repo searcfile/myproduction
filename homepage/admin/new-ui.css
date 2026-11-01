@@ -2607,99 +2607,7 @@ input::placeholder{
   color:var(--blur) !important;
 }
 
-/* ==========================================
-   NEW UI - REFRESH LOADING OVERLAY
-   Reusable for all admin pages
-   ========================================== */
 
-.newui-refresh-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  color: #fff;
-  pointer-events: auto;
-}
-
-.newui-refresh-overlay.is-container {
-  position: absolute;
-  z-index: 100;
-}
-
-.newui-refresh-overlay-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.newui-refresh-overlay-dots {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  animation: newuiRefreshSpin 1s linear infinite;
-}
-
-.newui-refresh-overlay-dots span {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.85);
-  opacity: .25;
-  animation: newuiRefreshPulse 1s linear infinite;
-}
-
-.newui-refresh-overlay-dots span:nth-child(1) {
-  top: 0;
-  left: 0;
-  animation-delay: 0s;
-}
-
-.newui-refresh-overlay-dots span:nth-child(2) {
-  top: 0;
-  right: 0;
-  animation-delay: .25s;
-}
-
-.newui-refresh-overlay-dots span:nth-child(3) {
-  bottom: 0;
-  right: 0;
-  animation-delay: .5s;
-}
-
-.newui-refresh-overlay-dots span:nth-child(4) {
-  bottom: 0;
-  left: 0;
-  animation-delay: .75s;
-}
-
-.newui-refresh-overlay-text {
-  color: #fff;
-  font-size: 12px;
-  line-height: 1.5;
-  text-align: center;
-}
-
-@keyframes newuiRefreshSpin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes newuiRefreshPulse {
-  0%, 100% { opacity: .25; }
-  50% { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .newui-refresh-overlay-dots,
-  .newui-refresh-overlay-dots span {
-    animation: none;
-  }
-}
 
 /* ==========================================
    NEW UI - SHARED REFRESH LOADING
@@ -2732,53 +2640,61 @@ input::placeholder{
   pointer-events: none;
 }
 
+
+
+@media (prefers-reduced-motion: reduce) {
+  .newui-refresh-overlay-dots,
+  .newui-refresh-overlay-dots span {
+    animation: none;
+  }
+}
+
 .newui-refresh-overlay-dots {
   position: relative;
+  display: block;
   width: 32px;
   height: 32px;
-  flex: none;
+  flex: 0 0 32px;
   animation: newuiRefreshSpin 1s linear infinite;
 }
 
 .newui-refresh-overlay-dots span {
+  display: block;
   position: absolute;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #fff;
-  animation: newuiRefreshPulse 1s linear infinite;
+  background: #ffffff;
+  animation: newuiRefreshPulse 1s ease-in-out infinite;
 }
 
 .newui-refresh-overlay-dots span:nth-child(1) {
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 11px;
   animation-delay: 0s;
 }
 
 .newui-refresh-overlay-dots span:nth-child(2) {
-  top: 50%;
+  top: 11px;
   right: 0;
-  transform: translateY(-50%);
   animation-delay: .25s;
 }
 
 .newui-refresh-overlay-dots span:nth-child(3) {
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 11px;
   animation-delay: .5s;
 }
 
 .newui-refresh-overlay-dots span:nth-child(4) {
-  top: 50%;
+  top: 11px;
   left: 0;
-  transform: translateY(-50%);
   animation-delay: .75s;
 }
 
 .newui-refresh-overlay-text {
-  color: #fff;
+  display: block;
+  color: #ffffff;
   font-size: 12px;
   line-height: 1.5;
   text-align: center;
@@ -2793,11 +2709,4 @@ input::placeholder{
   0%, 100% { opacity: .2; }
   25% { opacity: 1; }
   50% { opacity: .4; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .newui-refresh-overlay-dots,
-  .newui-refresh-overlay-dots span {
-    animation: none;
-  }
 }
