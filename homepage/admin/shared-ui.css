@@ -1543,10 +1543,22 @@ sidebar-group-title:hover {
   color: #fff;
   transition: color 0.3s;
 }
-#customSidebarTabs .sidebar-group-inner a.active {
-  background:#1668dc;
-  font-weight:600;
+
+/* Halaman yang sedang aktif */
+#customSidebarTabs .sidebar-group-inner a.active,
+#customSidebarTabs .sidebar-group-inner a.active:hover {
+  background: #1668dc;
+  color: #ffffff;
+  font-weight: 600;
 }
+
+/* Group yang mengandungi halaman aktif */
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle,
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-title,
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-arrow {
+  color: #ffffff;
+}
+
 /* ==========================================
    FIX SIDEBAR PAGE ICON SIZE
    ========================================== */
