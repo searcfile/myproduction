@@ -1468,6 +1468,11 @@ body.light-theme .theme-toggle-knob{
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.65);
+}
+sidebar-group-title:hover {
+  color:#ffffff;
+  transition: color 0.3s;
 }
 
 /* Arrow kekal sebelah kanan */
