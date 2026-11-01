@@ -853,6 +853,20 @@ a.tab-open .check-icon{
   transition:all .3s ease;
 }
 
+/* ==========================================
+   DESKTOP USERNAME SVG - 16PX ONLY
+   ========================================== */
+
+.header .user-dropdown > .user-button > svg {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  min-height: 16px;
+  flex: 0 0 16px;
+  fill: currentColor;
+}
+
 .user-button:hover{
   border-color:var(--gold-hover);
   color:var(--gold-hover);
