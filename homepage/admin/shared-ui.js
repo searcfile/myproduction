@@ -4968,11 +4968,16 @@ renderOptions("");
     wrap.classList.add("search-mode");
   }
 
-  async function loadSites() {
-    if (loading) return;
-    loading = true;
 
-    try {
+async function loadSites() {
+  if (loading) return;
+  loading = true;
+
+  // Mulakan animasi sync pada dropdown site.
+  customSiteEl?.classList.add("site-sync-loading");
+
+  try {
+
       if (typeof auth === "undefined") {
         throw Error("Firebase Auth is not ready.");
       }
@@ -5034,9 +5039,14 @@ customSiteDropdown?.setOptions(
       selectedIds = [];
       ready = false;
       updateInput();
-    } finally {
-      loading = false;
-    }
+
+} finally {
+  loading = false;
+
+  // Hentikan animasi selepas request site selesai.
+  customSiteEl?.classList.remove("site-sync-loading");
+}
+
   }
 
   // Desktop: klik input asal untuk buka dropdown.
