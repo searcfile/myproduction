@@ -204,10 +204,108 @@
   min-height: 0;
   overflow-y: auto;
 }
+
+/* LINK DOWNLOAD - REFRESH + CREATE */
+
+.ld-toolbar-actions {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ld-toolbar-actions .ld-create {
+  justify-self: auto;
+}
+
+#ldRefresh,
+#ldCreate {
+  height: 32px;
+  white-space: nowrap;
+}
+
+#ldRefresh[hidden],
+#ldCreate[hidden] {
+  display: none !important;
+}
+
+/* 4 DOTS GRID LOADING */
+
+.ld-grid-loading {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--ld-muted);
+  font-size: 12px;
+}
+
+.ld-grid-dots {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  grid-template-rows: repeat(2, 8px);
+  gap: 5px;
+  animation: ld-grid-spin 1s linear infinite;
+}
+
+.ld-grid-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2685ff;
+}
+
+.ld-grid-dots span:nth-child(2) { opacity: .75; }
+.ld-grid-dots span:nth-child(3) { opacity: .5; }
+.ld-grid-dots span:nth-child(4) { opacity: .25; }
+
+@keyframes ld-grid-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 830px) {
+  .ld-toolbar-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .ld-toolbar-actions {
+    grid-column: 1;
+    flex-wrap: wrap;
+  }
+}
+
 </style>
 </head>
 <body>
-<main class="ld-page"><div class="ld-toolbar"><div class="ld-search"><input id="ldSearch" type="search" placeholder="Search"></div><div class="ld-filter"><div id="ldPlatforms"></div></div><button class="ld-button btn-primary-new ld-create" id="ldCreate" type="button" hidden>+ Create Card</button></div><div class="ld-grid" id="ldGrid"></div></main>
+<main class="ld-page"><div class="ld-toolbar"><div class="ld-search"><input id="ldSearch" type="search" placeholder="Search"></div><div class="ld-filter"><div id="ldPlatforms"></div></div>
+  <div class="ld-toolbar-actions">
+  <button
+    class="ld-button btn-primary-new"
+    id="ldRefresh"
+    type="button"
+    hidden>
+    Refresh
+  </button>
+
+  <button
+    class="ld-button btn-primary-new ld-create"
+    id="ldCreate"
+    type="button"
+    hidden>
+    + Create Card
+  </button>
+</div>
+</div><div class="ld-grid" id="ldGrid"></div></main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js">
 </script><script src="./admin.js"></script>
@@ -249,6 +347,69 @@ const visibleForSite = card =>
     id => card.siteVisibility?.[id] === true
   );
 const grid=$('#ldGrid'),search=$('#ldSearch');
+
+/* LINK DOWNLOAD - REFRESH GRID ONLY */
+
+const refreshButton = $('#ldRefresh');
+let gridRefreshing = false;
+
+function showGridLoading() {
+  grid.innerHTML = `
+    <div class="ld-grid-loading" role="status">
+      <div class="ld-grid-dots" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span>Please wait while fetching...</span>
+    </div>
+  `;
+}
+
+async function refreshGridOnly() {
+  if (gridRefreshing || !siteAccessReady || !db) return;
+  if (!can('refresh')) return;
+
+  gridRefreshing = true;
+  refreshButton.disabled = true;
+  showGridLoading();
+
+  const startTime = performance.now();
+
+  try {
+    const snapshot = await db.ref(PATH).once('value');
+
+    // Tunggu minimum 450ms supaya loading kelihatan.
+    const remaining = 450 - (performance.now() - startTime);
+
+    if (remaining > 0) {
+      await new Promise(resolve =>
+        setTimeout(resolve, remaining)
+      );
+    }
+
+    records = snapshot.val() || {};
+    loading = false;
+
+    refreshOptions();
+    render();
+
+  } catch (error) {
+    console.error('[Link Download] Refresh:', error);
+    toast('Failed to refresh cards', 'error');
+
+    // Kekalkan data lama jika refresh gagal.
+    loading = false;
+    render();
+
+  } finally {
+    gridRefreshing = false;
+    refreshButton.disabled = false;
+  }
+}
+
+refreshButton.addEventListener('click', refreshGridOnly);
 
 /* ==========================================
    LINK DOWNLOAD - SAVE & RESTORE FILTER
@@ -625,6 +786,7 @@ sites = Object.fromEntries(
 }
 
 createButton.hidden = !can('create');
+   refreshButton.hidden = !can('refresh');
   siteAccessReady=true;
  
 db.ref(PATH).on('value', snap => {
@@ -639,7 +801,9 @@ db.ref(PATH).on('value', snap => {
     restoreLdFilter();
   }
 
-  render();
+  if (!gridRefreshing) {
+    render();
+  }
 
 }, err => {
   loading = false;
