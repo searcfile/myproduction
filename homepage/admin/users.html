@@ -2198,12 +2198,27 @@ async function load() {
    UNIFIED SITE ADMIN — ACCOUNT ACTIONS + PERMISSIONS
    ========================================================== */
 const SUPERADMIN_ONLY_PAGES = new Set(['users.html','site-management.html','admin-users.html']);
-const PERMISSION_DEFINITIONS={default:['show','view','create','edit','delete'],
- 'livechat.html':['show','view','block','delete'],
- 'livechat-support.html':['show','view'],
- 'notice.html':['show','view','create','edit','delete'],
- 'history.html':['show','view']};
-const ACTION_LABELS={show:'Show Module',view:'View',create:'Create',edit:'Edit',delete:'Delete',block:'Block'};
+
+const PERMISSION_DEFINITIONS = {
+  default: ['show','view','create','edit','delete'],
+  'livechat.html': ['show','view','block','delete'],
+  'livechat-support.html': ['show','view'],
+  'notice.html': ['show','view','create','edit','delete'],
+  'history.html': ['show','view'],
+  'linkdownload.html': [
+    'show','view','refresh','create','edit','delete'
+  ]
+};
+
+const ACTION_LABELS = {
+  show: 'Show Module',
+  view: 'View',
+  refresh: 'Refresh',
+  create: 'Create',
+  edit: 'Edit',
+  delete: 'Delete',
+  block: 'Block'
+};
 let permissionDraft={},activePermissionModule='',siteChipApi=null,availableChipApi=null,givenChipApi=null,permissionUser=null;
 function getPermissionModules(){
  const pages=typeof window.getAdminPages==='function'?window.getAdminPages():[];
