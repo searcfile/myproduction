@@ -1531,16 +1531,16 @@ sidebar-group-title:hover {
   min-height: 42px;
   margin: 2px 4px 2px 18px;
   padding: 7px 12px;
+  background:#000c17;
   border: 0;
-  border-left: 1px solid rgba(255,255,255,.15);
   color: rgba(255,255,255,.65);
   font-size: 14px;
   transition: background .2s ease, color .2s ease;
 }
 
 #customSidebarTabs .sidebar-group-inner a:hover {
-  background: #03203d;
   color: #fff;
+  transition: color 0.3s;
 }
 
 
