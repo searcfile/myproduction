@@ -548,14 +548,17 @@ function isAllowedModule(moduleName) {
   );
 }
 
+
 const ALLOWED_ACTIONS = new Set([
   "show",
   "view",
+  "refresh",
   "create",
   "edit",
   "delete",
   "block"
 ]);
+
 
 app.patch(
   "/api/admin-profiles/:uid",
@@ -622,14 +625,14 @@ app.patch(
         const uniqueActions = [...new Set(actions)];
 
 const requiresView = uniqueActions.some(action =>
-  ["create", "edit", "delete", "block"].includes(action)
+  ["refresh", "create", "edit", "delete", "block"].includes(action)
 );
 
 if (requiresView && !uniqueActions.includes("view")) {
   return fail(
     res,
     400,
-    "View permission is required for Create, Edit, Delete or Block"
+    "View permission is required for Refresh, Create, Edit, Delete or Block"
   );
 }
 
