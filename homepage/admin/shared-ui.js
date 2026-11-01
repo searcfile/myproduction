@@ -4641,11 +4641,6 @@ remove.title = `Remove ${site.name}`;
       e.preventDefault();
       e.stopPropagation();
 
-if (currentAdminProfile?.role === "siteadmin") {
-  updateInput();
-  return;
-}
-
       selectedIds = selectedIds.filter(id => id !== site.id);
       saveSelection();
       updateInput();
@@ -4776,16 +4771,15 @@ if (customSiteEl && window.NewUI?.chips) {
     options: [],
     value: [],
 
+
 onChange(values) {
   if (!ready) return;
 
-  if (currentAdminProfile?.role === "siteadmin") {
-    selectedIds = availableSites.map(site => site.id);
-  } else {
-    selectedIds = values.filter(id =>
-      availableSites.some(site => site.id === id)
-    );
-  }
+  selectedIds = Array.isArray(values)
+    ? values.map(String).filter(id =>
+        availableSites.some(site => site.id === id)
+      )
+    : [];
 
   saveSelection();
   updateInput();
@@ -4819,16 +4813,31 @@ mobileBtn?.setAttribute("title", "Select Site");
       }));
   }
 
-  function saveSelection() {
-    sessionStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(selectedIds)
-    );
 
-    window.dispatchEvent(new CustomEvent("admin-sites-changed", {
-      detail: { siteIds: [...selectedIds] }
-    }));
-  }
+function saveSelection() {
+  sessionStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(selectedIds)
+  );
+
+  const allowedIds = availableSites.map(site => site.id);
+  const effectiveIds =
+    currentAdminProfile?.role === "siteadmin" &&
+    selectedIds.length === 0
+      ? allowedIds
+      : [...selectedIds];
+
+  window.dispatchEvent(
+    new CustomEvent("admin-sites-changed", {
+      detail: {
+        siteIds: [...selectedIds],
+        effectiveSiteIds: effectiveIds,
+        allowedSiteIds: allowedIds
+      }
+    })
+  );
+}
+
 
 function updateInput() {
   const selected = selectedIds
@@ -4942,15 +4951,6 @@ if (isMobile()) {
     option.addEventListener("click", e => {
       e.preventDefault();
       e.stopPropagation();
-
-       
-if (currentAdminProfile?.role === "siteadmin") {
-  selectedIds = availableSites.map(site => site.id);
-  saveSelection();
-  updateInput();
-  renderOptions(mobileInput.value);
-  return;
-}
 
       if (selectedIds.includes(site.id)) {
         selectedIds = selectedIds.filter(id => id !== site.id);
@@ -5098,21 +5098,14 @@ customSiteDropdown?.setOptions(
       } catch (_) {}
 
 
+
 const validStored = Array.isArray(stored)
-  ? stored.filter(id =>
+  ? stored.map(String).filter(id =>
       availableSites.some(site => site.id === id)
     )
   : [];
 
-if (currentAdminProfile?.role === "siteadmin") {
-  // Site Admin sentiasa mempunyai semua site
-  // yang ditugaskan kepadanya.
-  selectedIds = availableSites.map(site => site.id);
-} else {
-  // Super Admin boleh pilih atau kosongkan site.
-  selectedIds = validStored;
-}
-
+selectedIds = validStored;
 
       ready = true;
       saveSelection();
