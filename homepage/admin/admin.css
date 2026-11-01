@@ -158,8 +158,7 @@ html {
   top: 64px;
   right: 0;
   left: auto;
-  max-width: 320px;
-  min-width:288px;
+  width:288px;
   height: calc(100vh - 64px);
   background: #001529;
   z-index: 1002;
