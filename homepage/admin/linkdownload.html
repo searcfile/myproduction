@@ -245,6 +245,23 @@
   }
 }
 
+/* LINK DOWNLOAD - REFRESH GRID WRAPPER */
+
+.ld-grid-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  isolation: isolate;
+}
+
+.ld-grid-wrapper > .newui-refresh-overlay.is-container {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+  border-radius: 8px;
+}
+
 </style>
 </head>
 <body>
@@ -266,7 +283,13 @@
     + Create Card
   </button>
 </div>
-</div><div class="ld-grid" id="ldGrid"></div></main>
+</div>
+
+<div class="ld-grid-wrapper" id="ldGridWrapper">
+  <div class="ld-grid" id="ldGrid"></div>
+</div>
+
+</main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script src="./new-ui.js"></script>
 <script defer src="./shared-ui.js">
 </script><script src="./admin.js"></script>
@@ -307,8 +330,9 @@ const visibleForSite = card =>
   assignedSites().some(
     id => card.siteVisibility?.[id] === true
   );
-const grid=$('#ldGrid'),search=$('#ldSearch');
-
+const grid=$('#ldGrid'),search=$('#ldSearch');const grid = $('#ldGrid');
+const gridWrapper = $('#ldGridWrapper');
+const search = $('#ldSearch');
 /* LINK DOWNLOAD - REFRESH GRID ONLY */
 
 const refreshButton = $('#ldRefresh');
@@ -355,7 +379,7 @@ async function refreshGridOnly() {
       render();
 
     }, {
-target: document.body,
+target: gridWrapper,
 message: 'Please wait while fetching...'
     });
 
