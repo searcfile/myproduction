@@ -1658,6 +1658,28 @@ body.light-theme .theme-toggle-knob{
   color: #fff;
 }
 
+/* ==========================================
+   SIDEBAR STANDALONE - ACTIVE STATE
+   ========================================== */
+
+#customSidebarTabs .sidebar-standalone-link.active {
+  background: #1668dc !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Icon ikut warna putih apabila active */
+#customSidebarTabs .sidebar-standalone-link.active svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+/* Kekalkan warna ketika hover dalam keadaan active */
+#customSidebarTabs .sidebar-standalone-link.active:hover {
+  background: #1668dc !important;
+  color: #ffffff !important;
+}
+
 #customSidebarTabs .sidebar-standalone-link[hidden] {
   display: none !important;
 }
