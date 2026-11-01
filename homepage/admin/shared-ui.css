@@ -4651,6 +4651,7 @@ body .header {
     margin: 4px;
     color: #ffffff;
     font-size: 14px;
+    padding-inline: 24px;
     font-weight: 600;
   }
 
@@ -4664,7 +4665,7 @@ body .header {
   #mobileAccountControls {
     display: flex;
     flex-direction: column;
-    padding: 4px 8px;
+    padding-inline: 24px;
   }
 
   /* Kekalkan CSS asal .btn-cpw dan .header-color-settings */
