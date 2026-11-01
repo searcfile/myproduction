@@ -1181,7 +1181,7 @@ function createShell() {
 
 <div class="mobile-account-username">
   ${ICON_USERNAME}
-  <span id="mobileSidebarUsername">Admin</span>
+  <span id="mobileSidebarUsername" style="color: rgb(166, 173, 180);">Username</span>
 </div>
 
 
