@@ -1171,17 +1171,6 @@ function createShell() {
 
     <div id="mobileAccountControls" class="mobile-account-controls"></div>
 
-    <button type="button"
-            id="mobileSidebarThemeBtn"
-            class="sidebar-group-toggle sidebar-standalone-link mobile-theme-link">
-
-      <span class="sidebar-group-left">
-        <span id="mobileThemeIcon" class="sidebar-group-icon-wrap"></span>
-        <span id="mobileThemeText" class="sidebar-group-title">Dark Mode</span>
-      </span>
-
-    </button>
-
   </div>
 
   <div id="customSidebarTabs"></div>
@@ -2249,6 +2238,36 @@ const groupNames = {
   const pages = getVisibleAdminPages();
 
   container.replaceChildren();
+
+/* ==========================================
+   MOBILE DARK/LIGHT MODE - STANDALONE LINK
+   ========================================== */
+
+const mobileThemeLink = document.createElement("button");
+
+mobileThemeLink.type = "button";
+mobileThemeLink.id = "mobileSidebarThemeBtn";
+mobileThemeLink.className =
+  "sidebar-group-toggle sidebar-standalone-link mobile-theme-link";
+
+const mobileThemeLeft = document.createElement("span");
+mobileThemeLeft.className = "sidebar-group-left";
+
+const mobileThemeIcon = document.createElement("span");
+mobileThemeIcon.className = "sidebar-group-icon-wrap";
+
+const mobileThemeTitle = document.createElement("span");
+mobileThemeTitle.className = "sidebar-group-title";
+
+mobileThemeLeft.append(mobileThemeIcon, mobileThemeTitle);
+mobileThemeLink.appendChild(mobileThemeLeft);
+
+mobileThemeLink.addEventListener("click", () => {
+  toggleTheme();
+});
+
+container.appendChild(mobileThemeLink);
+syncMobileThemeButton();
 
   /* STANDALONE SIDEBAR ITEMS */
 
@@ -5843,16 +5862,20 @@ document.addEventListener("pointerdown", event => {
   });
 }
 
+
 /* ==========================================
    MOBILE SIDEBAR ACCOUNT <= 550PX
+   PINDAH COMPONENT ASAL, BUKAN CLONE
    ========================================== */
 
 function syncMobileThemeButton() {
+  const button = document.getElementById("mobileSidebarThemeBtn");
+  if (!button) return;
+
   const isLight = document.body.classList.contains("light-theme");
 
-  const icon = document.getElementById("mobileThemeIcon");
-  const text = document.getElementById("mobileThemeText");
-  const button = document.getElementById("mobileSidebarThemeBtn");
+  const icon = button.querySelector(".sidebar-group-icon-wrap");
+  const label = button.querySelector(".sidebar-group-title");
 
   if (icon) {
     icon.innerHTML = isLight
@@ -5860,52 +5883,49 @@ function syncMobileThemeButton() {
       : ICON_MOBILE_DARK;
   }
 
-  if (text) {
-    text.textContent = isLight ? "Light Mode" : "Dark Mode";
+  if (label) {
+    label.textContent = isLight ? "Light Mode" : "Dark Mode";
   }
 
-  if (button) {
-    button.setAttribute(
-      "aria-label",
-      isLight ? "Switch to Dark Mode" : "Switch to Light Mode"
-    );
-  }
+  button.setAttribute(
+    "aria-label",
+    isLight ? "Switch to Dark Mode" : "Switch to Light Mode"
+  );
 }
 
 function initMobileSidebarAccount() {
-  const account = document.getElementById("mobileSidebarAccount");
   const controls = document.getElementById("mobileAccountControls");
   const username = document.getElementById("mobileSidebarUsername");
-  const themeButton = document.getElementById("mobileSidebarThemeBtn");
   const headerUsername = document.getElementById("userNameText");
 
-  if (!account || !controls || !themeButton) return;
+  if (!controls) return;
 
   const media = window.matchMedia("(max-width: 550px)");
 
-  // Guna elemen asal supaya event listener dan modal kekal.
-  const movable = [
+  // Component sebenar daripada dropdown username
+  const elements = [
     document.getElementById("changePwBtn"),
     document.getElementById("change2ndPwBtn"),
-    document.querySelector("#dropdownContent .header-color-settings")
+    document.querySelector(".user-dropdown .header-color-settings")
   ].filter(Boolean);
 
-  // Simpan kedudukan asal setiap elemen.
-  const originals = movable.map(element => {
-    const marker = document.createComment("mobile-account-original");
+  // Simpan tempat asal component dalam dropdown
+  const originals = elements.map(element => {
+    const marker = document.createComment("original-account-position");
+
     element.parentNode.insertBefore(marker, element);
 
     return { element, marker };
   });
 
-  const syncUsername = () => {
+  function updateUsername() {
     if (!username) return;
 
     username.textContent =
       headerUsername?.textContent?.trim() || "Admin";
-  };
+  }
 
-  const syncLayout = () => {
+  function updateLayout() {
     if (media.matches) {
       originals.forEach(({ element }) => {
         controls.appendChild(element);
@@ -5916,13 +5936,12 @@ function initMobileSidebarAccount() {
       });
     }
 
-    syncUsername();
+    updateUsername();
     syncMobileThemeButton();
-  };
+  }
 
-  // Nama dikemaskini selepas Firebase selesai memuatkan profile.
   if (headerUsername) {
-    const observer = new MutationObserver(syncUsername);
+    const observer = new MutationObserver(updateUsername);
 
     observer.observe(headerUsername, {
       childList: true,
@@ -5931,13 +5950,9 @@ function initMobileSidebarAccount() {
     });
   }
 
-  themeButton.addEventListener("click", () => {
-    toggleTheme();
-  });
+  media.addEventListener("change", updateLayout);
 
-  media.addEventListener("change", syncLayout);
-
-  syncLayout();
+  updateLayout();
 }
 
   /* ==========================================================
