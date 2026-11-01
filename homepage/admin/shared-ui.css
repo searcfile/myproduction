@@ -4656,18 +4656,21 @@ body .header {
     padding: 4px;
   }
 
-  .mobile-account-username {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 42px;
-    padding: 8px 12px;
-    margin: 4px;
-    color: #ffffff;
-    font-size: 14px;
-    padding-inline: 24px;
-    font-weight: 600;
-  }
+
+.mobile-account-username {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 12px;
+  margin: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
 
   .mobile-account-username svg {
     width: 19.2px;
