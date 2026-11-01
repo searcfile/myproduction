@@ -1092,7 +1092,7 @@ function createShell() {
             type="text"
             id="sidebarSearchInput"
             class="sidebar-search-input"
-            placeholder="Search menu..."
+            placeholder="Search"
             name="no_autofill_sidebar_8271"
             autocomplete="new-password"
             autocorrect="off"
