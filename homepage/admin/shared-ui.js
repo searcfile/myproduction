@@ -152,12 +152,7 @@
       file: "history.html",
       name: "My History",
       group: "tools"
-    },
-    {
-      file: "logout.html",
-      name: "logout",
-      group: "standalone"
-    },
+    }
   ];
   /* ==========================================================
      SHARED TAB REGISTRY
@@ -414,16 +409,7 @@ const SIDEBAR_GROUP_ICONS = {
 /* Icon khas halaman - boleh tukar kemudian */
 const SIDEBAR_PAGE_ICONS = {
   "linkdownload.html": ICON_SIDEBAR_ITEM,
-  "item.html": ICON_SIDEBAR_ITEM,
-
-  "dashboard.html": `
-    <svg class="sidebar-item-icon"
-         viewBox="0 0 24 24"
-         fill="currentColor"
-         aria-hidden="true">
-      <path d="M3 21V3h9v2H5v14h7v2zm13-4l-1.375-1.45l2.55-2.55H9v-2h8.175l-2.55-2.55L16 7l5 5z"/>
-    </svg>
-  `
+  "item.html": ICON_SIDEBAR_ITEM
 };
 
 
