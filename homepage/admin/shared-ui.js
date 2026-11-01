@@ -341,6 +341,24 @@ const ICON_ARROW = `
 
 
 /* ==========================================
+   USERNAME ICON - DESKTOP & MOBILE
+   ========================================== */
+
+const ICON_USERNAME = `
+  <svg xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 18 18"
+       width="19.2"
+       height="19.2"
+       fill="currentColor"
+       aria-hidden="true">
+    <g fill="currentColor" fill-rule="evenodd">
+      <path d="M13.689 11.132c1.155 1.222 1.953 2.879 2.183 4.748a1.007 1.007 0 0 1-1 1.12H3.007a1.005 1.005 0 0 1-1-1.12c.23-1.87 1.028-3.526 2.183-4.748c.247.228.505.442.782.633c-1.038 1.069-1.765 2.55-1.972 4.237L14.872 16c-.204-1.686-.93-3.166-1.966-4.235a7 7 0 0 0 .783-.633M8.939 1c1.9 0 3 2 4.38 2.633a2.48 2.48 0 0 1-1.88.867c-.298 0-.579-.06-.844-.157A3.73 3.73 0 0 1 7.69 5.75c-1.395 0-3.75.25-3.245-1.903C5.94 3 6.952 1 8.94 1"/>
+      <path d="M8.94 2c2.205 0 4 1.794 4 4s-1.795 4-4 4c-2.207 0-4-1.794-4-4s1.793-4 4-4m0 9A5 5 0 1 0 8.937.999A5 5 0 0 0 8.94 11"/>
+    </g>
+  </svg>
+`;
+
+/* ==========================================
    SIDEBAR PAGE ICON SYSTEM
    ========================================== */
 
@@ -1160,14 +1178,12 @@ function createShell() {
   <!-- ACCOUNT KHAS MOBILE <= 550PX -->
   <div id="mobileSidebarAccount" class="mobile-sidebar-account">
 
-    <div class="mobile-account-username">
-      <svg viewBox="0 0 24 24"
-           fill="currentColor"
-           aria-hidden="true">
-        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
-      </svg>
-      <span id="mobileSidebarUsername">Admin</span>
-    </div>
+
+<div class="mobile-account-username">
+  ${ICON_USERNAME}
+  <span id="mobileSidebarUsername">Admin</span>
+</div>
+
 
     <div id="mobileAccountControls" class="mobile-account-controls"></div>
 
@@ -1623,25 +1639,19 @@ aria-label="Search tabs"
 
       <div class="user-dropdown">
 
-        <button
-          id="userName"
-          class="user-button"
-          aria-label="Account"
-          title="Account">
 
-          <svg
-            width="1rem"
-            height="1rem"
-            fill="currentColor"
-            viewBox="0 0 24 24">
+<button
+  id="userName"
+  class="user-button"
+  aria-label="Account"
+  title="Account">
 
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
+  ${ICON_USERNAME}
 
-          </svg>
+  <span id="userNameText"></span>
 
-          <span id="userNameText"></span>
+</button>
 
-        </button>
 
 
         <div
