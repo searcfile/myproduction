@@ -4175,7 +4175,7 @@ body .header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
@@ -4185,7 +4185,7 @@ body .header {
    ========================================== */
 
 .header-color-swatch-btn {
-  width: 24px;
+  width: 22px;
   height: 22px;
   display: flex;
   align-items: center;
@@ -4550,8 +4550,8 @@ body .header {
   align-items: center;
   justify-content: center;
 
-  width: 28px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
 
   margin: 0;
   padding: 0;
@@ -4578,8 +4578,8 @@ body .header {
 
 .header-color-reset svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   fill: currentColor;
   transition: transform .25s ease;
