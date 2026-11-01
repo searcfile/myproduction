@@ -39,11 +39,11 @@
       name: "Live Chat",
       group: "main"
     },
-    {
-      file: "livechat-support.html",
-      name: "Agent Support",
-      group: "main"
-    },
+{
+  file: "livechat-support.html",
+  name: "Agent Support",
+  group: "standalone-top"
+},
     {
       file: "notice.html",
       name: "Notice Blasting",
@@ -2178,12 +2178,52 @@ const groupNames = {
   /* STANDALONE SIDEBAR ITEMS */
 
 
-  const groups = [...new Set([
-    ...groupOrder,
-    ...pages
-      .filter(page => page.group !== "standalone")
-      .map(page => page.group || "main")
-  ])];
+/* ==========================================
+   STANDALONE TOP - ATAS MAIN MENU
+   ========================================== */
+
+pages
+  .filter(page => page.group === "standalone-top")
+  .forEach(page => {
+
+    const link = document.createElement("a");
+    link.href = `./${page.file}`;
+    link.className = "sidebar-group-toggle sidebar-standalone-link";
+    link.dataset.file = page.file;
+
+    const left = document.createElement("span");
+    left.className = "sidebar-group-left";
+
+    const icon = document.createElement("span");
+    icon.className = "sidebar-group-icon-wrap";
+    icon.innerHTML = getSidebarPageIcon(page);
+
+    const title = document.createElement("span");
+    title.className = "sidebar-group-title";
+    title.textContent = page.name;
+
+    left.append(icon, title);
+    link.appendChild(left);
+
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      addTab(page);
+    });
+
+    container.appendChild(link);
+  });
+
+
+const groups = [...new Set([
+  ...groupOrder,
+  ...pages
+    .filter(page =>
+      page.group !== "standalone" &&
+      page.group !== "standalone-top"
+    )
+    .map(page => page.group || "main")
+])];
+
 
   groups.forEach(groupId => {
     const groupPages = pages.filter(
