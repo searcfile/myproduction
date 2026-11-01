@@ -1357,12 +1357,6 @@ body.light-theme .theme-toggle-knob{
   transition:all .2s ease;
 }
 
-.sidebar a:hover,
-#customSidebarTabs a:hover{
-  background:#03203d;
-
-  color:#fff;
-}
 
 .sidebar-link-left{
   display:inline-flex;
@@ -1661,7 +1655,6 @@ body.light-theme .theme-toggle-knob{
 }
 
 #customSidebarTabs .sidebar-standalone-link:hover {
-  background: #03203d;
   color: #fff;
 }
 
