@@ -54,11 +54,11 @@
       name: "Users-History",
       group: "main"
     },
-    {
-      file: "linkdownload.html",
-      name: "Link Download",
-      group: "main"
-    },
+{
+  file: "linkdownload.html",
+  name: "Link Download",
+  group: "standalone-top"
+},
     {
       file: "item.html",
       name: "Item",
@@ -405,10 +405,19 @@ const SIDEBAR_GROUP_ICONS = {
   `
 };
 
-
+const ICON_LINK_DOWNLOAD = `
+  <svg class="sidebar-item-icon"
+       viewBox="0 0 24 24"
+       width="19.2"
+       height="19.2"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="M9 2h6v1h-6v-1zm6-1v-1h-6v1h6zm-5.146 21l-1.854 2h8l-1.854-2h-4.292zm10.146-14h-5v-4h-6v4h-5l8 8 8-8zm-2 11h-12v-6.172l-2-2v10.172h16v-10.172l-2 2v6.172z"/>
+  </svg>
+`;
 /* Icon khas halaman - boleh tukar kemudian */
 const SIDEBAR_PAGE_ICONS = {
-  "linkdownload.html": ICON_SIDEBAR_ITEM,
+  "linkdownload.html": ICON_LINK_DOWNLOAD,
   "item.html": ICON_SIDEBAR_ITEM
 };
 
