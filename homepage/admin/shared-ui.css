@@ -1468,6 +1468,7 @@ body.light-theme .theme-toggle-knob{
   text-overflow: ellipsis;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.65);
+  transition: all 0.3s;
 }
 #customSidebarTabs .sidebar-group-title:hover {
   color:#ffffff;
