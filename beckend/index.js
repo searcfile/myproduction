@@ -4081,22 +4081,45 @@ if (
    END PUSSY888 GAME CATALOG
    ===================================================== */
 // GET — List all sites
-app.get("/api/sites", requireAdmin, superOnly, async (req, res) => {
+
+// GET — Sites visible to current admin
+app.get("/api/sites", requireAdmin, async (req, res) => {
   try {
+    const profile = req.admin.profile;
     const snap = await db.ref("sites").once("value");
     const data = snap.val() || {};
 
-    const sites = Object.entries(data).map(([id, site]) => ({
-      id,
-      ...site
-    }));
+    const allowedIds = new Set(
+      Array.isArray(profile.siteIds)
+        ? profile.siteIds.map(String)
+        : []
+    );
+
+    const sites = Object.entries(data)
+      .filter(([id, site]) => {
+        if (!site || site.active !== true) return false;
+
+        if (profile.role === "superadmin") return true;
+
+        return (
+          profile.role === "siteadmin" &&
+          allowedIds.has(id)
+        );
+      })
+      .map(([id, site]) => ({
+        id,
+        name: site.name || id,
+        active: true
+      }));
 
     return res.json({ ok: true, sites });
+
   } catch (error) {
-    console.error("List sites:", error.message);
+    console.error("GET /api/sites:", error);
     return fail(res, 500, "Cannot load sites");
   }
 });
+
 
 // POST — Create site
 app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
