@@ -4613,3 +4613,157 @@ body .header {
   display: flex;
   align-items: center;
 }
+
+/* ==========================================
+   MOBILE SIDEBAR ACCOUNT
+   ========================================== */
+
+#mobileSidebarAccount {
+  display: none;
+}
+
+@media (max-width: 550px) {
+
+  /* Akaun dipaparkan dalam sidebar */
+  #mobileSidebarAccount {
+    display: block;
+    padding: 8px 4px 12px;
+    background: #001529;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    margin-bottom: 8px;
+  }
+
+  /* Sembunyikan username dropdown di header */
+  .header .user-dropdown {
+    display: none !important;
+  }
+
+  /* Username sama gaya seperti group */
+  #mobileSidebarAccount .mobile-account-username {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 8px 12px;
+    margin: 4px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  #mobileSidebarAccount .mobile-account-username svg {
+    display: block;
+    width: 19.2px;
+    height: 19.2px;
+    flex: 0 0 19.2px;
+    fill: currentColor;
+  }
+
+  /* Container setting akaun */
+  #mobileAccountControls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 8px;
+  }
+
+  /* Password buttons - guna tombol asal */
+  #mobileAccountControls .btn-cpw {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 38px;
+    height: auto;
+    margin: 0;
+    padding: 8px 12px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: none;
+  }
+
+  #mobileAccountControls .btn-cpw:hover {
+    background: rgba(255,255,255,.08);
+    color: #ffffff;
+  }
+
+  #mobileAccountControls .btn-cpw svg {
+    width: 19.2px;
+    height: 19.2px;
+    flex: 0 0 19.2px;
+    fill: currentColor;
+  }
+
+  /* Header Color asal, disusun dalam satu baris */
+  #mobileAccountControls .header-color-settings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 42px;
+    height: auto;
+    margin: 0;
+    padding: 7px 12px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: #ffffff;
+    box-shadow: none;
+  }
+
+  #mobileAccountControls .header-color-settings:hover {
+    background: rgba(255,255,255,.08);
+  }
+
+  #mobileAccountControls .header-color-title {
+    font-size: 14px;
+    color: #ffffff;
+  }
+
+  #mobileAccountControls .header-color-reset {
+    color: #ffffff;
+  }
+
+  /* Theme sebagai standalone link */
+  #mobileSidebarAccount .mobile-theme-link {
+    display: flex;
+    align-items: center;
+    width: calc(100% - 8px);
+    min-height: 42px;
+    margin: 4px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  #mobileSidebarAccount .mobile-theme-link:hover {
+    background: rgba(255,255,255,.08);
+    color: #ffffff;
+  }
+
+  #mobileSidebarAccount .mobile-theme-link svg {
+    display: block;
+    width: 19.2px;
+    height: 19.2px;
+    fill: currentColor;
+  }
+
+  /* Ruang sidebar tetap boleh scroll */
+  #sidebar .sidebar-menu-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
