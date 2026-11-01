@@ -6622,21 +6622,30 @@ function getSharedDb() {
     });
   }
 
-  function syncMenuNotifDot() {
-    const notifDot = document.getElementById("notifDot");
-    const menuDot = document.getElementById("menuNotifDot");
-    if (!notifDot || !menuDot) return;
 
-    const hasNotice = getComputedStyle(notifDot).display !== "none";
+function syncMenuNotifDot() {
+  const notifDot = document.getElementById("notifDot");
+  const menuDot = document.getElementById("menuNotifDot");
 
-    if (window.innerWidth <= 815 && hasNotice) {
-      menuDot.style.display = "flex";
-      menuDot.textContent = (notifDot.textContent || "1").trim() || "1";
-    } else {
-      menuDot.style.display = "none";
-      menuDot.textContent = "";
-    }
+  if (!notifDot || !menuDot) return;
+
+  const hasNotice =
+    notifDot.style.display !== "none" &&
+    getComputedStyle(notifDot).display !== "none";
+
+  const isMobile = window.innerWidth <= 815;
+
+  if (isMobile && hasNotice) {
+    menuDot.textContent =
+      (notifDot.textContent || "1").trim() || "1";
+
+    menuDot.style.display = "flex";
+  } else {
+    menuDot.textContent = "";
+    menuDot.style.display = "none";
   }
+}
+
 
   function moveNotifButtonResponsive() {
     const button = document.getElementById("notifButton");
