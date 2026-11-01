@@ -2385,13 +2385,29 @@ link.appendChild(left);
           files.has(file)
         );
          
+
 /* Tandakan halaman yang sedang aktif */
+const isActivePage =
+  file === getActiveFile();
+
 if (element.matches(".dropdown-links a")) {
   element.classList.toggle(
     "dropdown-page-active",
-    file === getCurrentFile()
+    isActivePage
   );
 }
+
+/* Active untuk link sidebar */
+if (element.matches(
+  "#customSidebarTabs .sidebar-group-inner a, " +
+  "#customSidebarTabs .sidebar-standalone-link"
+)) {
+  element.classList.toggle(
+    "active",
+    isActivePage
+  );
+}
+
 
 
       });
