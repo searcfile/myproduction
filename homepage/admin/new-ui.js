@@ -3827,3 +3827,144 @@ if (document.readyState === 'loading') {
     root.__newUIPagination=api;render();return api;
   };
 })();
+
+/* ==========================================
+   NEW UI - REUSABLE REFRESH LOADING
+   ========================================== */
+
+(function () {
+  "use strict";
+
+  const loaders = new WeakMap();
+
+  function getTarget(target) {
+    if (!target) return document.body;
+
+    if (typeof target === "string") {
+      const element = document.querySelector(target);
+
+      if (!element) {
+        throw new Error(
+          "NewUI.refreshLoading: Target not found: " + target
+        );
+      }
+
+      return element;
+    }
+
+    if (!(target instanceof HTMLElement)) {
+      throw new Error("NewUI.refreshLoading: Invalid target");
+    }
+
+    return target;
+  }
+
+  function show(options = {}) {
+    const target = getTarget(options.target);
+    const message =
+      options.message ?? "Please wait while fetching...";
+
+    let state = loaders.get(target);
+
+    if (state) {
+      state.count++;
+
+      const label = state.overlay.querySelector(
+        ".newui-refresh-overlay-text"
+      );
+
+      if (label) label.textContent = String(message);
+
+      return target;
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "newui-refresh-overlay";
+
+    overlay.setAttribute("role", "status");
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-label", "Loading");
+
+    overlay.innerHTML = `
+      <div class="newui-refresh-overlay-box">
+        <div class="newui-refresh-overlay-dots"
+             aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="newui-refresh-overlay-text"></div>
+      </div>
+    `;
+
+    overlay.querySelector(
+      ".newui-refresh-overlay-text"
+    ).textContent = String(message);
+
+    let previousPosition = null;
+
+    if (target !== document.body) {
+      overlay.classList.add("is-container");
+
+      if (getComputedStyle(target).position === "static") {
+        previousPosition = target.style.position;
+        target.style.position = "relative";
+      }
+    }
+
+    target.appendChild(overlay);
+
+    loaders.set(target, {
+      overlay,
+      count: 1,
+      previousPosition
+    });
+
+    return target;
+  }
+
+  function hide(target = document.body) {
+    const element = getTarget(target);
+    const state = loaders.get(element);
+
+    if (!state) return;
+
+    state.count--;
+
+    if (state.count > 0) return;
+
+    state.overlay.remove();
+
+    if (state.previousPosition !== null) {
+      element.style.position = state.previousPosition;
+    }
+
+    loaders.delete(element);
+  }
+
+  async function run(task, options = {}) {
+    if (typeof task !== "function") {
+      throw new TypeError(
+        "NewUI.refreshLoading.run requires a function"
+      );
+    }
+
+    const target = show(options);
+
+    try {
+      return await task();
+    } finally {
+      hide(target);
+    }
+  }
+
+  window.NewUI = window.NewUI || {};
+
+  window.NewUI.refreshLoading = {
+    show,
+    hide,
+    run
+  };
+
+})();
