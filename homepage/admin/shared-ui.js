@@ -2407,10 +2407,24 @@ if (element.matches(
     isActivePage
   );
 }
+         
+});
+    /* Tandakan group yang mempunyai halaman aktif */
+    document.querySelectorAll(
+      "#customSidebarTabs .sidebar-group"
+    ).forEach(group => {
 
+      const hasActivePage = !!group.querySelector(
+        ".sidebar-group-inner a.active"
+      );
 
+      group.classList.toggle(
+        "has-active-page",
+        hasActivePage
+      );
 
-      });
+    });
+
   }
 
 
