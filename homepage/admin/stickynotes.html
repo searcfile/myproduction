@@ -1868,11 +1868,24 @@ window.addEventListener("message", (e) => {
     filterCombo?.classList.remove("open");
   }
   if(data.type === "user-login" && data.user){
-    const nextUser = {
-      name: data.user.name || "Guest",
-      email: data.user.email || "guest",
-      photo: data.user.photo || ""
-    };
+
+const firebaseUser = firebase.auth().currentUser;
+
+if (!firebaseUser) return;
+
+const nextUser = {
+  name: currentUser.name !== "Guest"
+    ? currentUser.name
+    : (data.user.username ||
+       data.user.name ||
+       firebaseUser.displayName ||
+       firebaseUser.email?.split("@")[0] ||
+       "Unknown User"),
+
+  email: firebaseUser.email || firebaseUser.uid,
+  photo: firebaseUser.photoURL || ""
+};
+
 
     const oldEmail = String(currentUser.email || "").toLowerCase();
     const newEmail = String(nextUser.email || "").toLowerCase();
@@ -1948,24 +1961,68 @@ document.addEventListener("keydown", (e) => {
 /* =========================
    INIT
 ========================= */
-(function init(){
-  try{
-    const localLogin = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-    if(localLogin.email){
-      currentUser = {
-        name: localLogin.name || "Guest",
-        email: localLogin.email || "guest",
-        photo: localLogin.photo || ""
-      };
-    }
-  }catch{}
 
-  loadNotes();
+(function init(){
+
+  // Minta maklumat daripada halaman admin utama
   requestParentData();
 
   setTimeout(requestParentData, 500);
   setTimeout(requestParentData, 1200);
+
+  // Ambil pengguna yang benar-benar login melalui Firebase
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      detachNotesListener();
+      notes = [];
+      renderNotes();
+      return;
+    }
+
+    try {
+      const snapshot = await firebase.database()
+        .ref(`adminUsers/${user.uid}`)
+        .once("value");
+
+      // Elak hasil lama dipakai jika sesi sudah bertukar
+      if (firebase.auth().currentUser?.uid !== user.uid) return;
+
+      const profile = snapshot.val() || {};
+
+      const username =
+        String(profile.username || "").trim() ||
+        String(user.displayName || "").trim() ||
+        user.email?.split("@")[0] ||
+        "Unknown User";
+
+      const nextUser = {
+        name: username,
+        email: user.email || user.uid,
+        photo: user.photoURL || ""
+      };
+
+      const oldEmail = String(currentUser.email || "").toLowerCase();
+      const newEmail = String(nextUser.email || "").toLowerCase();
+
+      currentUser = nextUser;
+
+      if (oldEmail !== newEmail || !notesRef) {
+        loadNotes();
+      } else {
+        renderNotes();
+      }
+
+    } catch (error) {
+      console.error("Sticky Notes profile error:", error);
+      window.NewUI?.showToast?.(
+        "Unable to load admin profile",
+        "error"
+      );
+    }
+  });
+
 })();
+
 
 window.HISTORY_TAB_NAME = "STICKY NOTES";
 // ✅ Hantar ke main page
