@@ -2176,35 +2176,7 @@ const groupNames = {
   container.replaceChildren();
 
   /* STANDALONE SIDEBAR ITEMS */
-  pages
-    .filter(page => page.group === "standalone")
-    .forEach(page => {
-      const link = document.createElement("a");
 
-
-link.href = `./${page.file}`;
-link.className = "sidebar-standalone-link";
-link.dataset.file = page.file;
-
-const left = document.createElement("span");
-left.className = "sidebar-link-left";
-
-const label = document.createElement("span");
-label.className = "sidebar-link-text";
-label.textContent = page.name;
-
-left.innerHTML = getSidebarPageIcon(page);
-left.appendChild(label);
-link.appendChild(left);
-
-
-      link.addEventListener("click", event => {
-        event.preventDefault();
-        addTab(page);
-      });
-
-      container.appendChild(link);
-    });
 
   const groups = [...new Set([
     ...groupOrder,
@@ -2310,6 +2282,41 @@ setOpen(oldOpenGroups.has(groupId));
 });
 
 /* ==========================================
+   STANDALONE - SAMA LEVEL DENGAN GROUP
+   ========================================== */
+
+pages
+  .filter(page => page.group === "standalone")
+  .forEach(page => {
+    const link = document.createElement("a");
+
+    link.href = `./${page.file}`;
+    link.className = "sidebar-group-toggle sidebar-standalone-link";
+    link.dataset.file = page.file;
+
+    const left = document.createElement("span");
+    left.className = "sidebar-group-left";
+
+    const icon = document.createElement("span");
+    icon.className = "sidebar-group-icon-wrap";
+    icon.innerHTML = getSidebarPageIcon(page);
+
+    const title = document.createElement("span");
+    title.className = "sidebar-group-title";
+    title.textContent = page.name;
+
+    left.append(icon, title);
+    link.appendChild(left);
+
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      addTab(page);
+    });
+
+    container.appendChild(link);
+  });
+
+/* ==========================================
    LOGOUT - STANDALONE LINK
    ========================================== */
 
@@ -2317,13 +2324,19 @@ const logoutLink = document.createElement("a");
 
 logoutLink.href = "#";
 logoutLink.id = "sidebarLogoutBtn";
-logoutLink.className = "sidebar-standalone-link";
+logoutLink.className = "sidebar-group-toggle sidebar-standalone-link";
+
+
+/* Logout guna struktur yang sama dengan group */
 
 const logoutLeft = document.createElement("span");
-logoutLeft.className = "sidebar-link-left";
+logoutLeft.className = "sidebar-group-left";
 
-logoutLeft.innerHTML = `
-  <svg class="sidebar-item-icon"
+const logoutIcon = document.createElement("span");
+logoutIcon.className = "sidebar-group-icon-wrap";
+
+logoutIcon.innerHTML = `
+  <svg class="sidebar-group-icon"
        viewBox="0 0 24 24"
        fill="currentColor"
        aria-hidden="true">
@@ -2332,11 +2345,12 @@ logoutLeft.innerHTML = `
 `;
 
 const logoutText = document.createElement("span");
-logoutText.className = "sidebar-link-text";
+logoutText.className = "sidebar-group-title";
 logoutText.textContent = "Logout";
 
-logoutLeft.appendChild(logoutText);
+logoutLeft.append(logoutIcon, logoutText);
 logoutLink.appendChild(logoutLeft);
+
 
 /* Guna logout Firebase asal */
 logoutLink.addEventListener("click", event => {
