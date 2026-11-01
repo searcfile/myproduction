@@ -1453,10 +1453,17 @@ function sanitizeEmail(email){
     .replace(/[@#$\[\]\/\s]/g, "_");
 }
 
-function getUserNotesPath(){
-  const key = sanitizeEmail(currentUser.email);
-  return `stickyNotes/${key}`;
+
+function getUserNotesPath() {
+  const uid = firebase.auth().currentUser?.uid;
+
+  if (!uid) {
+    throw new Error("Sticky Notes: User belum login");
+  }
+
+  return `stickyNotes/${uid}`;
 }
+
 function escapeHtml(str){
   return String(str || "")
     .replaceAll("&","&amp;")
@@ -1489,12 +1496,41 @@ function detachNotesListener(){
   notesListener = null;
 }
 
-function loadNotes(){
+
+function loadNotes() {
   detachNotesListener();
 
-  notesRef = db.ref(getUserNotesPath());
+  const user = firebase.auth().currentUser;
 
-  notesListener = notesRef.on("value", (snap) => {
+
+if (!user) {
+  detachNotesListener();
+
+  currentUser = {
+    uid: "",
+    username: "",
+    name: "Guest",
+    role: "",
+    email: "",
+    photo: ""
+  };
+
+  notes = [];
+  renderUser();
+  renderNotes();
+  return;
+}
+
+
+  const uid = user.uid;
+  const ref = db.ref(`stickyNotes/${uid}`);
+
+  notesRef = ref;
+
+  notesListener = ref.on("value", (snap) => {
+    if (firebase.auth().currentUser?.uid !== uid) return;
+    if (notesRef !== ref) return;
+
     const data = snap.val() || {};
 
     notes = Object.keys(data).map(id => ({
@@ -1503,12 +1539,14 @@ function loadNotes(){
     }));
 
     renderNotes();
-  }, (err) => {
-    console.error("Sticky notes Firebase error:", err);
+
+  }, (error) => {
+    console.error("Sticky Notes Firebase error:", error);
     notes = [];
     renderNotes();
   });
 }
+
 
 function saveNoteToFirebase(note){
   if(!note || !note.id) return Promise.resolve();
@@ -1726,6 +1764,16 @@ async function handleSave(){
     return;
   }
 
+const authUser = firebase.auth().currentUser;
+
+if (!authUser || currentUser.uid !== authUser.uid) {
+  window.NewUI?.showToast?.(
+    "Please wait for your account to load",
+    "warning"
+  );
+  return;
+}
+
   const now = Date.now();
 
   let note;
@@ -1739,8 +1787,9 @@ async function handleSave(){
       title: title || "Untitled",
       body,
       color: selectedColor,
-      userName: currentUser.name || "Guest",
-      userEmail: currentUser.email || "guest",
+      userUid: authUser.uid,
+userName: currentUser.name,
+userEmail: currentUser.email,
       updatedAt: now
     };
   }else{
@@ -1752,8 +1801,9 @@ async function handleSave(){
       body,
       color: selectedColor,
       pinned: false,
-      userName: currentUser.name || "Guest",
-      userEmail: currentUser.email || "guest",
+      userUid: authUser.uid,
+userName: currentUser.name,
+userEmail: currentUser.email,
       createdAt: now,
       updatedAt: now
     };
@@ -1862,43 +1912,15 @@ function requestParentData(){
   }catch{}
 }
 
+
 window.addEventListener("message", (e) => {
   const data = e.data || {};
-  if(data.type === "close-sticky-dropdown"){
+
+  if (data.type === "close-sticky-dropdown") {
     filterCombo?.classList.remove("open");
   }
-  if(data.type === "user-login" && data.user){
-
-const firebaseUser = firebase.auth().currentUser;
-
-if (!firebaseUser) return;
-
-const nextUser = {
-  name: currentUser.name !== "Guest"
-    ? currentUser.name
-    : (data.user.username ||
-       data.user.name ||
-       firebaseUser.displayName ||
-       firebaseUser.email?.split("@")[0] ||
-       "Unknown User"),
-
-  email: firebaseUser.email || firebaseUser.uid,
-  photo: firebaseUser.photoURL || ""
-};
-
-
-    const oldEmail = String(currentUser.email || "").toLowerCase();
-    const newEmail = String(nextUser.email || "").toLowerCase();
-
-    currentUser = nextUser;
-
-    if(oldEmail !== newEmail){
-      loadNotes();
-    }else{
-      renderNotes();
-    }
-  }
 });
+
 
 /* =========================
    EVENTS
@@ -1989,28 +2011,43 @@ document.addEventListener("keydown", (e) => {
 
       const profile = snapshot.val() || {};
 
-      const username =
-        String(profile.username || "").trim() ||
-        String(user.displayName || "").trim() ||
-        user.email?.split("@")[0] ||
-        "Unknown User";
 
-      const nextUser = {
-        name: username,
-        email: user.email || user.uid,
-        photo: user.photoURL || ""
-      };
+const username =
+  String(profile.username || "").trim() ||
+  String(user.displayName || "").trim() ||
+  user.email?.split("@")[0] ||
+  "Unknown User";
 
-      const oldEmail = String(currentUser.email || "").toLowerCase();
-      const newEmail = String(nextUser.email || "").toLowerCase();
+const displayName =
+  profile.role === "superadmin"
+    ? "Super Admin"
+    : profile.role === "siteadmin"
+      ? "Site Admin"
+      : username;
 
-      currentUser = nextUser;
 
-      if (oldEmail !== newEmail || !notesRef) {
-        loadNotes();
-      } else {
-        renderNotes();
-      }
+
+const nextUser = {
+  uid: user.uid,
+  username: username,
+  name: displayName,
+  role: profile.role || "",
+  email: user.email || "",
+  photo: user.photoURL || ""
+};
+
+
+
+const oldUid = currentUser.uid || "";
+
+currentUser = nextUser;
+
+if (oldUid !== user.uid || !notesRef) {
+  loadNotes();
+} else {
+  renderNotes();
+}
+
 
     } catch (error) {
       console.error("Sticky Notes profile error:", error);
