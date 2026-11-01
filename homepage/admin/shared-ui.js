@@ -2305,50 +2305,10 @@ link.appendChild(left);
       setOpen(!group.classList.contains("is-open"));
     });
 
+  setOpen(oldOpenGroups.has(groupId));
+  });
 
-setOpen(oldOpenGroups.has(groupId));
-});
-
-/* ==========================================
-   LOGOUT - STANDALONE LINK
-   ========================================== */
-
-const logoutLink = document.createElement("a");
-
-logoutLink.href = "#";
-logoutLink.id = "sidebarLogoutBtn";
-logoutLink.className = "sidebar-standalone-link";
-
-const logoutLeft = document.createElement("span");
-logoutLeft.className = "sidebar-link-left";
-
-logoutLeft.innerHTML = `
-  <svg class="sidebar-item-icon"
-       viewBox="0 0 24 24"
-       fill="currentColor"
-       aria-hidden="true">
-    <path d="M3 21V3h9v2H5v14h7v2zm13-4l-1.375-1.45l2.55-2.55H9v-2h8.175l-2.55-2.55L16 7l5 5z"/>
-  </svg>
-`;
-
-const logoutText = document.createElement("span");
-logoutText.className = "sidebar-link-text";
-logoutText.textContent = "Logout";
-
-logoutLeft.appendChild(logoutText);
-logoutLink.appendChild(logoutLeft);
-
-/* Guna logout Firebase asal */
-logoutLink.addEventListener("click", event => {
-  event.preventDefault();
-  handleLogout();
-});
-
-/* Letak selepas semua group */
-container.appendChild(logoutLink);
-
-updateOpenIndicators();
-
+  updateOpenIndicators();
 
   const search = document.getElementById("sidebarSearchInput");
   if (search?.value.trim()) {
