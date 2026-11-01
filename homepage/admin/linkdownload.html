@@ -337,7 +337,7 @@ async function refreshGridOnly() {
       const snapshot = await db.ref(PATH).once('value');
 
       // Minimum 450ms supaya animasi kelihatan.
-      const remaining = 450 - (performance.now() - startTime);
+      const remaining = 1000 - (performance.now() - startTime);
 
       if (remaining > 0) {
         await new Promise(resolve =>
@@ -355,8 +355,8 @@ async function refreshGridOnly() {
       render();
 
     }, {
-      target: grid,
-      message: 'Please wait while fetching...'
+target: document.body,
+message: 'Please wait while fetching...'
     });
 
   } catch (error) {
