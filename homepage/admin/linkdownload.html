@@ -250,7 +250,7 @@
 .ld-grid-wrapper {
   position: relative;
   width: 100%;
-  min-height: 240px;
+  min-height: max(240px, calc(100vh - 220px));
   isolation: isolate;
 }
 
@@ -258,10 +258,12 @@
   position: absolute;
   inset: 0;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #000;
   border-radius: 8px;
 }
-
 </style>
 </head>
 <body>
