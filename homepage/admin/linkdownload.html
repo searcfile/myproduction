@@ -231,45 +231,6 @@
   display: none !important;
 }
 
-/* 4 DOTS GRID LOADING */
-
-.ld-grid-loading {
-  grid-column: 1 / -1;
-  width: 100%;
-  min-height: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--ld-muted);
-  font-size: 12px;
-}
-
-.ld-grid-dots {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  grid-template-columns: repeat(2, 8px);
-  grid-template-rows: repeat(2, 8px);
-  gap: 5px;
-  animation: ld-grid-spin 1s linear infinite;
-}
-
-.ld-grid-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #2685ff;
-}
-
-.ld-grid-dots span:nth-child(2) { opacity: .75; }
-.ld-grid-dots span:nth-child(3) { opacity: .5; }
-.ld-grid-dots span:nth-child(4) { opacity: .25; }
-
-@keyframes ld-grid-spin {
-  to { transform: rotate(360deg); }
-}
 
 @media (max-width: 830px) {
   .ld-toolbar-actions {
@@ -353,51 +314,54 @@ const grid=$('#ldGrid'),search=$('#ldSearch');
 const refreshButton = $('#ldRefresh');
 let gridRefreshing = false;
 
-function showGridLoading() {
-  grid.innerHTML = `
-    <div class="ld-grid-loading" role="status">
-      <div class="ld-grid-dots" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <span>Please wait while fetching...</span>
-    </div>
-  `;
-}
+
 
 async function refreshGridOnly() {
   if (gridRefreshing || !siteAccessReady || !db) return;
-  if (!can('refresh')) return;
+  if (!can('refresh') || !can('view')) return;
 
   gridRefreshing = true;
   refreshButton.disabled = true;
-  showGridLoading();
-
-  const startTime = performance.now();
 
   try {
-    const snapshot = await db.ref(PATH).once('value');
-
-    // Tunggu minimum 450ms supaya loading kelihatan.
-    const remaining = 450 - (performance.now() - startTime);
-
-    if (remaining > 0) {
-      await new Promise(resolve =>
-        setTimeout(resolve, remaining)
+    if (!window.NewUI?.refreshLoading?.run) {
+      throw new Error(
+        'NewUI.refreshLoading belum tersedia. Check new-ui.js'
       );
     }
 
-    records = snapshot.val() || {};
-    loading = false;
+    await NewUI.refreshLoading.run(async () => {
+      const startTime = performance.now();
 
-    refreshOptions();
-    render();
+      // Ambil semula data terkini daripada Firebase.
+      const snapshot = await db.ref(PATH).once('value');
+
+      // Minimum 450ms supaya animasi kelihatan.
+      const remaining = 450 - (performance.now() - startTime);
+
+      if (remaining > 0) {
+        await new Promise(resolve =>
+          setTimeout(resolve, remaining)
+        );
+      }
+
+      records = snapshot.val() || {};
+      loading = false;
+
+      // Update pilihan platform.
+      refreshOptions();
+
+      // Render semula card tanpa reload halaman.
+      render();
+
+    }, {
+      target: grid,
+      message: 'Please wait while fetching...'
+    });
 
   } catch (error) {
-    console.error('[Link Download] Refresh:', error);
-    toast('Failed to refresh cards', 'error');
+    console.error('[Link Download] Refresh failed:', error);
+    toast(error.message || 'Failed to refresh cards', 'error');
 
     // Kekalkan data lama jika refresh gagal.
     loading = false;
