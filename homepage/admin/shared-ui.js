@@ -426,6 +426,29 @@ const ICON_AGENT_SUPPORT = `
     <path d="M3.848 19h-.848c-.796 0-1.559-.316-2.121-.879-.563-.562-.879-1.325-.879-2.121v-3c0-7.175 5.377-13 12-13s12 5.825 12 13v3c0 .796-.316 1.559-.879 2.121-.562.563-1.325.879-2.121.879h-.848c-2.69 4.633-6.904 5-8.152 5-1.248 0-5.462-.367-8.152-5zm16.152-5.876c-.601.236-1.269-.18-1.269-.797 0-.304-.022-.61-.053-.915-1.761-.254-3.618-1.926-3.699-3.723-1.315 2.005-4.525 4.17-7.044 4.17 1.086-.699 1.839-2.773 1.903-3.508-.581 1.092-2.898 3.136-4.551 3.487l-.018.489c0 .619-.669 1.032-1.269.797v3.771c.287.256.632.464 1.041.594.225.072.412.224.521.424 2.206 4.046 5.426 4.087 6.438 4.087.929 0 3.719-.035 5.877-3.169-1.071.433-2.265.604-3.759.653-.37.6-1.18 1.016-2.118 1.016-1.288 0-2.333-.784-2.333-1.75s1.045-1.75 2.333-1.75c.933 0 1.738.411 2.112 1.005 1.9-.026 4.336-.334 5.888-2.645v-2.236zm-11-.624c.686 0 1.243.672 1.243 1.5s-.557 1.5-1.243 1.5-1.243-.672-1.243-1.5.557-1.5 1.243-1.5zm6 0c.686 0 1.243.672 1.243 1.5s-.557 1.5-1.243 1.5-1.243-.672-1.243-1.5.557-1.5 1.243-1.5zm5.478-1.5h1.357c-.856-5.118-4.937-9-9.835-9-4.898 0-8.979 3.882-9.835 9h1.357c.52-4.023 3.411-7.722 8.478-7.722s7.958 3.699 8.478 7.722z"/>
   </svg>
 `;
+
+/* ==========================================
+   MOBILE THEME ICONS
+   ========================================== */
+
+const ICON_MOBILE_DARK = `
+  <svg class="sidebar-group-icon"
+       viewBox="0 0 24 24"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3zm3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31z"/>
+  </svg>
+`;
+
+const ICON_MOBILE_LIGHT = `
+  <svg class="sidebar-group-icon"
+       viewBox="0 0 24 24"
+       fill="currentColor"
+       aria-hidden="true">
+    <path d="m3.55 19.09l1.41 1.41l1.8-1.79l-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6s6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71l1.8 1.79l1.41-1.41l-1.79-1.8M20.45 5l-1.41-1.4l-1.8 1.79l1.42 1.42M13 1h-2v3h2M6.76 5.39L4.96 3.6L3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"/>
+  </svg>
+`;
+
 /* Icon khas halaman - boleh tukar kemudian */
 const SIDEBAR_PAGE_ICONS = {
   "livechat-support.html": ICON_AGENT_SUPPORT,
@@ -1131,9 +1154,40 @@ function createShell() {
     </div>
 
     <!-- HANYA SIDEBAR ITEMS YANG SCROLL -->
-    <div class="sidebar-menu-scroll">
-      <div id="customSidebarTabs"></div>
+
+<div class="sidebar-menu-scroll">
+
+  <!-- ACCOUNT KHAS MOBILE <= 550PX -->
+  <div id="mobileSidebarAccount" class="mobile-sidebar-account">
+
+    <div class="mobile-account-username">
+      <svg viewBox="0 0 24 24"
+           fill="currentColor"
+           aria-hidden="true">
+        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
+      </svg>
+      <span id="mobileSidebarUsername">Admin</span>
     </div>
+
+    <div id="mobileAccountControls" class="mobile-account-controls"></div>
+
+    <button type="button"
+            id="mobileSidebarThemeBtn"
+            class="sidebar-group-toggle sidebar-standalone-link mobile-theme-link">
+
+      <span class="sidebar-group-left">
+        <span id="mobileThemeIcon" class="sidebar-group-icon-wrap"></span>
+        <span id="mobileThemeText" class="sidebar-group-title">Dark Mode</span>
+      </span>
+
+    </button>
+
+  </div>
+
+  <div id="customSidebarTabs"></div>
+
+</div>
+
 
   </div>
 
@@ -5789,6 +5843,103 @@ document.addEventListener("pointerdown", event => {
   });
 }
 
+/* ==========================================
+   MOBILE SIDEBAR ACCOUNT <= 550PX
+   ========================================== */
+
+function syncMobileThemeButton() {
+  const isLight = document.body.classList.contains("light-theme");
+
+  const icon = document.getElementById("mobileThemeIcon");
+  const text = document.getElementById("mobileThemeText");
+  const button = document.getElementById("mobileSidebarThemeBtn");
+
+  if (icon) {
+    icon.innerHTML = isLight
+      ? ICON_MOBILE_LIGHT
+      : ICON_MOBILE_DARK;
+  }
+
+  if (text) {
+    text.textContent = isLight ? "Light Mode" : "Dark Mode";
+  }
+
+  if (button) {
+    button.setAttribute(
+      "aria-label",
+      isLight ? "Switch to Dark Mode" : "Switch to Light Mode"
+    );
+  }
+}
+
+function initMobileSidebarAccount() {
+  const account = document.getElementById("mobileSidebarAccount");
+  const controls = document.getElementById("mobileAccountControls");
+  const username = document.getElementById("mobileSidebarUsername");
+  const themeButton = document.getElementById("mobileSidebarThemeBtn");
+  const headerUsername = document.getElementById("userNameText");
+
+  if (!account || !controls || !themeButton) return;
+
+  const media = window.matchMedia("(max-width: 550px)");
+
+  // Guna elemen asal supaya event listener dan modal kekal.
+  const movable = [
+    document.getElementById("changePwBtn"),
+    document.getElementById("change2ndPwBtn"),
+    document.querySelector("#dropdownContent .header-color-settings")
+  ].filter(Boolean);
+
+  // Simpan kedudukan asal setiap elemen.
+  const originals = movable.map(element => {
+    const marker = document.createComment("mobile-account-original");
+    element.parentNode.insertBefore(marker, element);
+
+    return { element, marker };
+  });
+
+  const syncUsername = () => {
+    if (!username) return;
+
+    username.textContent =
+      headerUsername?.textContent?.trim() || "Admin";
+  };
+
+  const syncLayout = () => {
+    if (media.matches) {
+      originals.forEach(({ element }) => {
+        controls.appendChild(element);
+      });
+    } else {
+      originals.forEach(({ element, marker }) => {
+        marker.parentNode.insertBefore(element, marker.nextSibling);
+      });
+    }
+
+    syncUsername();
+    syncMobileThemeButton();
+  };
+
+  // Nama dikemaskini selepas Firebase selesai memuatkan profile.
+  if (headerUsername) {
+    const observer = new MutationObserver(syncUsername);
+
+    observer.observe(headerUsername, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+
+  themeButton.addEventListener("click", () => {
+    toggleTheme();
+  });
+
+  media.addEventListener("change", syncLayout);
+
+  syncLayout();
+}
+
   /* ==========================================================
      THEME
      ========================================================== */
@@ -5830,6 +5981,7 @@ function applyTheme() {
   if (toggle) {
     toggle.checked = !isLight;
   }
+   syncMobileThemeButton();
 }
 
 
@@ -7633,6 +7785,7 @@ setupDropdown(
     initNotifications();
 
 initPasswordModals();
+initMobileSidebarAccount();
 updateOpenIndicators();
 
 updateHeaderActiveState();
