@@ -1321,7 +1321,7 @@ body.light-theme .theme-toggle-knob{
 }
 
 .sidebar-search-input::placeholder{
-  color:var(--blur);
+  color:#ffffff8c;
   text-align:left;
 }
 
