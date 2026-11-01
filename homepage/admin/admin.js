@@ -821,9 +821,9 @@ async function initAppUpdatePopup() {
   const STORAGE_KEY = "5g88_seen_app_version";
 
   try {
-    const res = await fetch(`/version.json?t=${Date.now()}`, {
-      cache: "no-store"
-    });
+const res = await fetch(`./version.json?t=${Date.now()}`, {
+  cache: "no-store"
+});
 
     if (!res.ok) return;
 
