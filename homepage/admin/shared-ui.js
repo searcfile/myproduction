@@ -4641,6 +4641,11 @@ remove.title = `Remove ${site.name}`;
       e.preventDefault();
       e.stopPropagation();
 
+if (currentAdminProfile?.role === "siteadmin") {
+  updateInput();
+  return;
+}
+
       selectedIds = selectedIds.filter(id => id !== site.id);
       saveSelection();
       updateInput();
@@ -4770,16 +4775,22 @@ if (customSiteEl && window.NewUI?.chips) {
     placeholder: "🏢 🔍 Search",
     options: [],
     value: [],
-    onChange(values) {
-      if (!ready) return;
 
-      selectedIds = values.filter(id =>
-        availableSites.some(site => site.id === id)
-      );
+onChange(values) {
+  if (!ready) return;
 
-      saveSelection();
-      updateInput();
-    }
+  if (currentAdminProfile?.role === "siteadmin") {
+    selectedIds = availableSites.map(site => site.id);
+  } else {
+    selectedIds = values.filter(id =>
+      availableSites.some(site => site.id === id)
+    );
+  }
+
+  saveSelection();
+  updateInput();
+}
+
   });
 }
 
@@ -4932,6 +4943,15 @@ if (isMobile()) {
       e.preventDefault();
       e.stopPropagation();
 
+       
+if (currentAdminProfile?.role === "siteadmin") {
+  selectedIds = availableSites.map(site => site.id);
+  saveSelection();
+  updateInput();
+  renderOptions(mobileInput.value);
+  return;
+}
+
       if (selectedIds.includes(site.id)) {
         selectedIds = selectedIds.filter(id => id !== site.id);
       } else {
@@ -5052,7 +5072,15 @@ async function loadSites() {
         throw Error(data.message || data.error || "Cannot load sites.");
       }
 
-      availableSites = normalizeSites(data);
+     
+const loadedSites = normalizeSites(data);
+
+availableSites = currentAdminProfile?.role === "siteadmin"
+  ? loadedSites.filter(site =>
+      currentAdminProfile.siteIds.includes(site.id)
+    )
+  : loadedSites;
+
        
 customSiteDropdown?.setOptions(
   availableSites.map(site => ({
@@ -5069,9 +5097,22 @@ customSiteDropdown?.setOptions(
         );
       } catch (_) {}
 
-      selectedIds = Array.isArray(stored)
-        ? stored.filter(id => availableSites.some(s => s.id === id))
-        : [];
+
+const validStored = Array.isArray(stored)
+  ? stored.filter(id =>
+      availableSites.some(site => site.id === id)
+    )
+  : [];
+
+if (currentAdminProfile?.role === "siteadmin") {
+  // Site Admin sentiasa mempunyai semua site
+  // yang ditugaskan kepadanya.
+  selectedIds = availableSites.map(site => site.id);
+} else {
+  // Super Admin boleh pilih atau kosongkan site.
+  selectedIds = validStored;
+}
+
 
       ready = true;
       saveSelection();
@@ -6160,10 +6201,15 @@ if (!profile || profile.active !== true) {
 }
 
 // Profile Firebase digunakan untuk semakan permission.
+
 currentAdminProfile = {
   role: String(profile.role || "").trim().toLowerCase(),
-  permissions: profile.permissions || {}
+  permissions: profile.permissions || {},
+  siteIds: Array.isArray(profile.siteIds)
+    ? profile.siteIds.map(String)
+    : []
 };
+
 // Semak akses URL selepas profile Firebase dimuatkan.
 const currentPage = getCurrentFile();
 
