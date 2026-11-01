@@ -1669,6 +1669,63 @@ body.light-theme .theme-toggle-knob{
   display: none !important;
 }
 
+/* ==========================================
+   STANDALONE SAME LEVEL & STYLE AS GROUP
+   ========================================== */
+
+#customSidebarTabs > .sidebar-standalone-link.sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: calc(100% - 8px);
+  min-height: 42px;
+  margin: 4px;
+  padding: 8px 12px;
+
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+
+  color: rgba(255,255,255,.85);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+
+  transition: all .3s ease;
+}
+
+/* Icon standalone sama seperti group */
+#customSidebarTabs > .sidebar-standalone-link
+.sidebar-group-icon-wrap {
+  color: #ffffff;
+}
+
+/* Hover sama seperti group */
+#customSidebarTabs > .sidebar-standalone-link.sidebar-group-toggle:hover {
+  background: transparent;
+  color: #ffffff;
+}
+
+#customSidebarTabs > .sidebar-standalone-link.sidebar-group-toggle:hover
+.sidebar-group-title {
+  color: #ffffff;
+}
+
+/* Active standalone */
+#customSidebarTabs > .sidebar-standalone-link.sidebar-group-toggle.active
+.sidebar-group-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Pastikan standalone boleh disembunyikan oleh search */
+#customSidebarTabs > .sidebar-standalone-link[hidden] {
+  display: none !important;
+}
+
 /* ==========================================================
    SIDEBAR VERSION
    ========================================================== */
