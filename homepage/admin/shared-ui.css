@@ -1553,11 +1553,21 @@ body.light-theme .theme-toggle-knob{
   font-weight: 600;
 }
 
-/* Group yang mengandungi halaman aktif */
+/* ==========================================
+   ACTIVE GROUP - TEXT, ICON & ARROW
+   ========================================== */
+
 #customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle,
 #customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-title,
-#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-arrow {
-  color: #ffffff;
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-icon-wrap,
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-arrow,
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-arrow svg {
+  color: #ffffff !important;
+}
+
+/* SVG arrow ikut warna active */
+#customSidebarTabs .sidebar-group.has-active-page > .sidebar-group-toggle .sidebar-group-arrow svg {
+  fill: #ffffff !important;
 }
 
 /* ==========================================
