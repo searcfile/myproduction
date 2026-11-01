@@ -1507,6 +1507,7 @@ sidebar-group-title:hover {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  background: #000c17;
   transition:
     grid-template-rows .25s ease,
     opacity .2s ease;
@@ -1528,10 +1529,10 @@ sidebar-group-title:hover {
   display: flex;
   align-items: center;
   min-height: 42px;
-  margin: 0;
+  margin: 2px 3px;
   padding: 7px 12px;
-  background:#000c17;
-  border-radius:0;
+  background:transparent;
+  border-radius:8px;
   border: 0;
   color: rgba(255,255,255,.65);
   font-size: 14px;
@@ -1542,8 +1543,10 @@ sidebar-group-title:hover {
   color: #fff;
   transition: color 0.3s;
 }
-
-
+#customSidebarTabs .sidebar-group-inner a.active {
+  background:#1668dc;
+  font-weight:600;
+}
 /* ==========================================
    FIX SIDEBAR PAGE ICON SIZE
    ========================================== */
