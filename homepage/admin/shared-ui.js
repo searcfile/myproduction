@@ -4723,6 +4723,48 @@ remove.title = `Remove ${site.name}`;
 const customSiteEl = document.getElementById("headerSiteCustom");
 let customSiteDropdown = null;
 
+/* ==========================================
+   HEADER SITE - ARROW / SPINNER SYNC
+   ========================================== */
+
+function setSiteSyncLoading(isLoading) {
+  if (!customSiteEl) return;
+
+  const trigger = customSiteEl.querySelector(
+    ".shared-chip-dropdown-trigger"
+  );
+
+  if (!trigger) return;
+
+  const iconBtn = trigger.querySelector(
+    ".shared-chip-dropdown-icon-btn"
+  );
+
+  if (!iconBtn) return;
+
+  // Cipta spinner hanya sekali.
+  let spinner = iconBtn.querySelector(
+    ".site-sync-spinner"
+  );
+
+  if (!spinner) {
+    spinner = document.createElement("span");
+    spinner.className = "site-sync-spinner";
+    spinner.setAttribute("aria-hidden", "true");
+    iconBtn.appendChild(spinner);
+  }
+
+  customSiteEl.classList.toggle(
+    "site-sync-loading",
+    isLoading
+  );
+
+  trigger.setAttribute(
+    "aria-busy",
+    String(isLoading)
+  );
+}
+
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
     placeholder: "🏢 🔍 Search",
@@ -4969,14 +5011,15 @@ renderOptions("");
   }
 
 
+
 async function loadSites() {
   if (loading) return;
   loading = true;
 
-  // Mulakan animasi sync pada dropdown site.
-  customSiteEl?.classList.add("site-sync-loading");
+  setSiteSyncLoading(true);
 
   try {
+
 
       if (typeof auth === "undefined") {
         throw Error("Firebase Auth is not ready.");
@@ -5040,11 +5083,10 @@ customSiteDropdown?.setOptions(
       ready = false;
       updateInput();
 
+
 } finally {
   loading = false;
-
-  // Hentikan animasi selepas request site selesai.
-  customSiteEl?.classList.remove("site-sync-loading");
+  setSiteSyncLoading(false);
 }
 
   }
