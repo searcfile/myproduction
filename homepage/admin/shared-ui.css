@@ -3566,6 +3566,51 @@ padding:12px;
   overflow: hidden;
 }
 
+/* ==========================================
+   HEADER SELECT SITE - SYNC LOADING
+   ========================================== */
+
+#headerSiteCustom .shared-chip-dropdown-trigger {
+  position: relative;
+}
+
+/* Spinner muncul pada tempat arrow */
+#headerSiteCustom.site-sync-loading
+.shared-chip-dropdown-trigger::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+
+  width: 13px;
+  height: 13px;
+
+  border: 2px solid rgba(255,255,255,0.22);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+
+  transform: translateY(-50%);
+  animation: siteSyncRotate 0.7s linear infinite;
+
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Sembunyikan arrow asal ketika sync */
+#headerSiteCustom.site-sync-loading
+.shared-chip-dropdown-trigger > svg {
+  opacity: 0;
+}
+
+@keyframes siteSyncRotate {
+  from {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
 /* Susunan chips */
 #headerSiteCustom .shared-chip-dropdown-values {
   display: flex;
