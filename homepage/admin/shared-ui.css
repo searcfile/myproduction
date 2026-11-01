@@ -2780,6 +2780,7 @@ body.tab-dragging-active *{
 }
 
 
+
 @media (max-width:600px){
 
   #desktopNotifSlot{
@@ -2790,10 +2791,13 @@ body.tab-dragging-active *{
     display:flex !important;
   }
 
+  /* Badge menu dikawal oleh JavaScript */
   .menu-notif-dot{
-    display:none !important;
+    align-items:center;
+    justify-content:center;
   }
 }
+
 
 
 @media (max-width:572px){
