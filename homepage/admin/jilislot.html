@@ -1503,7 +1503,29 @@ function jiliRebuildDropdown() {
     win: selectedTotalWin
   });
 }
+// JILI - Key selamat untuk Firebase
+function jiliBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
 
+// JILI - Decode key untuk dropdown dan Edit Game
+function jiliDecodePecahan(pecahan = {}) {
+  const result = {};
+
+  for (const [key, wins] of Object.entries(pecahan || {})) {
+    const bet = key.startsWith("bet_")
+      ? key.slice(4).replace("_", ".")
+      : key;
+
+    const numericBet = Number(bet);
+
+    if (Number.isFinite(numericBet)) {
+      result[String(numericBet)] = wins;
+    }
+  }
+
+  return result;
+}
 function jiliApplyDatabase() {
   gameData = {};
 
@@ -1532,10 +1554,10 @@ function jiliApplyDatabase() {
       return;
     }
 
-    gameData[game.name] = {
-      bets: game.bets,
-      pecahan: game.pecahan
-    };
+gameData[game.name] = {
+  bets: game.bets,
+  pecahan: jiliDecodePecahan(game.pecahan)
+};
   });
 
   console.log("[JILI] Database games:",
@@ -1753,16 +1775,18 @@ async function jiliOpenEditor(id = null) {
     window.NewUI?.input?.(winField.input);
   }
 
-  if (record?.bets?.length) {
-    record.bets.forEach(bet => {
-      addBet(
-        bet,
-        record.pecahan?.[String(bet)] || []
-      );
-    });
-  } else {
-    addBet();
-  }
+if (record?.bets?.length) {
+  const decodedPecahan = jiliDecodePecahan(record.pecahan);
+
+  record.bets.forEach(bet => {
+    addBet(
+      bet,
+      decodedPecahan[String(Number(bet))] || []
+    );
+  });
+} else {
+  addBet();
+}
 
   const addButton = jiliEditorElement(
     "button",
@@ -1922,7 +1946,8 @@ async function jiliSaveGame(e, editor) {
       }
 
       bets.push(bet);
-      pecahan[String(bet)] = wins;
+bets.push(bet);
+pecahan[jiliBetKey(bet)] = wins;
     }
 
     const selectedSites = siteChips.getValue() || [];
