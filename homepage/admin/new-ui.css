@@ -2710,3 +2710,35 @@ input::placeholder{
   25% { opacity: 1; }
   50% { opacity: .4; }
 }
+
+/* NEWUI - REFRESH DOTS VISIBILITY */
+
+.newui-refresh-overlay .newui-refresh-overlay-dots {
+  display: block !important;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  visibility: visible !important;
+  opacity: 1 !important;
+  animation: newuiRefreshSpin 1s linear infinite;
+}
+
+.newui-refresh-overlay .newui-refresh-overlay-dots span {
+  display: block !important;
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff !important;
+  visibility: visible !important;
+  animation: newuiRefreshPulse 1s ease-in-out infinite;
+}
+
+.newui-refresh-overlay .newui-refresh-overlay-text {
+  display: block !important;
+  color: #fff !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  text-align: center;
+}
