@@ -1919,7 +1919,7 @@ function kissValidate(body) {
 
   if (Object.keys(pecahan).length !== bets.length ||
       bets.some(bet => {
-        const values = pecahan[String(bet)];
+        const values = pecahan[megaBetKey(bet)];
         return !Array.isArray(values) ||
           !values.length || values.length > 200 ||
           values.some(n => typeof n !== "number" ||
