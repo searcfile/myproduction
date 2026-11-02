@@ -1547,7 +1547,31 @@ img.addEventListener('click', () => {
         const platformTag=document.createElement('div');platformTag.className='logo-platforms';
         const gamePlatforms=Array.isArray(game.platform)?game.platform:Object.values(game.platform||{});
         gamePlatforms.forEach(p=>{const tag=document.createElement('span');tag.className='logo-platform-tag';tag.textContent=p.toUpperCase();platformTag.append(tag);});
-        const imageFrame=document.createElement('div');imageFrame.className='logo-image-frame';imageFrame.append(img);
+       
+const imageFrame = document.createElement("div");
+imageFrame.className = "logo-image-frame shared-card-image-preview";
+
+imageFrame.setAttribute("role", "button");
+imageFrame.setAttribute("tabindex", "0");
+imageFrame.setAttribute(
+  "aria-label",
+  "Preview " + (game.alias || game.name || "Game Logo")
+);
+
+imageFrame.append(img);
+
+imageFrame.addEventListener("click", (event) => {
+  if (event.target !== imageFrame) return;
+  img.click();
+});
+
+imageFrame.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    img.click();
+  }
+});
+
         const typeTag=document.createElement('span');typeTag.className='logo-method-tag';typeTag.textContent=({slot:'Slot',live:'Live Game',table:'Table Game'})[game.type]||game.type||'';
         div.append(alias, imageFrame, name, typeTag, platformTag);
         if (game.id) {
