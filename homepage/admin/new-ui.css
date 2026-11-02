@@ -2609,8 +2609,10 @@ input::placeholder{
 
 
 
+
 /* ==========================================
    NEW UI - SHARED REFRESH LOADING
+   Smart Loading style
    ========================================== */
 
 .newui-refresh-overlay {
@@ -2631,114 +2633,84 @@ input::placeholder{
   z-index: 100;
 }
 
-.newui-refresh-overlay-box {
+.newui-refresh-overlay .smart-loading-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   pointer-events: none;
 }
 
-
-
-@media (prefers-reduced-motion: reduce) {
-  .newui-refresh-overlay-dots,
-  .newui-refresh-overlay-dots span {
-    animation: none;
-  }
-}
-
-.newui-refresh-overlay-dots {
-  position: relative;
-  display: block;
+.newui-refresh-overlay .smart-loading-dots {
   width: 32px;
   height: 32px;
   flex: 0 0 32px;
-  animation: newuiRefreshSpin 1s linear infinite;
+  position: relative;
+  animation: smartRotate 1s linear infinite;
 }
 
-.newui-refresh-overlay-dots span {
-  display: block;
+.newui-refresh-overlay .smart-loading-dots span {
   position: absolute;
+  display: block;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #ffffff;
-  animation: newuiRefreshPulse 1s ease-in-out infinite;
+  background: rgba(255, 255, 255, .85);
+  opacity: .25;
+  animation: smartPulse 1s linear infinite;
 }
 
-.newui-refresh-overlay-dots span:nth-child(1) {
+.newui-refresh-overlay .smart-loading-dots span:nth-child(1) {
   top: 0;
-  left: 11px;
+  left: 50%;
+  transform: translateX(-50%);
   animation-delay: 0s;
 }
 
-.newui-refresh-overlay-dots span:nth-child(2) {
-  top: 11px;
+.newui-refresh-overlay .smart-loading-dots span:nth-child(2) {
   right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   animation-delay: .25s;
 }
 
-.newui-refresh-overlay-dots span:nth-child(3) {
+.newui-refresh-overlay .smart-loading-dots span:nth-child(3) {
   bottom: 0;
-  left: 11px;
+  left: 50%;
+  transform: translateX(-50%);
   animation-delay: .5s;
 }
 
-.newui-refresh-overlay-dots span:nth-child(4) {
-  top: 11px;
+.newui-refresh-overlay .smart-loading-dots span:nth-child(4) {
   left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   animation-delay: .75s;
 }
 
-.newui-refresh-overlay-text {
-  display: block;
-  color: #ffffff;
-  font-size: 12px;
-  line-height: 1.5;
+.newui-refresh-overlay .smart-loading-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
   text-align: center;
 }
 
-@keyframes newuiRefreshSpin {
+@keyframes smartPulse {
+  0%   { opacity: .2; }
+  25%  { opacity: 1; }
+  50%  { opacity: .4; }
+  100% { opacity: .2; }
+}
+
+@keyframes smartRotate {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
-@keyframes newuiRefreshPulse {
-  0%, 100% { opacity: .2; }
-  25% { opacity: 1; }
-  50% { opacity: .4; }
-}
-
-/* NEWUI - REFRESH DOTS VISIBILITY */
-
-.newui-refresh-overlay .newui-refresh-overlay-dots {
-  display: block !important;
-  position: relative;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  visibility: visible !important;
-  opacity: 1 !important;
-  animation: newuiRefreshSpin 1s linear infinite;
-}
-
-.newui-refresh-overlay .newui-refresh-overlay-dots span {
-  display: block !important;
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff !important;
-  visibility: visible !important;
-  animation: newuiRefreshPulse 1s ease-in-out infinite;
-}
-
-.newui-refresh-overlay .newui-refresh-overlay-text {
-  display: block !important;
-  color: #fff !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  text-align: center;
+@media (prefers-reduced-motion: reduce) {
+  .newui-refresh-overlay .smart-loading-dots,
+  .newui-refresh-overlay .smart-loading-dots span {
+    animation: none;
+  }
 }
