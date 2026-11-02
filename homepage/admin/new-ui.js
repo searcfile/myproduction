@@ -3173,50 +3173,54 @@ const toastIcons = {
 };
 
 
-/* =========================================================
-   REMOVE TOAST
-========================================================= */
 
-function removeToast(
-  toast
-) {
+/* MAXIMUM 3 STACKED TOAST */
+const TOAST_MAX_VISIBLE = 3;
 
-  if (
-    !toast ||
-    toast.dataset.removing ===
-      "true"
-  ) {
+function updateToastStack() {
+  const container = document.getElementById("globalToastContainer");
+  if (!container) return;
 
-    return;
+  let toasts = Array.from(
+    container.querySelectorAll(".custom-toast:not(.hide)")
+  );
 
+  // Buang toast paling lama apabila lebih daripada 3
+  while (toasts.length > TOAST_MAX_VISIBLE) {
+    const oldest = toasts.shift();
+    clearTimeout(oldest._toastTimer);
+    oldest.remove();
   }
 
+  // Toast terbaru berada paling depan
+  const total = toasts.length;
 
-  toast.dataset.removing =
-    "true";
+  toasts.forEach((toast, index) => {
+    const depth = total - index - 1;
 
-
-  toast.classList.remove(
-    "show"
-  );
-
-
-  toast.classList.add(
-    "hide"
-  );
-
-
-  setTimeout(
-    () => {
-
-      toast.remove();
-
-    },
-    300
-  );
-
+    toast.style.setProperty("--toast-depth", depth);
+    toast.style.zIndex = String(total - depth);
+    toast.style.pointerEvents = depth === 0 ? "auto" : "none";
+  });
 }
 
+function removeToast(toast) {
+  if (!toast || toast.dataset.removing === "true") return;
+
+  toast.dataset.removing = "true";
+  clearTimeout(toast._toastTimer);
+
+  toast.classList.remove("show");
+  toast.classList.add("hide");
+
+  // Kemas kini stack terus supaya toast belakang maju
+  updateToastStack();
+
+  setTimeout(() => {
+    toast.remove();
+    updateToastStack();
+  }, 300);
+}
 
 /* =========================================================
    SHOW TOAST
@@ -3350,7 +3354,7 @@ function showToast(
     toast
   );
 
-
+updateToastStack();
   /*
     Trigger enter animation.
   */
@@ -3361,9 +3365,9 @@ function showToast(
       requestAnimationFrame(
         () => {
 
-          toast.classList.add(
-            "show"
-          );
+if (toast.isConnected && toast.dataset.removing !== "true") {
+  toast.classList.add("show");
+}
 
         }
       );
@@ -3376,22 +3380,11 @@ function showToast(
     AUTO CLOSE
   */
 
-  if (
-    duration > 0
-  ) {
-
-    setTimeout(
-      () => {
-
-        removeToast(
-          toast
-        );
-
-      },
-      duration
-    );
-
-  }
+if (duration > 0) {
+  toast._toastTimer = setTimeout(() => {
+    removeToast(toast);
+  }, duration);
+}
 
 
   return toast;
