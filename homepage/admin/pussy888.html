@@ -3152,7 +3152,25 @@ function mgSyncPermission() {
 function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
+// Tukar Bet kepada key selamat untuk Firebase
+function pussyBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
 
+// Tukar key Firebase kepada nilai Bet asal
+function pussyDecodePecahan(pecahan = {}) {
+  const result = {};
+
+  for (const [key, wins] of Object.entries(pecahan || {})) {
+    const bet = key.startsWith("bet_")
+      ? key.slice(4).replace("_", ".")
+      : key;
+
+    result[String(Number(bet))] = wins;
+  }
+
+  return result;
+}
 function mgNumberList(raw) {
   return [...new Set(
     String(raw)
@@ -3228,13 +3246,13 @@ function mgApplyCatalog(snapshot) {
       !game.pecahan
     ) return;
 
-    gameData[game.name] = {
-      bets: game.bets,
-      pecahan: game.pecahan,
-      freeGameOptions: Array.isArray(game.freeGameOptions)
-        ? game.freeGameOptions
-        : []
-    };
+gameData[game.name] = {
+  bets: game.bets,
+  pecahan: pussyDecodePecahan(game.pecahan),
+  freeGameOptions: Array.isArray(game.freeGameOptions)
+    ? game.freeGameOptions
+    : []
+};
 
     mgGameIds[game.name] = id;
     mgRecords[game.name] = game;
@@ -3579,12 +3597,14 @@ function mgEditor(oldName = "") {
     window.NewUI?.input?.(b.input);
   }
 
-  (old.bets || []).forEach(b => {
-    addBet(
-      b,
-      (old.pecahan?.[String(b)] || []).join(", ")
-    );
-  });
+const decodedPecahan = pussyDecodePecahan(old.pecahan);
+
+(old.bets || []).forEach(b => {
+  addBet(
+    b,
+    (decodedPecahan[String(Number(b))] || []).join(", ")
+  );
+});
 
   if (!old.bets?.length) addBet();
 
@@ -3752,8 +3772,8 @@ function mgEditor(oldName = "") {
         return;
       }
 
-      bets.push(bet);
-      pecahan[String(bet)] = wins;
+bets.push(bet);
+pecahan[pussyBetKey(bet)] = wins;
     }
 
     if (!bets.length) {
