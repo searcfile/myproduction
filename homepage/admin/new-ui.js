@@ -4063,3 +4063,336 @@ overlay.querySelector(
   };
 
 })();
+
+/* =========================================================
+   NEW UI - SHARED IMAGE PREVIEW
+   ========================================================= */
+(function () {
+  "use strict";
+
+  const UI = window.NewUI = window.NewUI || {};
+  if (UI.imagePreview) return;
+
+  const icons = {
+    close: '<path d="M18 6 6 18M6 6l12 12"/>',
+    left: '<path d="M3 11a9 9 0 1 1 2.7 6.4M3 4v7h7"/>',
+    right: '<path d="M21 11a9 9 0 1 0-2.7 6.4M21 4v7h-7"/>',
+    flipH: '<path d="M12 3v18" stroke-dasharray="2 3"/><path d="m9 7-5 5 5 5V7Zm6 0 5 5-5 5V7Z"/>',
+    flipV: '<path d="M3 12h18" stroke-dasharray="2 3"/><path d="m7 9 5-5 5 5H7Zm0 6 5 5 5-5H7Z"/>'
+  };
+
+  const svg = name =>
+    `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+
+  let active = null;
+
+  function open(opts) {
+    if (typeof opts === "string") opts = { src: opts };
+    opts = opts || {};
+    if (!opts.src) return null;
+
+    if (active) active.close();
+
+    const priorFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const root = document.createElement("div");
+
+    root.className = "newui-image-preview is-open";
+    root.setAttribute("role", "dialog");
+    root.setAttribute("aria-modal", "true");
+    root.setAttribute("aria-label", opts.title || "Image preview");
+
+    root.innerHTML = `
+      <div class="newui-image-preview-stage">
+        <img class="newui-image-preview-image"
+             draggable="false" alt="">
+      </div>
+
+      <button type="button" class="newui-image-preview-close"
+              data-action="close" aria-label="Close preview"
+              title="Close">
+        ${svg("close")}
+      </button>
+
+      <div class="newui-image-preview-toolbar"
+           role="toolbar" aria-label="Image controls">
+
+        <button type="button" data-action="out"
+                aria-label="Zoom out" title="Zoom Out">−</button>
+
+        <span class="newui-image-preview-value">100%</span>
+
+        <button type="button" data-action="in"
+                aria-label="Zoom in" title="Zoom In">+</button>
+
+        <span class="newui-image-preview-divider"></span>
+
+        <button type="button" data-action="left"
+                aria-label="Rotate left" title="Rotate Left">
+          ${svg("left")}
+        </button>
+
+        <button type="button" data-action="right"
+                aria-label="Rotate right" title="Rotate Right">
+          ${svg("right")}
+        </button>
+
+        <span class="newui-image-preview-divider"></span>
+
+        <button type="button" data-action="flipH"
+                aria-label="Flip horizontal" title="Flip Horizontal">
+          ${svg("flipH")}
+        </button>
+
+        <button type="button" data-action="flipV"
+                aria-label="Flip vertical" title="Flip Vertical">
+          ${svg("flipV")}
+        </button>
+
+        <span class="newui-image-preview-divider"></span>
+
+        <button type="button" class="newui-image-preview-reset"
+                data-action="reset" title="Reset image">
+          Reset
+        </button>
+      </div>
+    `;
+
+    const stage = root.querySelector(".newui-image-preview-stage");
+    const img = root.querySelector("img");
+    const value = root.querySelector(".newui-image-preview-value");
+
+    img.src = opts.src;
+    img.alt = opts.alt || opts.title || "Preview image";
+
+    let zoom = 1;
+    let x = 0;
+    let y = 0;
+    let rotation = 0;
+    let flipX = 1;
+    let flipY = 1;
+    let drag = null;
+    let moved = false;
+
+    function update() {
+      zoom = Math.max(1, Math.min(5, zoom));
+
+      if (zoom === 1) {
+        x = 0;
+        y = 0;
+      }
+
+      img.style.transform =
+        `translate(${x}px,${y}px) rotate(${rotation}deg) ` +
+        `scale(${zoom * flipX},${zoom * flipY})`;
+
+      value.textContent = Math.round(zoom * 100) + "%";
+      stage.classList.toggle("is-zoomed", zoom > 1);
+    }
+
+    function reset() {
+      zoom = 1;
+      x = 0;
+      y = 0;
+      rotation = 0;
+      flipX = 1;
+      flipY = 1;
+      update();
+    }
+
+    function close() {
+      if (active !== api) return;
+
+      active = null;
+      document.removeEventListener("keydown", onKey, true);
+      root.remove();
+      document.body.style.overflow = previousOverflow;
+
+      if (priorFocus && priorFocus.isConnected && priorFocus.focus) {
+        priorFocus.focus();
+      }
+
+      if (typeof opts.onClose === "function") opts.onClose();
+    }
+
+    const api = { close, reset, element: root };
+
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const buttons = Array.from(root.querySelectorAll("button"));
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    root.addEventListener("click", e => {
+      const button = e.target.closest("button[data-action]");
+
+      if (!button) {
+        if ((e.target === stage || e.target === root) && !moved) {
+          close();
+        }
+        moved = false;
+        return;
+      }
+
+      switch (button.dataset.action) {
+        case "close":
+          close();
+          return;
+        case "in":
+          zoom += 0.25;
+          break;
+        case "out":
+          zoom -= 0.25;
+          break;
+        case "left":
+          rotation -= 90;
+          break;
+        case "right":
+          rotation += 90;
+          break;
+        case "flipH":
+          flipX *= -1;
+          break;
+        case "flipV":
+          flipY *= -1;
+          break;
+        case "reset":
+          reset();
+          return;
+      }
+
+      update();
+    });
+
+    stage.addEventListener("wheel", e => {
+      e.preventDefault();
+      zoom += e.deltaY < 0 ? 0.2 : -0.2;
+      update();
+    }, { passive: false });
+
+    stage.addEventListener("pointerdown", e => {
+      if (zoom <= 1 || (e.pointerType === "mouse" && e.button !== 0)) {
+        return;
+      }
+
+      e.preventDefault();
+      moved = false;
+
+      drag = {
+        id: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        offsetX: e.clientX - x,
+        offsetY: e.clientY - y
+      };
+
+      stage.classList.add("is-dragging");
+      stage.setPointerCapture(e.pointerId);
+    });
+
+    stage.addEventListener("pointermove", e => {
+      if (!drag || e.pointerId !== drag.id) return;
+
+      if (
+        Math.abs(e.clientX - drag.startX) > 3 ||
+        Math.abs(e.clientY - drag.startY) > 3
+      ) {
+        moved = true;
+      }
+
+      x = e.clientX - drag.offsetX;
+      y = e.clientY - drag.offsetY;
+      update();
+    });
+
+    function stop(e) {
+      if (!drag || e.pointerId !== drag.id) return;
+
+      drag = null;
+      stage.classList.remove("is-dragging");
+
+      if (stage.hasPointerCapture(e.pointerId)) {
+        stage.releasePointerCapture(e.pointerId);
+      }
+    }
+
+    stage.addEventListener("pointerup", stop);
+    stage.addEventListener("pointercancel", stop);
+
+    stage.addEventListener("lostpointercapture", () => {
+      drag = null;
+      stage.classList.remove("is-dragging");
+    });
+
+    document.body.appendChild(root);
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey, true);
+
+    active = api;
+    root.querySelector('[data-action="close"]').focus();
+
+    return api;
+  }
+
+  UI.imagePreview = function (opts) {
+    return open(opts);
+  };
+
+  UI.imagePreview.bind = function (selector) {
+    const handler = e => {
+      const trigger = e.target.closest(selector);
+      if (!trigger) return;
+
+      if (
+        e.type === "keydown" &&
+        e.key !== "Enter" &&
+        e.key !== " "
+      ) return;
+
+      if (e.type === "keydown") e.preventDefault();
+
+      const image = trigger.matches("img")
+        ? trigger
+        : trigger.querySelector("img");
+
+      const src =
+        trigger.dataset.previewSrc ||
+        image?.currentSrc ||
+        image?.src;
+
+      if (src) {
+        open({
+          src,
+          title:
+            trigger.dataset.previewTitle ||
+            image?.alt ||
+            "Image Preview"
+        });
+      }
+    };
+
+    document.addEventListener("click", handler);
+    document.addEventListener("keydown", handler);
+
+    return () => {
+      document.removeEventListener("click", handler);
+      document.removeEventListener("keydown", handler);
+    };
+  };
+})();
