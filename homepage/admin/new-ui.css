@@ -3079,3 +3079,42 @@ input::placeholder{
     transition: none;
   }
 }
+
+/* ==========================================
+   IMAGE PREVIEW - CARD COMPATIBILITY
+   ========================================== */
+
+.ld-image.shared-card-image-preview,
+.logo-image-frame.shared-card-image-preview,
+.image-wrap.shared-card-image-preview {
+  position: relative;
+  cursor: zoom-in;
+}
+
+.ld-image.shared-card-image-preview::before,
+.logo-image-frame.shared-card-image-preview::before,
+.image-wrap.shared-card-image-preview::before {
+  z-index: 3;
+}
+
+.ld-image.shared-card-image-preview::after,
+.logo-image-frame.shared-card-image-preview::after,
+.image-wrap.shared-card-image-preview::after {
+  z-index: 2;
+  background: rgba(0, 0, 0, .55);
+}
+
+.ld-image.shared-card-image-preview:hover::before,
+.ld-image.shared-card-image-preview:hover::after,
+.logo-image-frame.shared-card-image-preview:hover::before,
+.logo-image-frame.shared-card-image-preview:hover::after,
+.image-wrap.shared-card-image-preview:hover::before,
+.image-wrap.shared-card-image-preview:hover::after,
+.ld-image.shared-card-image-preview:focus-visible::before,
+.ld-image.shared-card-image-preview:focus-visible::after,
+.logo-image-frame.shared-card-image-preview:focus-visible::before,
+.logo-image-frame.shared-card-image-preview:focus-visible::after,
+.image-wrap.shared-card-image-preview:focus-visible::before,
+.image-wrap.shared-card-image-preview:focus-visible::after {
+  opacity: 1;
+}
