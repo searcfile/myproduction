@@ -1944,6 +1944,40 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
 }
 
 /* ==========================================
+   NEW UI - SHARED REFRESH BUTTON
+   ========================================== */
+
+.newui-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.newui-refresh-btn-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  fill: currentColor;
+}
+
+.newui-refresh-btn.is-refreshing {
+  cursor: wait !important;
+}
+
+.newui-refresh-btn.is-refreshing:disabled {
+  opacity: .8;
+}
+
+.newui-refresh-btn .shared-btn-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+/* ==========================================
    NEW UI - SHARED BUTTON LOADING
    ========================================== */
 
