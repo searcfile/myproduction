@@ -258,42 +258,46 @@
 
 
 
-/* LINK DOWNLOAD - GRID REFRESH OVERLAY */
+
+/* ==========================================
+   LINK DOWNLOAD - REFRESH GRID OVERLAY
+   ========================================== */
 
 .ld-grid-wrapper > .newui-refresh-overlay.is-container {
-  position: absolute;
-  inset: 0;
+  position: absolute !important;
+  inset: 0 !important;
   z-index: 100;
 
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: block !important;
 
   background: #000;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
-
-
-/* LINK DOWNLOAD - CENTER 4 DOT LOADING */
-
+/* Loading di tengah viewport iframe */
 .ld-grid-wrapper > .newui-refresh-overlay .smart-loading-box {
-  position: relative !important;
+  position: fixed !important;
+
+  top: 50dvh !important;
+  left: 50vw !important;
+
+  transform: translate(-50%, -50%) !important;
 
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+
+  margin: 0 !important;
+  padding: 0 !important;
+
   gap: 8px;
-
-  margin: 0;
-  padding: 0;
-
-  transform: none !important;
   text-align: center;
+  pointer-events: none;
 }
 
 .ld-grid-wrapper > .newui-refresh-overlay .smart-loading-dots {
@@ -302,9 +306,11 @@
 }
 
 .ld-grid-wrapper > .newui-refresh-overlay .smart-loading-text {
+  color: #fff;
   text-align: center;
   white-space: nowrap;
 }
+
 
 
 </style>
