@@ -2789,7 +2789,10 @@ function seedUnreadFlagOnce(sid){
         const unreadCount = list.filter(m => m && m.from === "user" && m.readByAdmin !== true).length;
         const hasUnread = unreadCount > 0;
 
-        if (hasUnread || hasFlag){
+  if (
+  hasFlag !== hasUnread ||
+  Number(allUsersData.find(([id]) => id === sid)?.[1]?.unreadCountForAdmin || 0) !== unreadCount
+) {
           return db.ref(`users/${sid}`).update({
             unreadForAdmin: hasUnread,
             unreadCountForAdmin: unreadCount
@@ -3166,13 +3169,21 @@ function listenToChat(){
     if (justOpenedChat || activeUserIdSanitized){
       justOpenedChat = false;
 
-      if (messagesToMarkRead.length){
-        const updates = {};
-        messagesToMarkRead.forEach(k => {
-          updates[`${k}/readByAdmin`] = true;
-        });
-        db.ref(`chats/${activeUserIdSanitized}`).update(updates).catch(()=>{});
-      }
+if (messagesToMarkRead.length) {
+  const sid = activeUserIdSanitized;
+  const updates = {};
+
+  messagesToMarkRead.forEach(key => {
+    updates[`chats/${sid}/${key}/readByAdmin`] = true;
+  });
+
+  updates[`users/${sid}/unreadForAdmin`] = false;
+  updates[`users/${sid}/unreadCountForAdmin`] = 0;
+
+  db.ref().update(updates).catch(error => {
+    console.error("Failed to mark chat as read:", error);
+  });
+}
 
       db.ref(`users/${activeUserIdSanitized}`).update({
         unreadForAdmin: false,
