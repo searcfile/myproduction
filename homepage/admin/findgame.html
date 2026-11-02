@@ -1694,13 +1694,12 @@ select:focus-visible{
         <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
         <div id="fgTypeFilter"class="fg-type-chips" aria-label="Game types"></div>
         <div class="fg-toolbar-actions">
-  <button
-    type="button"
-    class="btn-primary-new"
-    id="fgRefresh"
-    hidden>
-    Refresh
-  </button>
+<button
+  type="button"
+  class="btn-primary-new"
+  id="fgRefresh">
+  Refresh
+</button>
 
   <button
     type="button"
@@ -2750,7 +2749,7 @@ if (window.NewUI?.refreshButton?.init) {
 }
 
 async function fgRefreshGames() {
-  if (fgRefreshing || !fgCan('view')) return;
+  if (fgRefreshing || !fgProfile) return;
 
   if (!window.NewUI?.refreshButton?.run) {
     fgToast('Refresh component not loaded', 'error');
@@ -2792,8 +2791,8 @@ fgRefreshButton.addEventListener(
 function fgSyncActions() {
   const create = document.getElementById('fgCreate');
   if (create) create.hidden = !fgCan('create');
-  const refresh = document.getElementById('fgRefresh');
-  if (refresh) refresh.hidden = !fgCan('view');
+const refresh = document.getElementById('fgRefresh');
+if (refresh) refresh.hidden = false;
   const edit = document.getElementById('fgEditGame');
   if (edit) edit.hidden =
     !fgCan('edit') || !selectedGame?._id;
