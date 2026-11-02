@@ -318,13 +318,12 @@
 <body>
 <main class="ld-page"><div class="ld-toolbar"><div class="ld-search"><input id="ldSearch" type="search" placeholder="Search"></div><div class="ld-filter"><div id="ldPlatforms"></div></div>
   <div class="ld-toolbar-actions">
-  <button
-    class="ld-button btn-primary-new"
-    id="ldRefresh"
-    type="button"
-    hidden>
-    Refresh
-  </button>
+<button
+  class="ld-button btn-primary-new"
+  id="ldRefresh"
+  type="button">
+  Refresh
+</button>
 
   <button
     class="ld-button btn-primary-new ld-create"
@@ -394,7 +393,7 @@ NewUI.refreshButton.init(refreshButton);
 
 async function refreshGridOnly() {
   if (gridRefreshing || !siteAccessReady || !db) return;
-  if (!can('refresh') || !can('view')) return;
+if (!can('view')) return;
 
   gridRefreshing = true;
 
@@ -831,8 +830,7 @@ sites = Object.fromEntries(
 }
 
 createButton.hidden = !can('create');
-   refreshButton.hidden = !can('refresh');
-  siteAccessReady=true;
+siteAccessReady=true;
  
 db.ref(PATH).on('value', snap => {
   records = snap.val() || {};
