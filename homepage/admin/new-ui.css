@@ -1764,7 +1764,15 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
 .shared-image-upload-file-info span{color:var(--muted,#999)}
 .shared-image-upload-remove{display:grid;place-items:center;width:30px;height:30px;flex:none;border:0;border-radius:6px;background:transparent;color:var(--muted,#999);cursor:pointer}
 .shared-image-upload-remove:hover{background:rgba(255,77,79,.1);color:#ff4d4f}
-.shared-image-upload-remove svg{width:17px;height:17px}
+
+.shared-image-upload-remove svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
 .shared-image-upload button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:480px){.shared-image-upload-preview{width:100%}.shared-image-upload-preview>img{width:48px;height:48px}}
 
