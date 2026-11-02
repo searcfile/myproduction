@@ -1673,12 +1673,35 @@ function ensureGuestDisplayName() {
 
 let isMarkingUserRead = false;
 
+
 function isLivechatVisible() {
-  return (
-    document.visibilityState === "visible" &&
-    document.hasFocus()
-  );
+  if (
+    document.visibilityState !== "visible" ||
+    !document.hasFocus()
+  ) {
+    return false;
+  }
+
+  // LiveChat berada dalam iframe admin.
+  // Pastikan tab LiveChat memang sedang aktif.
+  if (window.parent !== window) {
+    try {
+      if (
+        typeof window.parent.isLivechatTabActive === "function"
+      ) {
+        return window.parent.isLivechatTabActive();
+      }
+
+      // Jangan tandakan read jika status tab tak diketahui.
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
 }
+
 
 async function markAdminSeenInDB() {
   if (!currentActiveId) return;
