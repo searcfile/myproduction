@@ -1673,14 +1673,6 @@ async function jiliOpenEditor(id = null) {
     return;
   }
 
-  // Load sites sebelum membuka modal.
-  try {
-    await jiliLoadSites();
-  } catch (err) {
-    showToast("Cannot load sites: " + err.message, "error");
-    return;
-  }
-
   jiliEditorId = id;
 
   const form = jiliEditorElement("form", "jili-editor-form");
@@ -1851,17 +1843,51 @@ if (record?.bets?.length) {
     .filter(([, enabled]) => enabled === true)
     .map(([siteId]) => siteId);
 
-  const siteChips = window.NewUI.chips(siteHost, {
-    options: jiliSites.map(site => ({
-      value: site.id,
-      label: site.name
-    })),
-    value: selectedSites,
-    multiple: true,
-    placeholder: "Select Sites"
-  });
+  let siteChips = null;
+  let sitesReady = false;
+
+  siteHost.textContent = "Loading sites...";
+
+  // Modal sudah terbuka. Load sites tanpa menghalang modal.
+  jiliLoadSites()
+    .then(sites => {
+      if (jiliModalInstance !== modal) return;
+
+      siteHost.textContent = "";
+
+      siteChips = window.NewUI.chips(siteHost, {
+        options: sites.map(site => ({
+          value: site.id,
+          label: site.name
+        })),
+        value: selectedSites,
+        multiple: true,
+        placeholder: "Select Sites"
+      });
+
+      sitesReady = true;
+    })
+    .catch(err => {
+      if (jiliModalInstance !== modal) return;
+
+      siteHost.textContent = "Failed to load sites";
+      showToast(
+        "Cannot load sites: " + err.message,
+        "error"
+      );
+    });
 
   form.addEventListener("submit", e => {
+    e.preventDefault();
+
+    if (!sitesReady || !siteChips) {
+      showToast(
+        "Please wait until Site Visibility is loaded.",
+        "info"
+      );
+      return;
+    }
+
     jiliSaveGame(e, {
       nameInput: name.input,
       betList,
@@ -2012,7 +2038,11 @@ function jiliOpenManager(query=""){
    const found=records.filter(([,r])=>r.name.toLowerCase().includes(term.toLowerCase()));
    list.innerHTML=found.length?found.map(([id,r])=>`<div class="jili-game-entry"><div><strong>${jiliEsc(r.name)}</strong><small>${r.bets?.length||0} bets · ${r.active===false?"Inactive":"Active"}</small></div><div class="jili-row-actions"><button type="button" data-edit="${jiliEsc(id)}">Edit</button><button type="button" class="jili-danger" data-delete="${jiliEsc(id)}">Delete</button></div></div>`).join(""):'<div class="jili-help" style="padding:20px;text-align:center">No data</div>';
  };
- render(query);
+ requestAnimationFrame(() => {
+   if (list.isConnected) {
+     render(query);
+   }
+ });
  list.addEventListener("click",async e=>{
    const edit=e.target.closest("[data-edit]");if(edit){jiliOpenEditor(edit.dataset.edit);return;}
    const del=e.target.closest("[data-delete]");if(!del)return;
