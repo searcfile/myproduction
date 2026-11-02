@@ -1417,7 +1417,8 @@ function refreshFilters() {
   }
   function card(item){
     const el=document.createElement('article');el.className='item-card';
-    const image=document.createElement('div');image.className='image-wrap';
+const image=document.createElement('div');
+image.className='image-wrap shared-card-image-preview';
     
 const img = document.createElement("img");
 img.src = item.img;
@@ -1439,6 +1440,25 @@ img.addEventListener("click", () => {
 });
 
 image.append(img);
+
+image.setAttribute("role", "button");
+image.setAttribute("tabindex", "0");
+image.setAttribute(
+  "aria-label",
+  "Preview " + (item.title || "Item Image")
+);
+
+image.addEventListener("click", (event) => {
+  if (event.target !== image) return;
+  img.click();
+});
+
+image.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    img.click();
+  }
+});
 
     const info=document.createElement('div');info.className='item-info';
     const title=document.createElement('div');title.className='item-title';title.textContent=item.title;
