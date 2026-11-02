@@ -690,6 +690,117 @@ select:focus-visible{
 .platform-box .tips-platform-active[hidden] {
   display: none !important;
 }
+      
+/* ==========================================
+   TIPS GAME - REFRESH TOOLBAR + LOADING
+   ========================================== */
+
+/* Kedua-dua tombol sebelah-menyebelah */
+.tips-toolbar-grid .tips-admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+/* Refresh dan Create */
+.tips-toolbar-grid #tipsRefresh,
+.tips-toolbar-grid #tipsCreate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: max-content;
+  height: 32px;
+  padding: 0 14px;
+  margin: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Create masih ikut permission asal */
+.tips-toolbar-grid #tipsCreate[hidden] {
+  display: none !important;
+}
+
+/* Wrapper kawasan card */
+.tips-grid-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: max(320px, calc(100dvh - 150px));
+  isolation: isolate;
+}
+
+/* Background hitam hanya pada kawasan card */
+.tips-grid-wrapper > .newui-refresh-overlay.is-container {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 100;
+  display: block !important;
+  background: #000 !important;
+  overflow: visible;
+}
+
+/* 4 dots di tengah viewport iframe */
+.tips-grid-wrapper > .newui-refresh-overlay .smart-loading-box {
+  position: fixed !important;
+  top: 50dvh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
+
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tips-grid-wrapper .smart-loading-dots {
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.tips-grid-wrapper .smart-loading-text {
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .tips-toolbar-grid .tips-admin-toolbar-actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* Phone */
+@media (max-width: 600px) {
+  .tips-toolbar-grid .tips-admin-toolbar-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .tips-toolbar-grid #tipsRefresh,
+  .tips-toolbar-grid #tipsCreate {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+
   </style>
 <body>
   <div class="tips-admin-toolbar">
@@ -703,10 +814,33 @@ select:focus-visible{
 >
       <div id="tipsStatusFilter" data-placeholder="All Status" aria-label="Filter status"></div>
       <div id="tipsPlatformFilter" data-placeholder="All Platforms" aria-label="Filter platforms"></div>
-      <div class="tips-admin-toolbar-actions"><button type="button" id="tipsCreate" class="btn-primary-new" hidden>+ Create Platform</button></div>
+      
+<div class="tips-admin-toolbar-actions">
+
+  <button
+    type="button"
+    id="tipsRefresh"
+    class="btn-primary-new">
+    Refresh
+  </button>
+
+  <button
+    type="button"
+    id="tipsCreate"
+    class="btn-primary-new"
+    hidden>
+    + Create Platform
+  </button>
+
+</div>
+
     </div>
   </div>
+
+<div class="tips-grid-wrapper" id="tipsGridWrapper">
   <div class="platform-row" id="row-1"></div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -1118,6 +1252,86 @@ let tipsRecords = {};
 let tipsDb = null;
 let tipsLoaded = false;
 const tipsCreate = document.getElementById('tipsCreate');
+
+/* ==========================================
+   TIPS GAME - REFRESH BUTTON
+   ========================================== */
+
+const tipsRefreshButton =
+  document.getElementById('tipsRefresh');
+
+const tipsGridWrapper =
+  document.getElementById('tipsGridWrapper');
+
+let tipsRefreshing = false;
+
+NewUI.refreshButton.init(tipsRefreshButton);
+
+async function refreshTipsGridOnly() {
+  if (tipsRefreshing || !tipsLoaded) return;
+
+  tipsRefreshing = true;
+
+  try {
+    await NewUI.refreshButton.run(
+      tipsRefreshButton,
+      async () => {
+
+        await NewUI.refreshLoading.run(
+          async () => {
+            const startTime = performance.now();
+
+            // Simpan filter sebelum card dibina semula
+            saveTipsFilters();
+
+            // Ambil data terbaru daripada API asal
+            await reloadTipsPlatforms();
+
+            // Pulihkan filter selepas render
+            restoreTipsFilters();
+
+            // Minimum loading 1 saat
+            const remaining =
+              1000 - (performance.now() - startTime);
+
+            if (remaining > 0) {
+              await new Promise(resolve =>
+                setTimeout(resolve, remaining)
+              );
+            }
+
+          },
+          {
+            target: tipsGridWrapper,
+            message: 'Please wait while fetching...'
+          }
+        );
+
+      },
+      {
+        text: 'Refresh',
+        loadingText: 'Refreshing...',
+        minDuration: 450
+      }
+    );
+
+  } catch (error) {
+    console.error('[Tips Game] Refresh failed:', error);
+
+    tipsToast(
+      error.message || 'Failed to refresh platforms',
+      'error'
+    );
+
+  } finally {
+    tipsRefreshing = false;
+  }
+}
+
+tipsRefreshButton.addEventListener(
+  'click',
+  refreshTipsGridOnly
+);
 
 function escapeTipsHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
