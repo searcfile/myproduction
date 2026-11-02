@@ -1118,6 +1118,20 @@ select:focus-visible{
   }
 }
 
+/* GAME LOGO - IMAGE PREVIEW TRIGGER */
+.logo-grid .game-logo .logo-image-frame img {
+  cursor: zoom-in;
+}
+
+.logo-grid .game-logo .logo-image-frame img:hover {
+  opacity: .92;
+}
+
+.logo-grid .game-logo .logo-image-frame img:focus-visible {
+  outline: 2px solid #1668dc;
+  outline-offset: 3px;
+}
+
 </style>
 <body>
 <div class="logo-toolbar-row">
@@ -1514,7 +1528,21 @@ if (!filtered.length) {
         const div = document.createElement('div'); div.className = 'game-logo';
         const alias = document.createElement('span'); alias.className = 'game-alias'; alias.textContent = game.alias || '';
         const img = document.createElement('img'); img.src = game.image || ''; img.alt = game.name || ''; img.loading = 'lazy';
-        img.addEventListener('click', () => copyImageToClipboard(game.image, div));
+        
+img.addEventListener('click', () => {
+  if (!game.image) return;
+
+  if (window.NewUI?.imagePreview) {
+    NewUI.imagePreview({
+      src: game.image,
+      title: game.alias || game.name || "Game Logo",
+      alt: game.name || "Game Logo"
+    });
+  } else {
+    console.error("NewUI.imagePreview belum tersedia");
+  }
+});
+
         const name = document.createElement('span'); name.className = 'game-name'; name.textContent = game.name || '';
         const platformTag=document.createElement('div');platformTag.className='logo-platforms';
         const gamePlatforms=Array.isArray(game.platform)?game.platform:Object.values(game.platform||{});
