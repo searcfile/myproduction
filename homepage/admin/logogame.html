@@ -1002,6 +1002,122 @@ select:focus-visible{
 .logo-grid .logo-actions button:nth-child(2):last-child {
   grid-column: 1 / -1;
 }
+
+/* ==========================================
+   GAME LOGO - REFRESH TOOLBAR
+   ========================================== */
+
+.logo-toolbar-row {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr))
+    max-content;
+}
+
+.logo-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.logo-toolbar-row .logo-toolbar-actions .create-game-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: auto;
+  min-width: max-content;
+  height: 32px;
+  padding: 0 14px;
+  margin: 0;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.logo-toolbar-actions #createGameBtn[hidden] {
+  display: none !important;
+}
+
+/* ==========================================
+   GAME LOGO - GRID LOADING
+   ========================================== */
+
+.logo-grid-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: max(320px, calc(100dvh - 130px));
+  isolation: isolate;
+}
+
+.logo-grid-wrapper > .newui-refresh-overlay.is-container {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 100;
+  display: block !important;
+  background: #000 !important;
+  overflow: visible;
+}
+
+/* 4 dots kekal di tengah iframe */
+.logo-grid-wrapper > .newui-refresh-overlay .smart-loading-box {
+  position: fixed !important;
+  top: 50dvh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
+
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: center;
+  pointer-events: none;
+}
+
+.logo-grid-wrapper .smart-loading-dots {
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.logo-grid-wrapper .smart-loading-text {
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1100px) {
+  .logo-toolbar-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .logo-toolbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  .logo-toolbar-actions {
+    width: 100%;
+  }
+
+  .logo-toolbar-row .logo-toolbar-actions .create-game-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+
 </style>
 <body>
 <div class="logo-toolbar-row">
@@ -1016,10 +1132,30 @@ select:focus-visible{
 </div>
   <div class="logo-filter-group"><div id="methodFilter" class="logo-chip-filter" aria-label="Filter methods"></div></div>
   <div class="logo-filter-group"><div id="platformFilter" class="logo-chip-filter" aria-label="Filter platforms"></div></div>
-  <button type="button" id="createGameBtn" class="create-game-btn" hidden>+ Create</button>
+  
+<div class="logo-toolbar-actions">
+  <button
+    type="button"
+    id="logoRefresh"
+    class="create-game-btn">
+    Refresh
+  </button>
+
+  <button
+    type="button"
+    id="createGameBtn"
+    class="create-game-btn"
+    hidden>
+    + Create
+  </button>
 </div>
-<div class="logo-grid" id="gameGrid">
-  </div>
+
+</div>
+
+<div class="logo-grid-wrapper" id="logoGridWrapper">
+  <div class="logo-grid" id="gameGrid"></div>
+</div>
+
 <div id="logoDialog" hidden>
   <form id="logoForm">
 
@@ -1744,6 +1880,84 @@ async function reloadGameLogos() {
   games = result.logos || [];
   renderGames();
 }
+
+/* ==========================================
+   GAME LOGO - REFRESH BUTTON
+   ========================================== */
+
+const logoRefreshButton =
+  document.getElementById("logoRefresh");
+
+const logoGridWrapper =
+  document.getElementById("logoGridWrapper");
+
+let logoRefreshing = false;
+
+// Pasang SVG refresh daripada NewUI
+NewUI.refreshButton.init(logoRefreshButton);
+
+async function refreshGameLogosOnly() {
+  if (logoRefreshing) return;
+
+  logoRefreshing = true;
+
+  try {
+    await NewUI.refreshButton.run(
+      logoRefreshButton,
+      async () => {
+
+        await NewUI.refreshLoading.run(
+          async () => {
+            const startTime = performance.now();
+
+            // Fetch data terbaru dari API
+            await reloadGameLogos();
+
+            // Minimum loading 1 saat
+            const remaining =
+              1000 - (performance.now() - startTime);
+
+            if (remaining > 0) {
+              await new Promise(resolve =>
+                setTimeout(resolve, remaining)
+              );
+            }
+
+          },
+          {
+            target: logoGridWrapper,
+            message: "Please wait while fetching..."
+          }
+        );
+
+      },
+      {
+        text: "Refresh",
+        loadingText: "Refreshing...",
+        minDuration: 450
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      "[Game Logo] Refresh failed:",
+      error
+    );
+
+    NewUI.showToast(
+      error.message || "Failed to refresh Game Logos",
+      "error"
+    );
+
+  } finally {
+    logoRefreshing = false;
+  }
+}
+
+logoRefreshButton.addEventListener(
+  "click",
+  refreshGameLogosOnly
+);
 
 let editingLogoId = null, previewObjectUrl = null, logoDbRef = null;
 const logoDialog = document.getElementById('logoDialog');
