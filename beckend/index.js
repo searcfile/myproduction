@@ -2512,7 +2512,9 @@ function megaEditable(game, profile) {
   return visibleSites.length > 0 &&
     visibleSites.every(id => assigned.includes(id));
 }
-
+function megaBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
 function megaValidate(body) {
   const name = String(body?.name || "").trim();
   const bets = body?.bets;
@@ -2539,7 +2541,7 @@ function megaValidate(body) {
 
   if (Object.keys(pecahan).length !== bets.length ||
       bets.some(bet => {
-        const values = pecahan[String(bet)];
+       const values = pecahan[megaBetKey(bet)];
         return !Array.isArray(values) ||
           !values.length || values.length > 200 ||
           values.some(n => typeof n !== "number" ||
