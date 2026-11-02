@@ -247,12 +247,15 @@
 
 /* LINK DOWNLOAD - REFRESH GRID WRAPPER */
 
+
 .ld-grid-wrapper {
   position: relative;
   width: 100%;
-  min-height: max(240px, calc(100vh - 220px));
+  min-height: max(240px, calc(100dvh - 150px));
   isolation: isolate;
 }
+
+
 
 
 /* LINK DOWNLOAD - GRID REFRESH OVERLAY */
@@ -261,35 +264,48 @@
   position: absolute;
   inset: 0;
   z-index: 100;
+
   display: flex !important;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center !important;
+  justify-content: center !important;
+
   background: #000;
   border-radius: 8px;
-  overflow: visible;
+  overflow: hidden;
 }
 
-/* Loading sentiasa kelihatan di tengah viewport iframe */
-.ld-grid-wrapper
-.newui-refresh-overlay-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 101;
+
+
+/* LINK DOWNLOAD - CENTER 4 DOT LOADING */
+
+.ld-grid-wrapper > .newui-refresh-overlay .smart-loading-box {
+  position: relative !important;
 
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
 
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  min-height: 60px;
-  color: #fff;
-  pointer-events: none;
+  width: 100%;
+  gap: 8px;
+
+  margin: 0;
+  padding: 0;
+
+  transform: none !important;
+  text-align: center;
 }
+
+.ld-grid-wrapper > .newui-refresh-overlay .smart-loading-dots {
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.ld-grid-wrapper > .newui-refresh-overlay .smart-loading-text {
+  text-align: center;
+  white-space: nowrap;
+}
+
 
 </style>
 </head>
