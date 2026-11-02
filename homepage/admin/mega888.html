@@ -3084,16 +3084,20 @@ function mgApplyCatalog(snapshot) {
         !game.pecahan
       ) return;
 
-      gameData[game.name] = {
-        bets: game.bets,
-        pecahan: game.pecahan,
-        freeGameOptions: Array.isArray(game.freeGameOptions)
-          ? game.freeGameOptions
-          : []
-      };
+gameData[game.name] = {
+  bets: game.bets,
+  pecahan: mgDecodePecahan(game.pecahan),
+  freeGameOptions: Array.isArray(game.freeGameOptions)
+    ? game.freeGameOptions
+    : []
+};
 
-      mgGameIds[game.name] = id;
-      mgRecords[game.name] = game;
+mgGameIds[game.name] = id;
+
+mgRecords[game.name] = {
+  ...game,
+  pecahan: mgDecodePecahan(game.pecahan)
+};
     });
 
     gameSelect.replaceChildren(
@@ -3506,7 +3510,7 @@ if (freeOptions === null) {
 
 
  if(mgGameIds[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
- const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
+ const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[mgBetKey(bet)] = wins;}
  if(!bets.length){mgToast('Add at least one Bet','error');return;}
 // Custom NewUI loading spinner
 await NewUI.setButtonLoading(save, true, {
