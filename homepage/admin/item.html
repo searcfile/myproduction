@@ -809,6 +809,90 @@ grid-template-columns:
 #itemCreate[hidden] {
   display: none !important;
 }
+    
+/* ==========================================
+   ITEM COLLECTION - REFRESH BUTTON + LOADING
+   ========================================== */
+
+.item-page .item-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.item-page #itemRefresh,
+.item-page #itemCreate {
+  height: 32px;
+  white-space: nowrap;
+}
+
+.item-page #itemRefresh[hidden],
+.item-page #itemCreate[hidden] {
+  display: none !important;
+}
+
+/* Wrapper untuk loading pada bahagian card sahaja */
+.item-page .item-grid-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: max(240px, calc(100dvh - 150px));
+  isolation: isolate;
+}
+
+/* Background hitam menutup kawasan card */
+.item-page .item-grid-wrapper > .newui-refresh-overlay.is-container {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 100;
+  display: block !important;
+  background: #000;
+  border-radius: 8px;
+  overflow: visible;
+}
+
+/* 4 dots berada di tengah viewport iframe */
+.item-page .item-grid-wrapper > .newui-refresh-overlay .smart-loading-box {
+  position: fixed !important;
+  top: 50dvh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
+
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 8px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.item-page .item-grid-wrapper > .newui-refresh-overlay .smart-loading-dots {
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.item-page .item-grid-wrapper > .newui-refresh-overlay .smart-loading-text {
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Responsive toolbar */
+@container (max-width: 950px) {
+  .item-page .item-toolbar-actions {
+    grid-column: 1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -818,16 +902,32 @@ grid-template-columns:
       <div class="item-toolbar-search"><input type="search" id="searchInput" placeholder="Search" aria-label="Search items"></div>
       <div id="itemTagChips" class="item-filter" aria-label="Filter tags"></div>
       <div id="itemCollectionChips" class="item-filter" aria-label="Filter collections"></div>
-      <button
-  id="itemCreate"
-  class="btn-primary-new"
-  type="button"
-  hidden
->
-  + Create Item
-</button>
+
+<div class="item-toolbar-actions">
+
+  <button
+    id="itemRefresh"
+    class="btn-primary-new"
+    type="button">
+    Refresh
+  </button>
+
+  <button
+    id="itemCreate"
+    class="btn-primary-new"
+    type="button"
+    hidden>
+    + Create Item
+  </button>
+
+</div>
+
     </div>
-    <div class="card-grid" id="cardGrid"></div>
+ 
+<div class="item-grid-wrapper" id="itemGridWrapper">
+  <div class="card-grid" id="cardGrid"></div>
+</div>
+
   </main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -1010,6 +1110,75 @@ async function itemApi(path, options = {}) {
 
   return result;
 }
+
+/* ==========================================
+   ITEM COLLECTION - REFRESH GRID ONLY
+   ========================================== */
+
+const itemRefreshButton = document.getElementById("itemRefresh");
+const itemGridWrapper = document.getElementById("itemGridWrapper");
+
+let itemGridRefreshing = false;
+
+NewUI.refreshButton.init(itemRefreshButton);
+
+async function refreshItemGridOnly() {
+  // Refresh tidak mempunyai permission tersendiri.
+  // Tetapi akses View Item masih wajib.
+  if (itemGridRefreshing || !loaded || !itemCan("view")) return;
+
+  itemGridRefreshing = true;
+
+  try {
+    await NewUI.refreshButton.run(
+      itemRefreshButton,
+      async () => {
+
+        await NewUI.refreshLoading.run(async () => {
+          const startTime = performance.now();
+
+          // Guna API dan fungsi asal Item Collection.
+          await reloadItems();
+
+          // Pastikan loading sempat kelihatan.
+          const remaining = 1000 - (performance.now() - startTime);
+
+          if (remaining > 0) {
+            await new Promise(resolve =>
+              setTimeout(resolve, remaining)
+            );
+          }
+
+        }, {
+          target: itemGridWrapper,
+          message: "Please wait while fetching..."
+        });
+
+      },
+      {
+        text: "Refresh",
+        loadingText: "Refreshing...",
+        minDuration: 450
+      }
+    );
+
+  } catch (error) {
+    console.error("[Item Collection] Refresh failed:", error);
+
+    notify(
+      error.message || "Failed to refresh items",
+      "error"
+    );
+
+  } finally {
+    itemGridRefreshing = false;
+  }
+}
+
+itemRefreshButton.addEventListener(
+  "click",
+  refreshItemGridOnly
+);
 
 async function reloadItems() {
   const result = await itemApi("/items");
