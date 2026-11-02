@@ -254,16 +254,43 @@
   isolation: isolate;
 }
 
+
+/* LINK DOWNLOAD - GRID REFRESH OVERLAY */
+
 .ld-grid-wrapper > .newui-refresh-overlay.is-container {
   position: absolute;
   inset: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  align-items: flex-start;
   justify-content: center;
   background: #000;
   border-radius: 8px;
+  overflow: visible;
 }
+
+/* Loading sentiasa kelihatan di tengah viewport iframe */
+.ld-grid-wrapper
+.newui-refresh-overlay-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  min-height: 60px;
+  color: #fff;
+  pointer-events: none;
+}
+
 </style>
 </head>
 <body>
