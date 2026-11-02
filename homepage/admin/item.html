@@ -893,6 +893,134 @@ grid-template-columns:
   }
 }
 
+/* ==========================================
+   ITEM COLLECTION - RESPONSIVE TOOLBAR V3
+   ========================================== */
+
+/* Desktop: 3 filter + 2 tombol */
+.item-page .item-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Search dan filter boleh mengecil */
+.item-page .item-toolbar-search,
+.item-page .item-filter {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* Kedua-dua tombol sentiasa bersebelahan */
+.item-page .item-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: max-content;
+  min-width: max-content;
+  justify-self: end;
+  flex-wrap: nowrap;
+}
+
+/* Refresh dan Create tidak boleh terpotong */
+.item-page #itemRefresh,
+.item-page #itemCreate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: max-content;
+  height: 32px;
+  padding: 0 14px;
+  margin: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Hormati permission Create */
+.item-page #itemRefresh[hidden],
+.item-page #itemCreate[hidden] {
+  display: none !important;
+}
+
+/* Desktop sederhana: tombol di baris kedua */
+@container (max-width: 1100px) {
+  .item-page .item-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .item-page .item-toolbar-search,
+  .item-page .item-filter {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .item-page .item-toolbar-actions {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: end;
+  }
+}
+
+/* Tablet: Search penuh, 2 filter bersebelahan */
+@container (max-width: 700px) {
+  .item-page .item-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .item-page .item-toolbar-search {
+    grid-column: 1 / -1;
+  }
+
+  .item-page .item-filter {
+    grid-column: auto;
+  }
+
+  .item-page .item-toolbar-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Telefon: filter satu baris setiap satu */
+@container (max-width: 480px) {
+  .item-page .item-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .item-page .item-toolbar-search,
+  .item-page .item-filter {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .item-page .item-toolbar-actions {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .item-page #itemRefresh,
+  .item-page #itemCreate {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0 8px;
+  }
+}
+
   </style>
 </head>
 <body>
