@@ -2978,7 +2978,19 @@ function createSharedImageUpload(target, options = {}) {
   const accept = options.accept || 'image/png,image/jpeg,image/webp,image/gif';
   const maxSizeMB = Number(options.maxSizeMB || 10);
   const uploadSVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const deleteSVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12M10 11v6M14 11v6M9 7l1-3h4l1 3M8 7l1 13h6l1-13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  
+const deleteSVG = `
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 1024 1024"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"/>
+  </svg>
+`;
+
   const section = document.createElement('div'); section.className = 'shared-image-upload';
   const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept=accept; fileInput.hidden=true;
   const pick = document.createElement('button'); pick.type='button'; pick.className='shared-image-upload-btn';
