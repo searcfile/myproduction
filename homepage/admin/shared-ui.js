@@ -562,11 +562,19 @@ function getActiveTabStorageKey() {
     return file.toLowerCase();
   }
 
+
 function isLivechatTabActive() {
-  return getCurrentFile() === "livechat.html";
+  const activeFile = String(getActiveTabFile() || "")
+    .split(/[?#]/)[0]
+    .split("/")
+    .pop()
+    .toLowerCase();
+
+  return activeFile === "livechat.html";
 }
 
 window.isLivechatTabActive = isLivechatTabActive;
+
   function findPageByFile(file) {
     const target = String(file || "")
       .trim()
