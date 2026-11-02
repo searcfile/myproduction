@@ -2461,6 +2461,6 @@ body.tab-dragging-active *{
 }
 
 .header .dropdown-content {
-  z-index: 5100 !important;
+  z-index:10020 !important;
 }
 
