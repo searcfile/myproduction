@@ -3869,9 +3869,9 @@ if (document.readyState === 'loading') {
     if (state) {
       state.count++;
 
-      const label = state.overlay.querySelector(
-        ".newui-refresh-overlay-text"
-      );
+const label = state.overlay.querySelector(
+  ".smart-loading-text"
+);
 
       if (label) label.textContent = String(message);
 
@@ -3885,22 +3885,23 @@ if (document.readyState === 'loading') {
     overlay.setAttribute("aria-live", "polite");
     overlay.setAttribute("aria-label", "Loading");
 
-    overlay.innerHTML = `
-      <div class="newui-refresh-overlay-box">
-        <div class="newui-refresh-overlay-dots"
-             aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div class="newui-refresh-overlay-text"></div>
-      </div>
-    `;
 
-    overlay.querySelector(
-      ".newui-refresh-overlay-text"
-    ).textContent = String(message);
+overlay.innerHTML = `
+  <div class="smart-loading-box">
+    <div class="smart-loading-dots" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="smart-loading-text"></div>
+  </div>
+`;
+
+
+overlay.querySelector(
+  ".smart-loading-text"
+).textContent = String(message);
 
     let previousPosition = null;
 
