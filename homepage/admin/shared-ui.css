@@ -145,7 +145,7 @@ input::placeholder{
 
   background:#001529;
 
-  z-index:1003;
+  z-index:20000;
 
   transition:
     background .25s ease,
