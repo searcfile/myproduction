@@ -1779,26 +1779,31 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
 /* =========================================================
    GLOBAL CUSTOM TOAST
 ========================================================= */
+
 #globalToastContainer {
   position: fixed;
   left: 50%;
   bottom: 32px;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: auto;
+
+  display: block;
+  width: 384px;
   max-width: calc(100vw - 48px);
-  z-index: 9999999;
+  height: 110px;
+
+  overflow: visible;
   pointer-events: none;
+  z-index: 9999999;
 }
 
 
 /* TOAST */
 
 .custom-toast {
-  position: relative;
+  position: absolute;
+left: 0;
+bottom: 0;
+   transform-origin: center bottom;
   width: 384px;
   max-width: calc(100vw - 48px);
   padding: 20px 24px;
@@ -1827,21 +1832,27 @@ html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.
 
 
 /* SHOW */
+
 .custom-toast.show {
   opacity: 1;
   transform:
-    translateY(0)
-    scale(1);
+    translateY(calc(var(--toast-depth, 0) * -12px))
+    scale(calc(1 - var(--toast-depth, 0) * .045));
   filter: blur(0);
 }
+
+/* Toast lama sedikit pudar */
+.custom-toast.show:not([style*="--toast-depth: 0"]) {
+  opacity: .78;
+}
+
 
 /* HIDE */
 .custom-toast.hide {
   opacity: 0;
-  transform:
-    translateY(12px)
-    scale(0.98);
+  transform: translateY(16px) scale(.96);
   filter: blur(4px);
+  pointer-events: none;
 }
 
 
