@@ -3175,45 +3175,118 @@ const toastIcons = {
 
 
 /* MAXIMUM 3 STACKED TOAST */
-const TOAST_MAX_VISIBLE = 3;
+
+/* =========================================================
+   NEW UI - SMART TOAST STACK
+   Normal: max 5 rows
+   Rapid clicks: temporary stacked effect
+========================================================= */
+
+const TOAST_MAX_VISIBLE = 5;
+const TOAST_STACK_TRIGGER = 4;
+const TOAST_STACK_DELAY = 800;
+const TOAST_GAP = 10;
+
+let toastBurstCount = 0;
+let toastStackTimer = null;
+let toastStackActive = false;
 
 function updateToastStack() {
-  const container = document.getElementById("globalToastContainer");
+  const container = document.getElementById(
+    "globalToastContainer"
+  );
+
   if (!container) return;
 
   let toasts = Array.from(
-    container.querySelectorAll(".custom-toast:not(.hide)")
+    container.querySelectorAll(
+      ".custom-toast:not(.hide)"
+    )
   );
 
-  // Buang toast paling lama apabila lebih daripada 3
+  // Keep only 5 newest toasts
   while (toasts.length > TOAST_MAX_VISIBLE) {
     const oldest = toasts.shift();
+
     clearTimeout(oldest._toastTimer);
     oldest.remove();
   }
 
-  // Toast terbaru berada paling depan
   const total = toasts.length;
 
-  toasts.forEach((toast, index) => {
-    const depth = total - index - 1;
+  // Stack only during a rapid-click burst
+  const stacked =
+    toastStackActive &&
+    total >= TOAST_STACK_TRIGGER;
 
-    toast.style.setProperty("--toast-depth", depth);
+  container.classList.toggle(
+    "toast-stacked",
+    stacked
+  );
+
+  let normalOffset = 0;
+
+  // Calculate from newest to oldest
+  [...toasts].reverse().forEach((toast, depth) => {
+    toast.style.setProperty(
+      "--toast-depth",
+      depth
+    );
+
+    toast.style.setProperty(
+      "--toast-offset",
+      `${normalOffset}px`
+    );
+
+    // Newest toast always in front
     toast.style.zIndex = String(total - depth);
-    toast.style.pointerEvents = depth === 0 ? "auto" : "none";
+
+    toast.style.pointerEvents =
+      stacked && depth > 0
+        ? "none"
+        : "auto";
+
+    // Measure each toast to avoid overlapping
+    // messages with different heights
+    normalOffset +=
+      toast.offsetHeight + TOAST_GAP;
   });
 }
 
+function registerToastBurst() {
+  toastBurstCount++;
+
+  clearTimeout(toastStackTimer);
+
+  if (toastBurstCount >= TOAST_STACK_TRIGGER) {
+    toastStackActive = true;
+  }
+
+  updateToastStack();
+
+  // When user stops clicking, expand to normal rows
+  toastStackTimer = setTimeout(() => {
+    toastBurstCount = 0;
+    toastStackActive = false;
+
+    updateToastStack();
+  }, TOAST_STACK_DELAY);
+}
+
 function removeToast(toast) {
-  if (!toast || toast.dataset.removing === "true") return;
+  if (!toast || toast.dataset.removing === "true") {
+    return;
+  }
 
   toast.dataset.removing = "true";
+
   clearTimeout(toast._toastTimer);
 
   toast.classList.remove("show");
   toast.classList.add("hide");
 
-  // Kemas kini stack terus supaya toast belakang maju
+  toast.style.pointerEvents = "none";
+
   updateToastStack();
 
   setTimeout(() => {
@@ -3221,6 +3294,10 @@ function removeToast(toast) {
     updateToastStack();
   }, 300);
 }
+
+// Recalculate positions when viewport changes
+window.addEventListener("resize", updateToastStack);
+
 
 /* =========================================================
    SHOW TOAST
@@ -3350,11 +3427,12 @@ function showToast(
   );
 
 
-  container.appendChild(
-    toast
-  );
+container.appendChild(
+  toast
+);
 
-updateToastStack();
+// Detect rapid consecutive toast calls
+registerToastBurst();
   /*
     Trigger enter animation.
   */
