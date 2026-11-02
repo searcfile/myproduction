@@ -1021,6 +1021,19 @@ grid-template-columns:
   }
 }
 
+/* ITEM COLLECTION - IMAGE PREVIEW */
+.item-page .image-wrap img {
+  cursor: zoom-in;
+}
+
+.item-page .image-wrap::after {
+  pointer-events: none;
+}
+
+.item-page .image-wrap img:active {
+  cursor: zoom-in;
+}
+
   </style>
 </head>
 <body>
@@ -1405,7 +1418,28 @@ function refreshFilters() {
   function card(item){
     const el=document.createElement('article');el.className='item-card';
     const image=document.createElement('div');image.className='image-wrap';
-    const img=document.createElement('img');img.src=item.img;img.alt=item.title;img.loading='lazy';image.append(img);
+    
+const img = document.createElement("img");
+img.src = item.img;
+img.alt = item.title || "Item Image";
+img.loading = "lazy";
+
+img.addEventListener("click", () => {
+  if (!item.img) return;
+
+  if (window.NewUI?.imagePreview) {
+    NewUI.imagePreview({
+      src: item.img,
+      title: item.title || "Item Collection",
+      alt: item.title || "Item Image"
+    });
+  } else {
+    console.error("NewUI.imagePreview belum tersedia");
+  }
+});
+
+image.append(img);
+
     const info=document.createElement('div');info.className='item-info';
     const title=document.createElement('div');title.className='item-title';title.textContent=item.title;
     info.append(title);
