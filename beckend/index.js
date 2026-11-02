@@ -552,13 +552,11 @@ function isAllowedModule(moduleName) {
 const ALLOWED_ACTIONS = new Set([
   "show",
   "view",
-  "refresh",
   "create",
   "edit",
   "delete",
   "block"
 ]);
-
 
 app.patch(
   "/api/admin-profiles/:uid",
@@ -617,22 +615,26 @@ app.patch(
         if (
           !isAllowedModule(moduleName) ||
           !Array.isArray(actions) ||
-          !actions.every(action => ALLOWED_ACTIONS.has(action))
+          !actions.every(action =>
+  action === "refresh" || ALLOWED_ACTIONS.has(action)
+)
         ) {
           return fail(res, 400, "Invalid module permissions");
         }
 
-        const uniqueActions = [...new Set(actions)];
+       const uniqueActions = [
+  ...new Set(actions.filter(action => action !== "refresh"))
+];
 
 const requiresView = uniqueActions.some(action =>
-  ["refresh", "create", "edit", "delete", "block"].includes(action)
+["create", "edit", "delete", "block"].includes(action)
 );
 
 if (requiresView && !uniqueActions.includes("view")) {
   return fail(
     res,
     400,
-    "View permission is required for Refresh, Create, Edit, Delete or Block"
+   "View permission is required for Create, Edit, Delete or Block"
   );
 }
 
