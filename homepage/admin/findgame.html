@@ -1600,6 +1600,90 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   FIND GAME - REFRESH + CREATE RESPONSIVE
+   ========================================== */
+
+.fg-toolbar .fg-toolbar-actions {
+  grid-column: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 8px;
+  min-width: max-content;
+  flex-wrap: nowrap;
+}
+
+.fg-toolbar #fgRefresh,
+.fg-toolbar #fgCreate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  min-width: max-content;
+  height: 32px;
+  padding: 0 14px;
+  margin: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.fg-toolbar #fgRefresh[hidden],
+.fg-toolbar #fgCreate[hidden] {
+  display: none !important;
+}
+
+/* SVG icon */
+.fg-toolbar #fgRefresh .newui-refresh-btn-icon,
+.fg-toolbar #fgRefresh .shared-btn-spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Desktop sederhana */
+@media (max-width: 1200px) {
+  .fg-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fg-toolbar .fg-toolbar-actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* Tablet dan phone */
+@media (max-width: 950px) {
+  .fg-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fg-toolbar .fg-toolbar-actions {
+    grid-column: 1;
+    grid-row: 4;
+    justify-self: end;
+    width: auto;
+  }
+}
+
+/* Phone kecil */
+@media (max-width: 480px) {
+  .fg-toolbar .fg-toolbar-actions {
+    width: 100%;
+    min-width: 0;
+    justify-content: stretch;
+  }
+
+  .fg-toolbar #fgRefresh,
+  .fg-toolbar #fgCreate {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1609,7 +1693,23 @@ select:focus-visible{
         <div class="fg-search"><input id="q" type="text" placeholder="Search" autocomplete="off" aria-label="Search games" /></div>
         <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
         <div id="fgTypeFilter"class="fg-type-chips" aria-label="Game types"></div>
-        <button type="button" class="fg-create" id="fgCreate" hidden>+ Create Game</button> 
+        <div class="fg-toolbar-actions">
+  <button
+    type="button"
+    class="btn-primary-new"
+    id="fgRefresh"
+    hidden>
+    Refresh
+  </button>
+
+  <button
+    type="button"
+    class="fg-create"
+    id="fgCreate"
+    hidden>
+    + Create Game
+  </button>
+</div>
       </div>
     </div>
   </section>
@@ -2637,11 +2737,63 @@ async function fgReloadGames() {
   }));
   fgRebuild();
 }
+/* ==========================================
+   FIND GAME - REFRESH BUTTON
+   ========================================== */
 
+const fgRefreshButton = document.getElementById('fgRefresh');
+
+let fgRefreshing = false;
+
+if (window.NewUI?.refreshButton?.init) {
+  NewUI.refreshButton.init(fgRefreshButton);
+}
+
+async function fgRefreshGames() {
+  if (fgRefreshing || !fgCan('view')) return;
+
+  if (!window.NewUI?.refreshButton?.run) {
+    fgToast('Refresh component not loaded', 'error');
+    return;
+  }
+
+  fgRefreshing = true;
+
+  try {
+    await NewUI.refreshButton.run(
+      fgRefreshButton,
+      async () => {
+        await fgReloadGames();
+      },
+      {
+        text: 'Refresh',
+        loadingText: 'Refreshing...',
+        minDuration: 700
+      }
+    );
+
+  } catch (error) {
+    console.error('[Find Game] Refresh failed:', error);
+
+    fgToast(
+      error.message || 'Failed to refresh games',
+      'error'
+    );
+
+  } finally {
+    fgRefreshing = false;
+  }
+}
+
+fgRefreshButton.addEventListener(
+  'click',
+  fgRefreshGames
+);
 function fgSyncActions() {
   const create = document.getElementById('fgCreate');
   if (create) create.hidden = !fgCan('create');
-
+  const refresh = document.getElementById('fgRefresh');
+  if (refresh) refresh.hidden = !fgCan('view');
   const edit = document.getElementById('fgEditGame');
   if (edit) edit.hidden =
     !fgCan('edit') || !selectedGame?._id;
