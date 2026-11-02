@@ -313,6 +313,23 @@
 
 
 
+/* ==========================================
+   LINK DOWNLOAD - IMAGE PREVIEW
+   ========================================== */
+
+.ld-card .ld-image img {
+  cursor: zoom-in;
+  transition: opacity 0.2s ease;
+}
+
+.ld-card .ld-image img:hover {
+  opacity: 0.9;
+}
+
+.ld-card .ld-image img:active {
+  opacity: 0.8;
+}
+
 </style>
 </head>
 <body>
@@ -629,7 +646,35 @@ function refreshOptions() {
  grid.replaceChildren();if(!entries.length){showEmpty('No Data');return;}
  for(const [id,card] of entries)grid.append(makeCard(id,card));
 }
-function makeCard(id,card){const node=el('article','ld-card');const image=el('div','ld-image');const src=safeUrl(card.image);if(src){const img=el('img');img.src=src;img.alt=card.name;img.loading='lazy';image.append(img);}else image.append(el('span','ld-image-placeholder','▧'));node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick=()=>removeCard(id);if (can('edit')) {
+function makeCard(id,card){const node=el('article','ld-card');const image=el('div','ld-image');
+const src = safeUrl(card.image);
+
+if (src) {
+  const img = el("img");
+
+  img.src = src;
+  img.alt = card.name || "Link Download";
+  img.loading = "lazy";
+
+  img.addEventListener("click", () => {
+    if (typeof window.NewUI?.imagePreview === "function") {
+      NewUI.imagePreview({
+        src: src,
+        title: card.name || "Link Download",
+        alt: card.name || "Link Download"
+      });
+    } else {
+      console.error("NewUI.imagePreview belum tersedia");
+    }
+  });
+
+  image.append(img);
+} else {
+  image.append(
+    el("span", "ld-image-placeholder", "▧")
+  );
+}
+node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick=()=>removeCard(id);if (can('edit')) {
   actions.append(edit);
 }
 
