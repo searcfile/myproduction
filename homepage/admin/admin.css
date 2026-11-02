@@ -274,7 +274,7 @@ html {
 .header {
   position: fixed;
   width: 100%;
-  z-index: 1003;
+  z-index:20000;
   height: 64px;
   background: #001529;
   display: flex;
