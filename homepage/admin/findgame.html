@@ -1684,6 +1684,50 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   FIND GAME - REFRESH CONTENT LOADING
+   ========================================== */
+
+#fgContentWrapper {
+  position: relative;
+  min-height: max(320px, calc(100dvh - 160px));
+  isolation: isolate;
+}
+
+/* Tutup Results dan Detail ketika refresh */
+#fgContentWrapper > .newui-refresh-overlay.is-container {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 100;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--page-bg, #000) !important;
+}
+
+/* Kekalkan loading di tengah viewport */
+#fgContentWrapper .newui-refresh-overlay .smart-loading-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  pointer-events: none;
+}
+
+#fgContentWrapper .newui-refresh-overlay .smart-loading-text {
+  color: var(--page-text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -1714,7 +1758,7 @@ select:focus-visible{
   </section>
 
   <!-- ===== Content ===== -->
-  <main class="wrap">
+<main class="wrap" id="fgContentWrapper">
     <div class="grid">
       <!-- List -->
       <section class="list" aria-label="Game list">
@@ -2748,10 +2792,14 @@ if (window.NewUI?.refreshButton?.init) {
   NewUI.refreshButton.init(fgRefreshButton);
 }
 
+
 async function fgRefreshGames() {
   if (fgRefreshing || !fgProfile) return;
 
-  if (!window.NewUI?.refreshButton?.run) {
+  if (
+    !window.NewUI?.refreshButton?.run ||
+    !window.NewUI?.refreshLoading?.run
+  ) {
     fgToast('Refresh component not loaded', 'error');
     return;
   }
@@ -2762,12 +2810,36 @@ async function fgRefreshGames() {
     await NewUI.refreshButton.run(
       fgRefreshButton,
       async () => {
-        await fgReloadGames();
+
+        await NewUI.refreshLoading.run(
+          async () => {
+            const startTime = performance.now();
+
+            // Ambil data terbaru daripada API
+            await fgReloadGames();
+
+            // Pastikan 4 dots sempat kelihatan
+            const remaining =
+              1000 - (performance.now() - startTime);
+
+            if (remaining > 0) {
+              await new Promise(resolve =>
+                setTimeout(resolve, remaining)
+              );
+            }
+
+          },
+          {
+            target: document.getElementById('fgContentWrapper'),
+            message: 'Please wait while fetching...'
+          }
+        );
+
       },
       {
         text: 'Refresh',
         loadingText: 'Refreshing...',
-        minDuration: 700
+        minDuration: 450
       }
     );
 
@@ -2783,6 +2855,7 @@ async function fgRefreshGames() {
     fgRefreshing = false;
   }
 }
+
 
 fgRefreshButton.addEventListener(
   'click',
