@@ -3005,6 +3005,43 @@ function createSharedImageUpload(target, options = {}) {
     if(nextFile.size>maxSizeMB*1024*1024){const e=new Error('Image exceeds '+maxSizeMB+' MB.');options.onError?.(e);fileInput.value='';return;}
     clear(false);file=nextFile;objectURL=URL.createObjectURL(file);img.src=objectURL;filename.textContent=file.name;preview.hidden=false;options.onChange?.({file,url:''});
   }
+
+/* ==========================================
+   SHARED UPLOAD - CLICK IMAGE TO PREVIEW
+   ========================================== */
+
+function openUploadImagePreview() {
+  if (destroyed || preview.hidden) return;
+
+  const src = img.currentSrc || img.src;
+
+  if (!src) return;
+
+  if (typeof window.NewUI?.imagePreview !== "function") {
+    console.warn("NewUI.imagePreview belum tersedia.");
+    return;
+  }
+
+  window.NewUI.imagePreview({
+    src,
+    title: filename.textContent || "Image Preview",
+    alt: filename.textContent || "Uploaded Image"
+  });
+}
+
+img.setAttribute("tabindex", "0");
+img.setAttribute("role", "button");
+img.setAttribute("aria-label", "Preview uploaded image");
+
+img.addEventListener("click", openUploadImagePreview);
+
+img.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openUploadImagePreview();
+  }
+});
+
   pick.addEventListener('click',()=>fileInput.click());
   fileInput.addEventListener('change',()=>showFile(fileInput.files?.[0]));
   remove.addEventListener('click',()=>clear());
