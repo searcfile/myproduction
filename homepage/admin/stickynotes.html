@@ -1312,6 +1312,105 @@ select:focus-visible{
     min-height: 270px !important;
   }
 }
+
+/* ==========================================
+   STICKY NOTES - REFRESH BUTTON
+   ========================================== */
+
+.sticky-toolbar {
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(max-content, 1fr) !important;
+}
+
+.sticky-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  justify-self: end;
+}
+
+.sticky-toolbar-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 15px;
+  white-space: nowrap;
+}
+
+.sticky-toolbar-actions .sticky-create {
+  margin: 0 !important;
+}
+
+/* ==========================================
+   STICKY NOTES - LOADING OVERLAY
+   ========================================== */
+
+.sticky-notes-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: max(300px, calc(100dvh - 160px));
+  isolation: isolate;
+}
+
+.sticky-notes-wrapper > .newui-refresh-overlay.is-container {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 100;
+  background: #000 !important;
+}
+
+.sticky-notes-wrapper
+.newui-refresh-overlay .smart-loading-box {
+  position: fixed !important;
+  top: 50dvh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.sticky-notes-wrapper .smart-loading-text {
+  color: #fff;
+  text-align: center;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .sticky-toolbar-actions {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+/* Phone */
+@media (max-width: 620px) {
+  .sticky-toolbar-actions {
+    grid-column: 1;
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .sticky-toolbar-actions > button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+
 </style>
 </head>
 
@@ -1324,12 +1423,32 @@ select:focus-visible{
         <div class="content-toolbar sticky-toolbar">
           <div class="sticky-search"><input id="searchInput" type="search" placeholder="Search" autocomplete="off" aria-label="Search notes"></div>
           <div id="stickyFilter" class="sticky-filter" aria-label="Filter notes"></div>
-          <button id="createBtn" type="button" class="btn-primary-new sticky-create">+ Create Note</button>
+          
+<div class="sticky-toolbar-actions">
+  <button
+    id="stickyRefresh"
+    type="button"
+    class="btn-primary-new">
+    Refresh
+  </button>
+
+  <button
+    id="createBtn"
+    type="button"
+    class="btn-primary-new sticky-create">
+    + Create Note
+  </button>
+</div>
+
         </div>
       </div>
-      <div id="notesGrid" class="notes-grid"></div>
 
-      <div id="emptyState" class="sticky-empty-holder"></div>
+<div id="stickyNotesWrapper" class="sticky-notes-wrapper">
+  <div id="notesGrid" class="notes-grid"></div>
+
+  <div id="emptyState" class="sticky-empty-holder"></div>
+</div>
+
     </section>
   </main>
 </div>
@@ -1547,6 +1666,109 @@ if (!user) {
   });
 }
 
+
+/* ==========================================
+   STICKY NOTES - REFRESH BUTTON
+   ========================================== */
+
+const stickyRefreshButton =
+  document.getElementById("stickyRefresh");
+
+const stickyNotesWrapper =
+  document.getElementById("stickyNotesWrapper");
+
+let stickyRefreshing = false;
+
+// Pasang SVG icon Refresh daripada NewUI
+NewUI.refreshButton.init(stickyRefreshButton);
+
+async function refreshStickyNotesOnly() {
+  if (stickyRefreshing) return;
+
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    NewUI.showToast("Please login first", "error");
+    return;
+  }
+
+  stickyRefreshing = true;
+
+  try {
+    await NewUI.refreshButton.run(
+      stickyRefreshButton,
+      async () => {
+
+        await NewUI.refreshLoading.run(
+          async () => {
+            const startTime = performance.now();
+
+            // Fetch semula nota user daripada Firebase
+            const snapshot = await firebase.database()
+              .ref(`stickyNotes/${user.uid}`)
+              .once("value");
+
+            // Elakkan data user lama masuk
+            // jika login bertukar semasa loading
+            if (firebase.auth().currentUser?.uid !== user.uid) {
+              return;
+            }
+
+            const data = snapshot.val() || {};
+
+            notes = Object.keys(data).map(id => ({
+              id,
+              ...data[id]
+            }));
+
+            // Render semula nota tanpa reload page
+            renderNotes();
+
+            // Minimum loading 1 saat
+            const remaining =
+              1000 - (performance.now() - startTime);
+
+            if (remaining > 0) {
+              await new Promise(resolve =>
+                setTimeout(resolve, remaining)
+              );
+            }
+
+          },
+          {
+            target: stickyNotesWrapper,
+            message: "Please wait while fetching..."
+          }
+        );
+
+      },
+      {
+        text: "Refresh",
+        loadingText: "Refreshing...",
+        minDuration: 450
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      "[Sticky Notes] Refresh failed:",
+      error
+    );
+
+    NewUI.showToast(
+      error.message || "Failed to refresh notes",
+      "error"
+    );
+
+  } finally {
+    stickyRefreshing = false;
+  }
+}
+
+stickyRefreshButton.addEventListener(
+  "click",
+  refreshStickyNotesOnly
+);
 
 function saveNoteToFirebase(note){
   if(!note || !note.id) return Promise.resolve();
