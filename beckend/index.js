@@ -13,7 +13,7 @@ for (const k of ['FIREBASE_SERVICE_ACCOUNT','FIREBASE_DATABASE_URL','FIREBASE_WE
 }
 if (Buffer.byteLength(process.env.PIN_PEPPER) < 32) throw Error('PIN_PEPPER must be >= 32 bytes');
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-if (sa.project_id !== 'myproduction-v2') throw Error('Service account must belong to myproduction-v2');
+if (sa.project_id !== 'myproduction-v2') throw Error('Service account must belong to myproduction-v2');  
 initializeApp({credential:cert(sa), databaseURL:process.env.FIREBASE_DATABASE_URL});
 const auth = getAuth(), db = getDatabase();
 const app = express();
