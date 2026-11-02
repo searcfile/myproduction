@@ -1691,6 +1691,82 @@ function markAdminSeenInDB(){
     }
   });
 }
+
+/* ==========================================
+   LIVECHAT - ADMIN IDENTITY FROM FIREBASE
+   ========================================== */
+
+function waitForLivechatAuth() {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(
+      user => {
+        unsubscribe();
+        resolve(user);
+      },
+      reject
+    );
+  });
+}
+
+async function restoreAdminLivechatIdentity() {
+  const user = await waitForLivechatAuth();
+
+  if (!user || user.isAnonymous) return false;
+
+  const token = await user.getIdTokenResult();
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    return false;
+  }
+
+  const snapshot = await db
+    .ref("adminUsers/" + user.uid)
+    .once("value");
+
+  const profile = snapshot.val();
+
+  if (
+    !profile ||
+    profile.active !== true ||
+    profile.secondPasswordEnabled !== true ||
+    !["superadmin", "siteadmin"].includes(profile.role) ||
+    token.claims.pinVersion !== profile.pinVersion
+  ) {
+    return false;
+  }
+
+  const username = String(profile.username || "").trim();
+
+  if (!username) {
+    console.warn("Admin profile has no username.");
+    return false;
+  }
+
+  currentActiveId = "admin_" + user.uid;
+  currentUserEmail = user.email || null;
+  currentIsGuest = false;
+
+  localStorage.setItem("username", username);
+  localStorage.setItem("adminName", username);
+  localStorage.setItem("livechat.adminRole", profile.role);
+
+  await writeUserProfile();
+  bindPresenceAndNotif();
+  initChatWithUserData();
+  notifyRead();
+
+  console.log("LiveChat admin identity restored:", {
+    uid: user.uid,
+    username,
+    role: profile.role
+  });
+
+  return true;
+}
+
 async function ensureGuestLocalIdentity(){
   const localGuestId = getOrCreateLocalGuestId();
   const localGuestName = getOrCreateLocalGuestName(localGuestId);
@@ -2850,6 +2926,27 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("resize", setFabOffset);
   }
 
+
+let adminRestored = false;
+
+try {
+  adminRestored = await restoreAdminLivechatIdentity();
+} catch (error) {
+  console.error("LiveChat admin identity error:", error);
+}
+
+if (!adminRestored) {
+  const currentAuthUser = await waitForLivechatAuth();
+
+  // Jangan jatuhkan admin yang sudah login kepada Guest
+  // jika profile gagal dibaca atau token belum sah.
+  if (currentAuthUser && !currentAuthUser.isAnonymous) {
+    console.warn(
+      "Authenticated user identity could not be verified."
+    );
+    return;
+  }
+
   const email = localStorage.getItem("useremail");
 
   if (!currentActiveId && email) {
@@ -2866,6 +2963,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     initChatWithUserData();
     notifyRead();
   }
+}
+
 });
 const imageLightbox = document.getElementById('imageLightbox');
 const lightboxImage = document.getElementById('lightboxImage');
