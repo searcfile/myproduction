@@ -366,6 +366,7 @@ const search = $('#ldSearch');
 
 const refreshButton = $('#ldRefresh');
 let gridRefreshing = false;
+NewUI.refreshButton.init(refreshButton);
 
 
 
@@ -374,57 +375,62 @@ async function refreshGridOnly() {
   if (!can('refresh') || !can('view')) return;
 
   gridRefreshing = true;
-  refreshButton.disabled = true;
 
   try {
-    if (!window.NewUI?.refreshLoading?.run) {
-      throw new Error(
-        'NewUI.refreshLoading belum tersedia. Check new-ui.js'
-      );
-    }
+    await NewUI.refreshButton.run(
+      refreshButton,
+      async () => {
 
-    await NewUI.refreshLoading.run(async () => {
-      const startTime = performance.now();
+        await NewUI.refreshLoading.run(async () => {
+          const startTime = performance.now();
 
-      // Ambil semula data terkini daripada Firebase.
-      const snapshot = await db.ref(PATH).once('value');
+          // Fetch data terkini daripada Firebase.
+          const snapshot = await db.ref(PATH).once('value');
 
-      // Minimum 450ms supaya animasi kelihatan.
-      const remaining = 1000 - (performance.now() - startTime);
+          const remaining =
+            1000 - (performance.now() - startTime);
 
-      if (remaining > 0) {
-        await new Promise(resolve =>
-          setTimeout(resolve, remaining)
-        );
+          if (remaining > 0) {
+            await new Promise(resolve =>
+              setTimeout(resolve, remaining)
+            );
+          }
+
+          records = snapshot.val() || {};
+          loading = false;
+
+          refreshOptions();
+          render();
+
+        }, {
+          target: gridWrapper,
+          message: 'Please wait while fetching...'
+        });
+
+      },
+      {
+        text: 'Refresh',
+        loadingText: 'Refreshing...',
+        minDuration: 450
       }
-
-      records = snapshot.val() || {};
-      loading = false;
-
-      // Update pilihan platform.
-      refreshOptions();
-
-      // Render semula card tanpa reload halaman.
-      render();
-
-    }, {
-target: gridWrapper,
-message: 'Please wait while fetching...'
-    });
+    );
 
   } catch (error) {
     console.error('[Link Download] Refresh failed:', error);
-    toast(error.message || 'Failed to refresh cards', 'error');
 
-    // Kekalkan data lama jika refresh gagal.
+    toast(
+      error.message || 'Failed to refresh cards',
+      'error'
+    );
+
     loading = false;
     render();
 
   } finally {
     gridRefreshing = false;
-    refreshButton.disabled = false;
   }
 }
+
 
 refreshButton.addEventListener('click', refreshGridOnly);
 
