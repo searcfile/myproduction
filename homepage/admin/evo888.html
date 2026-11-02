@@ -3185,6 +3185,25 @@ async function mgReload() {
 function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
+// EVO888 - Format Bet untuk Firebase/backend
+function evoBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
+
+// EVO888 - Tukar key backend kepada format dropdown
+function evoDecodePecahan(pecahan = {}) {
+  const result = {};
+
+  for (const [key, wins] of Object.entries(pecahan || {})) {
+    const bet = key.startsWith("bet_")
+      ? key.slice(4).replace("_", ".")
+      : key;
+
+    result[String(Number(bet))] = wins;
+  }
+
+  return result;
+}
 function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
 
 function mgOptions(raw) {
@@ -3249,13 +3268,13 @@ function mgApplyCatalog(snapshot) {
         !game.pecahan
       ) return;
 
-      gameData[game.name] = {
-        bets: game.bets,
-        pecahan: game.pecahan,
-        freeGameOptions: Array.isArray(game.freeGameOptions)
-          ? game.freeGameOptions
-          : []
-      };
+gameData[game.name] = {
+  bets: game.bets,
+  pecahan: evoDecodePecahan(game.pecahan),
+  freeGameOptions: Array.isArray(game.freeGameOptions)
+    ? game.freeGameOptions
+    : []
+};
 
       mgGameIds[game.name] = id;
       mgRecords[game.name] = game;
@@ -3539,7 +3558,14 @@ form.append(siteField);
    row._get=()=>({bet:Number(a.input.value),betText:a.input.value.trim(),wins:mgNumberList(b.input.value)});
    window.NewUI?.input?.(a.input);window.NewUI?.input?.(b.input);
  }
- (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
+const decodedPecahan = evoDecodePecahan(old.pecahan);
+
+(old.bets || []).forEach(b => {
+  addBet(
+    b,
+    (decodedPecahan[String(Number(b))] || []).join(", ")
+  );
+});
  if(!old.bets?.length)addBet();
  const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
 /* ===== ACTIVE / INACTIVE ===== */
@@ -3610,8 +3636,36 @@ if (freeOptions === null) {
   return;
 }
  if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
- const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<=0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
- if(!bets.length){mgToast('Add at least one Bet','error');return;}
+const bets = [];
+const pecahan = {};
+
+for (const row of rows.children) {
+  const { bet, betText, wins } = row._get();
+
+  if (
+    !betText ||
+    !Number.isFinite(bet) ||
+    bet <= 0 ||
+    !wins.length
+  ) {
+    mgToast(
+      "Enter valid Bet and Win values for every row",
+      "error"
+    );
+    return;
+  }
+
+  if (bets.includes(bet)) {
+    mgToast("Duplicate Bet: " + bet, "error");
+    return;
+  }
+
+  bets.push(bet);
+
+  // Gunakan key yang backend EVO888 terima
+  pecahan[evoBetKey(bet)] = wins;
+}
+     if(!bets.length){mgToast('Add at least one Bet','error');return;}
 // Custom NewUI loading spinner
 await NewUI.setButtonLoading(save, true, {
   text: "Saving..."
