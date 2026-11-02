@@ -552,18 +552,11 @@ function getActiveTabStorageKey() {
   }
 
 
-  function getCurrentFile() {
-    const file =
-      window.location.pathname
-        .split("/")
-        .filter(Boolean)
-        .pop() || "index.html";
-
-    return file.toLowerCase();
-  }
-
-
 function isLivechatTabActive() {
+  return getActiveFile() === "livechat.html";
+}
+
+window.isLivechatTabActive = isLivechatTabActive;
   const activeFile = String(getActiveTabFile() || "")
     .split(/[?#]/)[0]
     .split("/")
@@ -6660,6 +6653,115 @@ function getSharedDb() {
   return null;
 }
 
+
+/* ==========================================
+   LIVECHAT HEADER - USER UNREAD BADGE
+========================================== */
+
+let livechatUnreadRef = null;
+let livechatUnreadHandler = null;
+let livechatUnreadUid = null;
+
+function renderLivechatUnreadBadge(count) {
+  const total = Math.max(0, Number(count) || 0);
+
+  const headerDot = document.getElementById("livechatDot");
+  const floatingDot = document.getElementById("floatingLivechatDot");
+
+  [headerDot, floatingDot].forEach(dot => {
+    if (!dot) return;
+
+    dot.style.display = total > 0 ? "block" : "none";
+    dot.title = total > 0
+      ? `${total} unread support messages`
+      : "";
+  });
+}
+
+function stopLivechatUnreadListener() {
+  if (livechatUnreadRef && livechatUnreadHandler) {
+    livechatUnreadRef.off("value", livechatUnreadHandler);
+  }
+
+  livechatUnreadRef = null;
+  livechatUnreadHandler = null;
+  livechatUnreadUid = null;
+
+  renderLivechatUnreadBadge(0);
+}
+
+function startLivechatUnreadListener(user) {
+  if (!user || user.isAnonymous) {
+    stopLivechatUnreadListener();
+    return;
+  }
+
+  const sessionUid = sessionStorage.getItem(
+    "5g88.adminSession"
+  );
+
+  if (sessionUid !== user.uid) {
+    stopLivechatUnreadListener();
+    return;
+  }
+
+  if (livechatUnreadUid === user.uid && livechatUnreadRef) {
+    return;
+  }
+
+  stopLivechatUnreadListener();
+
+  const database = getSharedDb();
+
+  if (!database) {
+    console.warn("LiveChat unread: Firebase DB unavailable");
+    return;
+  }
+
+  const uid = user.uid;
+  const chatId = `admin_${uid}`;
+
+  livechatUnreadUid = uid;
+  livechatUnreadRef = database.ref(`chats/${chatId}`);
+
+  livechatUnreadHandler = snapshot => {
+    let unread = 0;
+
+    snapshot.forEach(child => {
+      const message = child.val();
+
+      if (
+        message &&
+        message.from === "admin" &&
+        message.readByUser !== true
+      ) {
+        unread++;
+      }
+    });
+
+    renderLivechatUnreadBadge(unread);
+  };
+
+  livechatUnreadRef.on(
+    "value",
+    livechatUnreadHandler,
+    error => {
+      console.error("LiveChat unread listener failed:", error);
+      stopLivechatUnreadListener();
+    }
+  );
+}
+
+function initLivechatUnreadListener() {
+  if (typeof firebase === "undefined" || !firebase.auth) {
+    return;
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
+    startLivechatUnreadListener(user);
+  });
+}
+
   function isFeatureHidden(label) {
     return !!uiVisibility[String(label || "").trim().toUpperCase()];
   }
@@ -7855,7 +7957,7 @@ function init() {
   createShell();
 
   renderTabs();
-
+  initLivechatUnreadListener();
   // White Shield untuk refresh browser.
   initHardReloadReveal();
 
