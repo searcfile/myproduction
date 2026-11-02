@@ -3184,7 +3184,25 @@ result.error ||
 
   return result;
 }
+// SCR888H5 - Firebase-safe Bet Key
+function scrBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
 
+// Tukar key Firebase kepada format untuk dropdown dan Edit
+function scrDecodePecahan(pecahan = {}) {
+  const result = {};
+
+  for (const [key, wins] of Object.entries(pecahan || {})) {
+    const bet = key.startsWith("bet_")
+      ? key.slice(4).replace("_", ".")
+      : key;
+
+    result[String(Number(bet))] = wins;
+  }
+
+  return result;
+}
 function mgNumberList(raw) {
   return [...new Set(
     String(raw)
@@ -3263,16 +3281,19 @@ function mgApplyCatalog(snapshot) {
         !game.pecahan
       ) return;
 
-      gameData[game.name] = {
-        bets: game.bets,
-        pecahan: game.pecahan,
-        freeGameOptions: Array.isArray(game.freeGameOptions)
-          ? game.freeGameOptions
-          : []
-      };
+gameData[game.name] = {
+  bets: game.bets,
+  pecahan: scrDecodePecahan(game.pecahan),
+  freeGameOptions: Array.isArray(game.freeGameOptions)
+    ? game.freeGameOptions
+    : []
+};
 
       mgGameIds[game.name] = id;
-      mgRecords[game.name] = game;
+mgRecords[game.name] = {
+  ...game,
+  pecahan: scrDecodePecahan(game.pecahan)
+};
     });
 
     gameSelect.replaceChildren(
@@ -3683,12 +3704,14 @@ form.append(siteSelector.field);
     window.NewUI?.input?.(b.input);
   }
 
-  (old.bets || []).forEach(bet => {
-    addBet(
-      bet,
-      (old.pecahan?.[String(bet)] || []).join(", ")
-    );
-  });
+const decodedPecahan = scrDecodePecahan(old.pecahan);
+
+(old.bets || []).forEach(bet => {
+  addBet(
+    bet,
+    (decodedPecahan[String(Number(bet))] || []).join(", ")
+  );
+});
 
   if (!old.bets?.length) addBet();
 
@@ -3784,7 +3807,7 @@ form.append(siteSelector.field);
       }
 
       bets.push(bet);
-      pecahan[String(bet)] = wins;
+      pecahan[scrBetKey(bet)] = wins;
     }
 
     if (!bets.length) {
