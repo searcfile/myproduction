@@ -2984,11 +2984,24 @@ function createSharedImageUpload(target, options = {}) {
   const pick = document.createElement('button'); pick.type='button'; pick.className='shared-image-upload-btn';
   pick.innerHTML=uploadSVG; pick.append(document.createTextNode(' '+(options.buttonText || 'Upload Image')));
   const preview=document.createElement('div'); preview.className='shared-image-upload-preview'; preview.hidden=true;
-  const img=document.createElement('img'); img.alt='Image preview';
+  
+const imageWrap = document.createElement("div");
+imageWrap.className = "shared-image-upload-thumb";
+
+const img = document.createElement("img");
+img.alt = "Image preview";
+
+const hoverText = document.createElement("span");
+hoverText.className = "shared-image-upload-hover-text";
+hoverText.textContent = "Preview";
+hoverText.setAttribute("aria-hidden", "true");
+
+imageWrap.append(img, hoverText);
+
   const info=document.createElement('div'); info.className='shared-image-upload-file-info';
   const filename=document.createElement('strong'); const status=document.createElement('span'); status.textContent='Ready'; info.append(filename,status);
   const remove=document.createElement('button');remove.type='button';remove.className='shared-image-upload-remove';remove.setAttribute('aria-label','Remove image');remove.innerHTML=deleteSVG;
-  preview.append(img,info,remove);section.append(fileInput,pick,preview);host.append(section);
+  preview.append(imageWrap,info,remove);section.append(fileInput,pick,preview);host.append(section);
   let file=null, url='', objectURL='', destroyed=false;
   function revoke(){if(objectURL){URL.revokeObjectURL(objectURL);objectURL='';}}
   function clear(notify=true){revoke();file=null;url='';fileInput.value='';img.removeAttribute('src');filename.textContent='';preview.hidden=true;status.textContent='Ready';if(notify)options.onChange?.({file:null,url:''});}
