@@ -8037,6 +8037,25 @@ updateHeaderActiveState();
   }
 
 
+/* ==========================================================
+   CURRENT PAGE HELPER
+   ========================================================== */
+
+function getCurrentFile() {
+  try {
+    const pathname = window.location.pathname;
+
+    return (
+      pathname
+        .split("/")
+        .filter(Boolean)
+        .pop() || "index.html"
+    ).toLowerCase();
+  } catch (error) {
+    return "index.html";
+  }
+}
+
   /* ==========================================================
      PUBLIC API
      ========================================================== */
