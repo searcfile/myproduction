@@ -274,7 +274,7 @@ html {
 .header {
   position: fixed;
   width: 100%;
-  z-index:20000;
+  z-index:30000 !important;
   height: 64px;
   background: #001529;
   display: flex;
@@ -2427,7 +2427,7 @@ body.tab-dragging-active *{
 .header,
 .header.shrink {
   position: fixed !important;
-  z-index: 5000 !important;
+  z-index: 30000 !important;
   overflow: visible !important;
 }
 
