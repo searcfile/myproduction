@@ -3014,7 +3014,27 @@ let mgRef=null, mgCatalogLoaded=false, mgGameIds={};
 function mgToast(msg, type = "success") {
   return showToast(msg, type);
 }
-function mgNumberList(raw){return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
+  // Format key Bet yang selamat untuk Firebase
+function kissBetKey(bet) {
+  return "bet_" + String(Number(bet)).replace(".", "_");
+}
+
+// Baca semula key Bet untuk dropdown dan Edit Game
+function kissDecodePecahan(pecahan = {}) {
+  const result = {};
+
+  for (const [key, wins] of Object.entries(pecahan || {})) {
+    const bet = key.startsWith("bet_")
+      ? key.slice(4).replace("_", ".")
+      : key;
+
+    result[String(Number(bet))] = wins;
+  }
+
+  return result;
+}
+function mgNumberList(raw)
+{return [...new Set(String(raw).split(/[,\s\n]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=0))];}
 
 function mgOptions(raw) {
   const text = String(raw).trim();
@@ -3049,7 +3069,13 @@ mgGameIds = {};
 
  Object.entries(data).forEach(([id,v])=>{
    if(!v||typeof v.name!=='string'||!Array.isArray(v.bets)||!v.pecahan)return;
-   gameData[v.name]={bets:v.bets,pecahan:v.pecahan,freeGameOptions:Array.isArray(v.freeGameOptions)?v.freeGameOptions:[]};
+gameData[v.name] = {
+  bets: v.bets,
+  pecahan: kissDecodePecahan(v.pecahan),
+  freeGameOptions: Array.isArray(v.freeGameOptions)
+    ? v.freeGameOptions
+    : []
+};
    mgGameIds[v.name]=id;
  });
  const select=document.getElementById('gameSelect');select.replaceChildren(new Option('Select Game',''));
@@ -3282,7 +3308,10 @@ form.append(siteField);
    row._get=()=>({bet:Number(a.input.value),betText:a.input.value.trim(),wins:mgNumberList(b.input.value)});
    window.NewUI?.input?.(a.input);window.NewUI?.input?.(b.input);
  }
- (old.bets||[]).forEach(b=>addBet(b,(old.pecahan?.[String(b)]||[]).join(', ')));
+(old.bets || []).forEach(b => {
+  const decoded = kissDecodePecahan(old.pecahan);
+  addBet(b, (decoded[String(b)] || []).join(', '));
+});
  if(!old.bets?.length)addBet();
  const add=mgElement('button','btn-edit-new','+ Add Bet');add.type='button';add.onclick=()=>addBet();form.append(add);
  const actions=mgElement('div','mg-form-actions'),cancel=mgElement('button','btn-cancel-new','Cancel'),save=mgElement('button','btn-primary-new','Save Game');cancel.type='button';save.type='submit';
@@ -3385,8 +3414,34 @@ if (freeOptions === null) {
 }
 
  if(gameData[gameName]&&gameName!==oldName){mgToast('Game name already exists','error');return;}
- const bets=[],pecahan={};for(const row of rows.children){const {bet,betText,wins}=row._get();if(!betText||!Number.isFinite(bet)||bet<0||!wins.length){mgToast('Enter valid Bet and Win values for every row','error');return;}if(bets.includes(bet)){mgToast('Duplicate Bet: '+bet,'error');return;}bets.push(bet);pecahan[String(bet)]=wins;}
- if(!bets.length){mgToast('Add at least one Bet','error');return;}
+const bets = [];
+const pecahan = {};
+
+for (const row of rows.children) {
+  const { bet, betText, wins } = row._get();
+
+  if (
+    !betText ||
+    !Number.isFinite(bet) ||
+    bet <= 0 ||
+    !wins.length
+  ) {
+    mgToast(
+      'Enter valid Bet and Win values for every row',
+      'error'
+    );
+    return;
+  }
+
+  if (bets.includes(bet)) {
+    mgToast('Duplicate Bet: ' + bet, 'error');
+    return;
+  }
+
+  bets.push(bet);
+  pecahan[kissBetKey(bet)] = wins;
+}
+   if(!bets.length){mgToast('Add at least one Bet','error');return;}
 // Custom NewUI loading spinner
 await NewUI.setButtonLoading(save, true, {
   text: "Saving..."
