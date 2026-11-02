@@ -537,7 +537,9 @@ app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
 const SUPERADMIN_ONLY_PAGES = new Set([
   "users.html",
   "site-management.html",
-  "admin-users.html"
+  "admin-users.html",
+  "livechat-support.html",
+  "notice.html"
 ]);
 
 function isAllowedModule(moduleName) {
