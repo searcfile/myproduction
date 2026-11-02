@@ -1970,6 +1970,91 @@ bottom: 0;
   }
 
 }
+
+/* =========================================================
+   NEW UI - SMART TOAST STACK
+   Normal rows + temporary overlapping animation
+========================================================= */
+
+#globalToastContainer {
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Every toast shares the same bottom anchor */
+#globalToastContainer .custom-toast {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  max-width: none;
+  margin: 0;
+
+  transform-origin: center bottom;
+
+  transition:
+    transform .35s cubic-bezier(.22, 1, .36, 1),
+    opacity .28s ease,
+    filter .28s ease;
+}
+
+/* NORMAL MODE: up to 5 separate rows */
+#globalToastContainer:not(.toast-stacked)
+.custom-toast.show {
+  opacity: 1;
+
+  transform:
+    translateY(
+      calc(-1 * var(--toast-offset, 0px))
+    )
+    scale(1);
+
+  filter: blur(0);
+}
+
+/* RAPID CLICK MODE: stacked cards */
+#globalToastContainer.toast-stacked
+.custom-toast.show {
+  opacity: 1;
+
+  transform:
+    translateY(
+      calc(-1 * var(--toast-depth, 0) * 10px)
+    )
+    scale(
+      calc(1 - var(--toast-depth, 0) * .035)
+    );
+
+  filter: blur(0);
+}
+
+/* Older cards slightly darker during stacking */
+#globalToastContainer.toast-stacked
+.custom-toast.show:not([style*="--toast-depth: 0"]) {
+  opacity: .82;
+}
+
+/* Newest card stays fully visible */
+#globalToastContainer.toast-stacked
+.custom-toast.show[style*="--toast-depth: 0"] {
+  opacity: 1;
+}
+
+/* Exit animation */
+#globalToastContainer .custom-toast.hide {
+  opacity: 0;
+  transform: translateY(16px) scale(.96);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #globalToastContainer .custom-toast {
+    transition: none;
+  }
+}
+
 .btn-primary-new {
    height:32px;
    border-radius:6px;
