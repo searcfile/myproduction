@@ -1531,7 +1531,7 @@ const COLORS = [
 ];
 
 const els = {
-  userName: document.getElementById("userName"),
+  userName: document.getElementById("userNameText"),
   userEmail: document.getElementById("userEmail"),
   pageSub: document.getElementById("pageSub"),
   searchInput: document.getElementById("searchInput"),
@@ -1786,8 +1786,7 @@ function deleteNoteFromFirebase(id){
 function renderUser(){
   const name = currentUser.name || "Guest";
   const email = currentUser.email || "guest";
-
-  if(els.userName) els.userName.textContent = name;
+    
   if(els.userEmail) els.userEmail.textContent = email;
   if(els.pageSub) els.pageSub.textContent = `Notes for ${name}`;
 }
