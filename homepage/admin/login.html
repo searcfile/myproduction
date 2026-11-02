@@ -3241,14 +3241,18 @@ async function openLiveChat() {
   lcPanel.setAttribute("aria-hidden", "false");
   updateLiveChatButton(true);
 
+if (!auth.currentUser) {
   await ensureGuestAuth();
+}
 
   if (!lcLoaded) {
     lcFrame.src = LC_URL;
     lcFrame.addEventListener("load", async () => {
       lcLoaded = true;
 
-      await ensureGuestAuth();
+ if (!auth.currentUser) {
+  await ensureGuestAuth();
+}
 
       // ✅ hanya bila panel dibuka baru hantar identity guest/user ke iframe
       postIdentityToChat();
