@@ -1666,30 +1666,64 @@ function ensureGuestDisplayName() {
 
   return guestName;
 }
-function markAdminSeenInDB(){
+
+/* ==========================================
+   LIVECHAT USER - MARK SUPPORT MESSAGES READ
+========================================== */
+
+let isMarkingUserRead = false;
+
+function isLivechatVisible() {
+  return (
+    document.visibilityState === "visible" &&
+    document.hasFocus()
+  );
+}
+
+async function markAdminSeenInDB() {
   if (!currentActiveId) return;
+  if (!isLivechatVisible()) return;
+  if (isMarkingUserRead) return;
 
   const chatPath = getChatPath();
   if (!chatPath) return;
 
-  const chatRef = db.ref(chatPath);
+  isMarkingUserRead = true;
 
-  chatRef.once("value", (snap) => {
-    if (!snap.exists()) return;
+  try {
+    const chatRef = db.ref(chatPath);
+    const snapshot = await chatRef.once("value");
+
+    if (!isLivechatVisible()) return;
 
     const updates = {};
-    snap.forEach(child => {
-      const m = child.val();
-      if (m?.from === "admin" && m?.seenByUser !== true) {
-        updates[child.key + "/seenByUser"] = true;
-        updates[child.key + "/readAt"] = Date.now();   // optional
+    const now = Date.now();
+
+    snapshot.forEach(child => {
+      const message = child.val();
+
+      if (
+        message?.from === "admin" &&
+        message.readByUser !== true
+      ) {
+        updates[`${child.key}/readByUser`] = true;
+        updates[`${child.key}/seenByUser`] = true;
+        updates[`${child.key}/readAt`] = now;
       }
     });
 
     if (Object.keys(updates).length) {
-      chatRef.update(updates).catch(err => console.warn("markAdminSeenInDB fail:", err?.message || err));
+      await chatRef.update(updates);
     }
-  });
+
+  } catch (error) {
+    console.error(
+      "LiveChat mark read failed:",
+      error
+    );
+  } finally {
+    isMarkingUserRead = false;
+  }
 }
 
 /* ==========================================
@@ -2556,7 +2590,6 @@ function listenToChat() {
   const chatRef = db.ref(chatPath);
   chatRef.off();
 
-  const lastSeenKey = `lastSeenByUser_${currentActiveId}`;
   const startMsg = document.getElementById("startMessage");
 
   chatRef.on('value', snapshot => {
@@ -2586,8 +2619,7 @@ function listenToChat() {
 
     if (startMsg) startMsg.style.display = "none";
 
-    const lastSeenTime = parseInt(localStorage.getItem(lastSeenKey) || '0', 10);
-    let latestAdminMsgTime = 0;
+    let hasUnreadSupportMessage = false;
 
     const chatArray = Object.values(chats).sort((a, b) => (a.time || 0) - (b.time || 0));
 
@@ -2604,22 +2636,21 @@ function listenToChat() {
 
       (msgDateOnly.getTime() === today.getTime() ? todayChats : pastChats).push(c);
 
-      if (c.from === 'admin' && t > latestAdminMsgTime) {
-        latestAdminMsgTime = t;
-      }
+if (
+  c.from === "admin" &&
+  c.readByUser !== true
+) {
+  hasUnreadSupportMessage = true;
+}
     });
 
-    const latestTime = chatArray[chatArray.length - 1]?.time || 0;
-    localStorage.setItem(lastSeenKey, String(latestTime));
 
-if (latestAdminMsgTime > lastSeenTime) {
-  if (shouldPlayIframeSound()) {
-    playNotificationSound();
-  }
+if (hasUnreadSupportMessage) {
   notifyUnread();
 } else {
   notifyRead();
 }
+
 
     renderChats(pastChats, today);
     renderChats(todayChats, today);
@@ -2886,6 +2917,21 @@ function onNewMessageRendered({ forceToBottom = false, instant = false } = {}){
   updateFab();
   if (lastQuery) doSearch(lastQuery);
 }
+
+/* ==========================================
+   LIVECHAT - READ ON RETURN
+========================================== */
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    markAdminSeenInDB();
+  }
+});
+
+window.addEventListener("focus", () => {
+  markAdminSeenInDB();
+});
+
 function notifyUnread(){
   localStorage.setItem("livechatUnread", "1");
 }
