@@ -2210,7 +2210,7 @@ function jiliValidate(body) {
   }
 
   for (const bet of bets) {
-    const values = pecahan[String(bet)];
+    const values = pecahan[megaBetKey(bet)];
 
     if (
       !Array.isArray(values) ||
