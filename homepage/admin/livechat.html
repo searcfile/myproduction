@@ -1710,6 +1710,13 @@ function isLivechatVisible() {
 
 async function markAdminSeenInDB() {
   if (!currentActiveId) return;
+    console.log("[LiveChat Read Check]", {
+  chatId: currentActiveId,
+  visible: isLivechatVisible(),
+  parentActive: window.parent !== window
+    ? window.parent.isLivechatTabActive?.()
+    : true
+});
   if (!isLivechatVisible()) return;
   if (isMarkingUserRead) return;
 
@@ -1743,7 +1750,10 @@ async function markAdminSeenInDB() {
     if (Object.keys(updates).length) {
       await chatRef.update(updates);
     }
-
+console.log("[LiveChat Read Saved]", {
+  chatPath,
+  updatedFields: Object.keys(updates).length
+});
   } catch (error) {
     console.error(
       "LiveChat mark read failed:",
