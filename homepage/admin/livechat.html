@@ -2964,6 +2964,14 @@ window.addEventListener("pageshow", () => {
   markAdminSeenInDB();
 });
 
+window.addEventListener("message", event => {
+  if (event.origin !== window.location.origin) return;
+  if (event.source !== window.parent) return;
+
+  if (event.data?.type === "5G88_LIVECHAT_TAB_ACTIVE") {
+    markAdminSeenInDB();
+  }
+});
 function notifyUnread(){
   localStorage.setItem("livechatUnread", "1");
 }
