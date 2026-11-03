@@ -1985,6 +1985,8 @@ function canAgentMarkRead(force = false) {
     (force || document.hasFocus())
   );
 }
+let agentReadPromise = null;
+let agentReadPromiseKey = "";
 
 
 async function markActiveAgentChatRead(force = false) {
@@ -1993,86 +1995,111 @@ async function markActiveAgentChatRead(force = false) {
   const selectedAtStart = activeUserIdSanitized;
   const generation = selectedChatGeneration;
 
-  const memberIds = [
-    ...(selectedChatMemberIds.length
+  const memberIds = [...new Set(
+    selectedChatMemberIds.length
       ? selectedChatMemberIds
-      : [selectedAtStart])
-  ];
+      : [selectedAtStart]
+  )].filter(Boolean);
 
-  try {
-    await Promise.all(memberIds.map(async sid => {
-      const chatRef = db.ref(`chats/${sid}`);
-      const snapshot = await chatRef.once("value");
+  const key = `${generation}:${memberIds.join("|")}`;
 
-      if (
-        !canAgentMarkRead(force) ||
-        activeUserIdSanitized !== selectedAtStart ||
-        generation !== selectedChatGeneration
-      ) return;
+  if (agentReadPromise && agentReadPromiseKey === key) {
+    return agentReadPromise;
+  }
 
-      const updates = {};
-
-      snapshot.forEach(child => {
-        const message = child.val();
+  const task = (async () => {
+    try {
+      await Promise.all(memberIds.map(async sid => {
+        const chatRef = db.ref(`chats/${sid}`);
+        const snapshot = await chatRef.once("value");
 
         if (
-          message?.from === "user" &&
-          message.readByAdmin !== true
-        ) {
-          updates[`${child.key}/readByAdmin`] = true;
+          !canAgentMarkRead(force) ||
+          activeUserIdSanitized !== selectedAtStart ||
+          generation !== selectedChatGeneration
+        ) return;
+
+        const updates = {};
+
+        snapshot.forEach(child => {
+          const message = child.val();
+
+          if (
+            message?.from === "user" &&
+            message.readByAdmin !== true
+          ) {
+            updates[`${child.key}/readByAdmin`] = true;
+          }
+        });
+
+        if (Object.keys(updates).length) {
+          await chatRef.update(updates);
         }
-      });
 
-      if (Object.keys(updates).length) {
-        await chatRef.update(updates);
-      }
+        const latest = await chatRef.once("value");
+        let remaining = 0;
 
-      const latest = await chatRef.once("value");
-      let remaining = 0;
+        latest.forEach(child => {
+          const message = child.val();
 
-      latest.forEach(child => {
-        const message = child.val();
+          if (
+            message?.from === "user" &&
+            message.readByAdmin !== true
+          ) {
+            remaining++;
+          }
+        });
 
         if (
-          message?.from === "user" &&
-          message.readByAdmin !== true
-        ) {
-          remaining++;
-        }
-      });
+          activeUserIdSanitized !== selectedAtStart ||
+          generation !== selectedChatGeneration
+        ) return;
 
-      if (
-        activeUserIdSanitized !== selectedAtStart ||
-        generation !== selectedChatGeneration
-      ) return;
-
-      await db.ref(`users/${sid}`).update({
-        unreadForAdmin: remaining > 0,
-        unreadCountForAdmin: remaining
-      });
-
-      unreadCountCache[sid] = remaining;
-
-      const idx = allUsersData.findIndex(
-        ([key]) => key === sid
-      );
-
-      if (idx !== -1) {
-        allUsersData[idx][1] = {
-          ...allUsersData[idx][1],
+        await db.ref(`users/${sid}`).update({
           unreadForAdmin: remaining > 0,
           unreadCountForAdmin: remaining
-        };
+        });
+
+        unreadCountCache[sid] = remaining;
+
+        const idx = allUsersData.findIndex(
+          ([id]) => id === sid
+        );
+
+        if (idx !== -1) {
+          allUsersData[idx][1] = {
+            ...allUsersData[idx][1],
+            unreadForAdmin: remaining > 0,
+            unreadCountForAdmin: remaining
+          };
+        }
+      }));
+
+      if (
+        activeUserIdSanitized === selectedAtStart &&
+        generation === selectedChatGeneration
+      ) {
+        scheduleRender();
       }
-    }));
 
-    scheduleRender();
+    } catch (error) {
+      console.error(
+        "[Agent Support] Mark read failed:",
+        error
+      );
+    }
+  })();
 
-  } catch (error) {
-    console.error(
-      "[Agent Support] Failed to mark merged chat read:",
-      error
-    );
+  agentReadPromiseKey = key;
+  agentReadPromise = task;
+
+  try {
+    await task;
+  } finally {
+    if (agentReadPromise === task) {
+      agentReadPromise = null;
+      agentReadPromiseKey = "";
+    }
   }
 }
 
@@ -2953,6 +2980,12 @@ function seedUnreadFlagOnce(sid){
       .limitToLast(200)
       .once("value")
       .then(cs=>{
+                if (
+          selectedChatMemberIds.includes(sid) &&
+          canAgentMarkRead()
+        ) {
+          return;
+        }
         const chats = cs.val() || {};
         const list = Object.values(chats).filter(Boolean);
 
@@ -3353,7 +3386,7 @@ function listenToChat() {
 
   const messagesBySid = new Map();
   const loaded = new Set();
-
+let lastVisualSignature = null; 
   const renderMerged = () => {
     if (generation !== selectedChatGeneration) return;
 
@@ -3367,16 +3400,36 @@ function listenToChat() {
         String(a._key).localeCompare(String(b._key))
       );
 
-    allMessages = combined;
+allMessages = combined;
 
-    if (!combined.length) {
-      if (chatBox) {
-        chatBox.innerHTML =
-          '<p class="start-message">Start Message.</p>';
-      }
-    } else {
-      renderChatMessages(combined);
+const visualSignature = JSON.stringify(
+  combined.map(m => ({
+    key: m._key,
+    source: m._sourceSid,
+    from: m.from,
+    name: m.name,
+    text: m.text,
+    image: m.image,
+    images: m.images,
+    time: m.time,
+    readByUser: m.readByUser,
+    deliveredAt: m.deliveredAt,
+    readAt: m.readAt
+  }))
+);
+
+if (visualSignature !== lastVisualSignature) {
+  lastVisualSignature = visualSignature;
+
+  if (!combined.length) {
+    if (chatBox) {
+      chatBox.innerHTML =
+        '<p class="start-message">Start Message.</p>';
     }
+  } else {
+    renderChatMessages(combined);
+  }
+}
 
     if (
       canAgentMarkRead() &&
@@ -3689,13 +3742,15 @@ async function compressImage(file, maxWidth = 1280, quality = 0.72) {
     reader.readAsDataURL(file);
   });
 }
-async function sendMessage() {
-  if (!selectedUserId) return;
+let agentSendInProgress = false;
 
+async function sendMessage() {
+  if (!selectedUserId || agentSendInProgress) return;
+
+  const targetSid = selectedUserId;
   const text = (msgInput?.value || "").trim();
 
-  const stillUploading = pendingImages.some(item => item.uploading);
-  if (stillUploading) {
+  if (pendingImages.some(item => item.uploading)) {
     alert("⏳ Please wait, image still uploading.");
     return;
   }
@@ -3706,27 +3761,24 @@ async function sendMessage() {
 
   if (!text && !readyImages.length) return;
 
-  let admin;
+  agentSendInProgress = true;
+  if (sendBtn) sendBtn.disabled = true;
 
   try {
-    admin = await getAdminIdentity();
-  } catch (err) {
-    console.error("Invalid Agent Support identity:", err);
-    alert("Login session invalid. Please login again.");
-    return;
-  }
+    const admin = await getAdminIdentity();
 
-  const time = Date.now();
-
-  try {
     if (firebase.auth().currentUser?.uid !== admin.uid) {
       throw new Error("Firebase login changed before sending.");
     }
-    await db.ref(`chats/${selectedUserId}`).push({
+
+    const time = Date.now();
+
+    await db.ref(`chats/${targetSid}`).push({
       from: "admin",
       name: admin.name || "Admin",
       email: admin.email || "",
-      photoURL: admin.photoURL || "https://i.imgur.com/qiZFOs9.png",
+      photoURL: admin.photoURL ||
+        "https://i.imgur.com/qiZFOs9.png",
       text: text || null,
       image: readyImages[0] || null,
       images: readyImages,
@@ -3736,17 +3788,26 @@ async function sendMessage() {
       readAt: null
     });
 
-    if (msgInput) {
-      msgInput.value = "";
-      autoResizeMsgBox();
+    // Kosongkan input hanya selepas Firebase berjaya.
+    // Elakkan memadam teks yang baru ditaip
+    // semasa proses penghantaran berlangsung.
+    if (selectedUserId === targetSid) {
+      if (msgInput && msgInput.value.trim() === text) {
+        msgInput.value = "";
+        autoResizeMsgBox();
+      }
+
+      clearSelectedImage(true);
+      forceScrollToBottom = true;
     }
 
-    clearSelectedImage(true);
-    updateSendButtonState();
-    forceScrollToBottom = true;
   } catch (err) {
     console.error("Send message failed:", err);
     alert("❌ Failed to send message.");
+
+  } finally {
+    agentSendInProgress = false;
+    updateSendButtonState();
   }
 }
 
