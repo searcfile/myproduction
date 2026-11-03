@@ -6756,6 +6756,18 @@ function startLivechatUnreadListener(user) {
     });
 
     renderLivechatUnreadBadge(unread);
+
+// Selaraskan notifikasi bunyi dan tajuk browser
+// dengan jumlah unread daripada Firebase yang sama.
+if (typeof window.syncLivechatAlertState === "function") {
+  window.syncLivechatAlertState(unread);
+}
+
+console.log("[LiveChat Badge]", {
+  chatId,
+  unread,
+  activeTab: window.isLivechatTabActive?.()
+});
   };
 
   livechatUnreadRef.on(
