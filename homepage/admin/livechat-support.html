@@ -1944,41 +1944,90 @@ let activeChatValueHandler = null;
     
 /* ===== AGENT SUPPORT READ STATUS ===== */
 
-function canAgentMarkRead() {
+function canAgentMarkRead(force = false) {
   return (
     document.visibilityState === "visible" &&
-    document.hasFocus() &&
-    !!activeUserIdSanitized
+    !!activeUserIdSanitized &&
+    (force || document.hasFocus())
   );
 }
 
-async function markActiveAgentChatRead() {
-  if (!canAgentMarkRead()) return;
+async function markActiveAgentChatRead(force = false) {
+  if (!canAgentMarkRead(force)) return;
 
   const sid = activeUserIdSanitized;
-  const snapshot = await db.ref(`chats/${sid}`).once("value");
+  const chatRef = db.ref(`chats/${sid}`);
 
-  if (!canAgentMarkRead() || activeUserIdSanitized !== sid) return;
+  try {
+    const snapshot = await chatRef.once("value");
 
-  const updates = {};
+    if (
+      !canAgentMarkRead(force) ||
+      activeUserIdSanitized !== sid
+    ) return;
 
-  snapshot.forEach(child => {
-    const message = child.val();
+    const updates = {};
 
-    if (message?.from === "user" && message.readByAdmin !== true) {
-      updates[`chats/${sid}/${child.key}/readByAdmin`] = true;
-    }
-  });
+    snapshot.forEach(child => {
+      const message = child.val();
 
-  if (Object.keys(updates).length) {
-    await db.ref().update(updates);
-  }
-
-  if (canAgentMarkRead() && activeUserIdSanitized === sid) {
-    await db.ref(`users/${sid}`).update({
-      unreadForAdmin: false,
-      unreadCountForAdmin: 0
+      if (
+        message?.from === "user" &&
+        message.readByAdmin !== true
+      ) {
+        updates[`${child.key}/readByAdmin`] = true;
+      }
     });
+
+    if (Object.keys(updates).length) {
+      await chatRef.update(updates);
+    }
+
+    if (activeUserIdSanitized !== sid) return;
+
+    // Semak semula untuk mengelakkan unread baharu
+    // terpadam oleh kemas kini yang sudah lama.
+    const latest = await chatRef.once("value");
+
+    let remainingUnread = 0;
+
+    latest.forEach(child => {
+      const message = child.val();
+
+      if (
+        message?.from === "user" &&
+        message.readByAdmin !== true
+      ) {
+        remainingUnread++;
+      }
+    });
+
+    await db.ref(`users/${sid}`).update({
+      unreadForAdmin: remainingUnread > 0,
+      unreadCountForAdmin: remainingUnread
+    });
+
+    unreadCountCache[sid] = remainingUnread;
+
+    const idx = allUsersData.findIndex(
+      ([id]) => id === sid
+    );
+
+    if (idx !== -1) {
+      allUsersData[idx][1] = {
+        ...(allUsersData[idx][1] || {}),
+        unreadForAdmin: remainingUnread > 0,
+        unreadCountForAdmin: remainingUnread
+      };
+    }
+
+    scheduleRender();
+
+  } catch (error) {
+    console.error(
+      "[Agent Support] Failed to mark read:",
+      error
+    );
   }
 }
 
@@ -3123,7 +3172,8 @@ userDiv.onclick = ()=>{
   forceScrollToBottom = true;
   activeUserIdSanitized = sanitized;
   selectedUserId = sanitized;
-
+  markActiveAgentChatRead(true);
+    
 const selectedUserName = displayName || "User";
       showChatDetail();
 const selectedUserPhoto =
