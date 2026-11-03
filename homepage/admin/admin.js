@@ -206,13 +206,14 @@ let livechatLoopPlaying = false;
 function initLivechatLoopAudio() {
   if (livechatLoopAudio) return livechatLoopAudio;
 
-const existing = document.getElementById("notifSound");
+  const existing = document.getElementById("notifSound");
 
-livechatLoopAudio =
-  existing ||
-  new Audio("../audio/audio.wav");
+  livechatLoopAudio =
+    existing ||
+    new Audio("../audio/audio.wav");
 
-livechatLoopAudio.src = "../audio/audio.wav";
+  // Path dari folder homepage/admin/
+  livechatLoopAudio.src = "../audio/audio.wav";
 
   livechatLoopAudio.loop = true;
   livechatLoopAudio.preload = "auto";
@@ -240,9 +241,12 @@ function isLivechatSoundAllowed() {
 }
 
 function unlockLivechatAudio() {
-  if (isLivechatSoundAllowed()) {
-    startLivechatLoopSound();
-  }
+  if (!isLivechatSoundAllowed()) return;
+
+  const audio = initLivechatLoopAudio();
+  if (!audio || !audio.paused) return;
+
+  startLivechatLoopSound();
 }
 
 // Browser biasanya memerlukan interaksi pengguna
