@@ -1674,33 +1674,38 @@ function ensureGuestDisplayName() {
 let isMarkingUserRead = false;
 
 
+
 function isLivechatVisible() {
-  if (
-    document.visibilityState !== "visible" ||
-    !document.hasFocus()
-  ) {
+  // Jangan mark read jika browser tab tersembunyi.
+  if (document.visibilityState !== "visible") {
     return false;
   }
 
-  // LiveChat berada dalam iframe admin.
-  // Pastikan tab LiveChat memang sedang aktif.
-  if (window.parent !== window) {
-    try {
-      if (
-        typeof window.parent.isLivechatTabActive === "function"
-      ) {
-        return window.parent.isLivechatTabActive();
-      }
+  // Semak halaman yang benar-benar aktif.
+  const currentFile = window.location.pathname
+    .split("/")
+    .pop()
+    .toLowerCase();
 
-      // Jangan tandakan read jika status tab tak diketahui.
-      return false;
-    } catch (error) {
-      return false;
-    }
+  // Untuk halaman LiveChat yang dibuka secara langsung.
+  if (window.parent === window) {
+    return currentFile === "livechat.html";
   }
 
-  return true;
+  // Untuk LiveChat di dalam iframe.
+  try {
+    if (
+      typeof window.parent.isLivechatTabActive === "function"
+    ) {
+      return window.parent.isLivechatTabActive();
+    }
+  } catch (error) {
+    console.warn("LiveChat tab check failed:", error);
+  }
+
+  return false;
 }
+
 
 
 async function markAdminSeenInDB() {
@@ -2952,6 +2957,10 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("focus", () => {
+  markAdminSeenInDB();
+});
+
+window.addEventListener("pageshow", () => {
   markAdminSeenInDB();
 });
 
