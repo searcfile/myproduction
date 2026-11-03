@@ -911,17 +911,23 @@ if (
     return null;
   }
 
-  window.currentAdmin = {
-    uid: user.uid,
-    username: profile.username,
-    email: profile.email,
-    name: profile.displayName || profile.username,
-    role: profile.role
-  };
+window.currentAdmin = {
+  uid: user.uid,
+  username: profile.username,
+  email: profile.email,
+  name: profile.displayName || profile.username,
+  role: profile.role
+};
 
-  return window.currentAdmin;
+// Selepas auth selesai, semak semula unread
+// dan cuba sambung bunyi jika Site Admin.
+if (window.currentAdmin.role === "siteadmin") {
+  syncLivechatAlertState(livechatUnreadCount);
+} else {
+  stopLivechatLoopSound();
 }
 
+return window.currentAdmin;
 
 // ⬇️ GANTI seluruh blok ini
 document.addEventListener("DOMContentLoaded", async () => {
