@@ -1310,7 +1310,7 @@ main {
     <!-- CHAT HEADER -->
     <div class="chat-header">
       <div class="profile">
-        <img id="headerUserPhoto" src="./logo.svg" alt="Support" />
+       <img id="headerUserPhoto" src="https://i.imgur.com/qiZFOs9.png" alt="Support" />
         <div>
           <span id="headerUserName">Admin Support</span><div id="supportAgentName" class="support-agent-name">Support team</div>
           <small id="typingStatus" style="font-size: 12px; font-weight: normal; color: white;">Offline</small>
@@ -2010,7 +2010,7 @@ function updateAdminHeader(name, photo) {
   const photoEl = document.getElementById("headerUserPhoto");
 
   const finalName = "Admin Support";
-  const finalPhoto = photo || "./logo.svg";
+  const finalPhoto = "https://i.imgur.com/qiZFOs9.png";
 
   if (nameEl) nameEl.textContent = finalName;
   if (photoEl) photoEl.src = finalPhoto;
@@ -2869,7 +2869,7 @@ function renderChats(chatGroup, today) {
 
 const senderPhoto = (c.from === 'user')
   ? (c.photoURL || 'https://i.pravatar.cc/40')
-  : './logo.svg';
+  : 'https://i.imgur.com/qiZFOs9.png';
 
     // header bubble tanpa src (src diset via property biar aman)
 let bubbleHtml = `
