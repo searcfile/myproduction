@@ -2070,57 +2070,42 @@ const CLOUDINARY_CLOUD_NAME = "dqctvbenv";
 const CLOUDINARY_UPLOAD_PRESET = "chat_upload";
 const ADMIN_PRESENCE_PATH = "adminPresence/main";
 
-function bootstrapAdminIdentityFromSettings() {
-  const savedLoginUser = JSON.parse(localStorage.getItem("loginUser") || "null");
+/* ===== AGENT SUPPORT IDENTITY FROM FIREBASE ===== */
 
-  if (!savedLoginUser) {
-    const fallbackName  = localStorage.getItem("username") || localStorage.getItem("adminName") || "Admin";
-    const fallbackEmail = localStorage.getItem("useremail") || localStorage.getItem("adminEmail") || "";
-    const fallbackPhoto = localStorage.getItem("userphoto") || localStorage.getItem("adminPhoto") || "https://i.imgur.com/qiZFOs9.png";
+const DEFAULT_ADMIN_PHOTO = "https://i.imgur.com/qiZFOs9.png";
 
-    localStorage.setItem("username", fallbackName);
-    localStorage.setItem("useremail", fallbackEmail);
-    localStorage.setItem("userphoto", fallbackPhoto);
+async function getAdminIdentity() {
+  const authUser = firebase.auth().currentUser;
 
-    localStorage.setItem("adminName", fallbackName);
-    localStorage.setItem("adminEmail", fallbackEmail);
-    localStorage.setItem("adminPhoto", fallbackPhoto);
-    return;
+  if (!authUser) {
+    throw new Error("No active Firebase login.");
   }
 
-  const adminName  = savedLoginUser.username || "Admin";
-  const adminEmail = savedLoginUser.email || "";
-  const adminPhoto =
-    savedLoginUser.photoURL ||
-    localStorage.getItem("userphoto") ||
-    localStorage.getItem("adminPhoto") ||
-    "https://i.imgur.com/qiZFOs9.png";
+  const uid = authUser.uid;
 
-  localStorage.setItem("username", adminName);
-  localStorage.setItem("useremail", adminEmail);
-  localStorage.setItem("userphoto", adminPhoto);
+  const snapshot = await db.ref(`adminUsers/${uid}`).once("value");
+  const profile = snapshot.val();
 
-  localStorage.setItem("adminName", adminName);
-  localStorage.setItem("adminEmail", adminEmail);
-  localStorage.setItem("adminPhoto", adminPhoto);
-}
+  // Pastikan akaun masih sama selepas Firebase selesai membaca data.
+  if (firebase.auth().currentUser?.uid !== uid) {
+    throw new Error("Firebase login changed.");
+  }
 
-function getAdminIdentity(){
-  bootstrapAdminIdentityFromSettings();
+  if (!profile || profile.active !== true) {
+    throw new Error("Admin account is missing or inactive.");
+  }
+
+  const username = String(profile.username || "").trim();
+
+  if (!username) {
+    throw new Error("Admin username not found.");
+  }
 
   return {
-    name:
-      localStorage.getItem("username") ||
-      localStorage.getItem("adminName") ||
-      "Admin",
-    photoURL:
-      localStorage.getItem("userphoto") ||
-      localStorage.getItem("adminPhoto") ||
-      "https://i.imgur.com/qiZFOs9.png",
-    email:
-      localStorage.getItem("useremail") ||
-      localStorage.getItem("adminEmail") ||
-      "admin@domain.com"
+    uid,
+    name: username,
+    email: profile.email || authUser.email || "",
+    photoURL: DEFAULT_ADMIN_PHOTO
   };
 }
 
@@ -2176,20 +2161,28 @@ function bindAdminPresence(){
 let adminTypingTimer = null;
 let adminPresenceHeartbeat = null;
 
-function touchAdminPresence(extra = {}) {
-  const admin = getAdminIdentity();
+async function touchAdminPresence(extra = {}) {
+  try {
+    const admin = await getAdminIdentity();
 
-  db.ref(ADMIN_PRESENCE_PATH).update({
-    name: admin.name || "Admin",
-    email: admin.email || "",
-    photoURL: admin.photoURL || "https://i.imgur.com/qiZFOs9.png",
-    online: true,
-    typing: false,
-    lastSeen: Date.now(),
-    ...extra
-  }).catch((err) => {
-    console.warn("touchAdminPresence failed:", err);
-  });
+    // Jangan tulis presence jika login berubah.
+    if (firebase.auth().currentUser?.uid !== admin.uid) {
+      return;
+    }
+
+    await db.ref(ADMIN_PRESENCE_PATH).update({
+      name: admin.name,
+      email: admin.email,
+      photoURL: admin.photoURL,
+      online: true,
+      typing: false,
+      lastSeen: Date.now(),
+      ...extra
+    });
+
+  } catch (err) {
+    console.warn("touchAdminPresence skipped:", err);
+  }
 }
 function bindAdminTyping(){
   if (!msgInput) return;
@@ -3497,10 +3490,22 @@ async function sendMessage() {
 
   if (!text && !readyImages.length) return;
 
-  const admin = getAdminIdentity();
+  let admin;
+
+  try {
+    admin = await getAdminIdentity();
+  } catch (err) {
+    console.error("Invalid Agent Support identity:", err);
+    alert("Login session invalid. Please login again.");
+    return;
+  }
+
   const time = Date.now();
 
   try {
+    if (firebase.auth().currentUser?.uid !== admin.uid) {
+      throw new Error("Firebase login changed before sending.");
+    }
     await db.ref(`chats/${selectedUserId}`).push({
       from: "admin",
       name: admin.name || "Admin",
@@ -3729,8 +3734,7 @@ if (msgInput) {
     }
   });
 }
-  bootstrapAdminIdentityFromSettings();
-  touchAdminPresence({ online: true, typing: false });
+touchAdminPresence({ online: true, typing: false });
   
   bindAdminPresence();
   bindAdminTyping();
