@@ -201,7 +201,7 @@ let livechatUnreadActive = false;
 let livechatUnreadCount = 0;
 let livechatLoopAudio = null;
 let livechatLoopPlaying = false;
-let userHasInteractedForAudio = false;
+
 
 function initLivechatLoopAudio() {
   if (livechatLoopAudio) return livechatLoopAudio;
@@ -232,9 +232,6 @@ function isLivechatSoundAllowed() {
 }
 
 function unlockLivechatAudio() {
-  userHasInteractedForAudio = true;
-
-  // Cuba mainkan suara selepas interaksi pengguna.
   if (isLivechatSoundAllowed()) {
     startLivechatLoopSound();
   }
@@ -251,7 +248,6 @@ function unlockLivechatAudio() {
 });
 
 function startLivechatLoopSound() {
-  if (!userHasInteractedForAudio) return;
   if (!isLivechatSoundAllowed()) return;
 
   const audio = initLivechatLoopAudio();
