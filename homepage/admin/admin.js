@@ -206,10 +206,13 @@ let userHasInteractedForAudio = false;
 function initLivechatLoopAudio() {
   if (livechatLoopAudio) return livechatLoopAudio;
 
-  const existing = document.getElementById("notifSound");
- livechatLoopAudio =
+const existing = document.getElementById("notifSound");
+
+livechatLoopAudio =
   existing ||
-  new Audio("./audio/audio.wav");
+  new Audio("../audio/audio.wav");
+
+livechatLoopAudio.src = "../audio/audio.wav";
 
   livechatLoopAudio.loop = true;
   livechatLoopAudio.preload = "auto";
