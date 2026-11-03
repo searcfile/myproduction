@@ -2515,11 +2515,14 @@ async function unlockSoundOnce() {
       soundQueued = 0;
 
       // mainkan sekali saja walau queue banyak
-      if (queued > 0) {
-        setTimeout(() => {
-          beep();
-        }, 80);
-      }
+if (queued > 0) {
+  setTimeout(() => {
+    // Jangan mainkan bunyi lama kalau chat sudah dibuka.
+    if (!activeUserIdSanitized) {
+      beep();
+    }
+  }, 80);
+}
     }
 
     return true;
@@ -2546,6 +2549,19 @@ function beep() {
   a.play().catch(err => {
     console.log("[SOUND] ❌ play failed:", err?.name, err?.message);
   });
+}
+function stopAgentSupportSound() {
+  soundQueued = 0;
+
+  const audio = document.getElementById("notifSound");
+  if (!audio) return;
+
+  audio.pause();
+  audio.loop = false;
+
+  try {
+    audio.currentTime = 0;
+  } catch (_) {}
 }
 /* ======================= ACTIVITY TIME ======================= */
 function getLoginTimeFromUser(data){
@@ -3095,7 +3111,8 @@ userLabel.innerHTML = `
     userLabel.style.fontWeight = hasUnread ? "bold" : "normal";
     userDiv.appendChild(userLabel);
 
-  userDiv.onclick = ()=>{
+userDiv.onclick = ()=>{
+  stopAgentSupportSound();
   clearSelectedImage(true);
   if (msgInput) {
     msgInput.value = "";
@@ -3856,14 +3873,6 @@ db.ref("users").on("child_changed", snap=>{
 
   unreadCountCache[sanitized] = nextUnread;
 
-  // bunyi hanya kalau unread bertambah
-  if (
-    initialUserListLoaded &&
-    nextUnread > prevUnread &&
-    sanitized !== activeUserIdSanitized
-  ){
-    beep();
-  }
 
   const lastChat = Number(data?.lastChatTime || chatMeta[sanitized]?.lastChatTime || 0);
   const activity = makeActivityTime(lastChat, data);
