@@ -2745,7 +2745,9 @@ const rawName = isUser
   : (msg.name || "Admin");
 
 const senderName = formatUserName(rawName);
-    const avatarURL = msg.photoURL || (isUser ? "https://i.pravatar.cc/40" : "https://i.imgur.com/UhV9EWa.png");
+   const avatarURL = isUser
+  ? (msg.photoURL || "https://i.pravatar.cc/40")
+  : "https://i.imgur.com/MyKVioD.png";
 
     let bubbleHtml = `
       <div class="msg-info">${senderName}</div>
