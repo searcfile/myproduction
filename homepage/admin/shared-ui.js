@@ -743,16 +743,40 @@ function syncTabsToFirebase(tabs) {
   }
 
 
-  function setActiveFile(file) {
-     if (!getActiveTabStorageKey()) return;
-    const url =
-      normalizeUrl(`./${file}`);
+function setActiveFile(file) {
+  if (!getActiveTabStorageKey()) return;
 
-    localStorage.setItem(
-      getActiveTabStorageKey(),
-      url
-    );
+  const url = normalizeUrl(`./${file}`);
+
+  localStorage.setItem(
+    getActiveTabStorageKey(),
+    url
+  );
+
+  // Beritahu LiveChat apabila tab sudah dipilih.
+  if (String(file).toLowerCase() === "livechat.html") {
+    setTimeout(() => {
+      document.querySelectorAll("iframe").forEach(frame => {
+        try {
+          const frameUrl = new URL(frame.src, location.href);
+
+          if (
+            frameUrl.origin === location.origin &&
+            frameUrl.pathname.split("/").pop().toLowerCase() === "livechat.html"
+          ) {
+            frame.contentWindow?.postMessage(
+              { type: "5G88_LIVECHAT_TAB_ACTIVE" },
+              location.origin
+            );
+          }
+        } catch (error) {
+          console.warn("LiveChat tab notification failed:", error);
+        }
+      });
+    }, 100);
   }
+}
+
 
 
   /* ==========================================================
