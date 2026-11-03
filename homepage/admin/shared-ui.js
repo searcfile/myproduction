@@ -752,7 +752,10 @@ function setActiveFile(file) {
     getActiveTabStorageKey(),
     url
   );
-
+  // Hentikan suara serta-merta apabila LiveChat dipilih.
+  if (String(file).toLowerCase() === "livechat.html") {
+    window.syncLivechatAlertState?.(0);
+  }
   // Beritahu LiveChat apabila tab sudah dipilih.
   if (String(file).toLowerCase() === "livechat.html") {
     setTimeout(() => {
