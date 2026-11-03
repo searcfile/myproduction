@@ -1054,59 +1054,10 @@ db.ref('users/' + sanitizedEmail).update({
   let userHasInteracted = false;
   document.body.addEventListener("click", () => { userHasInteracted = true; });
 
-const chatsRef = db.ref("chats/" + userId);
-chatsRef.off("child_added");
-
-chatsRef.on("child_added", (snapshot) => {
-  const msg = snapshot.val() || {};
-  const from = String(msg.from || "").trim().toLowerCase();
-
-  if (from !== "admin") return;
-  if (msg.seenByUser === true) return;
-
-const livechatDot = document.getElementById("livechatDot");
-const notifSound  = document.getElementById("notifSound");
-
-const timestamp = Number(msg.time || msg.atMs || Date.now());
-
-if (timestamp > lastNotifTime) {
-  lastNotifTime = timestamp;
-
-  db.ref("chats/" + userId).once("value", (snap) => {
-    let unreadCount = 0;
-
-    snap.forEach((child) => {
-      const row = child.val() || {};
-      const fromRow = String(row.from || "").trim().toLowerCase();
-if (fromRow === "admin" && row.readByUser !== true) {
-  unreadCount++;
-}
-    });
-
-if (livechatDot) {
-  if (unreadCount > 0) {
-    livechatDot.style.display = "flex";
-    livechatDot.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
-  } else {
-    livechatDot.style.display = "none";
-    livechatDot.textContent = "";
-  }
-}
-syncLivechatAlertState(unreadCount);
-
-    if (window.updateFloatingFabLivechatDot) {
-      window.updateFloatingFabLivechatDot(unreadCount);
-    }
-  });
-
-if (!window.isLivechatTabActive?.()) {
-  startLivechatLoopSound();
-}
-}
-});
-
-  // indikator unread
-  initLivechatNotifListener(userId); 
+// LIVECHAT UNREAD V2
+// Badge dan bunyi dikendalikan oleh shared-ui.js.
+// Jangan pasang listener lama menggunakan email sebagai chat ID.
+// Chat Site Admin menggunakan chats/admin_${uid}.
   const loadingScreen = document.getElementById("loadingScreen");
 
 if (loadingScreen) {
