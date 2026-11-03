@@ -1829,7 +1829,10 @@ async function restoreAdminLivechatIdentity() {
   bindPresenceAndNotif();
   initChatWithUserData();
   notifyRead();
-
+  // Pastikan identiti chat sudah tersedia sebelum mark read.
+  markAdminSeenInDB().catch(error => {
+    console.error("[LiveChat] Read after login failed:", error);
+  });
   console.log("LiveChat admin identity restored:", {
     uid: user.uid,
     username,
@@ -2617,6 +2620,9 @@ async function sendMessage() {
     alert("❌ Gagal mengirim pesan.");
   }
 }
+// Simpan listener milik halaman LiveChat sahaja.
+let userChatListenerRef = null;
+let userChatListenerHandler = null;
 // PATCH START: listenToChat universal
 function listenToChat() {
   if (!currentActiveId) return;
@@ -2625,12 +2631,17 @@ function listenToChat() {
   const chatPath = getChatPath();
   if (!chatBox || !chatPath) return;
 
-  const chatRef = db.ref(chatPath);
-  chatRef.off();
+// Hentikan hanya listener LiveChat lama milik halaman ini.
+if (userChatListenerRef && userChatListenerHandler) {
+  userChatListenerRef.off("value", userChatListenerHandler);
+}
+
+const chatRef = db.ref(chatPath);
+userChatListenerRef = chatRef;
 
   const startMsg = document.getElementById("startMessage");
 
-  chatRef.on('value', snapshot => {
+  userChatListenerHandler = snapshot => {
     const firstPaint = forceOpenBottom;
     const wasAtBottom = firstPaint ? true : isAtBottom(chatBox);
     const chats = snapshot.val();
@@ -2713,7 +2724,9 @@ if (hasUnreadSupportMessage) {
         });
       }
     });
-  });
+  };
+
+  chatRef.on("value", userChatListenerHandler);
 }
 // ====== SEARCH ======
 const chatBody   = document.getElementById('chatBox');
