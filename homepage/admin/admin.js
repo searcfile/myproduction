@@ -928,6 +928,7 @@ if (window.currentAdmin.role === "siteadmin") {
 }
 
 return window.currentAdmin;
+}
 
 // ⬇️ GANTI seluruh blok ini
 document.addEventListener("DOMContentLoaded", async () => {
