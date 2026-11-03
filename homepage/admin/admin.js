@@ -724,9 +724,9 @@ if (
       const msg = child.val() || {};
       const from = String(msg.from || "").trim().toLowerCase();
 
-      if (from === "admin" && msg.seenByUser !== true) {
-        unreadCount++;
-      }
+if (from === "admin" && msg.readByUser !== true) {
+  unreadCount++;
+}
     });
 
     const livechatDot = document.getElementById("livechatDot");
@@ -748,48 +748,57 @@ syncLivechatAlertState(unreadCount);
   });
 }
 
-function markLivechatAsRead() {
-const currentUser = auth.currentUser;
 
-if (
-  !currentUser ||
-  currentUser.isAnonymous ||
-  !window.currentAdmin ||
-  !userId
-) {
-  return;
-}
+async function markLivechatAsRead() {
+  const currentUser = auth.currentUser;
+
+  if (
+    !currentUser ||
+    currentUser.isAnonymous ||
+    !window.currentAdmin ||
+    !userId
+  ) {
+    return;
+  }
+
+  // Jangan mark read ketika tab LiveChat tidak aktif.
+  if (!window.isLivechatTabActive?.()) return;
 
   const chatRef = db.ref("chats/" + userId);
 
-  chatRef.once("value", (snapshot) => {
-    if (!snapshot.exists()) return;
-
+  try {
+    const snapshot = await chatRef.once("value");
     const updates = {};
-    snapshot.forEach((child) => {
-      const v = child.val();
-      if (v?.from === "admin" && v?.seenByUser !== true) {
-        updates[child.key + "/seenByUser"] = true;
-        updates[child.key + "/readAt"] = Date.now(); // optional
+    const now = Date.now();
+
+    snapshot.forEach(child => {
+      const message = child.val();
+
+      if (
+        message?.from === "admin" &&
+        message.readByUser !== true
+      ) {
+        updates[`${child.key}/readByUser`] = true;
+        updates[`${child.key}/seenByUser`] = true;
+        updates[`${child.key}/readAt`] = now;
       }
     });
 
     if (Object.keys(updates).length) {
-      chatRef.update(updates).catch(()=>{});
+      await chatRef.update(updates);
     }
-syncLivechatAlertState(0);
 
-const livechatDot = document.getElementById("livechatDot");
-if (livechatDot) {
-  livechatDot.style.display = "none";
-  livechatDot.textContent = "";
+    console.log("LiveChat mark read success");
+
+  } catch (error) {
+    console.error(
+      "LiveChat mark read failed:",
+      error.code,
+      error.message
+    );
+  }
 }
 
-if (window.updateFloatingFabLivechatDot) {
-  window.updateFloatingFabLivechatDot(0);
-}
-  });
-}
 // Optional: blokir buka tab untuk feature yang di-hide
 // PANGGIL ini di awal fungsi addTab()
 function isTabAllowed(label){
@@ -1069,9 +1078,9 @@ if (timestamp > lastNotifTime) {
     snap.forEach((child) => {
       const row = child.val() || {};
       const fromRow = String(row.from || "").trim().toLowerCase();
-      if (fromRow === "admin" && row.seenByUser !== true) {
-        unreadCount++;
-      }
+if (fromRow === "admin" && row.readByUser !== true) {
+  unreadCount++;
+}
     });
 
 if (livechatDot) {
