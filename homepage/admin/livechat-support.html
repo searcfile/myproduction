@@ -1605,8 +1605,35 @@ select:focus-visible{
    5G88 ADMIN LIVECHAT | Modern responsive UI upgrade
    UI-only overrides; original Firebase/Cloudinary/chat logic retained
    ========================================================= */
-:root { color-scheme:light; --lc-bg:#f3f6fb; --lc-panel:#fff; --lc-elevated:#f8faff; --lc-border:#e3e9f3; --lc-ink:#17243b; --lc-muted:#75849a; --lc-blue:#246be8; --lc-blue-soft:#eaf2ff; --lc-hover:#f0f5fc; --lc-shadow:0 8px 28px rgba(24,49,88,.06); }
-body.dark-theme { color-scheme:dark; --lc-bg:#090f1b; --lc-panel:#111c2e; --lc-elevated:#16243a; --lc-border:#273850; --lc-ink:#eef4ff; --lc-muted:#96a9c3; --lc-blue:#4c94ff; --lc-blue-soft:#1b3455; --lc-hover:#1a2b43; --lc-shadow:0 8px 28px rgba(0,0,0,.17); }
+/* AGENT SUPPORT — DARK THEME AS DEFAULT */
+:root {
+  color-scheme: dark;
+  --lc-bg: #090f1b;
+  --lc-panel: #111c2e;
+  --lc-elevated: #16243a;
+  --lc-border: #273850;
+  --lc-ink: #eef4ff;
+  --lc-muted: #96a9c3;
+  --lc-blue: #4c94ff;
+  --lc-blue-soft: #1b3455;
+  --lc-hover: #1a2b43;
+  --lc-shadow: 0 8px 28px rgba(0,0,0,.17);
+}
+
+/* LIGHT THEME — HANYA APABILA DIPILIH */
+body.light-theme {
+  color-scheme: light;
+  --lc-bg: #f3f6fb;
+  --lc-panel: #fff;
+  --lc-elevated: #f8faff;
+  --lc-border: #e3e9f3;
+  --lc-ink: #17243b;
+  --lc-muted: #75849a;
+  --lc-blue: #246be8;
+  --lc-blue-soft: #eaf2ff;
+  --lc-hover: #f0f5fc;
+  --lc-shadow: 0 8px 28px rgba(24,49,88,.06);
+}
 html,body { width:100%;height:100%;margin:0;overflow:hidden; }
 body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif!important; }
 *,*::before,*::after {box-sizing:border-box;}
