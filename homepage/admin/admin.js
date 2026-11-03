@@ -225,6 +225,14 @@ livechatLoopAudio.src = "../audio/audio.wav";
 // =====================================================
 
 function isLivechatSoundAllowed() {
+  // Bunyi LiveChat biasa hanya untuk Site Admin.
+  // Super Admin menerima mesej melalui Agent Support.
+  const role = window.currentAdmin?.role;
+
+  if (role !== "siteadmin") {
+    return false;
+  }
+
   return (
     livechatUnreadCount > 0 &&
     !window.isLivechatTabActive?.()
