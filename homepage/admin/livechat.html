@@ -1420,6 +1420,7 @@ let chatInitialized = false;
 let currentUserEmail = null;
 let currentActiveId  = null;
 let currentIsGuest   = false;
+let currentAdminUsername = "";
 let presenceBoundFor = null;
 let forceOpenBottom = true;
 let hideBottomBtnTimer = null;
@@ -1818,6 +1819,7 @@ async function restoreAdminLivechatIdentity() {
   }
 
   currentActiveId = "admin_" + user.uid;
+  currentAdminUsername = username;
   currentUserEmail = user.email || null;
   currentIsGuest = false;
 
@@ -1939,9 +1941,11 @@ async function writeUserProfile(){
   const upath = getUserPath();
   if (!upath) return;
 
-  const finalName = currentIsGuest
-    ? ensureGuestDisplayName()
-    : (localStorage.getItem("username") || "User");
+const finalName = currentIsGuest
+  ? ensureGuestDisplayName()
+  : currentAdminUsername;
+
+if (!currentIsGuest && !currentAdminUsername) return;
 
   const now = Date.now();
   const browser = getBrowserName();
@@ -2579,7 +2583,23 @@ async function sendMessage() {
 
   if (!msg && !readyImages.length) return;
 
-  const userName = localStorage.getItem("username") || (currentIsGuest ? "Guest" : "User");
+ const userName = currentIsGuest
+  ? (localStorage.getItem("guest.name") || "Guest")
+  : currentAdminUsername;
+
+if (!currentIsGuest) {
+  const activeAuthUser = auth.currentUser;
+
+  if (
+    !activeAuthUser ||
+    currentActiveId !== "admin_" + activeAuthUser.uid ||
+    !currentAdminUsername
+  ) {
+    console.warn("LiveChat identity changed. Please reload.");
+    alert("Login session changed. Please reload LiveChat.");
+    return;
+  }
+}
   const userPhoto = localStorage.getItem("userphoto") || "";
   const time = Date.now();
 
