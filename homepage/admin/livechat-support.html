@@ -1873,6 +1873,109 @@ let renderTimer = null;
 let activeChatRef = null;
 let activeChatValueHandler = null;
     
+/* ===== 5G88 MERGED INBOX ===== */
+let mergedChatListeners = [];
+let selectedChatMemberIds = [];
+let selectedMergedEmail = "";
+let selectedChatGeneration = 0;
+
+function getInboxEmail(sid, userData = {}) {
+  const raw = String(
+    userData.email ||
+    chatMeta[sid]?.identity?.email ||
+    desanitizeUserId(sid) ||
+    ""
+  ).trim().toLowerCase();
+
+  // Gabungkan berdasarkan email, bukan nama.
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)
+    ? raw
+    : "";
+}
+
+function getMemberIdsForSid(sid) {
+  const row = allUsersData.find(([key]) => key === sid);
+  const email = row ? getInboxEmail(sid, row[1]) : "";
+
+  if (!email) return [sid];
+
+  return allUsersData
+    .filter(([key, data]) => getInboxEmail(key, data) === email)
+    .map(([key]) => key);
+}
+
+function isSelectedMember(sid) {
+  return selectedChatMemberIds.includes(sid) ||
+    sid === activeUserIdSanitized;
+}
+
+function detachMergedChatListeners() {
+  mergedChatListeners.forEach(({ ref, handler }) => {
+    ref.off("value", handler);
+  });
+
+  mergedChatListeners = [];
+
+  if (activeChatRef && activeChatValueHandler) {
+    activeChatRef.off("value", activeChatValueHandler);
+  }
+
+  activeChatRef = null;
+  activeChatValueHandler = null;
+  ++selectedChatGeneration;
+}
+
+function buildMergedInboxRows() {
+  const groups = new Map();
+
+  for (const [sid, data, activity] of allUsersData) {
+    const email = getInboxEmail(sid, data);
+    const key = email ? `email:${email}` : `sid:${sid}`;
+
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push([sid, data || {}, activity || 0]);
+  }
+
+  return [...groups.values()].map(rows => {
+    const preferred = [...rows].sort((a, b) =>
+      Number(b[0].startsWith("admin_")) -
+      Number(a[0].startsWith("admin_")) ||
+      (b[2] || 0) - (a[2] || 0)
+    )[0];
+
+    const [sid, data] = preferred;
+    const members = rows.map(row => row[0]);
+
+    const unread = rows.reduce((sum, [, d]) =>
+      sum + Math.max(
+        Number(d.unreadCountForAdmin || 0),
+        d.unreadForAdmin ? 1 : 0
+      ), 0
+    );
+
+    const activity = Math.max(
+      ...rows.map(row => Number(row[2]) || 0)
+    );
+
+    const mostRecent = [...rows].sort(
+      (a, b) => (b[2] || 0) - (a[2] || 0)
+    )[0];
+
+    const mergedData = {
+      ...data,
+      name: data.name || mostRecent[1].name,
+      email: getInboxEmail(sid, data) || data.email,
+      online: rows.some(([, d]) => d.online === true),
+      unreadCountForAdmin: unread,
+      unreadForAdmin: unread > 0,
+      lastChatTime: activity,
+      __mergedMembers: members
+    };
+
+    return [sid, mergedData, activity];
+  }).sort((a, b) => (b[2] || 0) - (a[2] || 0));
+}
+
 /* ===== AGENT SUPPORT READ STATUS ===== */
 
 function canAgentMarkRead(force = false) {
@@ -1883,84 +1986,96 @@ function canAgentMarkRead(force = false) {
   );
 }
 
+
 async function markActiveAgentChatRead(force = false) {
   if (!canAgentMarkRead(force)) return;
 
-  const sid = activeUserIdSanitized;
-  const chatRef = db.ref(`chats/${sid}`);
+  const selectedAtStart = activeUserIdSanitized;
+  const generation = selectedChatGeneration;
+
+  const memberIds = [
+    ...(selectedChatMemberIds.length
+      ? selectedChatMemberIds
+      : [selectedAtStart])
+  ];
 
   try {
-    const snapshot = await chatRef.once("value");
-
-    if (
-      !canAgentMarkRead(force) ||
-      activeUserIdSanitized !== sid
-    ) return;
-
-    const updates = {};
-
-    snapshot.forEach(child => {
-      const message = child.val();
+    await Promise.all(memberIds.map(async sid => {
+      const chatRef = db.ref(`chats/${sid}`);
+      const snapshot = await chatRef.once("value");
 
       if (
-        message?.from === "user" &&
-        message.readByAdmin !== true
-      ) {
-        updates[`${child.key}/readByAdmin`] = true;
+        !canAgentMarkRead(force) ||
+        activeUserIdSanitized !== selectedAtStart ||
+        generation !== selectedChatGeneration
+      ) return;
+
+      const updates = {};
+
+      snapshot.forEach(child => {
+        const message = child.val();
+
+        if (
+          message?.from === "user" &&
+          message.readByAdmin !== true
+        ) {
+          updates[`${child.key}/readByAdmin`] = true;
+        }
+      });
+
+      if (Object.keys(updates).length) {
+        await chatRef.update(updates);
       }
-    });
 
-    if (Object.keys(updates).length) {
-      await chatRef.update(updates);
-    }
+      const latest = await chatRef.once("value");
+      let remaining = 0;
 
-    if (activeUserIdSanitized !== sid) return;
+      latest.forEach(child => {
+        const message = child.val();
 
-    // Semak semula untuk mengelakkan unread baharu
-    // terpadam oleh kemas kini yang sudah lama.
-    const latest = await chatRef.once("value");
-
-    let remainingUnread = 0;
-
-    latest.forEach(child => {
-      const message = child.val();
+        if (
+          message?.from === "user" &&
+          message.readByAdmin !== true
+        ) {
+          remaining++;
+        }
+      });
 
       if (
-        message?.from === "user" &&
-        message.readByAdmin !== true
-      ) {
-        remainingUnread++;
+        activeUserIdSanitized !== selectedAtStart ||
+        generation !== selectedChatGeneration
+      ) return;
+
+      await db.ref(`users/${sid}`).update({
+        unreadForAdmin: remaining > 0,
+        unreadCountForAdmin: remaining
+      });
+
+      unreadCountCache[sid] = remaining;
+
+      const idx = allUsersData.findIndex(
+        ([key]) => key === sid
+      );
+
+      if (idx !== -1) {
+        allUsersData[idx][1] = {
+          ...allUsersData[idx][1],
+          unreadForAdmin: remaining > 0,
+          unreadCountForAdmin: remaining
+        };
       }
-    });
-
-    await db.ref(`users/${sid}`).update({
-      unreadForAdmin: remainingUnread > 0,
-      unreadCountForAdmin: remainingUnread
-    });
-
-    unreadCountCache[sid] = remainingUnread;
-
-    const idx = allUsersData.findIndex(
-      ([id]) => id === sid
-    );
-
-    if (idx !== -1) {
-      allUsersData[idx][1] = {
-        ...(allUsersData[idx][1] || {}),
-        unreadForAdmin: remainingUnread > 0,
-        unreadCountForAdmin: remainingUnread
-      };
-    }
+    }));
 
     scheduleRender();
 
   } catch (error) {
     console.error(
-      "[Agent Support] Failed to mark read:",
+      "[Agent Support] Failed to mark merged chat read:",
       error
     );
   }
 }
+
 
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
@@ -2009,11 +2124,9 @@ function showEmptyState(){
   updateSendButtonState();
   if (typeof autoResizeMsgBox === "function") autoResizeMsgBox();
   
-  if (activeChatRef && activeChatValueHandler) {
-    activeChatRef.off("value", activeChatValueHandler);
-  }
-  activeChatRef = null;
-  activeChatValueHandler = null;
+detachMergedChatListeners();
+selectedChatMemberIds = [];
+selectedMergedEmail = "";
 
   selectedUserId = null;
   activeUserIdSanitized = "";
@@ -2204,7 +2317,8 @@ function bindAdminTyping(){
 function scheduleRender(){
   clearTimeout(renderTimer);
   renderTimer = setTimeout(()=>{
-    const displayList = allUsersData.map(([id,user])=> [id, user]);
+    const displayList = buildMergedInboxRows()
+  .map(([id, user]) => [id, user]);
     renderUserListFast(
       displayList,
       currentFilterMode,
@@ -2606,8 +2720,22 @@ function updateUserCounts(){
 
   db.ref("users").on("value", snap=>{
     const users = snap.val() || {};
-    totalUsersElem.textContent = Object.keys(users).length;
-    onlineUsersElem.textContent = Object.values(users).filter(u=>u && u.online).length;
+
+const identities = new Map();
+
+Object.entries(users).forEach(([sid, data]) => {
+  const key = getInboxEmail(sid, data || {}) || `sid:${sid}`;
+
+  identities.set(
+    key,
+    (identities.get(key) || false) || data?.online === true
+  );
+});
+
+totalUsersElem.textContent = identities.size;
+onlineUsersElem.textContent =
+  [...identities.values()].filter(Boolean).length;
+
   });
 }
 function updateUnreadFilterBadge(){
@@ -2876,8 +3004,8 @@ if (m.from === "user" && m.readByAdmin !== true){
   // ✅ kalau chat user ini sedang dibuka admin sekarang,
   // terus mark read, jangan tambah unread badge
 if (
-  sanitized === activeUserIdSanitized &&
-  canAgentMarkRead()
+isSelectedMember(sanitized) &&
+canAgentMarkRead()
 ) {
     db.ref(`chats/${sanitized}/${snap.key}`).update({
       readByAdmin: true
@@ -2931,9 +3059,9 @@ if (
         unreadCountCache[sanitized] = unreadCount;
 
         if (
-          initialUserListLoaded &&
-          wasBooted &&
-          sanitized !== activeUserIdSanitized
+initialUserListLoaded &&
+wasBooted &&
+!isSelectedMember(sanitized)
         ){
           beep();
         }
@@ -3051,7 +3179,9 @@ const browserText =
 const deviceIdText = userData?.deviceId || "-";
     const userDiv = document.createElement("div");
     userDiv.className = "user-item";
-    if (sanitized === activeUserIdSanitized) userDiv.classList.add("active");
+    if (isSelectedMember(sanitized)) {
+  userDiv.classList.add("active");
+}
     userDiv.setAttribute("data-sanitized", sanitized);
 
     const userLabel = document.createElement("span");
@@ -3103,9 +3233,38 @@ userDiv.onclick = ()=>{
   updateSendButtonState();
   justOpenedChat = true;
   forceScrollToBottom = true;
-  activeUserIdSanitized = sanitized;
-  selectedUserId = sanitized;
-  markActiveAgentChatRead(true);
+
+activeUserIdSanitized = sanitized;
+
+selectedChatMemberIds = [
+  ...(userData.__mergedMembers || [sanitized])
+];
+
+selectedMergedEmail = getInboxEmail(sanitized, userData);
+
+// Pilih channel terakhir aktif untuk balasan.
+const target = [...selectedChatMemberIds].sort((a, b) => {
+  const ta = Number(
+    chatMeta[a]?.lastChatTime ||
+    allUsersData.find(([id]) => id === a)?.[2] ||
+    0
+  );
+
+  const tb = Number(
+    chatMeta[b]?.lastChatTime ||
+    allUsersData.find(([id]) => id === b)?.[2] ||
+    0
+  );
+
+  return tb - ta ||
+    Number(b.startsWith("admin_")) -
+    Number(a.startsWith("admin_"));
+})[0];
+
+selectedUserId = target || sanitized;
+
+markActiveAgentChatRead(true);
+
     
 const selectedUserName = displayName || "User";
       showChatDetail();
@@ -3171,63 +3330,120 @@ function loadUserList(){
   });
 }
 
-/* ======================= STREAM CHAT (ACTIVE USER) ======================= */
-function listenToChat(){
+
+/* ======================= STREAM CHAT (MERGED INBOX) ======================= */
+function listenToChat() {
   if (!activeUserIdSanitized) return;
 
-  // ✅ buang listener chat aktif lama sahaja
-  if (activeChatRef && activeChatValueHandler) {
-    activeChatRef.off("value", activeChatValueHandler);
-  }
+  detachMergedChatListeners();
 
-  const chatRef = db.ref("chats/" + activeUserIdSanitized);
+  const generation = selectedChatGeneration;
+  const ids = [
+    ...(selectedChatMemberIds.length
+      ? selectedChatMemberIds
+      : [activeUserIdSanitized])
+  ];
+
   const chatBox = document.getElementById("chatBox");
 
   if (chatBox) {
-    chatBox.innerHTML = '<p style="text-align:center;color:white;">Loading...</p>';
+    chatBox.innerHTML =
+      '<p style="text-align:center;color:white;">Loading...</p>';
   }
 
-  activeChatRef = chatRef;
-  activeChatValueHandler = (snap) => {
-    const chats = snap.val();
-    if (!chats){
+  const messagesBySid = new Map();
+  const loaded = new Set();
+
+  const renderMerged = () => {
+    if (generation !== selectedChatGeneration) return;
+
+    // Tunggu semua sumber menerima snapshot pertama.
+    if (loaded.size !== ids.length) return;
+
+    const combined = ids
+      .flatMap(sid => messagesBySid.get(sid) || [])
+      .sort((a, b) =>
+        (Number(a.time) || 0) - (Number(b.time) || 0) ||
+        String(a._key).localeCompare(String(b._key))
+      );
+
+    allMessages = combined;
+
+    if (!combined.length) {
       if (chatBox) {
-        chatBox.innerHTML = '<p class="start-message">Start Message.</p>';
+        chatBox.innerHTML =
+          '<p class="start-message">Start Message.</p>';
       }
-      allMessages = [];
-      return;
+    } else {
+      renderChatMessages(combined);
     }
 
-    const normalizedMessages = Object.entries(chats)
-      .map(([key, raw]) => normalizeChatMessage(key, raw))
-      .filter(Boolean)
-      .sort((a, b) => (Number(a.time) || 0) - (Number(b.time) || 0));
-
-    const messagesToMarkRead = [];
-
-    allMessages = normalizedMessages.map(msg => {
-      const isUnread = msg.from === "user" && !chats[msg._key]?.readByAdmin;
-      if (isUnread) messagesToMarkRead.push(msg._key);
-      return msg;
-    });
-
-    renderChatMessages(allMessages);
-
-    if (canAgentMarkRead()) {
-      justOpenedChat = false;
-
-      if (messagesToMarkRead.length) {
-        markActiveAgentChatRead().catch(error => {
-          console.error("Failed to mark chat as read:", error);
-        });
-      }
+    if (
+      canAgentMarkRead() &&
+      combined.some(m =>
+        m.from === "user" && !m.readByAdmin
+      )
+    ) {
+      markActiveAgentChatRead().catch(console.error);
     }
 
+    justOpenedChat = false;
     scheduleRender();
   };
 
-  chatRef.on("value", activeChatValueHandler);
+  ids.forEach(sid => {
+    const ref = db.ref(`chats/${sid}`);
+
+    const handler = snap => {
+      if (generation !== selectedChatGeneration) return;
+
+      loaded.add(sid);
+
+      const messages = Object.entries(snap.val() || {})
+        .map(([key, raw]) => {
+          const msg = normalizeChatMessage(key, raw);
+
+          return msg
+            ? {
+                ...msg,
+                _sourceSid: sid,
+                readByAdmin: raw?.readByAdmin === true
+              }
+            : null;
+        })
+        .filter(Boolean);
+
+      messagesBySid.set(sid, messages);
+
+      // Balas ke sumber mesej pengguna paling terkini.
+      const latestUser = ids
+        .flatMap(id => messagesBySid.get(id) || [])
+        .filter(m => m.from === "user")
+        .sort((a, b) =>
+          (Number(b.time) || 0) - (Number(a.time) || 0)
+        )[0];
+
+      if (latestUser?._sourceSid) {
+        selectedUserId = latestUser._sourceSid;
+      }
+
+      renderMerged();
+    };
+
+    mergedChatListeners.push({ ref, handler });
+
+    ref.on(
+      "value",
+      handler,
+      err => console.error(
+        "[Agent Support] Chat read:",
+        sid,
+        err
+      )
+    );
+  });
 }
+
 /* ======================= SEND MESSAGE (ADMIN) ======================= */
 
 function updateSendButtonState(){
