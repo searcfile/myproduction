@@ -217,87 +217,71 @@ function initLivechatLoopAudio() {
   return livechatLoopAudio;
 }
 
+// =====================================================
+// LIVECHAT AUDIO NOTIFICATION
+// =====================================================
+
+function isLivechatSoundAllowed() {
+  return (
+    livechatUnreadCount > 0 &&
+    !window.isLivechatTabActive?.()
+  );
+}
+
 function unlockLivechatAudio() {
-  const firstUnlock = !userHasInteractedForAudio;
   userHasInteractedForAudio = true;
 
-  const audio = initLivechatLoopAudio();
-  if (!audio) return;
-
-  if (firstUnlock) {
-    try {
-      const oldMuted = audio.muted;
-      const oldVolume = audio.volume;
-
-      audio.muted = true;
-      audio.volume = 0;
-
-      const p = audio.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.muted = oldMuted;
-          audio.volume = oldVolume;
-
-          if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
-            startLivechatLoopSound();
-          }
-        }).catch(() => {
-          audio.muted = oldMuted;
-          audio.volume = oldVolume;
-        });
-      } else {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.muted = oldMuted;
-        audio.volume = oldVolume;
-
-        if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
-          startLivechatLoopSound();
-        }
-      }
-    } catch (_) {}
-  } else {
-    if (livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
-      startLivechatLoopSound();
-    }
+  // Cuba mainkan suara selepas interaksi pengguna.
+  if (isLivechatSoundAllowed()) {
+    startLivechatLoopSound();
   }
 }
 
-["pointerdown", "mousedown", "touchstart", "click", "keydown"].forEach(evt => {
-  window.addEventListener(evt, unlockLivechatAudio, { passive: true, capture: true });
-  document.addEventListener(evt, unlockLivechatAudio, { passive: true, capture: true });
+// Browser biasanya memerlukan interaksi pengguna
+// sebelum membenarkan audio dimainkan.
+["pointerdown", "keydown"].forEach(eventName => {
+  document.addEventListener(
+    eventName,
+    unlockLivechatAudio,
+    { capture: true, passive: true }
+  );
 });
 
 function startLivechatLoopSound() {
   if (!userHasInteractedForAudio) return;
-  if (window.isLivechatTabActive?.()) return;
+  if (!isLivechatSoundAllowed()) return;
 
   const audio = initLivechatLoopAudio();
   if (!audio) return;
 
   audio.loop = true;
+  audio.muted = false;
+  audio.volume = 1;
 
-  if (!audio.paused && livechatLoopPlaying) return;
-
-  audio.currentTime = 0;
-
-  audio.play().then(() => {
+  if (!audio.paused) {
     livechatLoopPlaying = true;
-  }).catch(() => {
-    livechatLoopPlaying = false;
+    return;
+  }
 
-    setTimeout(() => {
-      if (userHasInteractedForAudio && livechatUnreadCount > 0 && !window.isLivechatTabActive?.()) {
-        const a = initLivechatLoopAudio();
-        if (!a) return;
-        a.play().then(() => {
-          livechatLoopPlaying = true;
-        }).catch(() => {});
+  audio.play()
+    .then(() => {
+      // Semak semula: mungkin pengguna sudah buka LiveChat
+      // semasa browser sedang memulakan audio.
+      if (!isLivechatSoundAllowed()) {
+        stopLivechatLoopSound();
+        return;
       }
-    }, 120);
-  });
+
+      livechatLoopPlaying = true;
+    })
+    .catch(error => {
+      livechatLoopPlaying = false;
+
+      console.warn(
+        "[LiveChat Audio] Playback blocked:",
+        error
+      );
+    });
 }
 
 function stopLivechatLoopSound() {
@@ -305,16 +289,21 @@ function stopLivechatLoopSound() {
   if (!audio) return;
 
   audio.pause();
-  audio.currentTime = 0;
+
+  try {
+    audio.currentTime = 0;
+  } catch (_) {}
+
   livechatLoopPlaying = false;
 }
+
 function syncLivechatAlertState(unreadCount = 0) {
-  const count = Number(unreadCount || 0);
+  const count = Math.max(0, Number(unreadCount) || 0);
 
   livechatUnreadCount = count;
   livechatUnreadActive = count > 0;
 
-  if (count > 0 && !window.isLivechatTabActive?.()) {
+  if (isLivechatSoundAllowed()) {
     startLivechatTitleAlert(count);
     startLivechatLoopSound();
   } else {
@@ -322,6 +311,10 @@ function syncLivechatAlertState(unreadCount = 0) {
     stopLivechatLoopSound();
   }
 }
+
+// Pastikan shared-ui.js boleh panggil function ini.
+window.syncLivechatAlertState = syncLivechatAlertState;
+   
 function startLivechatTitleAlert(unreadCount = 0) {
   livechatUnreadActive = true;
   livechatUnreadCount = Number(unreadCount || 0);
