@@ -6687,10 +6687,29 @@ function renderLivechatUnreadBadge(count) {
   [headerDot, floatingDot].forEach(dot => {
     if (!dot) return;
 
-    dot.style.display = total > 0 ? "block" : "none";
-    dot.title = total > 0
-      ? `${total} unread support messages`
-      : "";
+    if (total > 0) {
+      dot.style.display = "flex";
+      dot.style.alignItems = "center";
+      dot.style.justifyContent = "center";
+      dot.style.minWidth = "18px";
+      dot.style.height = "18px";
+      dot.style.padding = "0 4px";
+      dot.style.boxSizing = "border-box";
+      dot.style.borderRadius = "999px";
+      dot.style.backgroundColor = "#ff4d4f";
+      dot.style.color = "#ffffff";
+      dot.style.fontSize = "10px";
+      dot.style.fontWeight = "700";
+      dot.style.lineHeight = "1";
+      dot.style.whiteSpace = "nowrap";
+
+      dot.textContent = total > 99 ? "99+" : String(total);
+      dot.title = `${total} unread support messages`;
+    } else {
+      dot.style.display = "none";
+      dot.textContent = "";
+      dot.title = "";
+    }
   });
 }
 
