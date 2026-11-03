@@ -2448,11 +2448,12 @@ body.tab-dragging-active *{
   z-index: 4000 !important;
 }
 
-/* Tab bar dan content kekal di belakang */
+/* TAB BAR — ABOVE PAGE CONTENT */
 .tab-bar,
 .tab-bar.shrink {
   position: relative !important;
-  z-index: 1 !important;
+  z-index: 1005 !important;
+  overflow: visible !important;
 }
 
 /* Dropdown header */
