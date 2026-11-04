@@ -3133,7 +3133,7 @@ body.tab-dragging-active *{
 .admin-workspace-tab.workspace-drag-source:not(.active-tab) {
   opacity: .35 !important;
   background: #141414 !important;
-  border: 1px solid #303030 !important;
+  border:0 !important;
   box-shadow: none !important;
   filter: none !important;
 }
