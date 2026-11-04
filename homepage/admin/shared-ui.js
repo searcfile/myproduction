@@ -3636,42 +3636,44 @@ function animateTabReorder(moveTab) {
       tabList.scrollLeft += 12;
     }
 
-    // Pindahkan placeholder sebenar mengikut mouse.
+     // ==========================================
+    // LIVE PLACEHOLDER - FOLLOW FLOATING TAB
+    // ==========================================
+
     const otherTabs = getItems().filter(
       element => element !== state.tab
     );
 
-const firstTab = otherTabs[0];
-const lastTab = otherTabs[otherTabs.length - 1];
+    // Titik tengah floating tab yang sedang diangkat.
+    const previewCenterX =
+      event.clientX - state.offsetX +
+      state.rect.width / 2;
 
-let before = null;
+    // Baca posisi layout asal, bukan posisi
+    // visual yang sedang bergerak kerana FLIP.
+    const listLeft =
+      tabList.getBoundingClientRect().left;
 
-if (firstTab) {
-  const firstRect = firstTab.getBoundingClientRect();
-  const lastRect = lastTab.getBoundingClientRect();
+    const scrollX = tabList.scrollLeft;
 
-  // Pointer di kiri tab pertama:
-  // placeholder mesti masuk posisi pertama.
-  if (event.clientX <= firstRect.left + firstRect.width / 2) {
-    before = firstTab;
-  }
+    let before = null;
 
-  // Pointer di kanan tab terakhir:
-  // placeholder mesti masuk posisi terakhir.
-  else if (event.clientX >= lastRect.right) {
-    before = null;
-  }
+    for (const element of otherTabs) {
+      const tabCenterX =
+        listLeft +
+        element.offsetLeft -
+        tabList.offsetLeft -
+        scrollX +
+        element.offsetWidth / 2;
 
-  // Pointer di antara tab:
-  // tentukan slot berdasarkan titik tengah.
-  else {
-    before = otherTabs.find(element => {
-      const rect = element.getBoundingClientRect();
-
-      return event.clientX < rect.left + rect.width / 2;
-    }) || null;
-  }
-}
+      // Sebaik sahaja titik tengah floating tab
+      // melewati titik tengah tab lain,
+      // slot akan berpindah.
+      if (previewCenterX < tabCenterX) {
+        before = element;
+        break;
+      }
+    }
 
     // Tentukan sama ada posisi benar-benar berubah.
     const needsMove = before
