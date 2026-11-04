@@ -3089,7 +3089,7 @@ body.tab-dragging-active *{
 
 .admin-workspace-tab {
   position: relative;
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
   touch-action: pan-y;
   backface-visibility: hidden;
@@ -3100,7 +3100,7 @@ body.tab-dragging-active *{
 
 .admin-workspace-tab.dragging {
   z-index: 100 !important;
-  cursor: move !important;
+  cursor: grabbing  !important;
   transition: none !important;
   filter: brightness(1.12);
 
@@ -3142,11 +3142,11 @@ body.tab-dragging-active *{
   scale:1 !important;
   filter:none !important;
   box-shadow:none !important;
-
+  border-radius:7px;
   transition:none !important;
   transform-origin:center !important;
-
-  cursor:move !important;
+  
+  cursor:grabbing  !important;
   z-index:2147483647 !important;
 }
 
@@ -3154,7 +3154,33 @@ body.tab-dragging-active *{
 .workspace-drag-preview *{
   pointer-events:none !important;
 }
+/* ==========================================
+   WORKSPACE TAB - GRAB CURSOR
+   ========================================== */
 
+.admin-workspace-tab,
+.admin-workspace-tab-name {
+  cursor: grab !important;
+}
+
+.admin-workspace-tab.dragging,
+.admin-workspace-tabs-list.is-dragging,
+.admin-workspace-tabs-list.is-dragging *,
+body:has(.admin-workspace-tabs-list.is-dragging) {
+  cursor: grabbing !important;
+}
+
+/* Refresh dan Close tetap clickable */
+.admin-workspace-tab-refresh,
+.admin-workspace-tab-close {
+  cursor: pointer !important;
+}
+
+/* Floating tab */
+.workspace-drag-preview {
+  border-radius: 8px !important;
+  cursor: grabbing !important;
+}
 /* Tab lain bergerak smooth */
 .admin-workspace-tabs-list.is-dragging
 .admin-workspace-tab:not(.workspace-drag-source){
@@ -3186,7 +3212,7 @@ max-width:min(345px, calc(100vw - 16px));
 padding:12px;
     background:var(--backgrounddrop);
     border:1px solid var(--border2);
-    border-radius:8px;
+    border-radius:7px;
     box-shadow:0 8px 24px rgba(0,0,0,.35);
     z-index:999998;
   }
