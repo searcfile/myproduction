@@ -3398,7 +3398,8 @@ function initWorkspaceTabDrag(tabList) {
 
     preview.classList.add("workspace-drag-preview");
     preview.removeAttribute("id");
-
+// Semua floating tab guna warna active ketika drag sahaja.
+preview.classList.add("active-tab");
 copyTypography(state.tab, preview);
 
 
@@ -3478,21 +3479,22 @@ Object.assign(preview.style, {
     });
 
 
+// Warna biru sama seperti active tab.
 preview.style.setProperty(
   "background",
-  sourceStyle.backgroundColor,
+  "#162b44",
   "important"
 );
 
 preview.style.setProperty(
   "border",
-  sourceStyle.border,
+  "1px solid #315987",
   "important"
 );
 
 preview.style.setProperty(
   "color",
-  sourceStyle.color,
+  "#91caff",
   "important"
 );
 
