@@ -20,7 +20,7 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 const origins = process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim());
-app.use(cors({origin(origin,cb){ if(!origin || origins.includes(origin)) return cb(null,true); cb(new Error('Origin not allowed')); }, methods:['GET','POST','PATCH','DELETE'], allowedHeaders:['Content-Type','Authorization']}));
+app.use(cors({origin(origin,cb){ if(!origin || origins.includes(origin)) return cb(null,true); cb(new Error('Origin not allowed')); }, methods:['GET','POST','PUT','PATCH','DELETE'], allowedHeaders:['Content-Type','Authorization']}));
 app.use(express.json({limit:'1mb'}));
 app.use('/api',rateLimit({windowMs:60_000,limit:45,standardHeaders:'draft-8',legacyHeaders:false}));
 app.get('/health',(req,res)=>res.json({ok:true,service:'5g88-admin-backend'}));
@@ -5294,6 +5294,152 @@ app.delete(
     } catch (error) {
       console.error("Bank Islam delete:", error);
       return fail(res, 500, "Cannot delete bank");
+    }
+  }
+);
+
+/* =====================================================
+   5G88 SKIN CONFIG — SUPER ADMIN ONLY
+   ===================================================== */
+
+const SKIN_CONFIG_PATH = "settings/livechatFloating";
+
+const skinIdOK = id =>
+  /^[a-z0-9_-]{1,60}$/.test(id);
+
+function cleanSkinConfig(raw) {
+  const obj = raw && typeof raw === "object" ? raw : {};
+  const overrides = {};
+
+  for (const [id, value] of Object.entries(
+    obj.siteOverrides || {}
+  )) {
+    if (skinIdOK(id) && typeof value === "boolean") {
+      overrides[id] = value;
+    }
+  }
+
+  return {
+    globalEnabled: obj.globalEnabled === true,
+    defaultEnabled: obj.defaultEnabled === true,
+    siteOverrides: overrides
+  };
+}
+
+// SUPER ADMIN — LOAD
+app.get(
+  "/api/livechat-skin",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const snap = await db.ref(SKIN_CONFIG_PATH).once("value");
+
+      return res.json({
+        ok: true,
+        config: cleanSkinConfig(snap.val())
+      });
+    } catch (error) {
+      console.error(error);
+      return fail(res, 500, "Cannot load Skin Config");
+    }
+  }
+);
+
+// SUPER ADMIN — SAVE
+app.put(
+  "/api/livechat-skin",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const raw = req.body || {};
+
+      if (
+        typeof raw.globalEnabled !== "boolean" ||
+        typeof raw.defaultEnabled !== "boolean" ||
+        !raw.siteOverrides ||
+        typeof raw.siteOverrides !== "object" ||
+        Array.isArray(raw.siteOverrides)
+      ) {
+        return fail(res, 400, "Invalid Skin Config");
+      }
+
+      const entries = Object.entries(raw.siteOverrides);
+
+      if (
+        entries.length > 100 ||
+        entries.some(([id, value]) =>
+          !skinIdOK(id) || typeof value !== "boolean"
+        )
+      ) {
+        return fail(res, 400, "Invalid site override");
+      }
+
+      const siteSnap = await db.ref("sites").once("value");
+      const sites = siteSnap.val() || {};
+
+      if (entries.some(([id]) => !sites[id])) {
+        return fail(res, 400, "Unknown Site ID");
+      }
+
+      const config = cleanSkinConfig(raw);
+
+      await db.ref(SKIN_CONFIG_PATH).set({
+        ...config,
+        updatedAt: Date.now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true, config });
+    } catch (error) {
+      console.error(error);
+      return fail(res, 500, "Cannot save Skin Config");
+    }
+  }
+);
+
+// PUBLIC — ONLY RETURNS ENABLED STATUS
+app.get(
+  "/api/public/livechat-skin/:siteId",
+  async (req, res) => {
+    try {
+      const id = String(req.params.siteId || "")
+        .toLowerCase();
+
+      if (!skinIdOK(id)) {
+        return fail(res, 400, "Invalid Site ID");
+      }
+
+      const [configSnap, siteSnap] = await Promise.all([
+        db.ref(SKIN_CONFIG_PATH).once("value"),
+        db.ref("sites/" + id).once("value")
+      ]);
+
+      const site = siteSnap.val();
+      const config = cleanSkinConfig(configSnap.val());
+
+      const siteEnabled = site?.active === true;
+
+      const selected = Object.hasOwn(
+        config.siteOverrides,
+        id
+      )
+        ? config.siteOverrides[id]
+        : config.defaultEnabled;
+
+      res.set("Cache-Control", "no-store");
+
+      return res.json({
+        enabled: !!(
+          siteEnabled &&
+          config.globalEnabled &&
+          selected
+        )
+      });
+    } catch (error) {
+      console.error(error);
+      return fail(res, 500, "Cannot load floating status");
     }
   }
 );
