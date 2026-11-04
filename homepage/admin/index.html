@@ -73,7 +73,7 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 950;
+  z-index: 2147483000;
   width: 46px;
   height: 58px;
   display: none;
@@ -112,7 +112,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 951;
+  z-index: 2147483001;
   display: none;
   flex-direction: column;
   width: min(460px, calc(100vw - 24px));
@@ -409,8 +409,14 @@
         throw new Error("HTTP " + response.status);
       }
 
-      const config = await response.json();
-      applyConfig(config);
+const config = await response.json();
+
+console.log("[5G88 Floating] Site ID:", SITE_ID);
+console.log("[5G88 Floating] API response:", config);
+console.log("[5G88 Floating] Enabled:", config.enabled);
+console.log("[5G88 Floating] Chat URL:", config.chatUrl);
+
+applyConfig(config);
 
     } catch (error) {
       console.warn("[Floating LiveChat]", error);
