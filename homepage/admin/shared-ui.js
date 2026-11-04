@@ -3522,7 +3522,80 @@ preview.style.setProperty(
     state.tab.classList.add("workspace-drag-source");
     tabList.classList.add("is-dragging");
   }
+// ==========================================
+// SMOOTH TAB REORDER - FLIP ANIMATION
+// ==========================================
+const tabShiftAnimations = new Map();
 
+function animateTabReorder(moveTab) {
+  const items = getItems();
+
+  // Hentikan animasi sebelumnya supaya
+  // ukuran yang dibaca tetap konsisten.
+  tabShiftAnimations.forEach(animation => {
+    animation.cancel();
+  });
+  tabShiftAnimations.clear();
+
+  // Simpan posisi sebelum tab berpindah.
+  const oldPositions = new Map();
+
+  items.forEach(item => {
+    if (item !== drag?.tab) {
+      oldPositions.set(
+        item,
+        item.getBoundingClientRect()
+      );
+    }
+  });
+
+  // Pindahkan slot tab ke posisi baharu.
+  moveTab();
+
+  // Animasikan tab lain dari posisi lama
+  // menuju posisi baharu.
+  items.forEach(item => {
+    if (item === drag?.tab) return;
+
+    const oldRect = oldPositions.get(item);
+    if (!oldRect) return;
+
+    const newRect = item.getBoundingClientRect();
+
+    const dx = oldRect.left - newRect.left;
+    const dy = oldRect.top - newRect.top;
+
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+      return;
+    }
+
+    const animation = item.animate(
+      [
+        {
+          transform: `translate3d(${dx}px, ${dy}px, 0)`
+        },
+        {
+          transform: "translate3d(0, 0, 0)"
+        }
+      ],
+      {
+        duration: 220,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        fill: "none"
+      }
+    );
+
+    tabShiftAnimations.set(item, animation);
+
+    animation.finished.then(() => {
+      if (tabShiftAnimations.get(item) === animation) {
+        tabShiftAnimations.delete(item);
+      }
+    }).catch(() => {
+      // Animasi dibatalkan kerana posisi berubah lagi.
+    });
+  });
+}
   function onMove(event) {
     if (!drag || event.pointerId !== drag.pointerId) return;
 
@@ -3600,14 +3673,19 @@ if (firstTab) {
   }
 }
 
-    if (before) {
-      if (state.tab.nextElementSibling !== before) {
-        tabList.insertBefore(state.tab, before);
-      }
-    } else {
-      if (state.tab !== tabList.lastElementChild) {
-        tabList.appendChild(state.tab);
-      }
+    // Tentukan sama ada posisi benar-benar berubah.
+    const needsMove = before
+      ? state.tab.nextElementSibling !== before
+      : state.tab !== tabList.lastElementChild;
+
+    if (needsMove) {
+      animateTabReorder(() => {
+        if (before) {
+          tabList.insertBefore(state.tab, before);
+        } else {
+          tabList.appendChild(state.tab);
+        }
+      });
     }
   }
 
