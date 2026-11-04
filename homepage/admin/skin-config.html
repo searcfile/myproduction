@@ -2,6 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>html.fiveg88-hard-reload,html.fiveg88-hard-reload body{background:#fff!important}html.fiveg88-hard-reload body{visibility:hidden!important}html.fiveg88-hard-reload::after{content:"";position:fixed;inset:0;background:#fff;z-index:2147483647}
+.sc-section-divider{height:1px;background:var(--tx-border,#383838);margin:1px 0}
+.sc-global-setting{padding:4px 0}
+.sc-hero{margin-bottom:13px}
+.sc-two{grid-template-columns:minmax(0,1fr) minmax(300px,.9fr)}
+.sc-card{background:#1f1f1f;border-color:#383838}
+.sc-card-head{padding:14px 16px}
+.sc-card-body{padding:16px}
+.sc-card-head h2{font-size:14px}
+.sc-btn.primary{position:relative;min-width:125px}
+.sc-btn.is-loading{pointer-events:none;opacity:.8}
+.sc-btn.is-loading:before{content:"";display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;vertical-align:-3px;animation:sc-spin .7s linear infinite}
+@media(max-width:800px){.sc-two{grid-template-columns:1fr}}
+</style>
+<script>(function(){const K='5g88.hardReloadIntent';window.addEventListener('keydown',e=>{if((e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='r')||(e.ctrlKey&&e.key==='F5'))sessionStorage.setItem(K,String(Date.now()))},true);const t=Number(sessionStorage.getItem(K));sessionStorage.removeItem(K);const nav=performance.getEntriesByType('navigation')[0];if(nav?.type==='reload'&&t>0&&Date.now()-t<10000)document.documentElement.classList.add('fiveg88-hard-reload');})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="5g88-admin-child" content="protected">
 <title>Skin Config · 5G88</title>
@@ -87,32 +102,25 @@ body{background:var(--bg,#101010);color:var(--text,#f2f4f8);font-family:'Source 
 </style>
 </head>
 <body>
-<div class="sc-loading" id="scLoading" aria-live="polite"><div class="sc-dots"><i></i><i></i><i></i><i></i></div><span>Loading Skin Config...</span></div>
+
 <main class="workspace sc-page">
   <header class="sc-hero">
     <div><div class="sc-eyebrow">5G88 · Super Admin</div><h1>Skin Config</h1><div class="sc-muted">Manage floating LiveChat visibility for your websites.</div></div>
-    <div class="sc-hero-actions"><button type="button" class="sc-btn" id="scRefresh">↻ &nbsp;Refresh</button></div>
+
   </header>
-  <div class="sc-stats">
-    <section class="sc-card sc-stat"><small>Global Floating</small><strong id="scGlobalStat">—</strong><span class="sc-icon">◎</span></section>
-    <section class="sc-card sc-stat"><small>Registered Sites</small><strong id="scSiteCount">—</strong><span class="sc-icon">▦</span></section>
-    <section class="sc-card sc-stat"><small>Effective Status</small><strong id="scEffectiveStat">—</strong><span class="sc-icon">◉</span></section>
-  </div>
-  <section class="sc-card">
-    <div class="sc-card-head"><div><h2>Global Settings</h2><div class="sc-muted">Master control for all websites</div></div><span class="sc-badge" id="scGlobalBadge">Not loaded</span></div>
-    <div class="sc-card-body"><div class="sc-setting"><div><strong>Global Floating LiveChat</strong><div class="sc-muted">When inactive, floating LiveChat is hidden on every site.</div></div><label class="sc-switch"><input type="checkbox" id="scGlobal"><span class="sc-track"></span><span class="sc-switch-text" id="scGlobalText">Inactive</span></label></div></div>
-  </section>
   <div class="sc-two">
     <section class="sc-card">
       <div class="sc-card-head"><div><h2>Site Configuration</h2><div class="sc-muted">Choose a site and configure its LiveChat</div></div><span class="sc-badge" id="scSiteBadge">—</span></div>
       <div class="sc-card-body sc-form">
+        <div class="sc-setting sc-global-setting"><div><strong>Global Floating LiveChat</strong><div class="sc-muted">Master switch for all websites.</div></div><label class="sc-switch"><input type="checkbox" id="scGlobal"><span class="sc-track"></span><span class="sc-switch-text" id="scGlobalText">Inactive</span></label></div>
+        <div class="sc-section-divider"></div>
         <div class="sc-field"><label for="scSite">Select Site</label><select id="scSite"><option value="">Loading sites...</option></select><div class="sc-muted">Sites are loaded from your existing Site Management API.</div></div>
         <div class="sc-setting"><div><strong>Site Floating</strong><div class="sc-muted">Active / Inactive for the selected site.</div></div><label class="sc-switch"><input type="checkbox" id="scEnabled"><span class="sc-track"></span><span class="sc-switch-text" id="scEnabledText">Inactive</span></label></div>
         <div class="sc-field"><label for="scUrl">LiveChat HTML URL</label><input id="scUrl" type="text" spellcheck="false" placeholder="./livechat.html" maxlength="400"><div class="sc-muted">Use a relative path to your original livechat.html, e.g. <code>./livechat.html</code>.</div></div>
-        <div class="sc-note"><strong>Important:</strong> Site must be Active in Site Management. Saving here controls the public API; the website must also load a floating launcher to display its icon.</div>
+        <div class="sc-note"><strong>Note:</strong> Site must be Active in Site Management. For the icon to appear on your actual website, install the floating launcher in that website's index.html. This page controls the saved settings only.</div>
         <div class="sc-status" id="scStatus" role="status"></div>
       </div>
-      <div class="sc-actions"><button class="sc-btn" id="scReset" type="button">Reset</button><button class="sc-btn" id="scReload" type="button">Reload</button><button class="sc-btn primary" id="scSave" type="button">Save Changes</button></div>
+      <div class="sc-actions"><button class="sc-btn" id="scReset" type="button">Reset</button><button class="sc-btn primary" id="scSave" type="button">Save Changes</button></div>
     </section>
     <section class="sc-card">
       <div class="sc-card-head"><div><h2>Floating Preview</h2><div class="sc-muted">Test how the launcher looks on a website</div></div><span class="sc-badge" id="scPreviewBadge">—</span></div>
@@ -130,7 +138,7 @@ body{background:var(--bg,#101010);color:var(--text,#f2f4f8);font-family:'Source 
 <script src="../firebase.js"></script>
 <script src="./shared-ui.js"></script>
 <script src="./new-ui.js"></script>
-<script src="./admin.js"></script>
+
 <script>
 (()=>{'use strict';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
@@ -139,7 +147,7 @@ const defaults={globalEnabled:false,sites:{}};
 let config=structuredClone(defaults),sites=[],selectedId='',busy=false,previewOpen=false,loadId=0;
 const toast=(message,type='success')=>{if(window.NewUI?.showToast)NewUI.showToast(message,type);else console[type==='error'?'error':'log'](message)};
 const setStatus=(message,error=false)=>{const n=$('scStatus');n.textContent=message;n.classList.toggle('error',error)};
-const setLoading=show=>{$('scLoading').classList.toggle('done',!show)};
+const setLoading=show=>{}; // shared-ui.js owns the page loading overlay
 async function api(path,options={}) {
  const user=firebase.auth().currentUser;
  if(!user)throw Error('Admin session not available');
@@ -154,12 +162,8 @@ function sync(){
  const active=$('scGlobal').checked,site=$('scEnabled').checked;
  $('scGlobalText').textContent=active?'Active':'Inactive';
  $('scEnabledText').textContent=site?'Active':'Inactive';
- $('scGlobalStat').textContent=active?'Active':'Inactive';
- $('scGlobalBadge').textContent=active?'Active':'Inactive';
- $('scGlobalBadge').className='sc-badge '+(active?'on':'off');
  const found=sites.find(x=>String(x.id)===selectedId);
  const effective=active&&site&&found?.active===true;
- $('scEffectiveStat').textContent=effective?'Active':'Inactive';
  $('scSiteBadge').textContent=found?.active===false?'Site disabled':site?'Active':'Inactive';
  $('scSiteBadge').className='sc-badge '+(site&&found?.active!==false?'on':'off');
  $('scPreviewBadge').textContent=effective?'Visible':'Hidden';
@@ -180,7 +184,6 @@ function populate(){
  if(!sites.length){select.add(new Option('No sites found',''));selectedId=''}
  else if(!sites.some(s=>String(s.id)===selectedId))selectedId=String(sites[0].id);
  select.value=selectedId;
- $('scSiteCount').textContent=String(sites.length);
  $('scGlobal').checked=config.globalEnabled===true;
  siteForm();
 }
@@ -215,18 +218,16 @@ async function save(){
  if(busy||!selectedId)return;
  const chatUrl=$('scUrl').value.trim();
  if(!safeUrl(chatUrl)){toast('Invalid LiveChat URL. Example: ./livechat.html','error');return}
- busy=true;const btn=$('scSave');btn.disabled=true;const old=btn.textContent;btn.textContent='Saving...';setStatus('');
+ busy=true;const btn=$('scSave');btn.disabled=true;btn.classList.add('is-loading');const old=btn.textContent;btn.textContent='Saving...';setStatus('');
  try{
  const result=await api('/api/livechat-skin',{method:'PATCH',body:JSON.stringify({siteId:selectedId,enabled:$('scEnabled').checked,globalEnabled:$('scGlobal').checked,chatUrl})});
  config=result.config||config;config.sites??={};$('scGlobal').checked=config.globalEnabled===true;siteForm();setStatus('Saved successfully. Public API has been updated.');toast('Skin Config saved successfully');
  }catch(e){setStatus('Save failed: '+e.message,true);toast('Save failed: '+e.message,'error')}
- finally{busy=false;btn.disabled=false;btn.textContent=old}
+ finally{busy=false;btn.disabled=false;btn.classList.remove('is-loading');btn.textContent=old}
 }
 $('scGlobal').addEventListener('change',sync);
 $('scEnabled').addEventListener('change',sync);
 $('scSite').addEventListener('change',e=>{selectedId=e.target.value;siteForm()});
-$('scRefresh').onclick=()=>load(false);
-$('scReload').onclick=()=>load(false);
 $('scReset').onclick=()=>{if(!selectedId)return;siteForm();$('scGlobal').checked=config.globalEnabled===true;sync();setStatus('Unsaved changes reset.')};
 $('scSave').onclick=save;
 $('scPreviewToggle').onclick=togglePreview;
