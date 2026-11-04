@@ -5116,3 +5116,9 @@ body.light-theme
 .workspace-drag-preview .admin-workspace-tab-actions button svg path {
   fill: currentColor !important;
 }
+/* FLOATING TAB - SAME PADDING AS ORIGINAL */
+.workspace-drag-preview {
+  padding: 5px 10px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+}
