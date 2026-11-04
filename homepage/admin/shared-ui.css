@@ -3120,82 +3120,69 @@ body.tab-dragging-active *{
 }
 
 
+
 /* ==========================================
-   WORKSPACE TAB DRAG - 3D + PLACEHOLDER
+   WORKSPACE TAB DRAG - EXACT SIZE
 ========================================== */
 
-/* Tab asal: bayangan kekal di tempat asal */
+/* Placeholder bergerak ke posisi drop */
 .admin-workspace-tab.workspace-drag-source {
-  opacity: .35 !important;
-  background: rgba(70, 100, 145, .16) !important;
-  border: 1px dashed rgba(100, 160, 235, .38) !important;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, .22) !important;
-  filter: brightness(.65) !important;
+  opacity: .28 !important;
+  background: rgba(80, 130, 200, .12) !important;
+  border: 1px dashed rgba(100, 160, 235, .35) !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
-/* Tab yang diangkat dan ikut mouse */
+/* Floating tab - saiz dan tulisan asal */
 .workspace-drag-preview {
   position: fixed !important;
-  display: inline-flex !important;
+  display: flex !important;
+  align-items: center !important;
+
   opacity: 1 !important;
   visibility: visible !important;
 
   pointer-events: none !important;
   user-select: none !important;
 
-  border-radius: 8px !important;
-  background: #193657 !important;
-  border: 1px solid #4b9bff !important;
-  color: #fff !important;
+  transform: none !important;
+  scale: 1 !important;
+  rotate: none !important;
+
+  filter: none !important;
+  text-shadow: none !important;
 
   box-shadow:
-    0 5px 10px rgba(0,0,0,.3),
-    0 15px 30px rgba(0,0,0,.5),
-    0 25px 45px rgba(0,0,0,.22) !important;
-
-  filter: brightness(1.12) !important;
-
-  transform-origin: center center !important;
-  transform-style: preserve-3d !important;
-  backface-visibility: hidden;
+    0 8px 22px rgba(0, 0, 0, .42) !important;
 
   transition: none !important;
-  cursor: grabbing !important;
-  z-index: 2147483647 !important;
+  animation: none !important;
 
-  will-change: transform;
+  z-index: 2147483647 !important;
+  cursor: grabbing !important;
 }
 
 .workspace-drag-preview * {
   pointer-events: none !important;
+  animation: none !important;
+  text-shadow: none !important;
 }
 
-/* Tab lain bergerak apabila susunan berubah */
+/* Jangan transform tab lain semasa drag */
 .admin-workspace-tabs-list.is-dragging
-.admin-workspace-tab:not(.workspace-drag-source) {
-  transition: transform 200ms cubic-bezier(.2,.8,.2,1) !important;
+.admin-workspace-tab {
+  transition: none !important;
 }
 
-/* Cursor untuk tab */
 .admin-workspace-tab {
   cursor: grab;
 }
 
 .admin-workspace-tabs-list.is-dragging,
-.admin-workspace-tabs-list.is-dragging .admin-workspace-tab {
+.admin-workspace-tabs-list.is-dragging
+.admin-workspace-tab {
   cursor: grabbing !important;
-}
-
-/* Light theme */
-body.light-theme .workspace-drag-preview {
-  background: #e8f2ff !important;
-  color: #173b65 !important;
-  border-color: #4096ff !important;
-}
-
-body.light-theme .admin-workspace-tab.workspace-drag-source {
-  background: rgba(64,150,255,.1) !important;
-  border-color: rgba(64,150,255,.35) !important;
 }
 
 /* ==========================================================
