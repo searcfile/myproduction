@@ -4770,3 +4770,170 @@ body .header {
     fill: currentColor;
   }
 }
+/* ==========================================
+   5G88 WORKSPACE TABBAR CARD DESIGN
+   ========================================== */
+
+/* Tabbar luar */
+.tab-bar,
+.tab-bar.shrink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: var(--admin-tabs-height, 52px);
+
+  padding: 5px 12px !important;
+  gap: 0;
+
+  background: var(--bg-main);
+  overflow: visible !important;
+}
+
+/* Buang border bawah tabbar lama */
+.tab-bar::before {
+  display: none !important;
+}
+
+/* Card utama */
+.admin-workspace-tab-card {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 42px;
+  min-width: 0;
+
+  padding: 4px 6px;
+  gap: 6px;
+
+  background: #141414;
+  border: 1px solid #424242;
+  border-radius: 10px;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* Search kiri */
+.admin-workspace-tab-card
+> .tab-module-search {
+  position: relative;
+
+  order: 0;
+  flex: 0 0 auto;
+
+  align-self: center;
+  margin: 0;
+
+  z-index: 20;
+}
+
+/* Senarai tab tengah */
+.admin-workspace-tab-card
+> .admin-workspace-tabs-list {
+  order: 1;
+
+  display: flex;
+  align-items: center;
+
+  flex: 1 1 auto;
+  min-width: 0;
+
+  height: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: none;
+}
+
+.admin-workspace-tab-card
+> .admin-workspace-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tab item */
+.admin-workspace-tab-card
+.admin-workspace-tab {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* More Tabs kanan */
+.admin-workspace-tab-card
+> .admin-workspace-more {
+  order: 2;
+
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+
+  align-self: center;
+  margin: 0;
+
+  z-index: 21;
+}
+
+/* Kekalkan visibility logic asal */
+.admin-workspace-tab-card
+> .admin-workspace-more:not(.has-hidden-tabs) {
+  display: none;
+}
+
+.admin-workspace-tab-card
+> .admin-workspace-more.has-hidden-tabs {
+  display: flex;
+}
+
+/* More button */
+.admin-workspace-tab-card
+.admin-workspace-more-button {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 7px;
+  background: #1f1f1f;
+  border: 1px solid #303030;
+}
+
+/* Hover */
+.admin-workspace-tab-card
+.admin-workspace-more-button:hover {
+  background: #262626;
+  border-color: #424242;
+}
+
+/* Light theme */
+body.light-theme
+.admin-workspace-tab-card {
+  background: #f5f5f5;
+  border-color: #d9d9d9;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+
+body.light-theme
+.admin-workspace-tab-card
+.admin-workspace-more-button {
+  background: #fff;
+  border-color: #d9d9d9;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .tab-bar,
+  .tab-bar.shrink {
+    padding: 5px 6px !important;
+  }
+
+  .admin-workspace-tab-card {
+    padding: 4px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+}
