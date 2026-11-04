@@ -1892,7 +1892,7 @@ body.light-theme .theme-toggle-knob{
   overflow: visible !important;
 }
 
-.tab-bar > .tab-module-search {
+.admin-workspace-tab-card > .tab-module-search {
   position: relative;
   z-index: 1006 !important;
 }
@@ -2818,7 +2818,7 @@ body.tab-dragging-active *{
 }
 
 /* Search kekal di kiri */
-.tab-bar > .tab-module-search{
+.admin-workspace-tab-card > .tab-module-search{
   order:0;
   flex-shrink:0;
   align-self:flex-end;
