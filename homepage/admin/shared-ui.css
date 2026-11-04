@@ -3184,7 +3184,62 @@ body.tab-dragging-active *{
 .admin-workspace-tab {
   cursor: grabbing !important;
 }
+/* ==========================================
+   5G88 DRAG PREVIEW FINAL FIX
+========================================== */
 
+/* Floating preview: sama tinggi dan lebar */
+.workspace-drag-preview {
+  background: #162b44 !important;
+  border: 1px solid #315987 !important;
+  border-radius: 8px !important;
+  color: #91caff !important;
+
+  opacity: 1 !important;
+  overflow: visible !important;
+
+  transform: none !important;
+  scale: 1 !important;
+
+  box-shadow:
+    inset 0 2px 0 #91caff,
+    0 12px 28px rgba(0, 0, 0, .45) !important;
+
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Jangan potong nama pada preview */
+.workspace-drag-preview .admin-workspace-tab-name {
+  max-width: none !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  color: #91caff !important;
+  font-weight: 600 !important;
+}
+
+/* Ikon tetap di tempat asal */
+.workspace-drag-preview .admin-workspace-tab-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Preview tidak boleh menerima click */
+.workspace-drag-preview,
+.workspace-drag-preview * {
+  pointer-events: none !important;
+}
+
+/* Slot bayangan */
+.admin-workspace-tab.workspace-drag-source {
+  opacity: .25 !important;
+  border: 1px dashed #315987 !important;
+  border-radius: 8px !important;
+}
 /* ==========================================================
    SELECT TAB MOBILE PANEL
    ========================================================== */
