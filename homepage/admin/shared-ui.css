@@ -5100,11 +5100,11 @@ body.light-theme
 
 /* Saiz dan warna SVG Refresh + X */
 .workspace-drag-preview .admin-workspace-tab-actions button svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 14px !important;
+  height: 14px !important;
 
-  min-width: 16px !important;
-  min-height: 16px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
 
   flex-shrink: 0 !important;
 
