@@ -273,8 +273,25 @@
   const API_BASE =
     "https://fiveg88-admin-backend-v2.onrender.com";
 
-  // Mesti sama dengan Site ID sebenar.
-  const SITE_ID = "5g88";
+// Site ID diambil daripada Site Selector asal.
+const SITE_STORAGE_KEY = "adminSelectedSites";
+
+let currentSiteId = "";
+let configRequestId = 0;
+
+function getSelectedSiteId() {
+  try {
+    const ids = JSON.parse(
+      sessionStorage.getItem(SITE_STORAGE_KEY) || "[]"
+    );
+
+    return Array.isArray(ids) && ids.length
+      ? String(ids[0])
+      : "";
+  } catch (_) {
+    return "";
+  }
+}
 
   // URL asal LiveChat User.
   const DEFAULT_CHAT_URL = "./livechat.html";
@@ -397,33 +414,64 @@
     launcher.style.display = opened ? "none" : "flex";
   }
 
-  async function loadConfig() {
-    try {
-      const response = await fetch(
-        API_BASE + "/api/public/livechat-skin/" +
-          encodeURIComponent(SITE_ID),
-        { cache: "no-store" }
-      );
 
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
+async function loadConfig() {
+  const siteId = currentSiteId;
+  const requestId = ++configRequestId;
 
-const config = await response.json();
-
-console.log("[5G88 Floating] Site ID:", SITE_ID);
-console.log("[5G88 Floating] API response:", config);
-console.log("[5G88 Floating] Enabled:", config.enabled);
-console.log("[5G88 Floating] Chat URL:", config.chatUrl);
-
-applyConfig(config);
-
-    } catch (error) {
-      console.warn("[Floating LiveChat]", error);
-      // Fail closed jika API tidak tersedia.
-      applyConfig({ enabled: false });
-    }
+  // Tiada site dipilih.
+  if (!siteId) {
+    applyConfig({ enabled: false });
+    return;
   }
+
+  try {
+    const response = await fetch(
+      API_BASE +
+        "/api/public/livechat-skin/" +
+        encodeURIComponent(siteId),
+      {
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const config = await response.json();
+
+    // Abaikan respons lama jika site sudah berubah.
+    if (
+      requestId !== configRequestId ||
+      siteId !== currentSiteId
+    ) {
+      return;
+    }
+
+    console.log("[Floating LiveChat]", {
+      siteId,
+      enabled: config.enabled,
+      chatUrl: config.chatUrl
+    });
+
+    applyConfig(config);
+
+  } catch (error) {
+    if (
+      requestId !== configRequestId ||
+      siteId !== currentSiteId
+    ) {
+      return;
+    }
+
+    console.warn("[Floating LiveChat]", error);
+
+    // Jika API gagal, sembunyikan floating.
+    applyConfig({ enabled: false });
+  }
+}
+
 
   launcher.addEventListener("pointerdown", function (event) {
     if (!enabled) return;
@@ -475,13 +523,54 @@ applyConfig(config);
 
   window.addEventListener("resize", restorePosition);
 
-  restorePosition();
-  loadConfig();
 
-  // Refresh setting tanpa reload halaman.
-  setInterval(loadConfig, 30000);
+// Restore kedudukan floating.
+restorePosition();
 
-  window.addEventListener("focus", loadConfig);
+// Baca pilihan site yang sudah disimpan.
+currentSiteId = getSelectedSiteId();
+
+// Muat konfigurasi awal.
+loadConfig();
+
+// Ikut perubahan Site Selector asal.
+window.addEventListener(
+  "admin-sites-changed",
+  function (event) {
+    const ids = event.detail?.siteIds || [];
+
+    const nextSiteId = Array.isArray(ids) && ids.length
+      ? String(ids[0])
+      : "";
+
+    if (nextSiteId === currentSiteId) {
+      return;
+    }
+
+    // Sembunyikan chat site lama sebelum menukar site.
+    applyConfig({ enabled: false });
+
+    // Tutup iframe supaya sesi chat lama tidak
+    // terus dipaparkan untuk site yang baru.
+    frame.removeAttribute("src");
+
+    currentSiteId = nextSiteId;
+
+    console.log(
+      "[Floating LiveChat] Site changed:",
+      currentSiteId || "(none)"
+    );
+
+    loadConfig();
+  }
+);
+
+// Semak semula setting setiap 30 saat.
+setInterval(loadConfig, 30000);
+
+// Semak apabila kembali ke halaman.
+window.addEventListener("focus", loadConfig);
+
 })();
 </script>
 
