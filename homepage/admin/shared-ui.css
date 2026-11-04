@@ -2954,7 +2954,7 @@ body.tab-dragging-active *{
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:10;
+  z-index:10; 
 }
 /* Muncul hanya apabila ada tab tersembunyi */
 .admin-workspace-more.has-hidden-tabs{
@@ -3123,31 +3123,68 @@ body.tab-dragging-active *{
    FLOATING TAB DRAG - ORIGINAL SIZE
 ========================================== */
 
-/* Tab asal kekal dalam tabbar */
-.admin-workspace-tab.workspace-drag-source{
-  opacity:.2 !important;
+.admin-workspace-tab.workspace-drag-source {
+  opacity: .18 !important;
+  filter: brightness(.7) !important;
+  box-shadow: none !important;
 }
 
 /* Salinan tab yang boleh keluar daripada tabbar */
-.workspace-drag-preview{
-  position:fixed !important;
-  display:inline-flex !important;
+/* ==========================================
+   FLOATING TAB DRAG - REAL 3D EFFECT
+========================================== */
 
-  opacity:1 !important;
-  visibility:visible !important;
+.workspace-drag-preview {
+  position: fixed !important;
+  display: inline-flex !important;
 
-  pointer-events:none !important;
-  user-select:none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 
-  scale:1 !important;
-  filter:none !important;
-  box-shadow:none !important;
-  border-radius:7px;
-  transition:none !important;
-  transform-origin:center !important;
-  
-  cursor:grabbing  !important;
-  z-index:2147483647 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+
+  border-radius: 8px !important;
+
+  /* 3D Depth */
+  transform-origin: center center !important;
+  transform-style: preserve-3d !important;
+
+  /* Lifted card effect */
+  box-shadow:
+    0 8px 12px rgba(0, 0, 0, .25),
+    0 20px 35px rgba(0, 0, 0, .45),
+    0 35px 55px rgba(0, 0, 0, .20) !important;
+
+  filter: brightness(1.12) !important;
+
+  border: 1px solid rgba(90, 160, 255, .65) !important;
+
+  cursor: grabbing !important;
+
+  z-index: 2147483647 !important;
+
+  transition:
+    box-shadow .18s ease,
+    filter .18s ease !important;
+
+  will-change: transform;
+}
+
+/* 3D shadow bawah tab */
+.workspace-drag-preview::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+  z-index: -1;
+}
+
+/* Icon tidak mengganggu drag */
+.workspace-drag-preview * {
+  pointer-events: none !important;
 }
 
 /* Ikon dalam floating tab */
@@ -3176,11 +3213,6 @@ body:has(.admin-workspace-tabs-list.is-dragging) {
   cursor: pointer !important;
 }
 
-/* Floating tab */
-.workspace-drag-preview {
-  border-radius: 8px !important;
-  cursor: grabbing !important;
-}
 /* Tab lain bergerak smooth */
 .admin-workspace-tabs-list.is-dragging
 .admin-workspace-tab:not(.workspace-drag-source){
