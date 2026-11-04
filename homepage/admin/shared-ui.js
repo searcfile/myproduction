@@ -3473,6 +3473,7 @@ Object.assign(preview.style, {
   maxHeight: `${dragHeight}px`,
   boxSizing: "border-box",
   margin: "0",
+  padding: "5px 10px",
   flexShrink: "0",
   transform: "none",
   transition: "none",
