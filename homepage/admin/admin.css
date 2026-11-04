@@ -1790,12 +1790,12 @@ html {
 }
 
 .tab:not(.active-tab):hover{
-  color:rgba(255, 255, 255, 0.08) !important;
+  background:rgba(255, 255, 255, 0.08) !important;
 }
 
-.tab:not(.active-tab):active{
+/* .tab:not(.active-tab):active{
   color:var(--gold-active) !important;
-}
+} */
 
 
 /* ==========================================================
