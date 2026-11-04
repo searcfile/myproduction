@@ -5083,3 +5083,36 @@ body.light-theme
 > .admin-workspace-tabs-list {
   gap: 6px;
 }
+/* ==========================================
+   5G88 DRAG PREVIEW - TEXT & SVG COLOR
+   ========================================== */
+
+/* Warna text ketika tab diangkat */
+.workspace-drag-preview,
+.workspace-drag-preview .admin-workspace-tab-name {
+  color: #91caff !important;
+}
+
+/* Warna kedua-dua button Refresh dan X */
+.workspace-drag-preview .admin-workspace-tab-actions button {
+  color: #91caff !important;
+}
+
+/* Saiz dan warna SVG Refresh + X */
+.workspace-drag-preview .admin-workspace-tab-actions button svg {
+  width: 16px !important;
+  height: 16px !important;
+
+  min-width: 16px !important;
+  min-height: 16px !important;
+
+  flex-shrink: 0 !important;
+
+  color: #91caff !important;
+  fill: currentColor !important;
+}
+
+/* Pastikan SVG path ikut warna icon */
+.workspace-drag-preview .admin-workspace-tab-actions button svg path {
+  fill: currentColor !important;
+}
