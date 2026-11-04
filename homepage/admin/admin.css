@@ -740,8 +740,8 @@ html {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 116px);
-  min-height: calc(100vh - 116px);
+  height: calc(100vh - 128px);
+  min-height: calc(100vh - 128px);
   overflow: hidden;
 }
 /* NOTICE MODAL */
