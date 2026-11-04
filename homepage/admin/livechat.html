@@ -1277,7 +1277,25 @@ main {
     height: 38px !important;
   }
 }
+/* LiveChat dalam panel kecil / iframe */
+@media (max-width: 520px) {
+  .chat-container {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
 
+  .chat-box {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+}
 </style>
 </head>
 <body>
