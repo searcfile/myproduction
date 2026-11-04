@@ -1925,38 +1925,22 @@ body.light-theme .theme-toggle-knob{
 
 .tab{
   position:relative;
-
   display:inline-flex;
   align-items:center;
-
   flex-shrink:0;
-
   gap:2px;
-
   padding:11px 16px;
-
   margin-bottom:-1px;
-
-  border:1px solid var(--border3);
-  border-bottom:1px solid var(--border3);
-
-  border-radius:8px 8px 0 0;
-
-  background:var(--tab-bg);
-
-  color:var(--text-soft) !important;
-
+  border:1px solid transparent;
+  border-radius:7px;
+  background:transparent;
+  color:#cbd5e1 !important;
   font-size:14px;
   line-height:1.2;
-
   white-space:nowrap;
-
   user-select:none;
-
   cursor:pointer;
-
   z-index:2;
-
   transition:
     transform .18s ease,
     color .18s ease,
@@ -1967,7 +1951,7 @@ body.light-theme .theme-toggle-knob{
 }
 
 .tab:not(.active-tab):hover{
-  color:var(--gold-hover) !important;
+  color:rgba(255, 255, 255, 0.08) !important;
 }
 
 .tab:not(.active-tab):active{
@@ -1980,12 +1964,10 @@ body.light-theme .theme-toggle-knob{
    ========================================================== */
 
 .active-tab{
-  color:var(--gold) !important;
-
-  background:var(--tab2);
-
-  border-bottom-color:var(--bg-main);
-
+  color:#cbd5e1 !important;
+  background:#162b44;
+  border-color:#315987;
+  box-shadow: inset 0 2px 0 #91caff;
   z-index:3;
 }
 
@@ -4798,21 +4780,17 @@ padding: 12px 12px 8px !important;
 /* Card utama */
 .admin-workspace-tab-card {
   position: relative;
-
   display: flex;
   align-items: center;
 
   width: 100%;
   height: 52px;
   min-width: 0;
-
-  padding: 4px 6px;
+  padding: 5px;
   gap: 6px;
-
   background: #141414;
-  border: 1px solid #424242;
+  border: 1px solid #303030;
   border-radius: 10px;
-
   box-shadow: 0 2px 8px rgba(0,0,0,.2);
 
   overflow: visible;
@@ -4843,7 +4821,7 @@ padding: 12px 12px 8px !important;
 
   flex: 1 1 auto;
   min-width: 0;
-
+  gap:6px;
   height: 100%;
 
   overflow-x: auto;
@@ -4942,9 +4920,9 @@ body.light-theme
 
 .admin-workspace-tab-card
 .admin-workspace-tab {
-  height: 40px;
-  min-height: 40px;
-  padding: 0 12px;
+  height: 38px;
+  min-height: 38px;
+  padding: 5px 10px;
   margin-bottom: 0;
   display: inline-flex;
   align-items: center;
