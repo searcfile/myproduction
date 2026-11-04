@@ -3125,11 +3125,24 @@ body.tab-dragging-active *{
    WORKSPACE TAB DRAG - EXACT SIZE
 ========================================== */
 
-/* Placeholder bergerak ke posisi drop */
-.admin-workspace-tab.workspace-drag-source {
-  opacity: .28 !important;
-  background: rgba(80, 130, 200, .12) !important;
-  border: 1px dashed rgba(100, 160, 235, .35) !important;
+/* ==========================================
+   DRAG PLACEHOLDER - FOLLOW ORIGINAL COLOR
+========================================== */
+
+/* Tab tidak aktif: bayangan gelap */
+.admin-workspace-tab.workspace-drag-source:not(.active-tab) {
+  opacity: .35 !important;
+  background: #141414 !important;
+  border: 1px dashed #303030 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Tab aktif: bayangan biru */
+.admin-workspace-tab.workspace-drag-source.active-tab {
+  opacity: .35 !important;
+  background: #162b44 !important;
+  border: 1px dashed #315987 !important;
   box-shadow: none !important;
   filter: none !important;
 }
@@ -5071,12 +5084,7 @@ body.light-theme
   white-space: nowrap !important;
 }
 
-/* Slot asal semasa tab sedang diangkat */
-.admin-workspace-tab.workspace-drag-source {
-  opacity: .25 !important;
-  box-shadow: none !important;
-  border: 1px dashed #315987 !important;
-}
+
 
 /* Kekalkan gap asal */
 .admin-workspace-tab-card
