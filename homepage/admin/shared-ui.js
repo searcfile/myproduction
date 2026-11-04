@@ -3318,11 +3318,15 @@ function initTabBarSearch() {
      ========================================================== */
 
 
+
 function initWorkspaceTabDrag(tabList) {
   if (!tabList) return;
 
   let drag = null;
   let suppressClickUntil = 0;
+
+  const getItems = () =>
+    [...tabList.querySelectorAll(".admin-workspace-tab")];
 
   tabList.addEventListener("click", event => {
     if (performance.now() < suppressClickUntil) {
@@ -3337,27 +3341,22 @@ function initWorkspaceTabDrag(tabList) {
     const tab = event.target.closest(".admin-workspace-tab");
     if (!tab || !tabList.contains(tab)) return;
 
-    // Jangan drag melalui butang Refresh atau Close.
     if (event.target.closest("button")) return;
 
-    const elements = [
-      ...tabList.querySelectorAll(".admin-workspace-tab")
-    ];
-
+    const elements = getItems();
     if (elements.length < 2) return;
 
-    const originIndex = elements.indexOf(tab);
-    const rects = elements.map(el => el.getBoundingClientRect());
+    const rect = tab.getBoundingClientRect();
 
     drag = {
       tab,
       elements,
-      rects,
-      originIndex,
-      targetIndex: originIndex,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      rect,
       started: false,
       preview: null
     };
@@ -3369,6 +3368,103 @@ function initWorkspaceTabDrag(tabList) {
     window.addEventListener("pointercancel", onEnd);
   });
 
+  // Salin typography supaya text preview sama seperti tab asal.
+  function copyTypography(source, clone) {
+    const originalNodes = [source, ...source.querySelectorAll("*")];
+    const clonedNodes = [clone, ...clone.querySelectorAll("*")];
+
+    originalNodes.forEach((node, index) => {
+      const target = clonedNodes[index];
+      if (!target) return;
+
+      const style = getComputedStyle(node);
+
+      [
+        "font-family",
+        "font-size",
+        "font-weight",
+        "font-style",
+        "line-height",
+        "letter-spacing",
+        "text-transform",
+        "text-decoration",
+        "white-space",
+        "text-overflow",
+        "color"
+      ].forEach(property => {
+        target.style.setProperty(
+          property,
+          style.getPropertyValue(property),
+          "important"
+        );
+      });
+    });
+  }
+
+  function startDrag() {
+    const state = drag;
+    const rect = state.rect;
+    const sourceStyle = getComputedStyle(state.tab);
+
+    const preview = state.tab.cloneNode(true);
+
+    preview.classList.remove(
+      "workspace-drag-source",
+      "dragging"
+    );
+
+    preview.classList.add("workspace-drag-preview");
+    preview.removeAttribute("id");
+
+    copyTypography(state.tab, preview);
+
+    Object.assign(preview.style, {
+      position: "fixed",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      minWidth: `${rect.width}px`,
+      maxWidth: `${rect.width}px`,
+      minHeight: `${rect.height}px`,
+      maxHeight: `${rect.height}px`,
+      boxSizing: "border-box",
+      margin: "0",
+      flexShrink: "0",
+      transform: "none",
+      transition: "none",
+      pointerEvents: "none",
+      zIndex: "2147483647"
+    });
+
+    // Kekalkan warna dan bentuk tab asal.
+    preview.style.setProperty(
+      "background",
+      sourceStyle.background,
+      "important"
+    );
+
+    preview.style.setProperty(
+      "border",
+      sourceStyle.border,
+      "important"
+    );
+
+    preview.style.setProperty(
+      "border-radius",
+      sourceStyle.borderRadius,
+      "important"
+    );
+
+    document.body.appendChild(preview);
+
+    state.preview = preview;
+    state.started = true;
+
+    state.tab.classList.add("workspace-drag-source");
+    tabList.classList.add("is-dragging");
+  }
+
   function onMove(event) {
     if (!drag || event.pointerId !== drag.pointerId) return;
 
@@ -3377,120 +3473,57 @@ function initWorkspaceTabDrag(tabList) {
 
     if (!drag.started) {
       if (Math.hypot(dx, dy) < 6) return;
-
-      drag.started = true;
-
-      const rect = drag.rects[drag.originIndex];
-      const preview = drag.tab.cloneNode(true);
-
-      preview.classList.remove("dragging");
-      preview.classList.add("workspace-drag-preview");
-      preview.removeAttribute("id");
-
-
-Object.assign(preview.style, {
-  position: "fixed",
-  left: `${rect.left}px`,
-  top: `${rect.top}px`,
-  width: `${rect.width}px`,
-  height: `${rect.height}px`,
-  margin: "0",
-  transformOrigin: "center center",
-  transformStyle: "preserve-3d",
-  transform: "none",
-  transition: "none",
-  pointerEvents: "none",
-  zIndex: "2147483647"
-});
-
-
-      document.body.appendChild(preview);
-
-      drag.preview = preview;
-      drag.tab.classList.add("workspace-drag-source");
-      tabList.classList.add("is-dragging");
+      startDrag();
     }
 
     event.preventDefault();
 
     const state = drag;
-    const originRect = state.rects[state.originIndex];
 
-
-// Floating tab 3D: ikut mouse dan nampak terangkat.
-const tiltY = Math.max(-7, Math.min(7, dx * 0.035));
-const tiltX = Math.max(-5, Math.min(5, -dy * 0.025));
-
-state.preview.style.transform = `
-  translate3d(${dx}px, ${dy - 5}px, 0)
-  perspective(900px)
-  rotateX(${tiltX + 5}deg)
-  rotateY(${tiltY}deg)
-  scale(1.045)
-`;
-
+    // Preview ikut mouse tanpa scale atau rotate.
+    state.preview.style.transform = "none";
+    state.preview.style.left =
+      `${event.clientX - state.offsetX}px`;
+    state.preview.style.top =
+      `${event.clientY - state.offsetY}px`;
 
     const listRect = tabList.getBoundingClientRect();
 
-    // Kira susunan hanya apabila pointer berada
-    // berhampiran tabbar.
     const nearTabbar =
       event.clientY >= listRect.top - 20 &&
-      event.clientY <= listRect.bottom + 20;
+      event.clientY <= listRect.bottom + 20 &&
+      event.clientX >= listRect.left - 20 &&
+      event.clientX <= listRect.right + 20;
 
-    if (!nearTabbar) {
-      state.targetIndex = state.originIndex;
+    if (!nearTabbar) return;
 
-      state.elements.forEach(element => {
-        if (element !== state.tab) {
-          element.style.transform = "";
-        }
-      });
-
-      return;
+    // Auto-scroll apabila drag hampir ke hujung tabbar.
+    const edge = 35;
+    if (event.clientX < listRect.left + edge) {
+      tabList.scrollLeft -= 12;
+    } else if (event.clientX > listRect.right - edge) {
+      tabList.scrollLeft += 12;
     }
 
-    const draggedCenter =
-      originRect.left + originRect.width / 2 + dx;
+    // Pindahkan placeholder sebenar mengikut mouse.
+    const otherTabs = getItems().filter(
+      element => element !== state.tab
+    );
 
-    let targetIndex = 0;
-
-    state.rects.forEach((rect, index) => {
-      if (index === state.originIndex) return;
-
-      const midpoint = rect.left + rect.width / 2;
-
-      if (draggedCenter > midpoint) {
-        targetIndex++;
-      }
+    const before = otherTabs.find(element => {
+      const rect = element.getBoundingClientRect();
+      return event.clientX < rect.left + rect.width / 2;
     });
 
-    state.targetIndex = targetIndex;
-
-    state.elements.forEach((element, index) => {
-      if (element === state.tab) return;
-
-      let shift = 0;
-
-      if (
-        targetIndex > state.originIndex &&
-        index > state.originIndex &&
-        index <= targetIndex
-      ) {
-        shift = -originRect.width;
+    if (before) {
+      if (state.tab.nextElementSibling !== before) {
+        tabList.insertBefore(state.tab, before);
       }
-
-      if (
-        targetIndex < state.originIndex &&
-        index >= targetIndex &&
-        index < state.originIndex
-      ) {
-        shift = originRect.width;
+    } else {
+      if (state.tab !== tabList.lastElementChild) {
+        tabList.appendChild(state.tab);
       }
-
-      element.style.transform =
-        `translate3d(${shift}px, 0, 0)`;
-    });
+    }
   }
 
   function onEnd(event) {
@@ -3507,6 +3540,15 @@ state.preview.style.transform = `
 
     suppressClickUntil = performance.now() + 350;
 
+    const listRect = tabList.getBoundingClientRect();
+
+    const validDrop =
+      event.type !== "pointercancel" &&
+      event.clientY >= listRect.top - 20 &&
+      event.clientY <= listRect.bottom + 20 &&
+      event.clientX >= listRect.left - 20 &&
+      event.clientX <= listRect.right + 20;
+
     state.preview?.remove();
 
     state.tab.classList.remove("workspace-drag-source");
@@ -3518,31 +3560,40 @@ state.preview.style.transform = `
       element.classList.remove("dragging");
     });
 
-    const { originIndex, targetIndex } = state;
+    // Jika dilepaskan di luar tabbar, pulihkan susunan asal.
+    if (!validDrop) {
+      state.elements.forEach(element => {
+        tabList.appendChild(element);
+      });
+      return;
+    }
 
-    const listRect = tabList.getBoundingClientRect();
+    const orderedElements = getItems();
 
-    const droppedOnTabbar =
-      event.clientY >= listRect.top - 20 &&
-      event.clientY <= listRect.bottom + 20;
+    const oldTabs = getTabs();
 
-    // Lepas di luar tabbar: kembali ke asal.
-    if (
-      event.type === "pointercancel" ||
-      !droppedOnTabbar ||
-      originIndex === targetIndex
-    ) return;
+    if (oldTabs.length !== state.elements.length) {
+      state.elements.forEach(element => {
+        tabList.appendChild(element);
+      });
+      return;
+    }
 
-    const tabs = getTabs();
+    // Ambil urutan daripada DOM selepas placeholder bergerak.
+    const orderedTabs = orderedElements.map(element => {
+      const originalIndex = state.elements.indexOf(element);
+      return oldTabs[originalIndex];
+    });
 
-    if (tabs.length !== state.elements.length) return;
+    if (orderedTabs.some(tab => !tab)) return;
 
-    const [moved] = tabs.splice(originIndex, 1);
-    if (!moved) return;
+    const changed = orderedElements.some(
+      (element, index) => element !== state.elements[index]
+    );
 
-    tabs.splice(targetIndex, 0, moved);
+    if (!changed) return;
 
-    saveTabs(tabs);
+    saveTabs(orderedTabs);
     renderTabs();
     renderSidebarTabs();
   }
@@ -3551,6 +3602,7 @@ state.preview.style.transform = `
     event.preventDefault();
   });
 }
+
 function saveVerifiedWorkspacePreview(tabs) {
   try {
     const user = typeof auth !== "undefined"
