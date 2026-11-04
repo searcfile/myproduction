@@ -1778,7 +1778,7 @@ html {
   line-height:1.2;
   white-space:nowrap;
   user-select:none;
-  cursor:pointer;
+  cursor:grab;
   z-index:2;
   transition:
     transform .18s ease,
