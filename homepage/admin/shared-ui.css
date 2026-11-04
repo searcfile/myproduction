@@ -3182,12 +3182,37 @@ body.tab-dragging-active *{
   text-shadow: none !important;
 }
 
-/* Jangan transform tab lain semasa drag */
+/* ==========================================
+   SMOOTH DRAG TAB REORDER
+========================================== */
+
 .admin-workspace-tabs-list.is-dragging
 .admin-workspace-tab {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease !important;
+}
+
+/* Floating tab kekal ikut mouse tanpa delay */
+.workspace-drag-preview {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Slot bayangan kekal pada posisi drop */
+.admin-workspace-tabs-list.is-dragging
+.admin-workspace-tab.workspace-drag-source {
   transition: none !important;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .admin-workspace-tabs-list.is-dragging
+  .admin-workspace-tab {
+    transition: none !important;
+  }
+}
 .admin-workspace-tab {
   cursor: grab;
 }
