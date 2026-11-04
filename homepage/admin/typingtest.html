@@ -127,7 +127,7 @@
     html,body{margin:0;background:var(--page-bg);color:var(--page-text);font-family:Inter,Segoe UI,Arial,sans-serif}
     body{min-height:100vh}
     button,input,select,textarea{font:inherit}
-    .app{width:100%;margin:0 auto;padding:12px}
+    .app{width:100%;margin:0 auto;padding:0 12px}
 .muted2 {
     color: var(--page-text);
     font-size: 12px;
@@ -773,7 +773,7 @@ select:focus-visible{
 
 /* 5G88 Typing Test 2026: responsive workspace and single-panel leaderboard */
 :root{--typing-accent:#1668dc;--typing-soft:rgba(22,104,220,.12)}
-.layout{grid-template-columns:minmax(0,1.6fr) minmax(340px,.85fr);gap:16px;align-items:start}
+.layout{grid-template-columns:minmax(0,1.6fr) minmax(340px,.85fr);gap:8px;align-items:start}
 .panel{min-width:0;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .left-panel,.right-panel{min-width:0;height:auto}
 .right-panel{gap:0;overflow:visible}
@@ -802,7 +802,7 @@ select:focus-visible{
 .toolbar{gap:12px}.toolbar-left{min-width:0}.toolbar-left select{max-width:100%}
 .typing-settings-panel{max-width:min(780px,calc(100vw - 24px))}
 @media(max-width:1250px){.layout{grid-template-columns:1fr}.right-panel{width:100%}.right-header{grid-template-columns:minmax(0,1fr) minmax(170px,.5fr)}}
-@media(max-width:700px){.app{padding:10px}.layout{gap:12px}.left-panel,.right-panel{padding:12px}.right-header{grid-template-columns:1fr}.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.right-tests-card{padding:10px 7px}.right-tests-card .k{font-size:10px}.right-tests-card .v{font-size:18px}.typing-leaderboard-heading h3{font-size:17px}.typing-leaderboard-heading p{max-width:230px;line-height:1.5}.typing-settings-panel{position:fixed;top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:75dvh;z-index:2000}.typing-settings-row{grid-template-columns:1fr;gap:7px}.line-count-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.toolbar-left{flex:1 1 100%}.toolbar-left select{flex:1;min-width:0}.leaderboard-scroll{border-radius:8px}}
+@media(max-width:700px){.app{padding:10px}.layout{gap:8px}.left-panel,.right-panel{padding:12px}.right-header{grid-template-columns:1fr}.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.right-tests-card{padding:10px 7px}.right-tests-card .k{font-size:10px}.right-tests-card .v{font-size:18px}.typing-leaderboard-heading h3{font-size:17px}.typing-leaderboard-heading p{max-width:230px;line-height:1.5}.typing-settings-panel{position:fixed;top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:75dvh;z-index:2000}.typing-settings-row{grid-template-columns:1fr;gap:7px}.line-count-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.toolbar-left{flex:1 1 100%}.toolbar-left select{flex:1;min-width:0}.leaderboard-scroll{border-radius:8px}}
 @media(max-width:380px){.right-stats-row{grid-template-columns:repeat(3,minmax(0,1fr))}.typing-live-dot{font-size:0}.typing-live-dot:before{font-size:10px;margin:0}}
 
   
