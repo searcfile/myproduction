@@ -3416,9 +3416,69 @@ function initWorkspaceTabDrag(tabList) {
     preview.classList.add("workspace-drag-preview");
     preview.removeAttribute("id");
 
-    copyTypography(state.tab, preview);
+copyTypography(state.tab, preview);
 
-    Object.assign(preview.style, {
+// Pastikan preview menggunakan gaya tab aktif,
+// walaupun tab yang diangkat tidak aktif.
+preview.classList.add("active-tab");
+
+// Elakkan nama tab menjadi ellipsis akibat
+// perbezaan susun atur ketika dipindahkan ke body.
+const originalName = state.tab.querySelector(
+  ".admin-workspace-tab-name"
+);
+
+const previewName = preview.querySelector(
+  ".admin-workspace-tab-name"
+);
+
+if (originalName && previewName) {
+  const nameStyle = getComputedStyle(originalName);
+
+  previewName.style.setProperty(
+    "font-family",
+    nameStyle.fontFamily,
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "font-size",
+    nameStyle.fontSize,
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "font-weight",
+    "600",
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "max-width",
+    "none",
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "overflow",
+    "visible",
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "text-overflow",
+    "clip",
+    "important"
+  );
+
+  previewName.style.setProperty(
+    "white-space",
+    "nowrap",
+    "important"
+  );
+}
+
+Object.assign(preview.style, {
       position: "fixed",
       left: `${rect.left}px`,
       top: `${rect.top}px`,
@@ -3438,17 +3498,30 @@ function initWorkspaceTabDrag(tabList) {
     });
 
     // Kekalkan warna dan bentuk tab asal.
-    preview.style.setProperty(
-      "background",
-      sourceStyle.background,
-      "important"
-    );
+// Preview sentiasa warna biru seperti active tab.
+preview.style.setProperty(
+  "background",
+  "#162b44",
+  "important"
+);
 
-    preview.style.setProperty(
-      "border",
-      sourceStyle.border,
-      "important"
-    );
+preview.style.setProperty(
+  "border",
+  "1px solid #315987",
+  "important"
+);
+
+preview.style.setProperty(
+  "color",
+  "#91caff",
+  "important"
+);
+
+preview.style.setProperty(
+  "box-shadow",
+  "inset 0 2px 0 #91caff, 0 12px 28px rgba(0,0,0,.45)",
+  "important"
+);
 
     preview.style.setProperty(
       "border-radius",
@@ -3510,10 +3583,37 @@ function initWorkspaceTabDrag(tabList) {
       element => element !== state.tab
     );
 
-    const before = otherTabs.find(element => {
+const firstTab = otherTabs[0];
+const lastTab = otherTabs[otherTabs.length - 1];
+
+let before = null;
+
+if (firstTab) {
+  const firstRect = firstTab.getBoundingClientRect();
+  const lastRect = lastTab.getBoundingClientRect();
+
+  // Pointer di kiri tab pertama:
+  // placeholder mesti masuk posisi pertama.
+  if (event.clientX <= firstRect.left + firstRect.width / 2) {
+    before = firstTab;
+  }
+
+  // Pointer di kanan tab terakhir:
+  // placeholder mesti masuk posisi terakhir.
+  else if (event.clientX >= lastRect.right) {
+    before = null;
+  }
+
+  // Pointer di antara tab:
+  // tentukan slot berdasarkan titik tengah.
+  else {
+    before = otherTabs.find(element => {
       const rect = element.getBoundingClientRect();
+
       return event.clientX < rect.left + rect.width / 2;
-    });
+    }) || null;
+  }
+}
 
     if (before) {
       if (state.tab.nextElementSibling !== before) {
@@ -3542,12 +3642,12 @@ function initWorkspaceTabDrag(tabList) {
 
     const listRect = tabList.getBoundingClientRect();
 
-    const validDrop =
-      event.type !== "pointercancel" &&
-      event.clientY >= listRect.top - 20 &&
-      event.clientY <= listRect.bottom + 20 &&
-      event.clientX >= listRect.left - 20 &&
-      event.clientX <= listRect.right + 20;
+const validDrop =
+  event.type !== "pointercancel" &&
+  event.clientY >= listRect.top - 35 &&
+  event.clientY <= listRect.bottom + 35 &&
+  event.clientX >= listRect.left - 35 &&
+  event.clientX <= listRect.right + 35;
 
     state.preview?.remove();
 
