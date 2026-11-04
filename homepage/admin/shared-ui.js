@@ -3579,7 +3579,7 @@ function animateTabReorder(moveTab) {
         }
       ],
       {
-        duration: 220,
+        duration: 300,
         easing: "cubic-bezier(0.22, 1, 0.36, 1)",
         fill: "none"
       }
