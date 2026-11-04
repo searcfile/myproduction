@@ -5122,3 +5122,14 @@ body.light-theme
   box-sizing: border-box !important;
   align-items: center !important;
 }
+/* DRAG TAB - REFRESH & CLOSE ICON COLOR */
+.workspace-drag-preview .admin-workspace-tab-actions button,
+.workspace-drag-preview .admin-workspace-tab-actions button svg {
+  color: #91caff !important;
+}
+
+.workspace-drag-preview .admin-workspace-tab-actions button svg,
+.workspace-drag-preview .admin-workspace-tab-actions button svg path {
+  fill: #91caff !important;
+  stroke: #91caff !important;
+}
