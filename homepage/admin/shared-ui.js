@@ -3387,18 +3387,22 @@ function initWorkspaceTabDrag(tabList) {
       preview.classList.add("workspace-drag-preview");
       preview.removeAttribute("id");
 
-      Object.assign(preview.style, {
-        position: "fixed",
-        left: `${rect.left}px`,
-        top: `${rect.top}px`,
-        width: `${rect.width}px`,
-        height: `${rect.height}px`,
-        margin: "0",
-        transform: "none",
-        transition: "none",
-        pointerEvents: "none",
-        zIndex: "2147483647"
-      });
+
+Object.assign(preview.style, {
+  position: "fixed",
+  left: `${rect.left}px`,
+  top: `${rect.top}px`,
+  width: `${rect.width}px`,
+  height: `${rect.height}px`,
+  margin: "0",
+  transformOrigin: "center center",
+  transformStyle: "preserve-3d",
+  transform: "none",
+  transition: "none",
+  pointerEvents: "none",
+  zIndex: "2147483647"
+});
+
 
       document.body.appendChild(preview);
 
@@ -3412,9 +3416,19 @@ function initWorkspaceTabDrag(tabList) {
     const state = drag;
     const originRect = state.rects[state.originIndex];
 
-    // Floating tab boleh bergerak ke semua arah.
-    state.preview.style.transform =
-      `translate3d(${dx}px, ${dy}px, 0)`;
+
+// Floating tab 3D: ikut mouse dan nampak terangkat.
+const tiltY = Math.max(-7, Math.min(7, dx * 0.035));
+const tiltX = Math.max(-5, Math.min(5, -dy * 0.025));
+
+state.preview.style.transform = `
+  translate3d(${dx}px, ${dy - 5}px, 0)
+  perspective(900px)
+  rotateX(${tiltX + 5}deg)
+  rotateY(${tiltY}deg)
+  scale(1.045)
+`;
+
 
     const listRect = tabList.getBoundingClientRect();
 
