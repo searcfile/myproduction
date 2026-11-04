@@ -1766,35 +1766,20 @@ html {
 
   display:inline-flex;
   align-items:center;
-
   flex-shrink:0;
-
   gap:2px;
-
   padding:11px 16px;
-
   margin-bottom:-1px;
-
-  border:1px solid var(--border3);
-  border-bottom:1px solid var(--border3);
-
+  border:1px solid transparent;
   border-radius:8px 8px 0 0;
-
-  background:var(--tab-bg);
-
-  color:var(--text-soft) !important;
-
+  background:transparent;
+  color:#cbd5e1 !important;
   font-size:14px;
   line-height:1.2;
-
   white-space:nowrap;
-
   user-select:none;
-
   cursor:pointer;
-
   z-index:2;
-
   transition:
     transform .18s ease,
     color .18s ease,
@@ -1805,7 +1790,7 @@ html {
 }
 
 .tab:not(.active-tab):hover{
-  color:var(--gold-hover) !important;
+  color:rgba(255, 255, 255, 0.08) !important;
 }
 
 .tab:not(.active-tab):active{
@@ -1818,15 +1803,12 @@ html {
    ========================================================== */
 
 .active-tab{
-  color:var(--gold) !important;
-
-  background:var(--tab2);
-
-  border-bottom-color:var(--bg-main);
-
+  color:#cbd5e1 !important;
+  background:#162b44;
+  border-color:#315987;
+  box-shadow: inset 0 2px 0 #91caff;
   z-index:3;
 }
-
 
 /* ==========================================================
    CLOSE TAB
