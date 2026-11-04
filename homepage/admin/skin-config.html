@@ -1,33 +1,251 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>5G88 · Skin Config</title>
-<style>html.skin-auth-pending body{visibility:hidden}</style><script>document.documentElement.classList.add('skin-auth-pending');</script>
-<link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./new-ui.css"><link rel="stylesheet" href="./shared-ui.css">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="5g88-admin-child" content="protected">
+<title>Skin Config · 5G88</title>
+<link rel="icon" href="./logo.svg">
+<link rel="stylesheet" href="./shared-ui.css">
+<link rel="stylesheet" href="./admin.css">
+<link rel="stylesheet" href="./modern-admin.css">
+<link rel="stylesheet" href="./new-ui.css">
 <style>
-body{margin:0;padding:0;background:var(--tx-bg,#000);color:var(--text,#eee);font-family:'Source Sans 3',Arial,sans-serif;font-size:14px}.skin-wrap{max-width:1080px;margin:auto}.skin-heading{margin-bottom:18px}.skin-heading h1{font-size:22px;margin:0 0 5px}.skin-note{color:var(--muted,#999);font-size:12px;line-height:1.55;margin:6px 0}.skin-card{background:var(--panel2,#171717);border:1px solid var(--input-line,#424242);border-radius:10px;padding:20px;margin-bottom:16px}.skin-card h2{font-size:16px;margin:0 0 18px}.skin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.skin-field{min-width:0}.skin-field>label{display:block;margin-bottom:8px}.skin-field input[type=url],.skin-field input[type=text]{display:block;width:100%;height:36px;box-sizing:border-box;padding:0 12px;border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);color:var(--text,#eee);font:inherit;outline:none}.skin-field input:focus{border-color:var(--blue,#1677ff)}.skin-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px}.skin-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}.skin-actions button{min-width:105px;height:36px;padding:0 14px;border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);color:var(--text,#eee);font:inherit;cursor:pointer}.skin-actions .skin-primary{background:var(--blue,#1668dc);border-color:var(--blue,#1668dc);color:#fff}.skin-actions button:disabled{opacity:.55;cursor:not-allowed}.skin-status{min-height:20px;margin-top:12px;color:var(--muted,#999);font-size:12px}.skin-preview{padding:14px;border:1px dashed var(--input-line,#424242);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px}.skin-preview span{padding:6px 12px;border:1px solid var(--input-line,#424242);border-radius:6px}.skin-site-box{max-width:520px}.skin-disabled{opacity:.55}.skin-card[hidden]{display:none!important}@media(max-width:650px){.skin-grid{grid-template-columns:1fr}.skin-actions button{flex:1}}
-</style></head><body>
-<main class="skin-wrap"><div class="skin-heading"><h1>Skin Config</h1><p class="skin-note">Floating LiveChat · Super Admin only</p></div>
-<section class="skin-card"><h2>Global Settings</h2><div class="skin-switch-row"><div><strong>Global Floating LiveChat</strong><p class="skin-note">OFF hides floating on every site, even when a site is Active.</p></div><label class="shared-active-switch"><input id="skinGlobal" type="checkbox" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span></label></div></section>
-<section class="skin-card"><h2>Site Selection</h2><div class="skin-field skin-site-box"><label for="skinSite">Select Site</label><select id="skinSite" data-shared-dropdown data-placeholder="Select site"><option value="">Select site</option></select><p class="skin-note">Sites are loaded from your existing /api/sites endpoint.</p></div></section>
-<section class="skin-card" id="skinDetails" hidden><h2>Floating LiveChat — <span id="skinSiteName"></span></h2><div class="skin-grid"><div class="skin-field"><div class="skin-switch-row"><div><strong>Site Floating</strong><p class="skin-note">Active / Inactive for this selected site.</p></div><label class="shared-active-switch"><input id="skinSiteEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span></label></div></div><div class="skin-field"><label for="skinUrl">LiveChat HTML URL</label><input id="skinUrl" type="text" data-new-ui-input placeholder="./livechat.html" autocomplete="off" spellcheck="false"><p class="skin-note">Same-origin relative path only, for example ./livechat.html. This opens your existing user LiveChat.</p></div></div><div class="skin-actions"><button id="skinReset" type="button">Reset</button><button id="skinRefresh" type="button">Refresh</button><button id="skinSave" class="skin-primary" type="button">Save Changes</button></div><div id="skinStatus" class="skin-status" role="status" aria-live="polite"></div></section>
-<section class="skin-card" id="skinPreviewCard" hidden><h2>Preview Status</h2><div class="skin-preview"><span id="skinPreview">Inactive</span><small id="skinPreviewUrl"></small></div></section></main>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script><script src="../firebase.js"></script><script src="./new-ui.js"></script><script src="./shared-ui.js"></script><script src="./admin.js"></script>
+html,body{min-height:100%;margin:0}
+body{background:var(--bg,#101010);color:var(--text,#f2f4f8);font-family:'Source Sans 3','Source Sans Pro',Arial,sans-serif;font-size:13px}
+.sc-page,.sc-page *{box-sizing:border-box}
+.sc-page{padding:12px;max-width:1600px;margin:0 auto}
+.sc-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:6px 2px}
+.sc-eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:750;color:#6caaff;text-transform:uppercase}
+.sc-hero h1{font-size:clamp(24px,3vw,31px);letter-spacing:-.7px;margin:5px 0 6px;font-weight:750}
+.sc-muted{font-size:12px;line-height:1.55;color:var(--muted,#9aa6b6)}
+.sc-hero-actions{display:flex;gap:8px;align-items:center}
+.sc-card{background:var(--panel2,#1f1f1f);border:1px solid var(--tx-border,#383838);border-radius:12px;min-width:0;margin-bottom:12px;overflow:visible}
+.sc-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-bottom:1px solid var(--tx-border,#383838)}
+.sc-card-head h2{font-size:15px;margin:0 0 3px;font-weight:700}
+.sc-card-body{padding:18px}
+.sc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.sc-stat{min-height:100px;padding:17px 19px;position:relative}
+.sc-stat small{display:block;font-size:12px;color:var(--muted,#a4adba)}
+.sc-stat strong{display:block;font-size:26px;margin-top:9px;letter-spacing:-.7px}
+.sc-stat .sc-icon{position:absolute;right:16px;top:15px;color:#76a9ff;background:rgba(48,117,225,.13);width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+.sc-icon svg{width:19px;height:19px}
+.sc-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:12px}
+.sc-setting{display:flex;justify-content:space-between;align-items:center;gap:14px;min-width:0}
+.sc-setting strong{font-size:13px}
+.sc-setting .sc-muted{margin-top:4px}
+.sc-form{display:grid;gap:15px}
+.sc-field{display:grid;gap:7px;min-width:0}
+.sc-field label{font-size:12px;font-weight:650}
+.sc-field input,.sc-field select{width:100%;height:34px;min-width:0;padding:0 11px;border-radius:7px;border:1px solid var(--input-line,#424242);background:var(--input,#141414);color:var(--text,#f2f4f8);font:inherit;outline:none}
+.sc-field input:focus,.sc-field select:focus{border-color:#247eff}
+.sc-field input:disabled{opacity:.6}
+.sc-row{display:grid;grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);gap:14px;align-items:end}
+.sc-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0}
+.sc-switch input{position:absolute;opacity:0;width:1px;height:1px}
+.sc-track{width:48px;height:25px;border-radius:25px;background:#4a4d55;position:relative;transition:background .18s}
+.sc-track:before{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 4px #0004}
+.sc-switch input:checked+.sc-track{background:#1668dc}
+.sc-switch input:checked+.sc-track:before{transform:translateX(23px)}
+.sc-switch input:focus-visible+.sc-track{outline:2px solid #82b2ff;outline-offset:3px}
+.sc-switch-text{font-size:11px;min-width:48px;color:var(--muted,#9aa6b6);font-weight:700}
+.sc-switch input:checked~.sc-switch-text{color:#80b4ff}
+.sc-badge{display:inline-flex;align-items:center;gap:7px;border:1px solid #39404b;border-radius:20px;padding:5px 9px;font-size:11px;font-weight:650}
+.sc-badge:before{content:"";height:7px;width:7px;border-radius:50%;background:#7d8795}
+.sc-badge.on{color:#4cdbad;background:rgba(38,170,124,.08);border-color:rgba(54,193,143,.24)}
+.sc-badge.on:before{background:#42d4a4}
+.sc-badge.off{color:#ff9aa4;background:rgba(235,87,105,.08);border-color:rgba(235,87,105,.22)}
+.sc-badge.off:before{background:#f17889}
+.sc-note{padding:11px 13px;border-radius:8px;background:rgba(37,113,226,.075);border:1px solid rgba(65,130,231,.2);font-size:12px;color:var(--muted,#b3c1d4);line-height:1.55}
+.sc-note strong{color:var(--text,#eee)}
+.sc-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--tx-border,#383838)}
+.sc-btn{height:33px;border-radius:7px;padding:0 15px;cursor:pointer;font:inherit;font-weight:650;white-space:nowrap;border:1px solid #454545;background:#1a1a1a;color:var(--text,#eee)}
+.sc-btn.primary{background:#1668dc;border-color:#1668dc;color:white}
+.sc-btn:hover{filter:brightness(1.12)}
+.sc-btn:disabled{opacity:.55;cursor:wait}
+.sc-btn svg{height:14px;width:14px;vertical-align:-3px;margin-right:5px}
+.sc-preview-stage{height:260px;position:relative;overflow:hidden;border:1px dashed #414852;border-radius:10px;background:radial-gradient(ellipse at 90% 20%,rgba(25,102,219,.12),transparent 65%),linear-gradient(140deg,#171d28,#111319);margin-top:12px}
+.sc-preview-stage .sc-preview-label{position:absolute;left:16px;top:14px;font-size:11px;color:#a8b4c4}
+.sc-float{position:absolute;right:0;top:92px;width:52px;height:55px;border-radius:13px 0 0 13px;border:1px solid #367fe4;background:linear-gradient(140deg,#2e8aff,#1156b5);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 28px #0006;touch-action:none;user-select:none}
+.sc-float svg{width:23px;height:23px}
+.sc-preview-window{position:absolute;right:56px;bottom:10px;width:min(285px,calc(100% - 75px));height:214px;background:#151b25;border:1px solid #367fe4;border-radius:12px;box-shadow:0 10px 30px #0009;overflow:hidden}
+.sc-preview-window[hidden],.sc-float[hidden]{display:none!important}
+.sc-preview-title{background:#175fc4;color:white;display:flex;justify-content:space-between;padding:11px 12px;font-size:12px;font-weight:700}
+.sc-preview-window iframe{width:100%;height:calc(100% - 38px);border:0;background:#fff}
+.sc-preview-window button{background:transparent;border:0;color:white;cursor:pointer}
+.sc-status{min-height:18px;color:var(--muted,#9aa6b6);font-size:11px}
+.sc-status.error{color:#ff8b9b}
+.sc-loading{position:fixed;inset:0;z-index:999999;background:rgba(10,12,16,.90);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:opacity .25s}
+.sc-loading.done{opacity:0;pointer-events:none}
+.sc-dots{display:grid;grid-template-columns:repeat(2,7px);gap:5px;animation:sc-spin 1s linear infinite}
+.sc-dots i{height:7px;width:7px;background:#2685ff;border-radius:50%}
+.sc-dots i:nth-child(2){opacity:.7}.sc-dots i:nth-child(3){opacity:.45}.sc-dots i:nth-child(4){opacity:.2}
+@keyframes sc-spin{to{transform:rotate(360deg)}}
+.sc-loading span{font-size:12px;color:#b2c5e1}
+@media(max-width:800px){.sc-two{grid-template-columns:1fr}.sc-stats{gap:8px}.sc-stat{padding:13px;min-height:95px}.sc-stat strong{font-size:23px}}
+@media(max-width:540px){.sc-page{padding:10px}.sc-card-head,.sc-card-body{padding:13px}.sc-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.sc-stats .sc-stat:last-child{grid-column:1/-1}.sc-row{grid-template-columns:1fr}.sc-actions .sc-btn{flex:1}.sc-hero-actions{width:100%;justify-content:flex-end}}
+</style>
+</head>
+<body>
+<div class="sc-loading" id="scLoading" aria-live="polite"><div class="sc-dots"><i></i><i></i><i></i><i></i></div><span>Loading Skin Config...</span></div>
+<main class="workspace sc-page">
+  <header class="sc-hero">
+    <div><div class="sc-eyebrow">5G88 · Super Admin</div><h1>Skin Config</h1><div class="sc-muted">Manage floating LiveChat visibility for your websites.</div></div>
+    <div class="sc-hero-actions"><button type="button" class="sc-btn" id="scRefresh">↻ &nbsp;Refresh</button></div>
+  </header>
+  <div class="sc-stats">
+    <section class="sc-card sc-stat"><small>Global Floating</small><strong id="scGlobalStat">—</strong><span class="sc-icon">◎</span></section>
+    <section class="sc-card sc-stat"><small>Registered Sites</small><strong id="scSiteCount">—</strong><span class="sc-icon">▦</span></section>
+    <section class="sc-card sc-stat"><small>Effective Status</small><strong id="scEffectiveStat">—</strong><span class="sc-icon">◉</span></section>
+  </div>
+  <section class="sc-card">
+    <div class="sc-card-head"><div><h2>Global Settings</h2><div class="sc-muted">Master control for all websites</div></div><span class="sc-badge" id="scGlobalBadge">Not loaded</span></div>
+    <div class="sc-card-body"><div class="sc-setting"><div><strong>Global Floating LiveChat</strong><div class="sc-muted">When inactive, floating LiveChat is hidden on every site.</div></div><label class="sc-switch"><input type="checkbox" id="scGlobal"><span class="sc-track"></span><span class="sc-switch-text" id="scGlobalText">Inactive</span></label></div></div>
+  </section>
+  <div class="sc-two">
+    <section class="sc-card">
+      <div class="sc-card-head"><div><h2>Site Configuration</h2><div class="sc-muted">Choose a site and configure its LiveChat</div></div><span class="sc-badge" id="scSiteBadge">—</span></div>
+      <div class="sc-card-body sc-form">
+        <div class="sc-field"><label for="scSite">Select Site</label><select id="scSite"><option value="">Loading sites...</option></select><div class="sc-muted">Sites are loaded from your existing Site Management API.</div></div>
+        <div class="sc-setting"><div><strong>Site Floating</strong><div class="sc-muted">Active / Inactive for the selected site.</div></div><label class="sc-switch"><input type="checkbox" id="scEnabled"><span class="sc-track"></span><span class="sc-switch-text" id="scEnabledText">Inactive</span></label></div>
+        <div class="sc-field"><label for="scUrl">LiveChat HTML URL</label><input id="scUrl" type="text" spellcheck="false" placeholder="./livechat.html" maxlength="400"><div class="sc-muted">Use a relative path to your original livechat.html, e.g. <code>./livechat.html</code>.</div></div>
+        <div class="sc-note"><strong>Important:</strong> Site must be Active in Site Management. Saving here controls the public API; the website must also load a floating launcher to display its icon.</div>
+        <div class="sc-status" id="scStatus" role="status"></div>
+      </div>
+      <div class="sc-actions"><button class="sc-btn" id="scReset" type="button">Reset</button><button class="sc-btn" id="scReload" type="button">Reload</button><button class="sc-btn primary" id="scSave" type="button">Save Changes</button></div>
+    </section>
+    <section class="sc-card">
+      <div class="sc-card-head"><div><h2>Floating Preview</h2><div class="sc-muted">Test how the launcher looks on a website</div></div><span class="sc-badge" id="scPreviewBadge">—</span></div>
+      <div class="sc-card-body">
+        <div class="sc-setting"><div><strong>Live Preview</strong><div class="sc-muted">Preview uses your unsaved selections.</div></div><button class="sc-btn" id="scPreviewToggle" type="button">Open Chat</button></div>
+        <div class="sc-preview-stage" id="scStage"><span class="sc-preview-label">WEBSITE PREVIEW</span><button type="button" class="sc-float" id="scFloat" aria-label="Open LiveChat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z"/><path d="M8 10h9M8 14h6"/></svg></button><div class="sc-preview-window" id="scWindow" hidden><div class="sc-preview-title"><span>LiveChat Preview</span><button type="button" id="scClose" aria-label="Close preview">✕</button></div><iframe id="scFrame" title="LiveChat preview" loading="lazy"></iframe></div></div>
+        <div class="sc-muted" style="margin-top:11px">The floating icon can be dragged vertically in this preview. Preview does not publish a launcher to another website.</div>
+      </div>
+    </section>
+  </div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="../firebase.js"></script>
+<script src="./shared-ui.js"></script>
+<script src="./new-ui.js"></script>
+<script src="./admin.js"></script>
 <script>
-(() => {'use strict';
-const API='https://fiveg88-admin-backend-v2.onrender.com';
-const $=id=>document.getElementById(id);const state={sites:[],config:null,uid:null,loading:false};
-const toast=(message,type='info')=>window.NewUI?.showToast?.(message,type);
-const syncSwitch=id=>window.NewUI?.activeSwitch?.sync?.($(id));
-const updatePreview=()=>{const id=$('skinSite').value;const site=state.config?.sites?.[id];const active=!!(state.config?.globalEnabled && site?.enabled);$('skinPreview').textContent=active?'Active':'Inactive';$('skinPreviewUrl').textContent=site?.chatUrl||'./livechat.html';};
-const urlOK=value=>{if(typeof value!=='string'||!value.trim()||value.length>400)return false;try{const u=new URL(value,location.href);return u.origin===location.origin&&/^https?:$/.test(u.protocol)&&!u.username&&!u.password&& !value.trim().startsWith('//');}catch{return false;}};
-async function token(){const u=firebase.auth().currentUser;if(!u)throw Error('Session expired');return u.getIdToken();}
-async function api(path,method='GET',body){const r=await fetch(API+path,{method,cache:'no-store',headers:{'Authorization':'Bearer '+await token(),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw Error(j.message||'HTTP '+r.status);return j;}
-function display(){const id=$('skinSite').value;const s=state.sites.find(x=>x.id===id);$('skinDetails').hidden=!s;$('skinPreviewCard').hidden=!s;if(!s)return;const v=state.config?.sites?.[id]||{};$('skinSiteName').textContent=s.name;$('skinSiteEnabled').checked=v.enabled===true;$('skinUrl').value=v.chatUrl||'./livechat.html';$('skinUrl')._newUIInput?.refresh?.();syncSwitch('skinSiteEnabled');updatePreview();}
-function populate(){const select=$('skinSite');const old=select.value;select.innerHTML='<option value="">Select site</option>';state.sites.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' ('+s.id+')';select.appendChild(o)});select.value=state.sites.some(s=>s.id===old)?old:(state.sites[0]?.id||'');select._sharedDropdown?.refresh?.();select.dispatchEvent(new Event('change',{bubbles:true}));}
-async function refresh(){const [sites,config]=await Promise.all([api('/api/sites'),api('/api/livechat-skin')]);state.sites=sites.sites||[];state.config=config.config||{globalEnabled:false,sites:{}};$('skinGlobal').checked=state.config.globalEnabled===true;syncSwitch('skinGlobal');populate();}
-async function save(){const id=$('skinSite').value;if(!id)return toast('Select site first','warning');const chatUrl=$('skinUrl').value.trim();if(!urlOK(chatUrl))return toast('Use a same-origin LiveChat URL','error');const yes=await window.NewUI.confirm({target:$('skinSave'),title:'Save Skin Config?',message:'Save floating LiveChat settings for this site?',confirmText:'Save',cancelText:'Cancel',danger:false});if(!yes)return;const btn=$('skinSave');try{await NewUI.setButtonLoading(btn,true);const result=await api('/api/livechat-skin','PATCH',{globalEnabled:$('skinGlobal').checked,siteId:id,enabled:$('skinSiteEnabled').checked,chatUrl});state.config=result.config;$('skinStatus').textContent='Saved successfully';updatePreview();toast('Skin Config saved','success');}catch(e){toast(e.message,'error');$('skinStatus').textContent=e.message;}finally{await NewUI.setButtonLoading(btn,false);}}
-async function guarded(fn,button){try{if(button)await NewUI.setButtonLoading(button,true);await fn();}catch(e){toast(e.message,'error');$('skinStatus').textContent=e.message;}finally{if(button)await NewUI.setButtonLoading(button,false);}}
-async function init(){try{await new Promise((resolve,reject)=>{firebase.auth().onAuthStateChanged(u=>{u?resolve(u):reject(Error('Please login first'))},reject)});const u=firebase.auth().currentUser;const s=await firebase.database().ref('adminUsers/'+u.uid).once('value');const p=s.val();const claims=(await u.getIdTokenResult()).claims;if(!p||p.role!=='superadmin'||p.active!==true||claims.secondVerified!==true||claims.pinVersion!==p.pinVersion){throw Error('Super Admin access required');}state.uid=u.uid;await refresh();document.documentElement.classList.remove('skin-auth-pending');}catch(e){document.documentElement.classList.remove('skin-auth-pending');document.body.innerHTML='<main style="padding:24px;font-family:Arial,sans-serif"><h2>Access denied</h2><p id="skinError"></p></main>';document.getElementById('skinError').textContent=e.message;}}
-$('skinSite').addEventListener('change',display);$('skinGlobal').addEventListener('change',updatePreview);$('skinSiteEnabled').addEventListener('change',updatePreview);$('skinUrl').addEventListener('input',updatePreview);$('skinSave').addEventListener('click',save);$('skinRefresh').addEventListener('click',()=>guarded(refresh,$('skinRefresh')));$('skinReset').addEventListener('click',()=>{display();$('skinStatus').textContent='Unsaved changes reset';});
-init();
+(()=>{'use strict';
+const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
+const $=id=>document.getElementById(id);
+const defaults={globalEnabled:false,sites:{}};
+let config=structuredClone(defaults),sites=[],selectedId='',busy=false,previewOpen=false,loadId=0;
+const toast=(message,type='success')=>{if(window.NewUI?.showToast)NewUI.showToast(message,type);else console[type==='error'?'error':'log'](message)};
+const setStatus=(message,error=false)=>{const n=$('scStatus');n.textContent=message;n.classList.toggle('error',error)};
+const setLoading=show=>{$('scLoading').classList.toggle('done',!show)};
+async function api(path,options={}) {
+ const user=firebase.auth().currentUser;
+ if(!user)throw Error('Admin session not available');
+ const token=await user.getIdToken();
+ const response=await fetch(BACKEND+path,{...options,headers:{Authorization:'Bearer '+token,...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok||result.ok===false)throw Error(result.message||result.error||'HTTP '+response.status);
+ return result;
+}
+const safeUrl=url=>/^\.\/?[a-zA-Z0-9_./-]*livechat\.html(?:\?[a-zA-Z0-9_=&-]*)?$/.test(url)&&!url.includes('..')&&url.length<=400;
+function sync(){
+ const active=$('scGlobal').checked,site=$('scEnabled').checked;
+ $('scGlobalText').textContent=active?'Active':'Inactive';
+ $('scEnabledText').textContent=site?'Active':'Inactive';
+ $('scGlobalStat').textContent=active?'Active':'Inactive';
+ $('scGlobalBadge').textContent=active?'Active':'Inactive';
+ $('scGlobalBadge').className='sc-badge '+(active?'on':'off');
+ const found=sites.find(x=>String(x.id)===selectedId);
+ const effective=active&&site&&found?.active===true;
+ $('scEffectiveStat').textContent=effective?'Active':'Inactive';
+ $('scSiteBadge').textContent=found?.active===false?'Site disabled':site?'Active':'Inactive';
+ $('scSiteBadge').className='sc-badge '+(site&&found?.active!==false?'on':'off');
+ $('scPreviewBadge').textContent=effective?'Visible':'Hidden';
+ $('scPreviewBadge').className='sc-badge '+(effective?'on':'off');
+ $('scFloat').hidden=!effective;
+ $('scPreviewToggle').disabled=!effective;
+ if(!effective)closePreview();
+}
+function siteForm(){
+ const entry=config.sites?.[selectedId]||{};
+ $('scEnabled').checked=entry.enabled===true;
+ $('scUrl').value=entry.chatUrl||'./livechat.html';
+ closePreview();sync();
+}
+function populate(){
+ const select=$('scSite');select.replaceChildren();
+ for(const site of sites){const option=new Option(site.name?`${site.name} (${site.id})`:site.id,site.id);select.add(option)}
+ if(!sites.length){select.add(new Option('No sites found',''));selectedId=''}
+ else if(!sites.some(s=>String(s.id)===selectedId))selectedId=String(sites[0].id);
+ select.value=selectedId;
+ $('scSiteCount').textContent=String(sites.length);
+ $('scGlobal').checked=config.globalEnabled===true;
+ siteForm();
+}
+function normalizeSites(result){
+ const value=result.sites||result.data||[];
+ if(Array.isArray(value))return value.filter(s=>s&&s.id).map(s=>({...s,id:String(s.id)}));
+ return Object.entries(value).map(([id,s])=>({...s,id:String(s?.id||id)}));
+}
+async function load(showOverlay=true){
+ if(busy)return;
+ busy=true;const thisLoad=++loadId;
+ if(showOverlay)setLoading(true);
+ $('scSave').disabled=true;setStatus('');
+ try{
+ const [s,c]=await Promise.all([api('/api/sites'),api('/api/livechat-skin')]);
+ if(thisLoad!==loadId)return;
+ sites=normalizeSites(s);config=c.config&&typeof c.config==='object'?c.config:structuredClone(defaults);
+ if(!config.sites)config.sites={};
+ populate();
+ }catch(e){setStatus('Cannot load Skin Config: '+e.message,true);toast(e.message,'error')}
+ finally{busy=false;$('scSave').disabled=false;setLoading(false)}
+}
+function closePreview(){previewOpen=false;$('scWindow').hidden=true;$('scFrame').removeAttribute('src');$('scPreviewToggle').textContent='Open Chat'}
+function togglePreview(){
+ if(previewOpen){closePreview();return}
+ if($('scFloat').hidden)return;
+ const url=$('scUrl').value.trim();
+ if(!safeUrl(url)){toast('Use a valid relative livechat.html path','error');return}
+ previewOpen=true;$('scWindow').hidden=false;$('scFrame').src=url;$('scPreviewToggle').textContent='Close Chat';
+}
+async function save(){
+ if(busy||!selectedId)return;
+ const chatUrl=$('scUrl').value.trim();
+ if(!safeUrl(chatUrl)){toast('Invalid LiveChat URL. Example: ./livechat.html','error');return}
+ busy=true;const btn=$('scSave');btn.disabled=true;const old=btn.textContent;btn.textContent='Saving...';setStatus('');
+ try{
+ const result=await api('/api/livechat-skin',{method:'PATCH',body:JSON.stringify({siteId:selectedId,enabled:$('scEnabled').checked,globalEnabled:$('scGlobal').checked,chatUrl})});
+ config=result.config||config;config.sites??={};$('scGlobal').checked=config.globalEnabled===true;siteForm();setStatus('Saved successfully. Public API has been updated.');toast('Skin Config saved successfully');
+ }catch(e){setStatus('Save failed: '+e.message,true);toast('Save failed: '+e.message,'error')}
+ finally{busy=false;btn.disabled=false;btn.textContent=old}
+}
+$('scGlobal').addEventListener('change',sync);
+$('scEnabled').addEventListener('change',sync);
+$('scSite').addEventListener('change',e=>{selectedId=e.target.value;siteForm()});
+$('scRefresh').onclick=()=>load(false);
+$('scReload').onclick=()=>load(false);
+$('scReset').onclick=()=>{if(!selectedId)return;siteForm();$('scGlobal').checked=config.globalEnabled===true;sync();setStatus('Unsaved changes reset.')};
+$('scSave').onclick=save;
+$('scPreviewToggle').onclick=togglePreview;
+$('scFloat').onclick=togglePreview;
+$('scClose').onclick=closePreview;
+let startY=0,startTop=0,moved=false;
+$('scFloat').addEventListener('pointerdown',e=>{startY=e.clientY;startTop=$('scFloat').offsetTop;moved=false;$('scFloat').setPointerCapture(e.pointerId)});
+$('scFloat').addEventListener('pointermove',e=>{if(!e.buttons)return;const diff=e.clientY-startY;if(Math.abs(diff)>5)moved=true;if(moved)$('scFloat').style.top=Math.max(4,Math.min($('scStage').clientHeight-59,startTop+diff))+'px'});
+$('scFloat').addEventListener('click',e=>{if(moved){e.stopImmediatePropagation();moved=false}},true);
+if(!window.firebase?.auth){setStatus('Firebase is unavailable.',true);setLoading(false);return}
+firebase.auth().onAuthStateChanged(async user=>{
+ if(!user){setStatus('Please sign in as Super Admin.',true);setLoading(false);return}
+ try{
+ const token=await user.getIdTokenResult();
+ if(token.claims.secondVerified!==true){setStatus('Second PIN verification required.',true);setLoading(false);return}
+ await load(true);
+ }catch(e){setStatus(e.message,true);setLoading(false)}
+});
 })();
-</script></body></html>
+</script>
+</body>
+</html>
