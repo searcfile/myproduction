@@ -3459,24 +3459,26 @@ if (originalName && previewName) {
   );
 }
 
+// Floating tab lebih rendah 4px daripada tab asal.
+const dragHeight = 34;
 Object.assign(preview.style, {
-      position: "fixed",
-      left: `${rect.left}px`,
-      top: `${rect.top}px`,
-      width: `${rect.width}px`,
-      height: `${rect.height}px`,
-      minWidth: `${rect.width}px`,
-      maxWidth: `${rect.width}px`,
-      minHeight: `${rect.height}px`,
-      maxHeight: `${rect.height}px`,
-      boxSizing: "border-box",
-      margin: "0",
-      flexShrink: "0",
-      transform: "none",
-      transition: "none",
-      pointerEvents: "none",
-      zIndex: "2147483647"
-    });
+  position: "fixed",
+  left: `${rect.left}px`,
+  top: `${rect.top + (rect.height - dragHeight) / 2}px`,
+  width: `${rect.width}px`,
+  height: `${dragHeight}px`,
+  minWidth: `${rect.width}px`,
+  maxWidth: `${rect.width}px`,
+  minHeight: `${dragHeight}px`,
+  maxHeight: `${dragHeight}px`,
+  boxSizing: "border-box",
+  margin: "0",
+  flexShrink: "0",
+  transform: "none",
+  transition: "none",
+  pointerEvents: "none",
+  zIndex: "2147483647"
+});
 
 
 // Warna biru sama seperti active tab.
