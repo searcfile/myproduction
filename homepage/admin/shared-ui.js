@@ -1,20 +1,3 @@
-/* ==========================================================
-   HOMEPAGE ADMIN - SHARED UI
-   File: homepage/admin/shared-ui.js
-
-   Shared:
-   - Header
-   - Sidebar
-   - Navigation
-   - Workspace Tabs
-   - Theme
-   - Search
-   - Responsive shell
-
-   Firebase:
-   - Uses global `db` from ../firebase.js when available
-   - Still renders the shell if Firebase is unavailable
-   ========================================================== */
 
 (() => {
   "use strict";
@@ -3418,9 +3401,6 @@ function initWorkspaceTabDrag(tabList) {
 
 copyTypography(state.tab, preview);
 
-// Pastikan preview menggunakan gaya tab aktif,
-// walaupun tab yang diangkat tidak aktif.
-preview.classList.add("active-tab");
 
 // Elakkan nama tab menjadi ellipsis akibat
 // perbezaan susun atur ketika dipindahkan ke body.
@@ -3497,29 +3477,29 @@ Object.assign(preview.style, {
       zIndex: "2147483647"
     });
 
-    // Kekalkan warna dan bentuk tab asal.
-// Preview sentiasa warna biru seperti active tab.
+
 preview.style.setProperty(
   "background",
-  "#162b44",
+  sourceStyle.backgroundColor,
   "important"
 );
 
 preview.style.setProperty(
   "border",
-  "1px solid #315987",
+  sourceStyle.border,
   "important"
 );
 
 preview.style.setProperty(
   "color",
-  "#91caff",
+  sourceStyle.color,
   "important"
 );
 
+// Bayang 3D ketika tab diangkat.
 preview.style.setProperty(
   "box-shadow",
-  "inset 0 2px 0 #91caff, 0 12px 28px rgba(0,0,0,.45)",
+  "0 14px 30px rgba(0,0,0,.48), 0 5px 12px rgba(0,0,0,.28)",
   "important"
 );
 
@@ -3626,77 +3606,124 @@ if (firstTab) {
     }
   }
 
-  function onEnd(event) {
-    if (!drag || event.pointerId !== drag.pointerId) return;
+function onEnd(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
 
-    const state = drag;
-    drag = null;
+  const state = drag;
+  drag = null;
 
-    window.removeEventListener("pointermove", onMove);
-    window.removeEventListener("pointerup", onEnd);
-    window.removeEventListener("pointercancel", onEnd);
+  window.removeEventListener("pointermove", onMove);
+  window.removeEventListener("pointerup", onEnd);
+  window.removeEventListener("pointercancel", onEnd);
 
-    if (!state.started) return;
+  if (!state.started) return;
 
-    suppressClickUntil = performance.now() + 350;
+  suppressClickUntil = performance.now() + 350;
 
-    const listRect = tabList.getBoundingClientRect();
+  const listRect = tabList.getBoundingClientRect();
 
-const validDrop =
-  event.type !== "pointercancel" &&
-  event.clientY >= listRect.top - 35 &&
-  event.clientY <= listRect.bottom + 35 &&
-  event.clientX >= listRect.left - 35 &&
-  event.clientX <= listRect.right + 35;
+  // Beri toleransi apabila tab diangkat sedikit
+  // ke atas atau ke bawah sebelum dilepaskan.
+  const validDrop =
+    event.type === "pointerup" &&
+    event.clientX >= listRect.left - 35 &&
+    event.clientX <= listRect.right + 35 &&
+    event.clientY >= listRect.top - 80 &&
+    event.clientY <= listRect.bottom + 80;
 
-    state.preview?.remove();
+  // Buang floating preview.
+  state.preview?.remove();
 
-    state.tab.classList.remove("workspace-drag-source");
-    tabList.classList.remove("is-dragging");
+  state.tab.classList.remove("workspace-drag-source");
+  tabList.classList.remove("is-dragging");
 
+  state.elements.forEach(element => {
+    element.style.transform = "";
+    element.style.zIndex = "";
+    element.classList.remove("dragging");
+  });
+
+  if (!validDrop) {
+    // Pulihkan DOM jika drop benar-benar di luar.
     state.elements.forEach(element => {
-      element.style.transform = "";
-      element.style.zIndex = "";
-      element.classList.remove("dragging");
+      tabList.appendChild(element);
     });
-
-    // Jika dilepaskan di luar tabbar, pulihkan susunan asal.
-    if (!validDrop) {
-      state.elements.forEach(element => {
-        tabList.appendChild(element);
-      });
-      return;
-    }
-
-    const orderedElements = getItems();
-
-    const oldTabs = getTabs();
-
-    if (oldTabs.length !== state.elements.length) {
-      state.elements.forEach(element => {
-        tabList.appendChild(element);
-      });
-      return;
-    }
-
-    // Ambil urutan daripada DOM selepas placeholder bergerak.
-    const orderedTabs = orderedElements.map(element => {
-      const originalIndex = state.elements.indexOf(element);
-      return oldTabs[originalIndex];
-    });
-
-    if (orderedTabs.some(tab => !tab)) return;
-
-    const changed = orderedElements.some(
-      (element, index) => element !== state.elements[index]
-    );
-
-    if (!changed) return;
-
-    saveTabs(orderedTabs);
-    renderTabs();
-    renderSidebarTabs();
+    return;
   }
+
+  // Tentukan posisi akhir menggunakan pointerup,
+  // bukan bergantung pada pointermove terakhir.
+  const otherTabs = getItems().filter(
+    element => element !== state.tab
+  );
+
+  const before = otherTabs.find(element => {
+    const rect = element.getBoundingClientRect();
+    return event.clientX < rect.left + rect.width / 2;
+  }) || null;
+
+  if (before) {
+    tabList.insertBefore(state.tab, before);
+  } else {
+    tabList.appendChild(state.tab);
+  }
+
+  // Ambil susunan sebenar selepas drop.
+  const orderedElements = getItems();
+
+  const oldOrder = state.elements.map(
+    element => element.dataset.file
+  );
+
+  const newOrder = orderedElements.map(
+    element => element.dataset.file
+  );
+
+  const changed = newOrder.some(
+    (file, index) => file !== oldOrder[index]
+  );
+
+  if (!changed) return;
+
+  // Ambil semua tab daripada storage.
+  const storedTabs = getTabs();
+
+  const visibleFiles = new Set(newOrder);
+
+  const visibleTabMap = new Map(
+    storedTabs.map(tab => [
+      String(tab.file).toLowerCase(),
+      tab
+    ])
+  );
+
+  const reorderedVisibleTabs = newOrder
+    .map(file =>
+      visibleTabMap.get(String(file).toLowerCase())
+    )
+    .filter(Boolean);
+
+  // Kekalkan tab yang tidak dipaparkan pada
+  // kedudukan asalnya dalam storage.
+  let visibleIndex = 0;
+
+  const finalTabs = storedTabs.map(tab => {
+    const file = String(tab.file).toLowerCase();
+
+    if (!visibleFiles.has(file)) {
+      return tab;
+    }
+
+    return reorderedVisibleTabs[visibleIndex++] || tab;
+  });
+
+  // Simpan urutan baharu.
+  saveTabs(finalTabs);
+
+  // Render semula berdasarkan urutan tersimpan.
+  renderTabs();
+  renderSidebarTabs();
+}
 
   tabList.addEventListener("dragstart", event => {
     event.preventDefault();
