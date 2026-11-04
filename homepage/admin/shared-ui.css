@@ -5038,17 +5038,29 @@ body.light-theme
   cursor: grabbing !important;
 }
 
-/* Preview ikut warna tab asal */
-.workspace-drag-preview:not(.active-tab) {
-  background: #141414 !important;
-  color: rgba(255,255,255,.85) !important;
-  border: 1px solid #303030 !important;
-}
+/* ==========================================
+   DRAG PREVIEW - ALWAYS ACTIVE BLUE
+========================================== */
 
+.workspace-drag-preview,
 .workspace-drag-preview.active-tab {
   background: #162b44 !important;
   color: #91caff !important;
   border: 1px solid #315987 !important;
+
+  box-shadow:
+    inset 0 2px 0 #91caff,
+    0 14px 30px rgba(0,0,0,.48),
+    0 5px 12px rgba(0,0,0,.28) !important;
+}
+
+/* Nama dan ikon ikut warna biru active */
+.workspace-drag-preview .admin-workspace-tab-name {
+  color: #91caff !important;
+}
+
+.workspace-drag-preview .admin-workspace-tab-actions {
+  color: inherit !important;
 }
 
 /* Tulisan tidak dipendekkan ketika drag */
