@@ -5013,3 +5013,61 @@ body.light-theme
 > .admin-workspace-tabs-list {
   align-items: center;
 }
+/* ==========================================
+   5G88 WORKSPACE DRAG - NATURAL 3D
+========================================== */
+
+.workspace-drag-preview {
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  overflow: visible !important;
+
+  transform: none !important;
+  scale: 1 !important;
+  rotate: none !important;
+
+  filter: none !important;
+  backdrop-filter: none !important;
+
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.48),
+    0 5px 12px rgba(0,0,0,.28) !important;
+
+  pointer-events: none !important;
+  cursor: grabbing !important;
+}
+
+/* Preview ikut warna tab asal */
+.workspace-drag-preview:not(.active-tab) {
+  background: #141414 !important;
+  color: rgba(255,255,255,.85) !important;
+  border: 1px solid #303030 !important;
+}
+
+.workspace-drag-preview.active-tab {
+  background: #162b44 !important;
+  color: #91caff !important;
+  border: 1px solid #315987 !important;
+}
+
+/* Tulisan tidak dipendekkan ketika drag */
+.workspace-drag-preview .admin-workspace-tab-name {
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+/* Slot asal semasa tab sedang diangkat */
+.admin-workspace-tab.workspace-drag-source {
+  opacity: .25 !important;
+  box-shadow: none !important;
+  border: 1px dashed #315987 !important;
+}
+
+/* Kekalkan gap asal */
+.admin-workspace-tab-card
+> .admin-workspace-tabs-list {
+  gap: 6px;
+}
