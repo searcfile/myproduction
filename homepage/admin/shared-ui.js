@@ -29,6 +29,11 @@
 
   const ADMIN_PAGES = [
      {
+  file: "skin-config.html",
+  name: "Skin Config",
+  group: "main"
+},
+     {
   file: "users.html",
   name: "Auth Users",
   group: "main"
@@ -171,7 +176,11 @@
      ========================================================== */
 
 const SUPERADMIN_ONLY_PAGES = new Set([
-  "users.html","livechat-support.html","notice.html"]);
+  "users.html",
+  "livechat-support.html",
+  "notice.html",
+  "skin-config.html"
+]);
   let currentAdminProfile = null;
 
   function canShowAdminPage(file) {
