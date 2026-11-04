@@ -3877,13 +3877,42 @@ if (oldPreview) {
 }
 
 
-    // Search lama tetap digunakan, tetapi kekal di kiri.
-    initTabBarSearch();
+// Search asal kekal digunakan.
+initTabBarSearch();
 
-    const search = tabBar.querySelector(".tab-module-search");
-    if (search) {
-      search.classList.add("admin-workspace-search-fixed");
-    }
+const search = tabBar.querySelector(
+  ".tab-module-search"
+);
+
+if (search) {
+  search.classList.add(
+    "admin-workspace-search-fixed"
+  );
+}
+
+// ==========================================
+// 5G88 TABBAR CARD WRAPPER
+// ==========================================
+
+let card = tabBar.querySelector(
+  ".admin-workspace-tab-card"
+);
+
+if (!card) {
+  card = document.createElement("div");
+  card.className = "admin-workspace-tab-card";
+}
+
+// Susun semua komponen di dalam satu card.
+if (search) {
+  card.appendChild(search);
+}
+
+card.appendChild(tabList);
+card.appendChild(moreWrap);
+
+// Card menjadi satu-satunya direct child tabBar.
+tabBar.replaceChildren(card);
 
 
     function updateMoreTabs() {
