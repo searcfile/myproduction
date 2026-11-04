@@ -2808,19 +2808,11 @@ function createSharedTabSearch(target, options = {}) {
 
   if (!tabBar) return null;
 
-
-  /*
-   * Buang instance lama.
-   */
-  const old =
-    tabBar.querySelector(
-      ":scope > .tab-module-search"
-    );
-
-  if (old) {
-    old.remove();
-  }
-
+tabBar.querySelectorAll(
+  ".tab-module-search"
+).forEach(search => {
+  search.remove();
+});
 
   const placeholder =
     options.placeholder ||
