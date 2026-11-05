@@ -3372,8 +3372,7 @@ function initWorkspaceTabDrag(tabList) {
         "text-transform",
         "text-decoration",
         "white-space",
-        "text-overflow",
-        "color"
+        "text-overflow"
       ].forEach(property => {
         target.style.setProperty(
           property,
@@ -3381,6 +3380,13 @@ function initWorkspaceTabDrag(tabList) {
           "important"
         );
       });
+
+      // Semua text dan icon ketika drag guna biru.
+      target.style.setProperty(
+        "color",
+        "#91caff",
+        "important"
+      );
     });
   }
 
