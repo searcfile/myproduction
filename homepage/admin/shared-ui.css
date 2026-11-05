@@ -2869,49 +2869,72 @@ body.tab-dragging-active *{
 }
 
 
-
 /* ==========================================
    TAB ACTIONS - REFRESH & CLOSE
 ========================================== */
 
-
-
-.admin-workspace-tab-refresh,
-.admin-workspace-tab-close{
-  position:relative;
-
-  width:20px !important;
-  height:20px !important;
-  min-width:20px;
-  min-height:20px;
-  flex:0 0 20px;
-
-  box-sizing:border-box;
-
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-
-  padding:4px !important;
-  margin:0 !important;
-
-  border:0 !important;
-  outline:0;
-  border-radius:4px;
-
-  background:transparent !important;
-
-  font-size:12px;
-  line-height:0;
-  vertical-align:middle;
-
-  cursor:pointer;
-
-  transition:
-    background-color .2s ease,
-    color .2s ease;
+/* Pembungkus icon */
+.admin-workspace-tab-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
+/* REFRESH - BUTTON 24PX */
+.admin-workspace-tab-refresh {
+  position: relative;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  flex: 0 0 24px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  box-sizing: border-box;
+  border: 0 !important;
+  border-radius: 5px;
+  background: transparent !important;
+
+  color: inherit !important;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* CLOSE - BUTTON 28PX */
+.admin-workspace-tab-close {
+  position: relative;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  flex: 0 0 28px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  box-sizing: border-box;
+  border: 0 !important;
+  border-radius: 5px;
+  background: transparent !important;
+
+  color: var(--close);
+  line-height: 1;
+  cursor: pointer;
+}
 
 
 /* Warna asal */
@@ -2938,36 +2961,61 @@ body.tab-dragging-active *{
 
 
 
-.admin-workspace-tab-refresh svg,
-.admin-workspace-tab-close svg{
-  position:static !important;
+/* REFRESH SVG - 14PX */
+.admin-workspace-tab-refresh svg {
+  position: static !important;
 
-  width:12px !important;
-  height:12px !important;
-  min-width:12px;
-  min-height:12px;
+  display: block !important;
 
-  flex:0 0 12px;
-  display:block;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  flex: 0 0 14px !important;
 
-  margin:0 !important;
-  padding:0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 
-  transform:none !important;
-  vertical-align:middle;
+  color: inherit !important;
+  fill: currentColor !important;
+
+  transform: none !important;
+}
+
+/* CLOSE SVG - 12PX */
+.admin-workspace-tab-close svg {
+  position: static !important;
+  display: block !important;
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+  flex: 0 0 12px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  fill: currentColor !important;
+  transform: none !important;
 }
 
 
 /* Hover Refresh */
 .admin-workspace-tab-refresh:hover{
-  background:#f5f5f5 !important;
+  background:rgba(255,255,255,0.08) !important;
 }
-
+/* Hover Refresh */
+.admin-workspace-tab-refresh:active{
+  background:rgba(255,255,255,0.18) !important;
+}
 /* Hover Close */
 .admin-workspace-tab-close:hover{
-  color:var(--gold-hover) !important;
+  background:rgba(255,255,255,0.08) !important;
+  color:rgba(255,255,255,0.85) !important;
 }
-
+.admin-workspace-tab-refresh:active{
+  color:#1554ad !important;
+}
 /* ==========================================================
    MORE BUTTON
    ========================================================== */
@@ -5159,18 +5207,51 @@ body.light-theme
   color: #91caff !important;
 }
 
-/* Saiz dan warna SVG Refresh + X */
-.workspace-drag-preview .admin-workspace-tab-actions button svg {
+/* DRAG - REFRESH SVG 14PX */
+.workspace-drag-preview
+.admin-workspace-tab-refresh svg {
   width: 14px !important;
   height: 14px !important;
-
   min-width: 14px !important;
   min-height: 14px !important;
+  flex: 0 0 14px !important;
+}
 
-  flex-shrink: 0 !important;
+/* DRAG - CLOSE SVG 12PX */
+.workspace-drag-preview
+.admin-workspace-tab-close svg {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+  flex: 0 0 12px !important;
+}
 
-  color: #91caff !important;
-  fill: currentColor !important;
+/* DRAG - BUTTON SIZE & CENTER */
+.workspace-drag-preview
+.admin-workspace-tab-refresh {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  flex: 0 0 24px !important;
+}
+
+.workspace-drag-preview
+.admin-workspace-tab-close {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  flex: 0 0 28px !important;
+}
+
+.workspace-drag-preview
+.admin-workspace-tab-actions button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
 /* Pastikan SVG path ikut warna icon */
@@ -5193,4 +5274,28 @@ body.light-theme
 .workspace-drag-preview .admin-workspace-tab-actions button svg path {
   fill: #91caff !important;
   stroke: #91caff !important;
+}
+/* ==========================================
+   FINAL TAB ALIGNMENT
+========================================== */
+
+.admin-workspace-tab,
+.workspace-drag-preview {
+  align-items: center !important;
+}
+
+.admin-workspace-tab-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0;
+}
+
+.admin-workspace-tab-actions button {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.admin-workspace-tab-actions button svg {
+  display: block !important;
+  margin: 0 !important;
 }
