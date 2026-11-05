@@ -4428,49 +4428,76 @@ document.addEventListener(
    AUTO SHOW ACTIVE TAB WHEN HIDDEN
    ========================================== */
 
+/* ==========================================
+   AUTO REVEAL ACTIVE TAB - FULLY VISIBLE
+   ========================================== */
+
 function revealActiveTab(smooth = true) {
-  const activeTab = Array.from(
-    tabList.querySelectorAll(".admin-workspace-tab")
-  ).find(tab =>
-    String(tab.dataset.file || "").toLowerCase() ===
-    String(getActiveFile() || currentFile).toLowerCase()
-  ) || tabList.querySelector(".admin-workspace-tab.active-tab");
+  const activeTab = tabList.querySelector(
+    ".admin-workspace-tab.active-tab"
+  );
 
   if (!activeTab) return;
 
   const listRect = tabList.getBoundingClientRect();
-  const activeRect = activeTab.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
 
-  if (!listRect.width || !activeRect.width) return;
+  if (!listRect.width || !tabRect.width) return;
 
+  // Ruang kiri dan kanan supaya tab tidak terpotong.
   const padding = 12;
-  let targetLeft = tabList.scrollLeft;
 
-  // Tab tersembunyi di sebelah kiri
-  if (activeRect.left < listRect.left + padding) {
-    targetLeft -= listRect.left + padding - activeRect.left;
+  const currentScroll = tabList.scrollLeft;
+  const maxScroll = Math.max(
+    0,
+    tabList.scrollWidth - tabList.clientWidth
+  );
+
+  let targetScroll = currentScroll;
+
+  // Jika tab lebih besar daripada kawasan scroll,
+  // utamakan bahagian kiri tab.
+  if (tabRect.width + padding * 2 > listRect.width) {
+    targetScroll += tabRect.left - listRect.left;
   }
 
-  // Tab tersembunyi di sebelah kanan
-  else if (activeRect.right > listRect.right - padding) {
-    targetLeft += activeRect.right - listRect.right + padding;
+  // Tab terpotong di sebelah kiri.
+  else if (tabRect.left < listRect.left + padding) {
+    targetScroll +=
+      tabRect.left - listRect.left - padding;
   }
 
-  if (Math.abs(targetLeft - tabList.scrollLeft) < 1) {
+  // Tab terpotong di sebelah kanan.
+  else if (tabRect.right > listRect.right - padding) {
+    targetScroll +=
+      tabRect.right - listRect.right + padding;
+  }
+
+  // Pastikan scroll tidak melebihi had.
+  targetScroll = Math.max(
+    0,
+    Math.min(maxScroll, targetScroll)
+  );
+
+  if (Math.abs(targetScroll - currentScroll) < 1) {
     return;
   }
 
   tabList.scrollTo({
-    left: targetLeft,
-    behavior: smooth ? "smooth" : "auto"
+    left: targetScroll,
+    behavior: smooth ? "smooth" : "instant"
   });
 }
 
-// Tunggu tab bar selesai dirender
+// ==========================================
+// UPDATE LAYOUT FIRST, THEN REVEAL ACTIVE TAB
+// ==========================================
+
 requestAnimationFrame(() => {
+  updateMoreTabs();
+
   requestAnimationFrame(() => {
     revealActiveTab(true);
-    updateMoreTabs();
   });
 });
 
