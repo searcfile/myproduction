@@ -5019,6 +5019,8 @@ padding: 12px 12px 8px !important;
   overflow-y: hidden;
 
   scrollbar-width: none;
+    scroll-padding-inline: 12px;
+  overscroll-behavior-x: contain;
 }
 
 .admin-workspace-tab-card
