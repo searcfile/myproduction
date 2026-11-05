@@ -1980,28 +1980,17 @@ body.light-theme .theme-toggle-knob{
 .tab .close-tab{
   width:1em;
   height:1em;
-
   display:inline-flex;
   align-items:center;
   justify-content:center;
-
   margin-left:4px;
-
   padding:0;
-
   border:none;
-  border-radius:0;
-
   background:transparent;
-
   color:var(--close);
-
   font-size:12px;
-
   cursor:pointer;
-
   pointer-events:auto;
-
   transition:
     color .3s ease,
     transform .2s ease;
@@ -2990,6 +2979,7 @@ body.tab-dragging-active *{
   padding: 0 !important;
   margin: 0 !important;
   fill: currentColor !important;
+  opacity:0.65;
   transition: all 0.3s;
   transform: none !important;
 }
