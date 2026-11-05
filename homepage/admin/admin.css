@@ -1851,6 +1851,7 @@ html {
 
 .tab .close-tab:active{
   color:var(--gold-active) !important;
+  opacity:1 !important;
 }
 
 
