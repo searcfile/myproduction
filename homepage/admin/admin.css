@@ -1914,9 +1914,9 @@ body.tab-dragging-active *{
 
 .tab-module-search{
   position:relative;
-  width:32px;
-  height:32px;
-  flex:0 0 32px;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
   margin-bottom:4px;
   white-space:nowrap;
   z-index:4;
@@ -1941,7 +1941,7 @@ body.tab-dragging-active *{
 .tab-search-control{
   position:relative;
   width:100%;
-  height:32px;
+  height:38px;
   display:flex;
   align-items:center;
   border:1px solid var(--border2);
@@ -1967,10 +1967,10 @@ body.tab-dragging-active *{
    ========================================================== */
 
 .tab-search-toggle{
-  width:32px;
-  height:32px;
+  width:38px;
+  height:38px;
 
-  flex:0 0 32px;
+  flex:0 0 38px;
 
   display:flex;
   align-items:center;
@@ -2033,7 +2033,7 @@ body.tab-dragging-active *{
 
   font-family:inherit;
   font-size:14px;
-  line-height:32px;
+  line-height:38px;
 
   box-shadow:none !important;
 }
@@ -2056,8 +2056,8 @@ body.tab-dragging-active *{
   top:0;
   right:0;
 
-  width:30px;
-  height:30px;
+  width:36px;
+  height:36px;
 
   align-items:center;
   justify-content:center;
