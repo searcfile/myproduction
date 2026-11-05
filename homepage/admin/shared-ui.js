@@ -907,7 +907,9 @@ requestAnimationFrame(() => {
         .toLowerCase();
 
     const tabs = getTabs();
-
+if (tabs.length <= 1) {
+  return;
+}
     const index =
       tabs.findIndex(
         item =>
@@ -4096,7 +4098,12 @@ function refreshTab(tab) {
         closeTab(tab.file);
       });
 
-      actions.append(refresh, close);
+      actions.appendChild(refresh);
+
+      if (tabs.length > 1) {
+        actions.appendChild(close);
+      }
+
       return actions;
     }
 
