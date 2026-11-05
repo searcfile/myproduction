@@ -4259,28 +4259,73 @@ tabBar.replaceChildren(card);
     }
 
 
-    moreButton.addEventListener("click", event => {
-      event.preventDefault();
-      event.stopPropagation();
+// ==========================================
+// MORE TABS - CLICK + HOVER + ACTIVE
+// ==========================================
 
-      updateMoreTabs();
+let morePinnedOpen = false;
 
-      if (moreWrap.classList.contains("has-hidden-tabs")) {
-        moreDropdown.classList.toggle("open");
-      }
-    });
+function setMoreOpen(open) {
+  const canOpen =
+    moreWrap.classList.contains("has-hidden-tabs");
 
-    // Buka dropdown apabila mouse hover pada More.
-    moreWrap.addEventListener("mouseenter", () => {
-      if (moreWrap.classList.contains("has-hidden-tabs")) {
-        moreDropdown.classList.add("open");
-      }
-    });
+  const isOpen = Boolean(open && canOpen);
 
-    // Tutup dropdown apabila mouse keluar.
-    moreWrap.addEventListener("mouseleave", () => {
-      moreDropdown.classList.remove("open");
-    });
+  moreDropdown.classList.toggle("open", isOpen);
+  moreButton.classList.toggle("is-active", isOpen);
+  moreButton.setAttribute(
+    "aria-expanded",
+    String(isOpen)
+  );
+
+  if (!isOpen) {
+    morePinnedOpen = false;
+  }
+}
+
+// Default state
+moreButton.setAttribute("aria-expanded", "false");
+moreButton.setAttribute(
+  "aria-controls",
+  "adminWorkspaceMoreDropdown"
+);
+moreDropdown.id = "adminWorkspaceMoreDropdown";
+
+// CLICK - Toggle dan kekal terbuka
+moreButton.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  updateMoreTabs();
+
+  if (!moreWrap.classList.contains("has-hidden-tabs")) {
+    setMoreOpen(false);
+    return;
+  }
+
+  if (morePinnedOpen) {
+    morePinnedOpen = false;
+    setMoreOpen(false);
+  } else {
+    morePinnedOpen = true;
+    setMoreOpen(true);
+  }
+});
+
+// HOVER - Buka sementara
+moreWrap.addEventListener("mouseenter", () => {
+  if (!morePinnedOpen) {
+    updateMoreTabs();
+    setMoreOpen(true);
+  }
+});
+
+// MOUSE LEAVE - Tutup hanya jika bukan pinned
+moreWrap.addEventListener("mouseleave", () => {
+  if (!morePinnedOpen) {
+    setMoreOpen(false);
+  }
+});
 
 
     // Scroll horizontal lebih laju dan responsif.
@@ -4345,18 +4390,40 @@ tabBar.replaceChildren(card);
       );
     }
 
-    window.__homepageMoreOutsideHandler = event => {
-      if (!moreWrap.contains(event.target)) {
-        moreDropdown.classList.remove("open");
-      }
-    };
+window.__homepageMoreOutsideHandler = event => {
+  if (!moreWrap.contains(event.target)) {
+    morePinnedOpen = false;
+    setMoreOpen(false);
+  }
+};
 
     document.addEventListener(
       "click",
       window.__homepageMoreOutsideHandler
     );
 
+// ==========================================
+// MORE TABS - ESC TO CLOSE
+// ==========================================
 
+if (window.__homepageMoreEscHandler) {
+  document.removeEventListener(
+    "keydown",
+    window.__homepageMoreEscHandler
+  );
+}
+
+window.__homepageMoreEscHandler = event => {
+  if (event.key === "Escape") {
+    morePinnedOpen = false;
+    setMoreOpen(false);
+  }
+};
+
+document.addEventListener(
+  "keydown",
+  window.__homepageMoreEscHandler
+);
 /* ==========================================
    AUTO SHOW ACTIVE TAB WHEN HIDDEN
    ========================================== */
