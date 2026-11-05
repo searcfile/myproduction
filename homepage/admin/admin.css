@@ -1822,24 +1822,14 @@ html {
   display:inline-flex;
   align-items:center;
   justify-content:center;
-
   margin-left:4px;
-
   padding:0;
-
   border:none;
-  border-radius:0;
-
   background:transparent;
-
   color:var(--close);
-
   font-size:12px;
-
   cursor:pointer;
-
   pointer-events:auto;
-
   transition:
     color .3s ease,
     transform .2s ease;
