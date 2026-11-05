@@ -5098,8 +5098,8 @@ padding: 12px 12px 8px !important;
 .admin-workspace-more-button.is-active,
 .admin-workspace-tab-card
 .admin-workspace-more-button[aria-expanded="true"] {
-  background: #1668dc;
-  color: #ffffff;
+  background: #162b44;
+  color: #91caff;
 }
 
 /* Active + hover */
