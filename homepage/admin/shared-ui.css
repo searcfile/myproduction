@@ -2900,12 +2900,25 @@ body.tab-dragging-active *{
 
 
 /* Warna asal */
-.admin-workspace-tab-refresh{
-  color:gray;
+/* ==========================================
+   REFRESH ICON - FOLLOW TAB TEXT COLOR
+========================================== */
+
+/* Refresh ikut warna text tab */
+.admin-workspace-tab .admin-workspace-tab-refresh {
+  color: inherit !important;
 }
 
-.admin-workspace-tab-close{
-  color:var(--close);
+/* SVG ikut warna button Refresh */
+.admin-workspace-tab .admin-workspace-tab-refresh svg,
+.admin-workspace-tab .admin-workspace-tab-refresh svg path {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Close kekalkan warna asal */
+.admin-workspace-tab-close {
+  color: var(--close);
 }
 
 
