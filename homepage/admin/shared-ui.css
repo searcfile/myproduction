@@ -2964,21 +2964,17 @@ body.tab-dragging-active *{
 /* REFRESH SVG - 14PX */
 .admin-workspace-tab-refresh svg {
   position: static !important;
-
   display: block !important;
-
   width: 14px !important;
   height: 14px !important;
   min-width: 14px !important;
   min-height: 14px !important;
   flex: 0 0 14px !important;
-
   padding: 0 !important;
   margin: 0 !important;
-
   color: inherit !important;
   fill: currentColor !important;
-
+  transition: all 0.3s;
   transform: none !important;
 }
 
@@ -2991,11 +2987,10 @@ body.tab-dragging-active *{
   min-width: 12px !important;
   min-height: 12px !important;
   flex: 0 0 12px !important;
-
   padding: 0 !important;
   margin: 0 !important;
-
   fill: currentColor !important;
+  transition: all 0.3s;
   transform: none !important;
 }
 
@@ -3013,7 +3008,8 @@ body.tab-dragging-active *{
   background:rgba(255,255,255,0.08) !important;
   color:rgba(255,255,255,0.85) !important;
 }
-.admin-workspace-tab-refresh:active{
+.admin-workspace-tab-close:active{
+  background:rgba(255,255,255,0.08) !important;
   color:#1554ad !important;
 }
 /* ==========================================================
