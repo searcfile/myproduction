@@ -3070,7 +3070,7 @@ body.tab-dragging-active *{
 
 .admin-workspace-more-dropdown{
   position:absolute;
-  top:100%;
+  top:38px;
   right:0;
   display:none;
   width:200px;
