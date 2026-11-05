@@ -3732,9 +3732,9 @@ padding:12px;
   width: 100%;
   min-width: 0;
 
-  height: 32px;
-  min-height: 32px;
-  max-height: 32px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
 
   overflow: hidden;
 }
@@ -3871,8 +3871,8 @@ max-width: 170px;
    ========================================== */
 
 #headerSiteCustom .shared-chip-dropdown-trigger {
-  height: 32px;
-  min-height: 32px;
+  height: 36px;
+  min-height: 36px;
   flex-wrap: nowrap;
   overflow: hidden;
   cursor: text;
