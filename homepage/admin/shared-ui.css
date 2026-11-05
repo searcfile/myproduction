@@ -2844,7 +2844,22 @@ body.tab-dragging-active *{
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+/* Text dan Refresh menggunakan warna tab yang sama */
+.admin-workspace-tab-name {
+  color: inherit;
+}
 
+/* Ketika tab aktif */
+.admin-workspace-tab.active-tab
+.admin-workspace-tab-refresh {
+  color: inherit !important;
+}
+
+/* Ketika drag - Refresh ikut warna floating tab */
+.workspace-drag-preview
+.admin-workspace-tab-refresh {
+  color: #91caff !important;
+}
 /* Refresh dan Close */
 .admin-workspace-tab-actions{
   display:inline-flex;
