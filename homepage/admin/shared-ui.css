@@ -2951,20 +2951,30 @@ body.tab-dragging-active *{
 
 
 /* REFRESH SVG - 14PX */
+/* ==========================================
+   REFRESH SVG - 14PX + VISUAL CENTER
+========================================== */
+
 .admin-workspace-tab-refresh svg {
-  position: static !important;
+  position: relative !important;
+  top: 1px !important;
+  left: 0 !important;
+
   display: block !important;
+
   width: 14px !important;
   height: 14px !important;
   min-width: 14px !important;
   min-height: 14px !important;
   flex: 0 0 14px !important;
+
   padding: 0 !important;
   margin: 0 !important;
+
   color: inherit !important;
   fill: currentColor !important;
-  transition: all 0.3s;
-  transform: none !important;
+
+  transform-origin: center center;
 }
 
 /* CLOSE SVG - 12PX */
