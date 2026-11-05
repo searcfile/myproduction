@@ -5070,10 +5070,77 @@ padding: 12px 12px 8px !important;
 }
 
 /* Hover */
+/* ==========================================
+   MORE TABS - HOVER + ACTIVE
+========================================== */
+
+/* Default */
+.admin-workspace-tab-card
+.admin-workspace-more-button {
+  background: transparent;
+  color: var(--colorbtn-close);
+  border: 0;
+  cursor: pointer;
+  transition:
+    background-color .2s ease,
+    color .2s ease;
+}
+
+/* Hover */
 .admin-workspace-tab-card
 .admin-workspace-more-button:hover {
-  background: #262626;
-  border-color: #424242;
+  background: #ffffff1f;
+  color: #ffffff;
+}
+
+/* Active ketika dropdown terbuka */
+.admin-workspace-tab-card
+.admin-workspace-more-button.is-active,
+.admin-workspace-tab-card
+.admin-workspace-more-button[aria-expanded="true"] {
+  background: #1668dc;
+  color: #ffffff;
+}
+
+/* Active + hover */
+.admin-workspace-tab-card
+.admin-workspace-more-button.is-active:hover,
+.admin-workspace-tab-card
+.admin-workspace-more-button[aria-expanded="true"]:hover {
+  background: #3c89e8;
+  color: #ffffff;
+}
+
+/* Press */
+.admin-workspace-tab-card
+.admin-workspace-more-button:active {
+  background: #1554ad;
+  color: #ffffff;
+}
+
+/* SVG ikut warna button */
+.admin-workspace-tab-card
+.admin-workspace-more-button svg {
+  display: block;
+  fill: currentColor;
+}
+
+/* Light theme */
+body.light-theme
+.admin-workspace-tab-card
+.admin-workspace-more-button:hover {
+  background: rgba(22,104,220,.12);
+  color: #1668dc;
+}
+
+body.light-theme
+.admin-workspace-tab-card
+.admin-workspace-more-button.is-active,
+body.light-theme
+.admin-workspace-tab-card
+.admin-workspace-more-button[aria-expanded="true"] {
+  background: #1668dc;
+  color: #ffffff;
 }
 
 /* Light theme */
