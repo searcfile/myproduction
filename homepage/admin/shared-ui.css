@@ -2729,11 +2729,12 @@ body.tab-dragging-active *{
 
   .tab-bar,
   .tab-bar.shrink{
+    height: var(--admin-tabs-height, 72px) !important;
+min-height: var(--admin-tabs-height, 72px) !important;
+max-height: none !important;
+margin-top: var(--admin-header-height, 64px) !important;
     width:100% !important;
-    min-height:52px !important;
-    max-height:52px !important;
     display:flex !important;
-    margin-top:64px !important;
     overflow:visible !important;
     white-space:nowrap !important;
     visibility:visible !important;
