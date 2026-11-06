@@ -5171,7 +5171,7 @@ body.light-theme
 @media (max-width: 600px) {
   .tab-bar,
   .tab-bar.shrink {
-    padding: 5px 6px !important;
+    padding: 12px 12px 8px !important;
   }
 }
 /* ==========================================
