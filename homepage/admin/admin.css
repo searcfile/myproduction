@@ -651,9 +651,10 @@ html {
     margin-left: 0 !important;
     width: 100% !important;
     display: flex !important;
-    max-height: 52px !important;
-    min-height:52px !important;
-    margin-top: 64px !important;
+height: var(--admin-tabs-height, 72px) !important;
+min-height: var(--admin-tabs-height, 72px) !important;
+max-height: none !important;
+margin-top: var(--admin-header-height, 64px) !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     white-space: nowrap !important;
