@@ -7077,7 +7077,48 @@ function getSharedDb() {
 
   return null;
 }
+/* ==========================================
+   FLOATING FAB - BADGE SYNC SYSTEM
+   ========================================== */
 
+let floatingLivechatUnread = 0;
+let floatingNoticeUnread = 0;
+
+function updateFloatingFabBadges() {
+  const liveDot = document.getElementById("floatingLivechatDot");
+  const noticeDot = document.getElementById("floatingNoticeDot");
+  const mainDot = document.getElementById("floatingMainDot");
+
+  function setBadge(dot, count) {
+    if (!dot) return;
+
+    const total = Math.max(0, Number(count) || 0);
+
+    dot.style.display = total > 0 ? "flex" : "none";
+    dot.textContent =
+      total > 99 ? "99+" : total > 0 ? String(total) : "";
+  }
+
+  // Badge masing-masing.
+  setBadge(liveDot, floatingLivechatUnread);
+  setBadge(noticeDot, floatingNoticeUnread);
+
+  // Main button menunjukkan jumlah keseluruhan.
+  setBadge(
+    mainDot,
+    floatingLivechatUnread + floatingNoticeUnread
+  );
+}
+
+window.updateFloatingFabNoticeDot = function(count) {
+  floatingNoticeUnread = Math.max(0, Number(count) || 0);
+  updateFloatingFabBadges();
+};
+
+window.updateFloatingFabLivechatDot = function(count) {
+  floatingLivechatUnread = Math.max(0, Number(count) || 0);
+  updateFloatingFabBadges();
+};
 
 /* ==========================================
    LIVECHAT HEADER - USER UNREAD BADGE
@@ -7089,7 +7130,8 @@ let livechatUnreadUid = null;
 
 function renderLivechatUnreadBadge(count) {
   const total = Math.max(0, Number(count) || 0);
-
+// Sync LiveChat ke Floating FAB dan Main Button.
+window.updateFloatingFabLivechatDot(total);
   const headerDot = document.getElementById("livechatDot");
   const floatingDot = document.getElementById("floatingLivechatDot");
 
@@ -7386,15 +7428,17 @@ function openNoticeModal(message, timestamp) {
     localStorage.setItem("latestNotifMessage", message);
     localStorage.setItem("latestNotifTimestamp", String(timestamp));
 
-    if (!localStorage.getItem(seenKey) && dot) {
-      dot.style.display = "flex";
-      dot.textContent = "1";
-      syncMenuNotifDot();
+const isUnread = !localStorage.getItem(seenKey);
 
-      if (window.updateFloatingFabNoticeDot) {
-        window.updateFloatingFabNoticeDot(1);
-      }
-    }
+if (dot) {
+  dot.style.display = isUnread ? "flex" : "none";
+  dot.textContent = isUnread ? "1" : "";
+}
+
+syncMenuNotifDot();
+
+// Sync Notice ke Floating FAB.
+window.updateFloatingFabNoticeDot(isUnread ? 1 : 0);
   }
 
   function initNotifications() {
