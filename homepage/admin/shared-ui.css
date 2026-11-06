@@ -5365,3 +5365,35 @@ body.light-theme
   display: block !important;
   margin: 0 !important;
 }
+/* ==========================================
+   FLOATING FAB - UNREAD BADGES
+   ========================================== */
+
+.floating-fab-wrap .floating-mini-dot,
+.floating-fab-wrap .floating-main-dot {
+  position: absolute;
+  top: -5px;
+  left: -7px;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: #ff4d4f;
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+
+  white-space: nowrap;
+  box-sizing: border-box;
+
+  box-shadow: 0 0 8px rgba(255, 77, 79, .35);
+  z-index: 5;
+}
