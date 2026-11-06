@@ -3558,14 +3558,23 @@ padding:12px;
 
 #mainContainer {
   position: relative;
-  min-height: calc(100vh - 128px);
+
+  min-height: calc(
+    100vh -
+    var(--admin-header-height) -
+    var(--admin-tabs-height)
+  );
 }
 
 
 
 .smart-content-loader {
   position: fixed;
-  top: 110px;
+  top: calc(
+    var(--admin-header-height) +
+    var(--admin-tabs-height)
+  );
+
   left: 0;
   right: 0;
   bottom: 0;
