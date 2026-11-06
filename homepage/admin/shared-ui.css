@@ -5172,12 +5172,6 @@ body.light-theme
   .tab-bar.shrink {
     padding: 5px 6px !important;
   }
-
-  .admin-workspace-tab-card {
-    padding: 4px;
-    gap: 4px;
-    border-radius: 8px;
-  }
 }
 /* ==========================================
    5G88 TABBAR HEIGHT & SPACING FIX
