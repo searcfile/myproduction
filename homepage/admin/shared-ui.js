@@ -5,7 +5,6 @@
   if (window.__HOMEPAGE_SHARED_UI__) return;
   window.__HOMEPAGE_SHARED_UI__ = true;
 
-
   /* ==========================================================
      PAGE DEFINITIONS
      ========================================================== */
