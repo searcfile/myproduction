@@ -659,7 +659,7 @@ margin-top: var(--admin-header-height, 64px) !important;
     overflow-y: hidden !important;
     white-space: nowrap !important;
     -webkit-overflow-scrolling: touch;
-    position: relative !important;
+    position: relative !important; 
     z-index: 1 !important;
      visibility: visible !important;
      opacity: 1 !important;
