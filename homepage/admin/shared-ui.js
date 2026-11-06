@@ -7554,33 +7554,25 @@ function initFloatingFab() {
   const closeIcon = document.getElementById("floatingMainCloseIcon");
 
   if (!fabWrap || !mainBtn) return;
-
-
-  /* ==========================================================
-     HIDE FLOATING HANYA DI WHATSAPP
-     ========================================================== */
-
 /* ==========================================================
-   FLOATING FAB - ONLY LIVECHAT & AGENT SUPPORT
+   FLOATING FAB - HIDE ON LIVECHAT & AGENT SUPPORT
    ========================================================== */
 
 const currentFile = getCurrentFile();
 
-const floatingAllowedPages = new Set([
+const floatingHiddenPages = new Set([
   "livechat.html",
   "livechat-support.html"
 ]);
 
-// Sembunyikan seluruh Floating FAB
-// jika bukan halaman yang dibenarkan.
-if (!floatingAllowedPages.has(currentFile)) {
+// Hide Floating FAB hanya pada dua halaman ini.
+if (floatingHiddenPages.has(currentFile)) {
   fabWrap.style.display = "none";
   return;
 }
 
-// Paparkan Floating FAB pada halaman dibenarkan.
+// Show Floating FAB pada semua halaman lain.
 fabWrap.style.display = "";
-
 
   /* ==========================================================
      OPEN / CLOSE
