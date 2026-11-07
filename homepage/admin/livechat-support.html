@@ -3276,20 +3276,35 @@ selectedChatMemberIds = [
 selectedMergedEmail = getInboxEmail(sanitized, userData);
 
 // Pilih channel terakhir aktif untuk balasan.
+// Pilih channel user yang sedang online dahulu.
+// Jika tiada, gunakan channel terakhir aktif.
+
 const target = [...selectedChatMemberIds].sort((a, b) => {
-  const ta = Number(
-    chatMeta[a]?.lastChatTime ||
-    allUsersData.find(([id]) => id === a)?.[2] ||
-    0
+  const dataA = allUsersData.find(([id]) => id === a)?.[1] || {};
+  const dataB = allUsersData.find(([id]) => id === b)?.[1] || {};
+
+  const onlineA = dataA.online === true ? 1 : 0;
+  const onlineB = dataB.online === true ? 1 : 0;
+
+  if (onlineA !== onlineB) {
+    return onlineB - onlineA;
+  }
+
+  const timeA = Math.max(
+    Number(dataA.pageLoginTime || 0),
+    Number(dataA.lastLoginTime || 0),
+    Number(dataA.lastLoginAt || 0),
+    Number(chatMeta[a]?.lastChatTime || 0)
   );
 
-  const tb = Number(
-    chatMeta[b]?.lastChatTime ||
-    allUsersData.find(([id]) => id === b)?.[2] ||
-    0
+  const timeB = Math.max(
+    Number(dataB.pageLoginTime || 0),
+    Number(dataB.lastLoginTime || 0),
+    Number(dataB.lastLoginAt || 0),
+    Number(chatMeta[b]?.lastChatTime || 0)
   );
 
-  return tb - ta ||
+  return timeB - timeA ||
     Number(b.startsWith("admin_")) -
     Number(a.startsWith("admin_"));
 })[0];
@@ -3468,17 +3483,45 @@ if (visualSignature !== lastVisualSignature) {
 
       messagesBySid.set(sid, messages);
 
-      // Balas ke sumber mesej pengguna paling terkini.
-      const latestUser = ids
-        .flatMap(id => messagesBySid.get(id) || [])
-        .filter(m => m.from === "user")
-        .sort((a, b) =>
-          (Number(b.time) || 0) - (Number(a.time) || 0)
-        )[0];
+// Utamakan chat ID user yang sedang online.
+// Jangan biarkan mesej lama menukar destinasi
+// ke channel lama ketika user sedang online.
 
-      if (latestUser?._sourceSid) {
-        selectedUserId = latestUser._sourceSid;
-      }
+const onlineMembers = ids
+  .map(sid => ({
+    sid,
+    data: allUsersData.find(([id]) => id === sid)?.[1] || {}
+  }))
+  .filter(item => item.data.online === true)
+  .sort((a, b) => {
+    const timeA = Math.max(
+      Number(a.data.pageLoginTime || 0),
+      Number(a.data.lastLoginTime || 0),
+      Number(a.data.lastLoginAt || 0)
+    );
+
+    const timeB = Math.max(
+      Number(b.data.pageLoginTime || 0),
+      Number(b.data.lastLoginTime || 0),
+      Number(b.data.lastLoginAt || 0)
+    );
+
+    return timeB - timeA ||
+      Number(b.sid.startsWith("admin_")) -
+      Number(a.sid.startsWith("admin_"));
+  });
+
+const latestUser = ids
+  .flatMap(id => messagesBySid.get(id) || [])
+  .filter(m => m.from === "user")
+  .sort((a, b) =>
+    (Number(b.time) || 0) - (Number(a.time) || 0)
+  )[0];
+
+selectedUserId =
+  onlineMembers[0]?.sid ||
+  latestUser?._sourceSid ||
+  selectedUserId;
 
       renderMerged();
     };
