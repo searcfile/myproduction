@@ -4462,7 +4462,7 @@ body .header {
 
 .g88-header-picker {
   position: fixed;
-  z-index: 20000;
+  z-index: 200000;
 
   width: 270px;
   padding: 12px;
