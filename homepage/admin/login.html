@@ -2059,7 +2059,9 @@ window.addEventListener("DOMContentLoaded", () => {
 let turnstileVerifiedUser = false;
 let turnstileVerifiedGoogle = false;
 let pending2FA = null;
-/* ==========================================
+
+const ADMIN_API = "https://fiveg88-admin-backend-v2.onrender.com";
+  /* ==========================================
    RENDER FREE - EARLY SERVER WAKE UP
    ========================================== */
 
@@ -2092,7 +2094,6 @@ let pending2FA = null;
       clearTimeout(timeout);
     });
 })();
-const ADMIN_API = "https://fiveg88-admin-backend-v2.onrender.com";
 const LOGIN_THEME_KEY = 'siteTheme';
 
 function applyLoginTheme(theme){
