@@ -7932,7 +7932,7 @@ const changePw = async () => {
 
     await firebase.auth().signOut();
     sessionStorage.removeItem("5g88.adminSession");
-    localStorage.removeItem("autoLogout.expireAt");
+    sessionStorage.removeItem("autoLogout.expireAt");
 
     window.location.replace("./login.html?pw_changed=1");
 
