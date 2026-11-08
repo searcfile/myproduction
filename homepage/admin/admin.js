@@ -20,7 +20,7 @@
   function verifiedUser() {
     const user = getUser();
     if (!user || user.isAnonymous || sessionStorage.getItem("5g88.adminSession") !== user.uid) return null;
-    const expires = Number(localStorage.getItem("autoLogout.expireAt"));
+    const expires = Number(sessionStorage.getItem("autoLogout.expireAt"));
     if (!Number.isFinite(expires) || expires <= Date.now()) return null;
     return user;
   }
@@ -131,8 +131,29 @@
     pageAuth.onAuthStateChanged(async user => {
       const thisRun = ++sequence;
       if (!user || user.isAnonymous) { redirect(); return; }
-       const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+let marker = sessionStorage.getItem("5g88.adminSession");
+let expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
+
+if (!marker && !expiryRaw) {
+  const savedRaw = localStorage.getItem(
+    `5g88.sessionExpire.${user.uid}`
+  );
+
+  const savedExpiry = Number(savedRaw);
+
+  if (
+    savedRaw &&
+    Number.isFinite(savedExpiry) &&
+    savedExpiry > Date.now()
+  ) {
+    sessionStorage.setItem("5g88.adminSession", user.uid);
+    sessionStorage.setItem("autoLogout.expireAt", savedRaw);
+
+    marker = user.uid;
+    expiryRaw = savedRaw;
+  }
+}
+
 const expireAt = Number(expiryRaw);
 
 if (
@@ -367,136 +388,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
   document.title = DEFAULT_PAGE_TITLE;
 }
 
-(function(){
-  const SESS_ROOT = 'singleSessions';
-  const HB_MS = 15000;
-
-  function makeToken(){
-    if (crypto?.getRandomValues) {
-      const a = new Uint32Array(4);
-      crypto.getRandomValues(a);
-      return Array.from(a).map(x=>x.toString(16)).join('-');
-    }
-    return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
-  }
-
-  function keyify(s){
-    return String(s||'').trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_');
-  }
-
-  let _session = null;
-
-  async function startSingleSession(ownerId, onForcedLogout){
-    await stopSingleSession();
-    if (!ownerId) return;
-
-const storageKey = "5g88.singleSession." + String(ownerId).trim();
-
-let token = sessionStorage.getItem(storageKey);
-
-if (!token) {
-  token = makeToken();
-  sessionStorage.setItem(storageKey, token);
-}
-const key = String(ownerId || "").trim();
-
-if (!auth.currentUser || auth.currentUser.uid !== key) {
-  throw new Error("Single-session UID mismatch");
-}
-
-const sessRef = db.ref(`${SESS_ROOT}/${key}`);
-
-const result = await sessRef.transaction(current => {
-  if (current?.token === token) {
-    return {
-      ...current,
-      lastSeen: firebase.database.ServerValue.TIMESTAMP
-    };
-  }
-
-  return {
-    token,
-    owner: key,
-    createdAt: firebase.database.ServerValue.TIMESTAMP,
-    lastSeen: firebase.database.ServerValue.TIMESTAMP
-  };
-});
-if (!result.committed) {
-  throw new Error("Single-session transaction not committed");
-}
-    const onValue = sessRef.on('value', snap => {
-      const v = snap.val();
-      if (!v) return;
-      if (v.token && v.token !== token) {
-        hardLogout('token-changed');
-      }
-    });
-
-const hb = setInterval(async () => {
-  try {
-    const result = await sessRef.transaction(current => {
-      if (!current || current.token !== token) {
-        return;
-      }
-
-      return {
-        ...current,
-        lastSeen: firebase.database.ServerValue.TIMESTAMP
-      };
-    }, undefined, false);
-
-    if (!result.committed) {
-      clearInterval(hb);
-    }
-  } catch (error) {
-    console.warn("Single session heartbeat failed:", error);
-  }
-}, HB_MS);
-
-    async function hardLogout(reason){
-      try { sessRef.off('value', onValue); } catch(_){}
-      try { clearInterval(hb); } catch(_){}
-      try { await auth.signOut(); } catch(_){}
-
-      if (typeof onForcedLogout === 'function') {
-        onForcedLogout(reason);
-      } else {
-        location.reload();
-      }
-    }
-
-   _session = { sessRef, onValue, hb, token };
-  }
-
-async function stopSingleSession() {
-  if (!_session) return;
-
-  const { sessRef, onValue, hb, token } = _session;
-
-  _session = null;
-
-  try { clearInterval(hb); } catch (_) {}
-  try { sessRef.off("value", onValue); } catch (_) {}
-
-  try {
-    await sessRef.onDisconnect().cancel();
-  } catch (err) {
-    console.warn("Cancel disconnect failed:", err);
-  }
-
-}
-
-  function getSessionOwnerFrom(loginData){
-    const email = (loginData?.email || '').toLowerCase();
-    if (!email) return null;
-    if (email.endsWith('@5g88.local')) return email.split('@')[0];
-    return email;
-  }
-
-  window.startSingleSession = startSingleSession;
-  window.stopSingleSession = stopSingleSession;
-  window.getSessionOwnerFrom = getSessionOwnerFrom;
-})();
 
 (function(){
   // === SETTING MUDAH ===
@@ -505,6 +396,15 @@ const DEFAULT_MINUTES = 1440; // 24 jam
   const STORAGE_EXPIRE = "autoLogout.expireAt";
   const STORAGE_MIN = "autoLogout.minutes"; // kalau di-set, override DEFAULT_MINUTES
   const CHANNEL = "autoLogout-5g88";
+
+function getSessionUid() {
+  return sessionStorage.getItem("5g88.adminSession") || "";
+}
+
+function getSessionChannel() {
+  const uid = getSessionUid();
+  return uid ? CHANNEL + ":" + uid : null;
+}
   const TICK = 5000; // cek tiap 5 detik
   // (opsional) logout absolut walau aktif bergerak (null = mati)
 const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
@@ -518,42 +418,81 @@ const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
   const minutesToMs = (m)=> m*60*1000;
   const now = ()=> Date.now();
 
-  function setExpireFromNow(){
-    expireAt = now() + minutesToMs(getMinutes());
-    localStorage.setItem(STORAGE_EXPIRE, String(expireAt));
-    try { bc && bc.postMessage({t:"reset", expireAt}); } catch {}
-  }
+function setExpireFromNow() {
+  expireAt = now() + minutesToMs(getMinutes());
+
+  sessionStorage.setItem(
+    STORAGE_EXPIRE,
+    String(expireAt)
+  );
+const uid = getSessionUid();
+
+if (uid && auth.currentUser?.uid === uid) {
+  localStorage.setItem(
+    `5g88.sessionExpire.${uid}`,
+    String(expireAt)
+  );
+}
+  try {
+    bc?.postMessage({
+      t: "reset",
+      uid: getSessionUid(),
+      expireAt
+    });
+  } catch (_) {}
+}
   function setAbsoluteExpireFromNow(){
     absoluteExpireAt = ABSOLUTE_MAX_MS ? (now() + ABSOLUTE_MAX_MS) : null;
   }
   function loadExpire(){
-    const v = localStorage.getItem(STORAGE_EXPIRE);
+    const v = sessionStorage.getItem(STORAGE_EXPIRE);
     expireAt = v ? Number(v) : null;
   }
-async function doLogout(reason="timeout"){
-   try {
+
+let logoutInProgress = false;
+
+async function doLogout(reason = "timeout", broadcast = true) {
+  if (logoutInProgress) return;
+  logoutInProgress = true;
+
+  const uid = getSessionUid();
+
+  try {
+    if (broadcast && uid) {
+      bc?.postMessage({
+        t: "logout",
+        uid,
+        reason
+      });
+    }
+  } catch (_) {}
+
+  try { clearInterval(checkTimer); } catch (_) {}
+if (uid) {
+  localStorage.removeItem(`5g88.sessionExpire.${uid}`);
+}
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.warn("[AutoLogout] Sign out:", error);
+  }
+
+  // Hanya bersihkan session tab ini.
   sessionStorage.removeItem("5g88.adminSession");
-} catch (_) {}
-  try { clearInterval(checkTimer); } catch {}
+  sessionStorage.removeItem(STORAGE_EXPIRE);
+  sessionStorage.removeItem("justLoggedIn");
+  sessionStorage.removeItem("forceLogout");
+  sessionStorage.removeItem("autoOpenTab");
+  sessionStorage.removeItem("queryUserAppliedOnce");
 
-  try { await auth.signOut(); } catch(_) {}
-
-  try { localStorage.removeItem("gmailLogin"); } catch(_) {}
-  try { localStorage.removeItem("useremail"); } catch(_) {}
-  try { localStorage.removeItem(STORAGE_EXPIRE); } catch(_) {}
-  try { localStorage.removeItem("autoLogout.expireAt"); } catch(_) {}
-  try { localStorage.removeItem("login.livechatUnreadCount"); } catch(_) {}
-
-  try { sessionStorage.removeItem("justLoggedIn"); } catch(_) {}
-  try { sessionStorage.removeItem("forceLogout"); } catch(_) {}
-  try { sessionStorage.removeItem("autoOpenTab"); } catch(_) {}
-  try { sessionStorage.removeItem("queryUserAppliedOnce"); } catch(_) {}
-
-  try { bc && bc.postMessage({ t:"logout", reason }); } catch {}
-  try { window.google?.accounts?.id?.disableAutoSelect(); } catch(_){}
+  try {
+    bc?.close();
+    bc = null;
+  } catch (_) {}
 
   window.location.replace(LOGIN_URL);
 }
+
 function shouldLogout() {
   const t = now();
 
@@ -603,23 +542,61 @@ function shouldLogout() {
     document.addEventListener("visibilitychange", ()=> { if (!document.hidden) reset(); });
     window.addEventListener("focus", reset);
   }
-  function setupChannel(){
-    try {
-      bc = new BroadcastChannel(CHANNEL);
-      bc.onmessage = (msg)=>{
-        const d = msg?.data || {};
-        if (d.t === "reset") {
-          expireAt = Number(d.expireAt || 0) || expireAt;
-          localStorage.setItem(STORAGE_EXPIRE, String(expireAt));
-        } else if (d.t === "logout") {
-          doLogout("multi-tab");
+
+function setupChannel() {
+  try {
+    if (bc) {
+      bc.close();
+      bc = null;
+    }
+
+    const channelName = getSessionChannel();
+    if (!channelName) return;
+
+    bc = new BroadcastChannel(channelName);
+
+    bc.onmessage = (event) => {
+      const data = event?.data || {};
+
+      // Jangan terima arahan akaun berlainan.
+      if (data.uid !== getSessionUid()) return;
+
+      if (data.t === "reset") {
+        const nextExpire = Number(data.expireAt);
+
+        if (Number.isFinite(nextExpire)) {
+          expireAt = nextExpire;
+          sessionStorage.setItem(
+            STORAGE_EXPIRE,
+            String(expireAt)
+          );
         }
-      };
-    } catch { bc = null; }
+      }
+
+      if (data.t === "logout") {
+        doLogout("multi-tab", false);
+      }
+    };
+  } catch (error) {
+    console.warn("[AutoLogout] Channel:", error);
+    bc = null;
   }
+}
+
+
 function start() {
-  setupChannel();
   loadExpire();
+
+  // Jangan mulakan timer sebelum Firebase Auth
+  // dan penanda UID betul-betul tersedia.
+  const uid = getSessionUid();
+  const user = auth.currentUser;
+
+  if (!uid || !user || user.uid !== uid) {
+    return;
+  }
+
+  setupChannel();
 
   if (!expireAt || !Number.isFinite(expireAt)) {
     doLogout("session-cleared");
@@ -634,6 +611,7 @@ function start() {
   bindActivityReset();
   checkTimer = setInterval(heartbeat, TICK);
 }
+
 
 window.AutoLogout = {
     start,
@@ -876,8 +854,31 @@ const user = await new Promise(resolve => {
 });
 
   if (!user || user.isAnonymous) return null;
+   // ===== RESTORE SESSION UNTUK NEW TAB =====
+const currentMarker =
+  sessionStorage.getItem("5g88.adminSession");
+
+if (!currentMarker) {
+  const savedExpiry = Number(
+    localStorage.getItem(`5g88.sessionExpire.${user.uid}`)
+  );
+
+  if (
+    Number.isFinite(savedExpiry) &&
+    savedExpiry > Date.now()
+  ) {
+    // Ini hanya pemulihan sementara.
+    // Token PIN dan profil masih diperiksa di bawah.
+    sessionStorage.setItem("5g88.adminSession", user.uid);
+    sessionStorage.setItem(
+      "autoLogout.expireAt",
+      String(savedExpiry)
+    );
+  }
+}
+// ===== END RESTORE =====
    const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
 const expireAt = Number(expiryRaw);
 
 if (
@@ -964,33 +965,14 @@ initAppUpdatePopup();
   photo: ""
 };
 try {
-  await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-} catch (_) {}
+  await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+} catch (error) {
+  console.error("[Admin] Auth persistence failed:", error);
+}
 
 
   // ✅ 2) Auto-logout inactivity
   window.AutoLogout && window.AutoLogout.start();
-
-  // ✅ 3) Single-Session
-  try {
-const ownerId = adminSession.uid;
-await window.startSingleSession(ownerId, () => {
-  try { localStorage.removeItem('gmailLogin'); } catch (_){}
-  try { localStorage.removeItem('useremail'); } catch (_){}
-  try { sessionStorage.setItem('forceLogout','1'); } catch (_){}
-  try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_){}
-  window.location.replace("./login.html?dup=1");
-});
-  } catch (e) {
-    console.error("[single-session] gagal start:", e);
-
-    try {
-      await auth.signOut();
-    } catch (_) {}
-
-    window.location.replace("./login.html?session_error=1");
-    return;
-  }
 
   // ======= SEMUA YANG DI BAWAH INI BUTUH sessionData =======
   userId = (sessionData.email || '').toLowerCase().replace(/\./g, '_');
@@ -1014,8 +996,8 @@ myOverrideRef.on('value', async (snap) => {
   try { await auth.signOut(); } catch (_) {}
 
   // ✅ memang clear semua storage kalau admin logout
-  try { localStorage.clear(); } catch (_) {}
-  try { sessionStorage.clear(); } catch (_) {}
+  try { sessionStorage.removeItem("5g88.adminSession"); } catch (_) {}
+  try { sessionStorage.removeItem("autoLogout.expireAt"); } catch (_) {}
 
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
 
