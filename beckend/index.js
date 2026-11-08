@@ -9,7 +9,7 @@ const { getAuth } = require('firebase-admin/auth');
 const { getDatabase } = require('firebase-admin/database'); 
    
 for (const k of ['FIREBASE_SERVICE_ACCOUNT','FIREBASE_DATABASE_URL','FIREBASE_WEB_API_KEY','PIN_PEPPER','ALLOWED_ORIGINS']) {
-  if (!process.env[k]) throw Error(`Missing environment variable: ${k}`); 
+  if (!process.env[k]) throw Error(`Missing environment variable: ${k}`);
 }
 if (Buffer.byteLength(process.env.PIN_PEPPER) < 32) throw Error('PIN_PEPPER must be >= 32 bytes');
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -127,22 +127,8 @@ app.post('/api/login/start',rateLimit({windowMs:15*60_000,limit:12}),async(req,r
   const profile=await adminProfile(idx.uid);
   if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||!['superadmin','siteadmin'].includes(profile.role))return fail(res,401,'Invalid credentials');
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(process.env.FIREBASE_WEB_API_KEY)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:profile.email,password,returnSecureToken:true})});
-const data = await r.json();
-
-if (!r.ok) {
-  console.error("[LOGIN FIREBASE ERROR]", {
-    status: r.status,
-    firebaseCode: data?.error?.message || "UNKNOWN"
-  });
-
-  return fail(res, 401, "Invalid credentials");
-}
-
-if (data.localId !== idx.uid) {
-  console.error("[LOGIN UID MISMATCH]");
-
-  return fail(res, 401, "Invalid credentials");
-}
+  const data=await r.json();
+  if(!r.ok||data.localId!==idx.uid)return fail(res,401,'Invalid credentials');
   const challenge=crypto.randomBytes(32).toString('hex'), key=crypto.createHash('sha256').update(challenge).digest('hex');
   await db.ref(`loginChallenges/${key}`).set({uid:idx.uid,pinVersion:profile.pinVersion,expiresAt:now()+3*60_000,attempts:0});
   return res.json({ok:true,challenge,expiresInSeconds:180});
