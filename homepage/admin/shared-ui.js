@@ -4153,7 +4153,18 @@ element.addEventListener("click", event => {
   event.preventDefault();
   navigateToTab(tab);
 });
+// TAMBAH DI SINI — Middle Mouse Click
+element.addEventListener("auxclick", event => {
+  if (event.button !== 1) return;
 
+  if (
+    !verifiedProfileReady ||
+    !canShowAdminPage(tab.file) ||
+    !canViewAdminPage(tab.file)
+  ) {
+    event.preventDefault();
+  }
+});
       tabList.appendChild(element);
     });
 
