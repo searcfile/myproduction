@@ -20,7 +20,7 @@
   function verifiedUser() {
     const user = getUser();
     if (!user || user.isAnonymous || sessionStorage.getItem("5g88.adminSession") !== user.uid) return null;
-    const expires = Number(localStorage.getItem("autoLogout.expireAt"));
+    const expires = Number(sessionStorage.getItem("autoLogout.expireAt"));
     if (!Number.isFinite(expires) || expires <= Date.now()) return null;
     return user;
   }
@@ -1084,8 +1084,8 @@ myOverrideRef.on('value', async (snap) => {
   try { await auth.signOut(); } catch (_) {}
 
   // ✅ memang clear semua storage kalau admin logout
-  try { localStorage.clear(); } catch (_) {}
-  try { sessionStorage.clear(); } catch (_) {}
+  try { sessionStorage.removeItem("5g88.adminSession"); } catch (_) {}
+  try { sessionStorage.removeItem("autoLogout.expireAt"); } catch (_) {}
 
   try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
 
