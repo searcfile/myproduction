@@ -19,6 +19,24 @@ const auth = getAuth(), db = getDatabase();
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
+// DEBUG: Periksa sama ada request sampai ke Express
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+
+  console.log(
+    `[HTTP IN] ${req.method} ${req.originalUrl}`
+  );
+
+  res.on("finish", () => {
+    console.log(
+      `[HTTP OUT] ${req.method} ${req.originalUrl}` +
+      ` status=${res.statusCode}` +
+      ` duration=${Date.now() - startedAt}ms`
+    );
+  });
+
+  next();
+});
 const origins = process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim());
 app.use(cors({origin(origin,cb){ if(!origin || origins.includes(origin)) return cb(null,true); cb(new Error('Origin not allowed')); }, methods:['GET','POST','PATCH','DELETE'], allowedHeaders:['Content-Type','Authorization']}));
 app.use(express.json({limit:'1mb'}));
