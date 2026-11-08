@@ -1,7 +1,7 @@
 'use strict';
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors');    
 const crypto = require('node:crypto');
 const { rateLimit } = require('express-rate-limit');
 const { initializeApp, cert } = require('firebase-admin/app');
