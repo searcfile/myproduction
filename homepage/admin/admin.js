@@ -131,8 +131,29 @@
     pageAuth.onAuthStateChanged(async user => {
       const thisRun = ++sequence;
       if (!user || user.isAnonymous) { redirect(); return; }
-       const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
+let marker = sessionStorage.getItem("5g88.adminSession");
+let expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
+
+if (!marker && !expiryRaw) {
+  const savedRaw = localStorage.getItem(
+    `5g88.sessionExpire.${user.uid}`
+  );
+
+  const savedExpiry = Number(savedRaw);
+
+  if (
+    savedRaw &&
+    Number.isFinite(savedExpiry) &&
+    savedExpiry > Date.now()
+  ) {
+    sessionStorage.setItem("5g88.adminSession", user.uid);
+    sessionStorage.setItem("autoLogout.expireAt", savedRaw);
+
+    marker = user.uid;
+    expiryRaw = savedRaw;
+  }
+}
+
 const expireAt = Number(expiryRaw);
 
 if (
@@ -944,8 +965,10 @@ initAppUpdatePopup();
   photo: ""
 };
 try {
-  await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-} catch (_) {}
+  await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+} catch (error) {
+  console.error("[Admin] Auth persistence failed:", error);
+}
 
 
   // ✅ 2) Auto-logout inactivity
