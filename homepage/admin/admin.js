@@ -404,7 +404,14 @@ function setExpireFromNow() {
     STORAGE_EXPIRE,
     String(expireAt)
   );
+const uid = getSessionUid();
 
+if (uid && auth.currentUser?.uid === uid) {
+  localStorage.setItem(
+    `5g88.sessionExpire.${uid}`,
+    String(expireAt)
+  );
+}
   try {
     bc?.postMessage({
       t: "reset",
@@ -440,7 +447,9 @@ async function doLogout(reason = "timeout", broadcast = true) {
   } catch (_) {}
 
   try { clearInterval(checkTimer); } catch (_) {}
-
+if (uid) {
+  localStorage.removeItem(`5g88.sessionExpire.${uid}`);
+}
   try {
     await auth.signOut();
   } catch (error) {
@@ -824,6 +833,29 @@ const user = await new Promise(resolve => {
 });
 
   if (!user || user.isAnonymous) return null;
+   // ===== RESTORE SESSION UNTUK NEW TAB =====
+const currentMarker =
+  sessionStorage.getItem("5g88.adminSession");
+
+if (!currentMarker) {
+  const savedExpiry = Number(
+    localStorage.getItem(`5g88.sessionExpire.${user.uid}`)
+  );
+
+  if (
+    Number.isFinite(savedExpiry) &&
+    savedExpiry > Date.now()
+  ) {
+    // Ini hanya pemulihan sementara.
+    // Token PIN dan profil masih diperiksa di bawah.
+    sessionStorage.setItem("5g88.adminSession", user.uid);
+    sessionStorage.setItem(
+      "autoLogout.expireAt",
+      String(savedExpiry)
+    );
+  }
+}
+// ===== END RESTORE =====
    const marker = sessionStorage.getItem("5g88.adminSession");
 const expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
 const expireAt = Number(expiryRaw);
