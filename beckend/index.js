@@ -9,7 +9,7 @@ const { getAuth } = require('firebase-admin/auth');
 const { getDatabase } = require('firebase-admin/database'); 
    
 for (const k of ['FIREBASE_SERVICE_ACCOUNT','FIREBASE_DATABASE_URL','FIREBASE_WEB_API_KEY','PIN_PEPPER','ALLOWED_ORIGINS']) {
-  if (!process.env[k]) throw Error(`Missing environment variable: ${k}`);
+  if (!process.env[k]) throw Error(`Missing environment variable: ${k}`); 
 }
 if (Buffer.byteLength(process.env.PIN_PEPPER) < 32) throw Error('PIN_PEPPER must be >= 32 bytes');
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
