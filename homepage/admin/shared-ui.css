@@ -2870,6 +2870,7 @@ margin-top: var(--admin-header-height, 64px) !important;
   justify-content: center;
   gap: 5px;
   flex-shrink: 0;
+  cursor:pointer;
 }
 
 /* REFRESH - BUTTON 24PX */
