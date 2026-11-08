@@ -367,136 +367,6 @@ function stopLivechatTitleAlert(resetUnread = false) {
   document.title = DEFAULT_PAGE_TITLE;
 }
 
-(function(){
-  const SESS_ROOT = 'singleSessions';
-  const HB_MS = 15000;
-
-  function makeToken(){
-    if (crypto?.getRandomValues) {
-      const a = new Uint32Array(4);
-      crypto.getRandomValues(a);
-      return Array.from(a).map(x=>x.toString(16)).join('-');
-    }
-    return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
-  }
-
-  function keyify(s){
-    return String(s||'').trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_');
-  }
-
-  let _session = null;
-
-  async function startSingleSession(ownerId, onForcedLogout){
-    await stopSingleSession();
-    if (!ownerId) return;
-
-const storageKey = "5g88.singleSession." + String(ownerId).trim();
-
-let token = sessionStorage.getItem(storageKey);
-
-if (!token) {
-  token = makeToken();
-  sessionStorage.setItem(storageKey, token);
-}
-const key = String(ownerId || "").trim();
-
-if (!auth.currentUser || auth.currentUser.uid !== key) {
-  throw new Error("Single-session UID mismatch");
-}
-
-const sessRef = db.ref(`${SESS_ROOT}/${key}`);
-
-const result = await sessRef.transaction(current => {
-  if (current?.token === token) {
-    return {
-      ...current,
-      lastSeen: firebase.database.ServerValue.TIMESTAMP
-    };
-  }
-
-  return {
-    token,
-    owner: key,
-    createdAt: firebase.database.ServerValue.TIMESTAMP,
-    lastSeen: firebase.database.ServerValue.TIMESTAMP
-  };
-});
-if (!result.committed) {
-  throw new Error("Single-session transaction not committed");
-}
-    const onValue = sessRef.on('value', snap => {
-      const v = snap.val();
-      if (!v) return;
-      if (v.token && v.token !== token) {
-        hardLogout('token-changed');
-      }
-    });
-
-const hb = setInterval(async () => {
-  try {
-    const result = await sessRef.transaction(current => {
-      if (!current || current.token !== token) {
-        return;
-      }
-
-      return {
-        ...current,
-        lastSeen: firebase.database.ServerValue.TIMESTAMP
-      };
-    }, undefined, false);
-
-    if (!result.committed) {
-      clearInterval(hb);
-    }
-  } catch (error) {
-    console.warn("Single session heartbeat failed:", error);
-  }
-}, HB_MS);
-
-    async function hardLogout(reason){
-      try { sessRef.off('value', onValue); } catch(_){}
-      try { clearInterval(hb); } catch(_){}
-      try { await auth.signOut(); } catch(_){}
-
-      if (typeof onForcedLogout === 'function') {
-        onForcedLogout(reason);
-      } else {
-        location.reload();
-      }
-    }
-
-   _session = { sessRef, onValue, hb, token };
-  }
-
-async function stopSingleSession() {
-  if (!_session) return;
-
-  const { sessRef, onValue, hb, token } = _session;
-
-  _session = null;
-
-  try { clearInterval(hb); } catch (_) {}
-  try { sessRef.off("value", onValue); } catch (_) {}
-
-  try {
-    await sessRef.onDisconnect().cancel();
-  } catch (err) {
-    console.warn("Cancel disconnect failed:", err);
-  }
-
-}
-
-  function getSessionOwnerFrom(loginData){
-    const email = (loginData?.email || '').toLowerCase();
-    if (!email) return null;
-    if (email.endsWith('@5g88.local')) return email.split('@')[0];
-    return email;
-  }
-
-  window.startSingleSession = startSingleSession;
-  window.stopSingleSession = stopSingleSession;
-  window.getSessionOwnerFrom = getSessionOwnerFrom;
-})();
 
 (function(){
   // === SETTING MUDAH ===
@@ -570,10 +440,6 @@ async function doLogout(reason = "timeout", broadcast = true) {
   } catch (_) {}
 
   try { clearInterval(checkTimer); } catch (_) {}
-
-  try {
-    await window.stopSingleSession?.();
-  } catch (_) {}
 
   try {
     await auth.signOut();
@@ -1052,27 +918,6 @@ try {
 
   // ✅ 2) Auto-logout inactivity
   window.AutoLogout && window.AutoLogout.start();
-
-  // ✅ 3) Single-Session
-  try {
-const ownerId = adminSession.uid;
-await window.startSingleSession(ownerId, () => {
-  try { localStorage.removeItem('gmailLogin'); } catch (_){}
-  try { localStorage.removeItem('useremail'); } catch (_){}
-  try { sessionStorage.setItem('forceLogout','1'); } catch (_){}
-  try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_){}
-  window.location.replace("./login.html?dup=1");
-});
-  } catch (e) {
-    console.error("[single-session] gagal start:", e);
-
-    try {
-      await auth.signOut();
-    } catch (_) {}
-
-    window.location.replace("./login.html?session_error=1");
-    return;
-  }
 
   // ======= SEMUA YANG DI BAWAH INI BUTUH sessionData =======
   userId = (sessionData.email || '').toLowerCase().replace(/\./g, '_');
