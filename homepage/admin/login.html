@@ -2925,21 +2925,27 @@ const loginAuth = firebase.auth();
 
 // Tetapkan persistence sebelum login
 await loginAuth.setPersistence(
-  firebase.auth.Auth.Persistence.SESSION
+  firebase.auth.Auth.Persistence.LOCAL
 );
 
 const result = await loginAuth.signInWithCustomToken(
   data.customToken
 );
 
+const uid = result.user.uid;
+const expireAt = Date.now() + 24 * 60 * 60 * 1000;
 
-// Session mengikut tab, bukan seluruh browser.
-sessionStorage.setItem("5g88.adminSession", result.user.uid);
+// Session untuk tab yang sedang login.
+sessionStorage.setItem("5g88.adminSession", uid);
+sessionStorage.setItem("autoLogout.expireAt", String(expireAt));
 
-sessionStorage.setItem(
-  "autoLogout.expireAt",
-  String(Date.now() + 24 * 60 * 60 * 1000)
+// Bukti masa tamat untuk tab baru, khusus mengikut UID.
+localStorage.setItem(
+  `5g88.sessionExpire.${uid}`,
+  String(expireAt)
 );
+
+// Buang format lama yang tidak mengikut UID.
 localStorage.removeItem("autoLogout.expireAt");
 
     const user = result.user;
