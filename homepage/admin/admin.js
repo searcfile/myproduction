@@ -231,10 +231,10 @@ function initLivechatLoopAudio() {
 
   livechatLoopAudio =
     existing ||
-    new Audio("../audio/audio.wav");
+    new Audio("./audio.wav");
 
   // Path dari folder homepage/admin/
-  livechatLoopAudio.src = "../audio/audio.wav";
+  livechatLoopAudio.src = "./audio.wav";
 
   livechatLoopAudio.loop = true;
   livechatLoopAudio.preload = "auto";
