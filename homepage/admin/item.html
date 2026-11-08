@@ -1485,7 +1485,7 @@ if (!item.legacy) {
     del.className = "btn-delete-new";
     del.title = "Delete item";
     del.textContent = "Delete";
-    del.addEventListener("click", () => removeItem(item));
+    del.addEventListener("click", () => removeItem(item, del));
     actions.append(del);
   }
 }
@@ -1732,28 +1732,36 @@ await reloadItems();
       finally{await NewUI.setButtonLoading(save,false,{minDuration:600});}
     });
   }
-async function removeItem(item) {
+async function removeItem(item, target) {
   if (!itemCan("delete")) {
     notify("Permission denied", "error");
     return;
   }
 
-  if (!confirm(`Delete "${item.title}"? This cannot be undone.`)) {
+  if (!window.NewUI?.confirm) {
+    notify("Confirm box unavailable", "error");
     return;
   }
 
-  try {
-    await itemApi(`/items/${encodeURIComponent(item.id)}`, {
-      method: "DELETE"
-    });
+  await NewUI.confirm({
+    target: target,
+    title: "Delete Item",
+    message: `Are you sure you want to delete "${item.title}"? This action cannot be undone.`,
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    loadingText: "Deleting...",
+    danger: true,
 
-    await reloadItems();
+    onConfirm: async () => {
+      await itemApi(`/items/${encodeURIComponent(item.id)}`, {
+        method: "DELETE"
+      });
 
-    notify("Item deleted", "success");
-  } catch (error) {
-    console.error(error);
-    notify(error.message || "Delete failed", "error");
-  }
+      await reloadItems();
+
+      notify("Item deleted", "success");
+    }
+  });
 }
 function startRealtime() {
   firebase.auth().onAuthStateChanged(async user => {
