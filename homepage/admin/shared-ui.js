@@ -6725,27 +6725,12 @@ function handleLogout() {
   window.__adminLoggingOut = true;
 
   (async () => {
-    try {
-      // Hentikan single-session listener dahulu
-      if (typeof window.stopSingleSession === "function") {
-        await window.stopSingleSession();
-      }
-    } catch (error) {
-      console.warn("Stop session failed:", error);
-    }
-
     // Padam penanda sesi sebelum signOut
     try {
       sessionStorage.removeItem("5g88.adminSession");
       sessionStorage.removeItem("justLoggedIn");
       sessionStorage.removeItem("forceLogout");
       sessionStorage.removeItem("autoOpenTab");
-
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith("5g88.singleSession.")) {
-          sessionStorage.removeItem(key);
-        }
-      });
 
 sessionStorage.removeItem("autoLogout.expireAt");
 
