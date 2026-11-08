@@ -7920,11 +7920,20 @@ const changePw = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await firebase.auth().signOut();
-    sessionStorage.removeItem("5g88.adminSession");
-    sessionStorage.removeItem("autoLogout.expireAt");
+const logoutUid = firebase.auth().currentUser?.uid;
 
-    window.location.replace("./login.html?pw_changed=1");
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
+
+await firebase.auth().signOut();
+
+sessionStorage.removeItem("5g88.adminSession");
+sessionStorage.removeItem("autoLogout.expireAt");
+
+window.location.replace("./login.html?pw_changed=1");
 
   } catch (error) {
     showErr(error.message || "Failed to change password.");
@@ -8074,11 +8083,20 @@ const changePw2 = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await firebase.auth().signOut();
-    sessionStorage.removeItem("5g88.adminSession");
-    sessionStorage.removeItem("autoLogout.expireAt");
+const logoutUid = firebase.auth().currentUser?.uid;
 
-    window.location.replace("./login.html?pin_changed=1");
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
+
+await firebase.auth().signOut();
+
+sessionStorage.removeItem("5g88.adminSession");
+sessionStorage.removeItem("autoLogout.expireAt");
+
+window.location.replace("./login.html?pin_changed=1");
 
   } catch (error) {
     showErr2(error.message || "Failed to change 2nd password.");
