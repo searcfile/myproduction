@@ -687,9 +687,20 @@ function setupChannel() {
   }
 }
 
+
 function start() {
-  setupChannel();
   loadExpire();
+
+  // Jangan mulakan timer sebelum Firebase Auth
+  // dan penanda UID betul-betul tersedia.
+  const uid = getSessionUid();
+  const user = auth.currentUser;
+
+  if (!uid || !user || user.uid !== uid) {
+    return;
+  }
+
+  setupChannel();
 
   if (!expireAt || !Number.isFinite(expireAt)) {
     doLogout("session-cleared");
@@ -704,6 +715,7 @@ function start() {
   bindActivityReset();
   checkTimer = setInterval(heartbeat, TICK);
 }
+
 
 window.AutoLogout = {
     start,
