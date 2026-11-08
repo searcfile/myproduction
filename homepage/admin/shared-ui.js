@@ -4108,10 +4108,21 @@ function refreshTab(tab) {
 
 tabs.forEach(tab => {
 
+  // Cipta tab emas sebagai link sebenar
+  const element = document.createElement("a");
 
-      if (tab.file.toLowerCase() === currentFile) {
-        element.classList.add("active-tab");
-      }
+  element.href = new URL(
+    `./${tab.file}`,
+    window.location.href
+  ).href;
+
+  element.className = "tab admin-workspace-tab";
+  element.dataset.file = tab.file;
+
+  // Tandakan tab yang sedang aktif
+  if (tab.file.toLowerCase() === currentFile) {
+    element.classList.add("active-tab");
+  }
 
       const title = document.createElement("span");
       title.className = "admin-workspace-tab-name";
