@@ -3887,9 +3887,9 @@ if (verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-const expiryRaw = sessionStorage.getItem(
-  "autoLogout.expireAt"
-);
+    const expiryRaw = localStorage.getItem(
+      "autoLogout.expireAt"
+    );
 
     const expireAt = Number(expiryRaw);
 
@@ -3945,9 +3945,9 @@ if (!verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-const expiryRaw = sessionStorage.getItem(
-  "autoLogout.expireAt"
-);
+    const expiryRaw = localStorage.getItem(
+      "autoLogout.expireAt"
+    );
 
     const expireAt = Number(expiryRaw);
 
@@ -4106,23 +4106,14 @@ function refreshTab(tab) {
       return actions;
     }
 
-tabs.forEach(tab => {
+    tabs.forEach(tab => {
+      const element = document.createElement("div");
+      element.className = "tab admin-workspace-tab";
+      element.dataset.file = tab.file;
 
-  // Cipta tab emas sebagai link sebenar
-  const element = document.createElement("a");
-
-  element.href = new URL(
-    `./${tab.file}`,
-    window.location.href
-  ).href;
-
-  element.className = "tab admin-workspace-tab";
-  element.dataset.file = tab.file;
-
-  // Tandakan tab yang sedang aktif
-  if (tab.file.toLowerCase() === currentFile) {
-    element.classList.add("active-tab");
-  }
+      if (tab.file.toLowerCase() === currentFile) {
+        element.classList.add("active-tab");
+      }
 
       const title = document.createElement("span");
       title.className = "admin-workspace-tab-name";
@@ -4132,50 +4123,12 @@ tabs.forEach(tab => {
 
       element.append(title, createTabActions(tab));
 
-element.addEventListener("click", event => {
-  if (!verifiedProfileReady) {
-    event.preventDefault();
-    return;
-  }
+      element.addEventListener("click", event => {
+         if (!verifiedProfileReady) return;
+        if (event.target.closest("button")) return;
+        navigateToTab(tab);
+      });
 
-  if (event.target.closest("button")) {
-    event.preventDefault();
-    return;
-  }
-
-  if (!canShowAdminPage(tab.file) ||
-      !canViewAdminPage(tab.file)) {
-    event.preventDefault();
-    return;
-  }
-
-  // Ctrl+Click, Cmd+Click dan Shift+Click:
-  // biarkan browser membuka tab/window sendiri.
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
-
-  // Klik biasa: kekalkan navigasi sistem 5G88.
-  event.preventDefault();
-  navigateToTab(tab);
-});
-// TAMBAH DI SINI — Middle Mouse Click
-element.addEventListener("auxclick", event => {
-  if (event.button !== 1) return;
-
-  if (
-    !verifiedProfileReady ||
-    !canShowAdminPage(tab.file) ||
-    !canViewAdminPage(tab.file)
-  ) {
-    event.preventDefault();
-  }
-});
       tabList.appendChild(element);
     });
 
@@ -6772,6 +6725,15 @@ function handleLogout() {
   window.__adminLoggingOut = true;
 
   (async () => {
+    try {
+      // Hentikan single-session listener dahulu
+      if (typeof window.stopSingleSession === "function") {
+        await window.stopSingleSession();
+      }
+    } catch (error) {
+      console.warn("Stop session failed:", error);
+    }
+
     // Padam penanda sesi sebelum signOut
     try {
       sessionStorage.removeItem("5g88.adminSession");
@@ -6779,9 +6741,15 @@ function handleLogout() {
       sessionStorage.removeItem("forceLogout");
       sessionStorage.removeItem("autoOpenTab");
 
-sessionStorage.removeItem("autoLogout.expireAt");
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith("5g88.singleSession.")) {
+          sessionStorage.removeItem(key);
+        }
+      });
 
-// Jangan padam localStorage global di sini.
+      localStorage.removeItem("autoLogout.expireAt");
+      localStorage.removeItem("gmailLogin");
+      localStorage.removeItem("useremail");
     } catch (error) {
       console.warn("Clear session failed:", error);
     }
@@ -6789,30 +6757,6 @@ sessionStorage.removeItem("autoLogout.expireAt");
     // Logout Firebase sebenar
     try {
       if (window.firebase && firebase.apps.length) {
-        const logoutUid = firebase.auth().currentUser?.uid;
-// Padam expiry hanya untuk akaun yang sedang logout.
-if (logoutUid) {
-  localStorage.removeItem(
-    `5g88.sessionExpire.${logoutUid}`
-  );
-}
-if (logoutUid) {
-  try {
-    const channel = new BroadcastChannel(
-      "autoLogout-5g88:" + logoutUid
-    );
-
-    channel.postMessage({
-      t: "logout",
-      uid: logoutUid,
-      reason: "manual"
-    });
-
-    channel.close();
-  } catch (error) {
-    console.warn("Logout broadcast:", error);
-  }
-}
         await firebase.auth().signOut();
       }
     } catch (error) {
@@ -7967,20 +7911,11 @@ const changePw = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-const logoutUid = firebase.auth().currentUser?.uid;
+    await firebase.auth().signOut();
+    sessionStorage.removeItem("5g88.adminSession");
+    localStorage.removeItem("autoLogout.expireAt");
 
-if (logoutUid) {
-  localStorage.removeItem(
-    `5g88.sessionExpire.${logoutUid}`
-  );
-}
-
-await firebase.auth().signOut();
-
-sessionStorage.removeItem("5g88.adminSession");
-sessionStorage.removeItem("autoLogout.expireAt");
-
-window.location.replace("./login.html?pw_changed=1");
+    window.location.replace("./login.html?pw_changed=1");
 
   } catch (error) {
     showErr(error.message || "Failed to change password.");
@@ -8130,20 +8065,11 @@ const changePw2 = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-const logoutUid = firebase.auth().currentUser?.uid;
+    await firebase.auth().signOut();
+    sessionStorage.removeItem("5g88.adminSession");
+    localStorage.removeItem("autoLogout.expireAt");
 
-if (logoutUid) {
-  localStorage.removeItem(
-    `5g88.sessionExpire.${logoutUid}`
-  );
-}
-
-await firebase.auth().signOut();
-
-sessionStorage.removeItem("5g88.adminSession");
-sessionStorage.removeItem("autoLogout.expireAt");
-
-window.location.replace("./login.html?pin_changed=1");
+    window.location.replace("./login.html?pin_changed=1");
 
   } catch (error) {
     showErr2(error.message || "Failed to change 2nd password.");
