@@ -3085,17 +3085,39 @@ async function loginWithUsername() {
   setLoading(true, "userpass");
 
   try {
-    const response = await fetch(`${ADMIN_API}/api/login/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+const response = await fetch(`${ADMIN_API}/api/login/start`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password })
+});
 
-    const data = await response.json();
+const contentType = response.headers.get("content-type") || "";
 
-    if (!response.ok || !data.ok || !data.challenge) {
-      throw new Error(data.message || "Invalid credentials.");
-    }
+let data = {};
+
+if (contentType.includes("application/json")) {
+  data = await response.json();
+} else {
+  const responseText = await response.text();
+
+  console.warn("[LOGIN API RESPONSE]", {
+    status: response.status,
+    response: responseText.slice(0, 200)
+  });
+}
+
+if (response.status === 429) {
+  throw new Error(
+    "Too many login attempts. Please wait 15 minutes before trying again."
+  );
+}
+
+if (!response.ok || !data.ok || !data.challenge) {
+  throw new Error(
+    data.message ||
+    `Login failed (HTTP ${response.status}).`
+  );
+}
 
     // Simpan challenge sementara, bukan password atau PIN.
     openTwofaPage(username, {
