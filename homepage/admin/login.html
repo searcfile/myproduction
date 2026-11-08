@@ -2059,6 +2059,39 @@ window.addEventListener("DOMContentLoaded", () => {
 let turnstileVerifiedUser = false;
 let turnstileVerifiedGoogle = false;
 let pending2FA = null;
+/* ==========================================
+   RENDER FREE - EARLY SERVER WAKE UP
+   ========================================== */
+
+(function wakeLoginServer() {
+  const controller = new AbortController();
+
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 60000);
+
+  fetch(`${ADMIN_API}/health`, {
+    method: "GET",
+    cache: "no-store",
+    signal: controller.signal
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      console.log("[LOGIN] Backend ready");
+    })
+    .catch(error => {
+      console.warn(
+        "[LOGIN] Backend wake-up:",
+        error.message
+      );
+    })
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+})();
 const ADMIN_API = "https://fiveg88-admin-backend-v2.onrender.com";
 const LOGIN_THEME_KEY = 'siteTheme';
 
