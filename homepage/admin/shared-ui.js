@@ -6743,7 +6743,12 @@ sessionStorage.removeItem("autoLogout.expireAt");
     try {
       if (window.firebase && firebase.apps.length) {
         const logoutUid = firebase.auth().currentUser?.uid;
-
+// Padam expiry hanya untuk akaun yang sedang logout.
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
 if (logoutUid) {
   try {
     const channel = new BroadcastChannel(
