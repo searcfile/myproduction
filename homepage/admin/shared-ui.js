@@ -3887,9 +3887,9 @@ if (verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-    const expiryRaw = localStorage.getItem(
-      "autoLogout.expireAt"
-    );
+const expiryRaw = sessionStorage.getItem(
+  "autoLogout.expireAt"
+);
 
     const expireAt = Number(expiryRaw);
 
@@ -3945,9 +3945,9 @@ if (!verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-    const expiryRaw = localStorage.getItem(
-      "autoLogout.expireAt"
-    );
+const expiryRaw = sessionStorage.getItem(
+  "autoLogout.expireAt"
+);
 
     const expireAt = Number(expiryRaw);
 
@@ -6725,15 +6725,6 @@ function handleLogout() {
   window.__adminLoggingOut = true;
 
   (async () => {
-    try {
-      // Hentikan single-session listener dahulu
-      if (typeof window.stopSingleSession === "function") {
-        await window.stopSingleSession();
-      }
-    } catch (error) {
-      console.warn("Stop session failed:", error);
-    }
-
     // Padam penanda sesi sebelum signOut
     try {
       sessionStorage.removeItem("5g88.adminSession");
@@ -6741,15 +6732,9 @@ function handleLogout() {
       sessionStorage.removeItem("forceLogout");
       sessionStorage.removeItem("autoOpenTab");
 
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith("5g88.singleSession.")) {
-          sessionStorage.removeItem(key);
-        }
-      });
+sessionStorage.removeItem("autoLogout.expireAt");
 
-      localStorage.removeItem("autoLogout.expireAt");
-      localStorage.removeItem("gmailLogin");
-      localStorage.removeItem("useremail");
+// Jangan padam localStorage global di sini.
     } catch (error) {
       console.warn("Clear session failed:", error);
     }
@@ -6757,6 +6742,30 @@ function handleLogout() {
     // Logout Firebase sebenar
     try {
       if (window.firebase && firebase.apps.length) {
+        const logoutUid = firebase.auth().currentUser?.uid;
+// Padam expiry hanya untuk akaun yang sedang logout.
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
+if (logoutUid) {
+  try {
+    const channel = new BroadcastChannel(
+      "autoLogout-5g88:" + logoutUid
+    );
+
+    channel.postMessage({
+      t: "logout",
+      uid: logoutUid,
+      reason: "manual"
+    });
+
+    channel.close();
+  } catch (error) {
+    console.warn("Logout broadcast:", error);
+  }
+}
         await firebase.auth().signOut();
       }
     } catch (error) {
@@ -7911,11 +7920,20 @@ const changePw = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await firebase.auth().signOut();
-    sessionStorage.removeItem("5g88.adminSession");
-    localStorage.removeItem("autoLogout.expireAt");
+const logoutUid = firebase.auth().currentUser?.uid;
 
-    window.location.replace("./login.html?pw_changed=1");
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
+
+await firebase.auth().signOut();
+
+sessionStorage.removeItem("5g88.adminSession");
+sessionStorage.removeItem("autoLogout.expireAt");
+
+window.location.replace("./login.html?pw_changed=1");
 
   } catch (error) {
     showErr(error.message || "Failed to change password.");
@@ -8065,11 +8083,20 @@ const changePw2 = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await firebase.auth().signOut();
-    sessionStorage.removeItem("5g88.adminSession");
-    localStorage.removeItem("autoLogout.expireAt");
+const logoutUid = firebase.auth().currentUser?.uid;
 
-    window.location.replace("./login.html?pin_changed=1");
+if (logoutUid) {
+  localStorage.removeItem(
+    `5g88.sessionExpire.${logoutUid}`
+  );
+}
+
+await firebase.auth().signOut();
+
+sessionStorage.removeItem("5g88.adminSession");
+sessionStorage.removeItem("autoLogout.expireAt");
+
+window.location.replace("./login.html?pin_changed=1");
 
   } catch (error) {
     showErr2(error.message || "Failed to change 2nd password.");
