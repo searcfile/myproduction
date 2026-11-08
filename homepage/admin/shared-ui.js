@@ -4106,10 +4106,8 @@ function refreshTab(tab) {
       return actions;
     }
 
-    tabs.forEach(tab => {
-      const element = document.createElement("div");
-      element.className = "tab admin-workspace-tab";
-      element.dataset.file = tab.file;
+tabs.forEach(tab => {
+
 
       if (tab.file.toLowerCase() === currentFile) {
         element.classList.add("active-tab");
@@ -4123,11 +4121,38 @@ function refreshTab(tab) {
 
       element.append(title, createTabActions(tab));
 
-      element.addEventListener("click", event => {
-         if (!verifiedProfileReady) return;
-        if (event.target.closest("button")) return;
-        navigateToTab(tab);
-      });
+element.addEventListener("click", event => {
+  if (!verifiedProfileReady) {
+    event.preventDefault();
+    return;
+  }
+
+  if (event.target.closest("button")) {
+    event.preventDefault();
+    return;
+  }
+
+  if (!canShowAdminPage(tab.file) ||
+      !canViewAdminPage(tab.file)) {
+    event.preventDefault();
+    return;
+  }
+
+  // Ctrl+Click, Cmd+Click dan Shift+Click:
+  // biarkan browser membuka tab/window sendiri.
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
+
+  // Klik biasa: kekalkan navigasi sistem 5G88.
+  event.preventDefault();
+  navigateToTab(tab);
+});
 
       tabList.appendChild(element);
     });
