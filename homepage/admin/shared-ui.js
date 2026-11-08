@@ -6747,9 +6747,9 @@ function handleLogout() {
         }
       });
 
-      localStorage.removeItem("autoLogout.expireAt");
-      localStorage.removeItem("gmailLogin");
-      localStorage.removeItem("useremail");
+sessionStorage.removeItem("autoLogout.expireAt");
+
+// Jangan padam localStorage global di sini.
     } catch (error) {
       console.warn("Clear session failed:", error);
     }
@@ -6757,6 +6757,25 @@ function handleLogout() {
     // Logout Firebase sebenar
     try {
       if (window.firebase && firebase.apps.length) {
+        const logoutUid = firebase.auth().currentUser?.uid;
+
+if (logoutUid) {
+  try {
+    const channel = new BroadcastChannel(
+      "autoLogout-5g88:" + logoutUid
+    );
+
+    channel.postMessage({
+      t: "logout",
+      uid: logoutUid,
+      reason: "manual"
+    });
+
+    channel.close();
+  } catch (error) {
+    console.warn("Logout broadcast:", error);
+  }
+}
         await firebase.auth().signOut();
       }
     } catch (error) {
@@ -8067,7 +8086,7 @@ const changePw2 = async () => {
 
     await firebase.auth().signOut();
     sessionStorage.removeItem("5g88.adminSession");
-    localStorage.removeItem("autoLogout.expireAt");
+    sessionStorage.removeItem("autoLogout.expireAt");
 
     window.location.replace("./login.html?pin_changed=1");
 
