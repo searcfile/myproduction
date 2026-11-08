@@ -1924,48 +1924,7 @@ function detachMergedChatListeners() {
   activeChatValueHandler = null;
   ++selectedChatGeneration;
 }
-// Pilih destinasi utama untuk membalas user.
-// Admin login menggunakan chats/admin_<firebaseUid>.
-// Channel lama tetap boleh dibaca oleh Merged Inbox.
 
-function resolveAgentReplySid(memberIds = []) {
-  const ids = [...new Set(memberIds)].filter(Boolean);
-
-  if (!ids.length) return null;
-
-  const getData = sid =>
-    allUsersData.find(([id]) => id === sid)?.[1] || {};
-
-  ids.sort((a, b) => {
-    const adminA = a.startsWith("admin_") ? 1 : 0;
-    const adminB = b.startsWith("admin_") ? 1 : 0;
-
-    // Paling penting: pilih channel admin UID dahulu.
-    if (adminA !== adminB) return adminB - adminA;
-
-    const dataA = getData(a);
-    const dataB = getData(b);
-
-    const onlineA = dataA.online === true ? 1 : 0;
-    const onlineB = dataB.online === true ? 1 : 0;
-
-    if (onlineA !== onlineB) return onlineB - onlineA;
-
-    const timeA = Math.max(
-      Number(dataA.pageLoginTime || 0),
-      Number(dataA.lastLoginAt || 0)
-    );
-
-    const timeB = Math.max(
-      Number(dataB.pageLoginTime || 0),
-      Number(dataB.lastLoginAt || 0)
-    );
-
-    return timeB - timeA;
-  });
-
-  return ids[0];
-}
 function buildMergedInboxRows() {
   const groups = new Map();
 
@@ -3316,18 +3275,26 @@ selectedChatMemberIds = [
 
 selectedMergedEmail = getInboxEmail(sanitized, userData);
 
-// Pilih channel utama user.
-// Untuk admin login, utamakan admin_<uid>.
+// Pilih channel terakhir aktif untuk balasan.
+const target = [...selectedChatMemberIds].sort((a, b) => {
+  const ta = Number(
+    chatMeta[a]?.lastChatTime ||
+    allUsersData.find(([id]) => id === a)?.[2] ||
+    0
+  );
 
-selectedUserId =
-  resolveAgentReplySid(selectedChatMemberIds) ||
-  sanitized;
+  const tb = Number(
+    chatMeta[b]?.lastChatTime ||
+    allUsersData.find(([id]) => id === b)?.[2] ||
+    0
+  );
 
-console.log("[Agent Support] Selected chat:", {
-  inboxId: sanitized,
-  members: selectedChatMemberIds,
-  replyTo: selectedUserId
-});
+  return tb - ta ||
+    Number(b.startsWith("admin_")) -
+    Number(a.startsWith("admin_"));
+})[0];
+
+selectedUserId = target || sanitized;
 
 markActiveAgentChatRead(true);
 
@@ -3337,7 +3304,7 @@ const selectedUserName = displayName || "User";
 const selectedUserPhoto =
   meta.identity?.photoURL ||
   userData?.photoURL ||
-  "https://i.imgur.com/MyKVioD.png";
+  "https://i.pravatar.cc/40";
 
       const nameEl = document.getElementById("chatUserName");
       if (nameEl) nameEl.textContent = selectedUserName;
@@ -3501,12 +3468,17 @@ if (visualSignature !== lastVisualSignature) {
 
       messagesBySid.set(sid, messages);
 
-// Jangan pilih destinasi berdasarkan mesej lama.
-// Gunakan channel utama untuk user yang sedang dipilih.
+      // Balas ke sumber mesej pengguna paling terkini.
+      const latestUser = ids
+        .flatMap(id => messagesBySid.get(id) || [])
+        .filter(m => m.from === "user")
+        .sort((a, b) =>
+          (Number(b.time) || 0) - (Number(a.time) || 0)
+        )[0];
 
-selectedUserId =
-  resolveAgentReplySid(ids) ||
-  selectedUserId;
+      if (latestUser?._sourceSid) {
+        selectedUserId = latestUser._sourceSid;
+      }
 
       renderMerged();
     };
@@ -3775,15 +3747,7 @@ let agentSendInProgress = false;
 async function sendMessage() {
   if (!selectedUserId || agentSendInProgress) return;
 
-  const targetSid =
-  resolveAgentReplySid(selectedChatMemberIds) ||
-  selectedUserId;
-
-console.log("[Agent Support] Message destination:", {
-  targetSid,
-  selectedUserId,
-  members: selectedChatMemberIds
-});
+  const targetSid = selectedUserId;
   const text = (msgInput?.value || "").trim();
 
   if (pendingImages.some(item => item.uploading)) {
