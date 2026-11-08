@@ -2932,12 +2932,16 @@ const result = await loginAuth.signInWithCustomToken(
   data.customToken
 );
 
-// Penanda sesi selepas PIN berjaya
+
+// Session mengikut tab, bukan seluruh browser.
 sessionStorage.setItem("5g88.adminSession", result.user.uid);
-localStorage.setItem(
+
+sessionStorage.setItem(
   "autoLogout.expireAt",
   String(Date.now() + 24 * 60 * 60 * 1000)
 );
+localStorage.removeItem("autoLogout.expireAt");
+
     const user = result.user;
     if (!user) throw new Error("Firebase session unavailable.");
 
