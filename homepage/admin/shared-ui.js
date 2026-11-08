@@ -3887,9 +3887,9 @@ if (verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-    const expiryRaw = localStorage.getItem(
-      "autoLogout.expireAt"
-    );
+const expiryRaw = sessionStorage.getItem(
+  "autoLogout.expireAt"
+);
 
     const expireAt = Number(expiryRaw);
 
@@ -3945,9 +3945,9 @@ if (!verifiedProfileReady) {
       "5g88.adminSession"
     );
 
-    const expiryRaw = localStorage.getItem(
-      "autoLogout.expireAt"
-    );
+const expiryRaw = sessionStorage.getItem(
+  "autoLogout.expireAt"
+);
 
     const expireAt = Number(expiryRaw);
 
