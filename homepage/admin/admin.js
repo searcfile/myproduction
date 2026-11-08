@@ -132,7 +132,7 @@
       const thisRun = ++sequence;
       if (!user || user.isAnonymous) { redirect(); return; }
        const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
 const expireAt = Number(expiryRaw);
 
 if (
@@ -505,6 +505,15 @@ const DEFAULT_MINUTES = 1440; // 24 jam
   const STORAGE_EXPIRE = "autoLogout.expireAt";
   const STORAGE_MIN = "autoLogout.minutes"; // kalau di-set, override DEFAULT_MINUTES
   const CHANNEL = "autoLogout-5g88";
+
+function getSessionUid() {
+  return sessionStorage.getItem("5g88.adminSession") || "";
+}
+
+function getSessionChannel() {
+  const uid = getSessionUid();
+  return uid ? CHANNEL + ":" + uid : null;
+}
   const TICK = 5000; // cek tiap 5 detik
   // (opsional) logout absolut walau aktif bergerak (null = mati)
 const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
@@ -518,42 +527,76 @@ const ABSOLUTE_MAX_MS = 24 * 60 * 60 * 1000;
   const minutesToMs = (m)=> m*60*1000;
   const now = ()=> Date.now();
 
-  function setExpireFromNow(){
-    expireAt = now() + minutesToMs(getMinutes());
-    localStorage.setItem(STORAGE_EXPIRE, String(expireAt));
-    try { bc && bc.postMessage({t:"reset", expireAt}); } catch {}
-  }
+function setExpireFromNow() {
+  expireAt = now() + minutesToMs(getMinutes());
+
+  sessionStorage.setItem(
+    STORAGE_EXPIRE,
+    String(expireAt)
+  );
+
+  try {
+    bc?.postMessage({
+      t: "reset",
+      uid: getSessionUid(),
+      expireAt
+    });
+  } catch (_) {}
+}
   function setAbsoluteExpireFromNow(){
     absoluteExpireAt = ABSOLUTE_MAX_MS ? (now() + ABSOLUTE_MAX_MS) : null;
   }
   function loadExpire(){
-    const v = localStorage.getItem(STORAGE_EXPIRE);
+    const v = sessionStorage.getItem(STORAGE_EXPIRE);
     expireAt = v ? Number(v) : null;
   }
-async function doLogout(reason="timeout"){
-   try {
+
+let logoutInProgress = false;
+
+async function doLogout(reason = "timeout", broadcast = true) {
+  if (logoutInProgress) return;
+  logoutInProgress = true;
+
+  const uid = getSessionUid();
+
+  try {
+    if (broadcast && uid) {
+      bc?.postMessage({
+        t: "logout",
+        uid,
+        reason
+      });
+    }
+  } catch (_) {}
+
+  try { clearInterval(checkTimer); } catch (_) {}
+
+  try {
+    await window.stopSingleSession?.();
+  } catch (_) {}
+
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.warn("[AutoLogout] Sign out:", error);
+  }
+
+  // Hanya bersihkan session tab ini.
   sessionStorage.removeItem("5g88.adminSession");
-} catch (_) {}
-  try { clearInterval(checkTimer); } catch {}
+  sessionStorage.removeItem(STORAGE_EXPIRE);
+  sessionStorage.removeItem("justLoggedIn");
+  sessionStorage.removeItem("forceLogout");
+  sessionStorage.removeItem("autoOpenTab");
+  sessionStorage.removeItem("queryUserAppliedOnce");
 
-  try { await auth.signOut(); } catch(_) {}
-
-  try { localStorage.removeItem("gmailLogin"); } catch(_) {}
-  try { localStorage.removeItem("useremail"); } catch(_) {}
-  try { localStorage.removeItem(STORAGE_EXPIRE); } catch(_) {}
-  try { localStorage.removeItem("autoLogout.expireAt"); } catch(_) {}
-  try { localStorage.removeItem("login.livechatUnreadCount"); } catch(_) {}
-
-  try { sessionStorage.removeItem("justLoggedIn"); } catch(_) {}
-  try { sessionStorage.removeItem("forceLogout"); } catch(_) {}
-  try { sessionStorage.removeItem("autoOpenTab"); } catch(_) {}
-  try { sessionStorage.removeItem("queryUserAppliedOnce"); } catch(_) {}
-
-  try { bc && bc.postMessage({ t:"logout", reason }); } catch {}
-  try { window.google?.accounts?.id?.disableAutoSelect(); } catch(_){}
+  try {
+    bc?.close();
+    bc = null;
+  } catch (_) {}
 
   window.location.replace(LOGIN_URL);
 }
+
 function shouldLogout() {
   const t = now();
 
@@ -603,20 +646,47 @@ function shouldLogout() {
     document.addEventListener("visibilitychange", ()=> { if (!document.hidden) reset(); });
     window.addEventListener("focus", reset);
   }
-  function setupChannel(){
-    try {
-      bc = new BroadcastChannel(CHANNEL);
-      bc.onmessage = (msg)=>{
-        const d = msg?.data || {};
-        if (d.t === "reset") {
-          expireAt = Number(d.expireAt || 0) || expireAt;
-          localStorage.setItem(STORAGE_EXPIRE, String(expireAt));
-        } else if (d.t === "logout") {
-          doLogout("multi-tab");
+
+function setupChannel() {
+  try {
+    if (bc) {
+      bc.close();
+      bc = null;
+    }
+
+    const channelName = getSessionChannel();
+    if (!channelName) return;
+
+    bc = new BroadcastChannel(channelName);
+
+    bc.onmessage = (event) => {
+      const data = event?.data || {};
+
+      // Jangan terima arahan akaun berlainan.
+      if (data.uid !== getSessionUid()) return;
+
+      if (data.t === "reset") {
+        const nextExpire = Number(data.expireAt);
+
+        if (Number.isFinite(nextExpire)) {
+          expireAt = nextExpire;
+          sessionStorage.setItem(
+            STORAGE_EXPIRE,
+            String(expireAt)
+          );
         }
-      };
-    } catch { bc = null; }
+      }
+
+      if (data.t === "logout") {
+        doLogout("multi-tab", false);
+      }
+    };
+  } catch (error) {
+    console.warn("[AutoLogout] Channel:", error);
+    bc = null;
   }
+}
+
 function start() {
   setupChannel();
   loadExpire();
@@ -877,7 +947,7 @@ const user = await new Promise(resolve => {
 
   if (!user || user.isAnonymous) return null;
    const marker = sessionStorage.getItem("5g88.adminSession");
-const expiryRaw = localStorage.getItem("autoLogout.expireAt");
+const expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
 const expireAt = Number(expiryRaw);
 
 if (
