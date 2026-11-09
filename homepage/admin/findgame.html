@@ -1728,6 +1728,58 @@ select:focus-visible{
   white-space: nowrap;
 }
 
+/* ==========================================
+   FIND GAME - SINGLE NO DATA CARD
+   ========================================== */
+
+.grid.fg-no-results {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+
+/* Sembunyikan panel kanan */
+.grid.fg-no-results .detail {
+  display: none !important;
+}
+
+/* Jadikan panel kiri satu card penuh */
+.grid.fg-no-results .list {
+  display: flex !important;
+  width: 100%;
+  min-height: 200px !important;
+  height: auto !important;
+  padding: 12px;
+}
+
+/* Sembunyikan Results dan count 0 */
+.grid.fg-no-results .list-hdr {
+  display: none !important;
+}
+
+/* Letak No Data di tengah */
+.grid.fg-no-results #list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 174px;
+  max-height: none !important;
+  overflow: visible;
+}
+
+/* Pastikan empty state berada di tengah */
+.grid.fg-no-results #list > * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Mobile juga kekalkan satu card */
+@media (max-width: 979px) {
+  .grid.fg-no-results .list {
+    min-height: 200px !important;
+  }
+}
+
   </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
@@ -2203,15 +2255,34 @@ const typeOK =
 return kw && platOK && typeOK;
   });
 
+
   elList.innerHTML = '';
   count.textContent = filtered.length;
 
-  if(!filtered.length){
-    if (window.showEmptyState) showEmptyState(elList,'No Data','large','center'); else elList.textContent='No games found';
-    // tetap set max-height supaya box-nya tidak melebar
-    requestAnimationFrame(()=>applyListMaxHeight());
+  // Cari grid utama Results + Detail
+  const gameGrid = elList.closest('.grid');
+
+  // Satu card penuh apabila tiada results
+  const isEmpty = filtered.length === 0;
+
+  gameGrid?.classList.toggle('fg-no-results', isEmpty);
+
+  if (isEmpty) {
+    if (typeof window.showEmptyState === 'function') {
+      window.showEmptyState(
+        elList,
+        'No Data',
+        'large',
+        'center'
+      );
+    } else {
+      elList.textContent = 'No Data';
+    }
+
+    requestAnimationFrame(() => applyListMaxHeight());
     return;
   }
+
 
   filtered.forEach((g,i)=>{
     const row = document.createElement('div');
