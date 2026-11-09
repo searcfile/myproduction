@@ -96,7 +96,7 @@
 .auth-list{padding:0!important;overflow:hidden;border-radius:14px!important;border:1px solid var(--tx-border,#2b3e5b)!important;background:var(--tx-surface,#152237)}
 .auth-section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px}
 .auth-section-heading h2{font-size:16px;font-weight:700;}
-.auth-section-heading p{font-size:12px;color:var(--muted,#9aaac0);margin:0}
+.auth-section-heading p{font-size:12px;color:var(--muted);margin:0}
 .auth-toolbar{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important;justify-content:flex-start!important;padding:0 20px 20px!important}
 .auth-search-holder{flex:0 1 400px;width:100%;max-width:400px;min-width:170px}
 .auth-search-holder .shared-sync-search{width:100%;height:32px}
@@ -104,8 +104,8 @@
 .auth-tablewrap{width:100%;overflow-x:auto;scrollbar-width:thin}
 .auth-table{width:100%;border-collapse:collapse;table-layout:auto;min-width:830px;font-size:12px}
 .auth-table thead{background:rgba(113,158,229,.055)}
-.auth-table th{text-align:left;padding:15px 16px;font-size:10px;letter-spacing:.65px;font-weight:750;color:#9abff8;border-bottom:1px solid var(--tx-border,#2b3e5b);white-space:nowrap}
-.auth-table td{padding:15px 16px;border-bottom:1px solid var(--tx-border,#2b3e5b);vertical-align:middle}
+.auth-table th{text-align:left;padding:15px 16px;font-size:10px;letter-spacing:.65px;font-weight:750;color:var(--tx-ink);border-bottom:1px solid var(--tx-border);white-space:nowrap;background:var(--tx-surface-soft);}
+.auth-table td{padding:15px 16px;border-bottom:1px solid var(--tx-border);vertical-align:middle}
 .auth-table tbody tr:last-child td{border-bottom:0}
 .auth-table tbody tr:hover{background:rgba(104,154,232,.045)}
 .auth-user-cell{white-space:nowrap}
@@ -338,8 +338,8 @@
   min-width: 0;
   padding: 12px;
   margin-bottom: 8px;
-  background: #1f1f1f;
-  border: 1px solid #383838;
+  background: var(--tx-surface-soft);
+  border: 1px solid var(--tx-border);
   border-radius: 12px;
   box-sizing: border-box;
 }
