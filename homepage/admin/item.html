@@ -656,22 +656,22 @@ select:focus-visible{
 }
 
 /* Custom No Data card */
+
+/* Wrapper No Data - tanpa border tambahan */
 .item-page #cardGrid .shared-empty-card {
+  grid-column: 1 / -1;
   width: 100% !important;
   max-width: none !important;
   min-width: 0;
-  min-height: 160px;
   margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--page-bg2);
-  border: 1px solid var(--border-input);
-  border-radius: 12px;
-  padding:0;
 }
+
 
 /* Icon dan text */
 .item-page #cardGrid .shared-empty {
