@@ -2336,14 +2336,22 @@ await fgApi('/games/' + encodeURIComponent(g._id), {
 await fgReloadGames();
 
       fgToast('Game deleted', 'success');
-    } catch (err) {
-      fgToast(err.message, 'error');
-    }
+} catch (err) {
+  console.error('[Find Game Delete]', err);
+  throw err;
+}
   };
 
-if (window.confirm('Delete game "' + g.name + '"?')) {
-    removeGame();
-  }
+NewUI.confirm({
+  target: deleteBtn,
+  title: 'Delete Game',
+  message: 'Delete "' + g.name + '"?',
+  confirmText: 'Delete',
+  cancelText: 'Cancel',
+  danger: true,
+  loadingText: 'Deleting...',
+  onConfirm: removeGame
+});
 });
 
 
@@ -3375,8 +3383,18 @@ const action = async () => {
   fgSyncActions();
 };
 
-    if(NewUI.confirm){NewUI.confirm({title:'Delete Game',message:'Delete '+name+'?',onConfirm:action});}
-    else if(window.confirm('Delete '+name+'?')){try{await action();}catch(e){fgToast(e.message,'error');}}
+
+NewUI.confirm({
+  target: document.getElementById('fgDeleteGame'),
+  title: 'Delete Game',
+  message: 'Delete "' + name + '"?',
+  confirmText: 'Delete',
+  cancelText: 'Cancel',
+  danger: true,
+  loadingText: 'Deleting...',
+  onConfirm: action
+});
+
   });
 }
 document.getElementById('fgCreate').addEventListener('click', () => fgOpenEditor());
