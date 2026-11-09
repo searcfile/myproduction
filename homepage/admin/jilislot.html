@@ -616,6 +616,45 @@ input[type="number"] {
     justify-self: end;
   }
 }
+    
+/* ==========================================
+   JILI - SINGLE NO DATA CARD
+   ========================================== */
+
+.jili-empty-panel {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0 12px 8px;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: block;
+  box-sizing: border-box;
+}
+
+.jili-empty-panel #jiliEmpty {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none !important;
+  background: transparent !important;
+}
+
+.jili-empty-panel .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px;
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+}
+
 </style>
 </head>
 
@@ -662,7 +701,11 @@ input[type="number"] {
     <table class="game-log-table"><tbody id="logBody"></tbody></table>
   </div>
 </section>
-<section class="mg-panel jili-empty-panel" id="jiliEmptyCard" style="display:none"><div id="jiliEmpty"></div></section>
+
+<section class="jili-empty-panel" id="jiliEmptyCard" style="display:none">
+  <div id="jiliEmpty"></div>
+</section>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
