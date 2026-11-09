@@ -121,10 +121,10 @@ background: var(--page-bg);
 }
 
     .platform-box {
-      background: var(--page-bg2);
+      background: var(--tx-surface);
       color: var(--page-text);
-      border: 1px solid var(--border-input);
-      border-radius: 6px;
+      border: 1px solid var(--tx-border);
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -134,7 +134,11 @@ background: var(--page-bg);
 min-width: 0;
 max-width: 100%;
 box-sizing: border-box;
+        transition: all 0.3s;
     }
+.platform-box:hover{
+    background:var(--tx-hover);
+}
 /* =========================================
    TIPS GAME - RESPONSIVE 5 COLUMN GRID
    ========================================= */
@@ -178,7 +182,7 @@ box-sizing: border-box;
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 20px;
-      border-bottom: 1px solid var(--border-input);
+      border-bottom: 1px solid var(--tx-border);
       width: 100%;
     }
 
@@ -623,7 +627,7 @@ select:focus-visible{
 
 .platform-header{justify-content:center;text-align:center;margin-bottom:14px}
 .tips-platform-title{width:100%;text-align:center}
-.tips-card-footer{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:9px;border-top:1px solid var(--border-input)}
+.tips-card-footer{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:9px;border-top:1px solid var(--tx-border)}
 .tips-platform-actions{margin-left:auto}
 .platform-box.tips-platform-disabled {
   opacity: 1;
