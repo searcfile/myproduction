@@ -100,8 +100,11 @@ html[data-admin-theme="light"] {
   justify-content:center;
   gap:8px;
   padding:16px;
-  color:var(--muted);
+  color:var(--muted) !important;
   text-align:center;
+  background:var(--tx-surface) !important;
+  border-radius: 12px;
+  border: 1px solid var(--tx-border) !important;
   transition: all 0.3s;
 }
 .shared-empty:hover{
