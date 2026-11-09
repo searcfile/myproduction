@@ -1345,20 +1345,19 @@ select:focus-visible{
   margin: 0;
   padding: 16px;
   box-sizing: border-box;
-
   background: var(--tx-surface) !important;
   border: 1px solid var(--tx-border) !important;
   border-radius: 12px;
   box-shadow: none;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: all 0.3s;
 }
-.shared-empty:hover {
-  background:var(--tx-hover);
+#gameLogEmpty .shared-empty:hover {
+  background: var(--tx-hover) !important;
 }
 </style>
 <body>
