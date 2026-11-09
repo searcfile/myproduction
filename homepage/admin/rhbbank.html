@@ -220,8 +220,8 @@ body > .wrap{
   display:grid !important;
   grid-template-columns:repeat(12,minmax(0,1fr)) !important;
   gap:8px !important;padding:12px !important;
-  background:var(--page-input) !important;
-  border:1px solid var(--border-input) !important;
+  background:var(--tx-surface-soft) !important;
+  border:1px solid var(--tx-border) !important;
   border-radius:12px !important;box-shadow:none !important;
   overflow:visible !important;
 }
@@ -277,7 +277,6 @@ body > .wrap{
   }
 }
   @media(max-width:700px){
-  body > .wrap{width:calc(100% - 16px) !important;}
   #form.card.form{padding:12px !important;}
   #form > .fld{grid-column:1/-1 !important;}
   #form .btn,#form .btn-reset{flex:1 1 130px;}
