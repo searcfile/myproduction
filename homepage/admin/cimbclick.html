@@ -579,24 +579,55 @@ html {
    CIMB CLICKS - NO DATA CARD
    ========================================== */
 
+
+/* ==========================================
+   CIMB CLICKS - SINGLE NO DATA CARD
+   SAME AS LINK DOWNLOAD
+   ========================================== */
+
+/* Wrapper luar - tiada card */
 .cimb-empty-card {
   width: 100%;
-  min-height: 185px;
-  padding: 12px;
-  background: var(--page-input);
-  border: 1px solid var(--border-input);
-  border-radius: 12px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
   box-sizing: border-box;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.cimb-empty-card .shared-empty {
+/* Content mesti penuh */
+#cimbEmptyContent {
   width: 100%;
-  min-height: 160px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
 }
+
+/* Satu-satunya card No Data */
+.cimb-empty-card .shared-empty {
+  width: 100% !important;
+  min-height: 160px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px;
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+  box-shadow: none !important;
+  transition: background-color .3s ease;
+}
+
+/* Hover background */
+.cimb-empty-card .shared-empty:hover {
+  background: var(--tx-hover) !important;
+}
+
 
 /* Dynamic Bank Management: only settings UI, receipt unchanged */
 /* CREATE BANK & MANAGE BANKS - AUTO WIDTH */
@@ -1754,7 +1785,7 @@ function updateCimbEmptyState() {
   }
 
   receiptCard.style.display = hasData ? "" : "none";
-  emptyCard.style.display = hasData ? "none" : "flex";
+  emptyCard.style.display = hasData ? "none" : "block";
 
   if (!hasData) {
     if (typeof window.showEmptyState === "function") {
