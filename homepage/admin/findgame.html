@@ -2341,13 +2341,7 @@ await fgReloadGames();
     }
   };
 
-  if (window.NewUI?.confirm) {
-    NewUI.confirm({
-      title: 'Delete Game',
-      message: 'Delete ' + g.name + '?',
-      onConfirm: removeGame
-    });
-  } else if (window.confirm('Delete ' + g.name + '?')) {
+if (window.confirm('Delete game "' + g.name + '"?')) {
     removeGame();
   }
 });
@@ -2836,9 +2830,21 @@ async function fgApi(path = '', options = {}) {
 
   const result = await response.json();
 
+
   if (!response.ok || result.ok !== true) {
-    throw Error(result.message || 'Find Game API failed');
+    console.error('[Find Game API Error]', {
+      method: options.method || 'GET',
+      path,
+      status: response.status,
+      result
+    });
+
+    throw Error(
+      result.message ||
+      `Find Game API failed (HTTP ${response.status})`
+    );
   }
+
 
   return result;
 }
