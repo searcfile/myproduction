@@ -1,5 +1,12 @@
 
 :root{
+    --tx-ink: #e5edf8;
+    --tx-muted: #9aaac0;
+    --tx-border: #2b3e5b;
+    --tx-surface: #152237;
+    --tx-surface-soft: #1c2b42;
+    --tx-hover: #1d304b;
+  
   --bg-main:#000;
   --sidebar:#001529;
  
@@ -53,6 +60,13 @@
    ========================================================== */
 
 body.light-theme{
+    --tx-ink: #17243a;
+    --tx-muted: #697991;
+    --tx-border: #e3eaf3;
+    --tx-surface: #ffffff;
+    --tx-surface-soft: #f6f9fd;
+    --tx-hover: #f8fbff;
+  
   --bg-main:#fff;
   --sidebar:#001529;
 
