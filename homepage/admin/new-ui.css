@@ -102,8 +102,11 @@ html[data-admin-theme="light"] {
   padding:16px;
   color:var(--muted);
   text-align:center;
+  transition: all 0.3s;
 }
-
+.shared-empty:hover{
+   background:var(--tx-hover);
+}
 .shared-empty-image {
   width:64px;
   height:41px;
