@@ -757,6 +757,7 @@ select:focus-visible{
   overflow: visible;
   min-width: 0;
   height: auto;
+  background: var(--tx-surface);
 }
 
 .mg-log-panel .table-wrap {
@@ -1350,6 +1351,44 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   918KISS - SINGLE NO DATA CARD
+   SAME STYLE AS LINK DOWNLOAD
+   ========================================== */
+
+#gameLogEmptyCard {
+  width: auto;
+  min-width: 0;
+  margin: 0 12px 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+#gameLogEmpty {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#gameLogEmpty .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+#gameLogEmpty .shared-empty:hover {
+  background: var(--tx-hover) !important;
+}
+
 </style>
 <body>
 
@@ -1481,14 +1520,12 @@ select:focus-visible{
   </div>
 </section>
 
-<!-- CARD NO DATA - BERASINGAN -->
-<section
-  class="mg-panel"
-  id="gameLogEmptyCard"
-  style="display:none;"
->
+
+<!-- 918KISS - SINGLE NO DATA CARD -->
+<div id="gameLogEmptyCard" style="display:none;">
   <div id="gameLogEmpty"></div>
-</section>
+</div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
