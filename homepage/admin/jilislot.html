@@ -21,7 +21,7 @@
   }
 
 /* JILI UI UPGRADE: SETTINGS ONLY. Do not style .game-log-table or its descendants. */
-.jili-settings,.jili-log-panel,.jili-empty-panel{margin:0 12px 8px;padding:16px;border:1px solid var(--tx-border);border-radius:10px;background:var(--tx-surface-soft);box-sizing:border-box;}
+.jili-settings,.jili-log-panel,.jili-empty-panel{margin:0 12px 8px;padding:12px;border:1px solid var(--tx-border);border-radius:10px;background:var(--tx-surface-soft);box-sizing:border-box;}
 .jili-settings{overflow:visible;}
 .jili-settings .mg-panel-title,.jili-log-panel .mg-panel-title{font-size:15px;font-weight:700;margin:0 0 14px;color:var(--page-text);}
 .jili-divider{height:1px;background:var(--tx-border);opacity:.65;margin:16px 0;}
@@ -43,7 +43,7 @@
 .jili-empty-panel{height:160px;display:flex;align-items:center;justify-content:center;}
 .jili-empty-panel #jiliEmpty{width:100%;}
 @media(max-width:900px){.jili-top{grid-template-columns:repeat(3,minmax(0,1fr));}.jili-top .input-date{grid-column:span 2;}.jili-middle{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;}}
-@media(max-width:600px){.jili-settings,.jili-log-panel,.jili-empty-panel{margin:10px;padding:12px;}.jili-top{grid-template-columns:1fr;}.jili-top .input-date{grid-column:auto;}.jili-middle{grid-template-columns:minmax(0,1fr) auto;}.jili-middle .input-manual-win{grid-column:1;}.jili-middle .btn-set-win{grid-column:2;}.jili-actions{grid-template-columns:repeat(2,minmax(0,1fr));}.jili-actions button{width:100%;}}
+@media(max-width:600px){.jili-settings,.jili-log-panel,.jili-empty-panel{.jili-top{grid-template-columns:1fr;}.jili-top .input-date{grid-column:auto;}.jili-middle{grid-template-columns:minmax(0,1fr) auto;}.jili-middle .input-manual-win{grid-column:1;}.jili-middle .btn-set-win{grid-column:2;}.jili-actions{grid-template-columns:repeat(2,minmax(0,1fr));}.jili-actions button{width:100%;}}
 </style>
 
 <script>
