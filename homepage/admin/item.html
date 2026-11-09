@@ -673,14 +673,26 @@ select:focus-visible{
 }
 
 
-/* Icon dan text */
+
+/* No Data - satu card sahaja */
 .item-page #cardGrid .shared-empty {
-  width: 100%;
-  max-width: none;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 160px !important;
+  margin: 0 !important;
+  padding: 16px !important;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
 }
 
 
