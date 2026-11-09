@@ -1317,6 +1317,47 @@ select:focus-visible{
 .mg-panel:not(.mg-log-panel) .cs-item {
   font-family: inherit;
 }
+
+/* ==========================================
+   MEGA888 - SINGLE NO DATA CARD
+   ========================================== */
+
+#gameLogEmptyCard {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#gameLogEmpty {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Satu card sahaja */
+#gameLogEmpty .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+  box-shadow: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 </style>
 <body>
 
@@ -1449,14 +1490,13 @@ select:focus-visible{
   </div>
 </section>
 
-<!-- CARD NO DATA - BERASINGAN -->
-<section
-  class="mg-panel"
+<!-- GAME LOG - SINGLE NO DATA CARD -->
+<div
   id="gameLogEmptyCard"
   style="display:none;"
 >
   <div id="gameLogEmpty"></div>
-</section>
+</div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
