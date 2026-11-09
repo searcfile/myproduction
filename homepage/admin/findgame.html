@@ -1742,56 +1742,87 @@ select:focus-visible{
   white-space: nowrap;
 }
 
+
 /* ==========================================
    FIND GAME - SINGLE NO DATA CARD
+   SAME STYLE AS LINK DOWNLOAD
    ========================================== */
 
+/* Grid menjadi satu column */
 .grid.fg-no-results {
   grid-template-columns: minmax(0, 1fr) !important;
   gap: 0 !important;
 }
 
-/* Sembunyikan panel kanan */
+/* Sembunyikan panel Detail */
 .grid.fg-no-results .detail {
   display: none !important;
 }
 
-/* Jadikan panel kiri satu card penuh */
+/* Buang background dan bingkai panel luar */
 .grid.fg-no-results .list {
-  display: flex !important;
+  display: block !important;
   width: 100%;
-  min-height: 160px !important;
   height: auto !important;
+  min-height: 0 !important;
   padding: 0 !important;
+  margin: 0 !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
 }
 
-/* Sembunyikan Results dan count 0 */
+/* Buang lapisan tambahan */
+.grid.fg-no-results .list::before {
+  display: none !important;
+}
+
+/* Sembunyikan Results dan count */
 .grid.fg-no-results .list-hdr {
   display: none !important;
 }
 
-/* Letak No Data di tengah */
+/* Container No Data */
 .grid.fg-no-results #list {
-  display: flex;
+  display: block !important;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+/* Satu card No Data sahaja */
+.grid.fg-no-results #list > .shared-empty {
+  display: flex !important;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 160px;
-  max-height: none !important;
-  overflow: visible;
+
+  width: 100% !important;
+  min-height: 160px !important;
+  height: 160px;
+  margin: 0 !important;
+  padding: 16px !important;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px !important;
+  box-sizing: border-box;
 }
 
-/* Pastikan empty state berada di tengah */
-.grid.fg-no-results #list > * {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Mobile juga kekalkan satu card */
-@media (max-width: 979px) {
-  .grid.fg-no-results .list {
-    min-height: 200px !important;
-  }
+/* Pastikan icon dan tulisan center */
+.grid.fg-no-results .shared-empty-image,
+.grid.fg-no-results .shared-empty-text {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
 }
 
   </style>
@@ -2281,21 +2312,21 @@ return kw && platOK && typeOK;
 
   gameGrid?.classList.toggle('fg-no-results', isEmpty);
 
-  if (isEmpty) {
-    if (typeof window.showEmptyState === 'function') {
-      window.showEmptyState(
-        elList,
-        'No Data',
-        'large',
-        'center'
-      );
-    } else {
-      elList.textContent = 'No Data';
-    }
 
-    requestAnimationFrame(() => applyListMaxHeight());
-    return;
+if (isEmpty) {
+  if (typeof window.showEmptyState === 'function') {
+    window.showEmptyState(
+      elList,
+      'No Data',
+      'large',
+      'center'
+    );
+  } else {
+    elList.textContent = 'No Data';
   }
+
+  return;
+}
 
 
   filtered.forEach((g,i)=>{
