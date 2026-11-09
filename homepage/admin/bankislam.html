@@ -696,28 +696,69 @@ body {
    BANK ISLAM - NO DATA CARD
    ========================================== */
 
+
+/* ==========================================
+   BANK ISLAM - SINGLE NO DATA CARD
+   SAME AS LINK DOWNLOAD
+   ========================================== */
+
+/* Wrapper sahaja, bukan card */
 .bankislam-empty-card {
   width: 100%;
-  min-height: 160px;
-  padding: 12px;
-  background: var(--page-input);
-  border: 1px solid var(--border-input);
-  border-radius: 12px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
   box-sizing: border-box;
+}
+
+/* Content penuh ikut wrapper */
+#bankIslamEmptyContent {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Hanya satu card No Data */
+.bankislam-empty-card .shared-empty {
+  width: 100% !important;
+  min-height: 160px;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+
+  box-shadow: none !important;
+  transition: background-color .3s ease;
 }
 
-.bankislam-empty-card .shared-empty {
-  width: 100%;
-  min-height: 160px;
+/* Hover sama seperti shared UI */
+.bankislam-empty-card .shared-empty:hover {
+  background: var(--tx-hover) !important;
 }
 
-/* Pastikan hidden attribute tidak dioverride */
+/* Kekalkan fungsi hidden */
 .bankislam-empty-card[hidden] {
   display: none !important;
 }
+
   /* ==========================================
    BANK ISLAM - RESPONSIVE SETTINGS FIX
    ========================================== */
