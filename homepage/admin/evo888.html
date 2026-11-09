@@ -1555,6 +1555,47 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   }
 }
 
+/* ==========================================
+   EVO888 - SINGLE NO DATA CARD
+   SAME AS LINK DOWNLOAD
+   ========================================== */
+
+#gameLogEmptyCard {
+  width: auto;
+  min-width: 0;
+  margin: 0 12px 8px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#gameLogEmpty {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+
+#gameLogEmpty .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+  background: var(--tx-surface) !important;
+  box-shadow: none;
+}
+
+#gameLogEmpty .shared-empty:hover {
+  background: var(--tx-hover) !important;
+}
+
 </style>
 <body>
 
@@ -1684,7 +1725,12 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   </table>
 </div>
 </section>
-<section class="mg-panel" id="gameLogEmptyCard" style="display:none"><div id="gameLogEmpty"></div></section>
+
+<!-- EVO888 - SINGLE NO DATA CARD -->
+<div id="gameLogEmptyCard" style="display:none;">
+  <div id="gameLogEmpty"></div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
