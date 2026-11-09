@@ -1427,6 +1427,49 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   PUSSY888 - SINGLE NO DATA CARD
+   ========================================== */
+
+#gameLogEmptyCard {
+  width: auto;
+  min-width: 0;
+  margin: 0 12px 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#gameLogEmpty {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0 12px;
+}
+
+/* Card sebenar */
+#gameLogEmpty .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px;
+  box-shadow: none;
+
+  transition: all 0.3s;
+}
+
+/* Hover card */
+#gameLogEmpty .shared-empty:hover {
+  background: var(--tx-hover) !important;
+}
+
 </style>
 <body>
 
@@ -1556,7 +1599,10 @@ select:focus-visible{
   </table>
 </div>
 </section>
-<section class="mg-panel" id="gameLogEmptyCard" style="display:none"><div id="gameLogEmpty"></div></section>
+<!-- PUSSY888 - SINGLE NO DATA CARD -->
+<div id="gameLogEmptyCard" style="display:none;">
+  <div id="gameLogEmpty"></div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
