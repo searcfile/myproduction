@@ -108,7 +108,7 @@ html[data-admin-theme="light"] {
   transition: all 0.3s;
 }
 .shared-empty:hover{
-   background:var(--tx-hover);
+   background:var(--tx-hover)!important;
 }
 .shared-empty-image {
   width:64px;
