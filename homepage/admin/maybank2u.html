@@ -147,7 +147,6 @@
           .wrap{
             grid-template-columns: 1fr;
             max-width: 100%;
-            padding: 0 8px;
           }
         
           .panel{
@@ -598,9 +597,9 @@
           width:100% !important;
           max-width:100% !important;
           overflow:visible !important;
-          border:1px solid var(--border-input);
+          border:1px solid var(--tx-border);
           border-radius:12px;
-          background:var(--page-input);
+          background:var(--tx-surface-soft);
           padding:16px 18px;
         }
         .panel .ph{display:none}
@@ -678,7 +677,6 @@
         }
         @media (max-width:650px) {
           .panel .pb { grid-template-columns:minmax(0,1fr); }
-          .wrap { width:calc(100% - 16px) !important; }
         }
         
         /* OUTER PREVIEW CARD */
