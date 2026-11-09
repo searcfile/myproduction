@@ -631,60 +631,36 @@ select:focus-visible{
   container-type: inline-size;
 }
 
+
 /* ==========================================
-   ITEM COLLECTION - NO DATA FULL WIDTH FIX
+   ITEM COLLECTION - SINGLE NO DATA CARD
    ========================================== */
 
-/* Grid normal apabila ada item */
+/* Grid utama tanpa background atau border */
 .item-page #cardGrid {
   width: 100%;
   min-width: 0;
-}
-.shared-empty-card {
-  min-height: 160px !important;
-}
-/* Apabila No Data wujud, guna satu column penuh */
-.item-page #cardGrid:has(.shared-empty-card) {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
-}
-
-/* Pastikan semua direct child memenuhi grid */
-.item-page #cardGrid:has(.shared-empty-card) > * {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0;
-}
-
-/* Custom No Data card */
-
-/* Wrapper No Data - tanpa border tambahan */
-.item-page #cardGrid .shared-empty-card {
-  grid-column: 1 / -1;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  box-sizing: border-box;
+  padding: 0 !important;
 }
 
+/* Apabila No Data, isi seluruh lebar grid */
+.item-page #cardGrid:has(> .shared-empty) {
+  display: block !important;
+}
 
-
-/* No Data - satu card sahaja */
-.item-page #cardGrid{
+/* Hanya satu card No Data */
+.item-page #cardGrid > .shared-empty {
   width: 100% !important;
   max-width: none !important;
   min-height: 160px !important;
   margin: 0 !important;
   padding: 16px !important;
 
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -696,7 +672,6 @@ select:focus-visible{
   box-shadow: none !important;
   box-sizing: border-box;
 }
-
 
 
 /* ==========================================
@@ -1516,13 +1491,13 @@ function render() {
 
     if (typeof window.showEmptyState === 'function') {
 
-      window.showEmptyState(
-        grid,
-        'No Data',
-        'large',
-        'center',
-        true
-      );
+window.showEmptyState(
+  grid,
+  'No Data',
+  'large',
+  'center',
+  false
+);
 
     } else {
 
