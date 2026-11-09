@@ -919,45 +919,37 @@ body {
   white-space: nowrap;
   font-size: 10px;
 }
+
 /* ==========================================
-   BANK ISLAM - BOTTOM ACTION BUTTONS
+   BANK ISLAM - RESPONSIVE LIKE CIMB
    ========================================== */
 
-/* Semua tombol pada satu baris */
 #back .modal > .ctl {
   grid-column: 1 / -1 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
   flex-wrap: wrap !important;
   gap: 8px !important;
   width: 100% !important;
-  margin: 0 !important;
-}
-
-/* Saiz tombol ikut tulisan */
-#back .modal > .ctl > .btn {
-  flex: 0 0 auto !important;
-  width: auto !important;
   min-width: 0 !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  padding: 0 15px !important;
-}
-
-/* Create Bank + Manage Banks ke kanan */
-#back .modal > .ctl > .bank-islam-actions {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  flex: 0 0 auto !important;
-  gap: 8px !important;
-  margin: 0 0 0 auto !important;
+  margin: 0 !important;
   padding: 0 !important;
 }
 
-/* Saiz tombol bank */
-#back .modal > .ctl > .bank-islam-actions > .btn {
+/* MAIN ACTION GROUP */
+#back .modal .bank-islam-main-actions {
+  display: flex !important;
+  flex: 0 1 auto !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+/* CREATE, COPY, BLUR, RESET */
+#back .modal .bank-islam-main-actions > button {
   flex: 0 0 auto !important;
   width: auto !important;
   min-width: 0 !important;
@@ -965,71 +957,95 @@ body {
   min-height: 32px !important;
   padding: 0 15px !important;
   white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+/* BANK MANAGEMENT GROUP */
+#back .modal .ctl > .bank-islam-actions {
+  display: flex !important;
+  flex: 0 1 auto !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+}
+
+/* CREATE BANK & MANAGE BANKS */
+#back .modal .bank-islam-actions > button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
 
 /* ==========================================
-   BANK ISLAM - RESPONSIVE BUTTONS
+   TABLET / MOBILE
    ========================================== */
 
 @media (max-width: 650px) {
 
-  /* Container semua tombol */
   #back .modal > .ctl {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     justify-content: flex-start !important;
-    gap: 8px !important;
-    width: 100% !important;
-    min-width: 0 !important;
   }
 
-  /* Create, Blur, Copy Image, Reset */
-  #back .modal > .ctl > .btn {
+  #back .modal .bank-islam-main-actions {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+  }
+
+  #back .modal .bank-islam-main-actions > button {
     flex: 1 1 120px !important;
     width: auto !important;
-    min-width: 120px !important;
+    min-width: 0 !important;
     max-width: 100% !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    padding: 0 15px !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
     text-align: center !important;
   }
 
-  /* Container Create Bank + Manage Banks */
-  #back .modal > .ctl > .bank-islam-actions {
-    display: flex !important;
-    flex: 1 1 100% !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 8px !important;
+  #back .modal .ctl > .bank-islam-actions {
+    flex: 0 0 auto !important;
     width: 100% !important;
-    min-width: 0 !important;
+    justify-content: flex-start !important;
     margin: 0 !important;
-    padding: 0 !important;
   }
 
-  /* Dua tombol bank */
-  #back .modal > .ctl > .bank-islam-actions > .btn {
+  #back .modal .bank-islam-actions > button {
     flex: 1 1 135px !important;
     width: auto !important;
-    min-width: 135px !important;
+    min-width: 0 !important;
     max-width: 100% !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    padding: 0 15px !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
     text-align: center !important;
   }
 }
+
+/* ==========================================
+   VERY SMALL MOBILE
+   ========================================== */
+
+@media (max-width: 280px) {
+
+  #back .modal .bank-islam-main-actions > button,
+  #back .modal .bank-islam-actions > button {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* PERMISSION HIDDEN */
 #biCreateBank[hidden],
 #biManageBanks[hidden] {
   display: none !important;
 }
+
 /* BANK ISLAM - CUSTOM SITE VISIBILITY */
 
 .bi-bank-scope {
@@ -1112,21 +1128,45 @@ body {
   <label>Saat Update, data sensitif akan otomatis di-blur, hanya huruf awal nama yang tampak.</label>
 </div>
 
-<div class="ctl">
-  <button type="button" class="btn-primary-new" id="apply">Create</button>
-  <button type="button" class="btn-primary-new" id="copyImg">COPY IMAGE</button>
-  <button type="button" class="btn-primary-new" id="btnBlur">Blur</button>
-  <button type="button" class="reset-button" id="btnReset">Reset</button>
 
-            <div class="bank-islam-actions">
-<button type="button" class="btn-primary-new" id="biCreateBank" hidden>
-    + Create Bank
-  </button>
-<button type="button" class="btn-primary-new" id="biManageBanks" hidden>
-    Manage Banks
-  </button>
+<div class="ctl">
+
+  <!-- MAIN ACTION BUTTONS -->
+  <div class="bank-islam-main-actions">
+
+    <button type="button" class="btn-primary-new" id="apply">
+      Create
+    </button>
+
+    <button type="button" class="btn-primary-new" id="copyImg">
+      COPY IMAGE
+    </button>
+
+    <button type="button" class="btn-primary-new" id="btnBlur">
+      Blur
+    </button>
+
+    <button type="button" class="reset-button" id="btnReset">
+      Reset
+    </button>
+
+  </div>
+
+  <!-- BANK MANAGEMENT BUTTONS -->
+  <div class="bank-islam-actions">
+
+    <button type="button" class="btn-primary-new" id="biCreateBank" hidden>
+      + Create Bank
+    </button>
+
+    <button type="button" class="btn-primary-new" id="biManageBanks" hidden>
+      Manage Banks
+    </button>
+
+  </div>
+
 </div>
-</div>
+
         </div>
       </div>
 
