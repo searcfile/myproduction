@@ -1075,11 +1075,11 @@ html {
 /* 5G88 LiveChat — Modern UI skin. Load AFTER existing inline styles. */
 :root{--lc-bg:#080f1d;--lc-surface:#101b2c;--lc-surface2:#17253b;--lc-border:#293c59;--lc-muted:#91a8c8;--lc-text:#eaf2ff;--lc-accent:#2478ee;--lc-glow:rgba(36,120,238,.18)}
 *{box-sizing:border-box}
-html,body{min-height:100%;background:#080f1d!important;color:var(--lc-text)!important}
+html,body{min-height:100%;background:var(--tx-bg) !important;color:var(--lc-text)!important}
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif!important}
-main{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2vw,28px);}
+      
 .chat-wrapper{width:min(100%,1060px)!important;max-width:1060px!important;height:min(880px,calc(100dvh - 40px))!important;min-height:400px;margin:0 auto!important;padding:0!important;background:var(--lc-bg)!important;border:1px solid #2b4265!important;border-radius:20px!important;box-shadow:0 24px 80px #0008,0 0 0 1px #ffffff05!important;isolation:isolate}
-.chat-header{background:linear-gradient(110deg,#182d4b,#101d30)!important;border:0!important;border-bottom:1px solid var(--lc-border)!important;border-radius:0!important;padding:18px 22px!important;gap:20px!important;min-height:88px;flex-wrap:nowrap!important}
+.chat-header{background:var(--tx-surface-soft)!important;border:0!important;border-bottom:1px solid var(--lc-border)!important;border-radius:0!important;padding:18px 22px!important;gap:20px!important;min-height:88px;flex-wrap:nowrap!important}
 .chat-header .profile{min-width:0;gap:13px}
 .chat-header .profile img{width:48px!important;height:48px!important;object-fit:cover;border:2px solid #4b91fb!important;box-shadow:0 0 0 4px #2676ef24;background:#0e1c32!important}
 .chat-header .profile span{display:block;font-size:16px!important;letter-spacing:.1px;color:#f5f9ff!important;white-space:nowrap}
@@ -1092,7 +1092,7 @@ main{min-height:100dvh;display:flex;align-items:center;justify-content:center;pa
 #searchChat::placeholder{color:#8da1bd}
 #searchChat:focus{border-color:#438efa!important;box-shadow:0 0 0 3px #2377f222!important}
 .search-icon{color:#9ab2d2!important}
-.chat-box{flex:1!important;height:auto!important;min-height:0!important;padding:22px clamp(12px,3vw,32px)!important;background:linear-gradient(180deg,#0b1525,#0a1220)!important;border:0!important;border-radius:0!important;scrollbar-color:#385374 transparent!important}
+.chat-box{flex:1!important;height:auto!important;min-height:0!important;padding:22px clamp(12px,3vw,32px)!important;background:var(--tx-surface)!important;border:0!important;border-radius:0!important;scrollbar-color:#385374 transparent!important}
 .message{margin:14px 0!important}
 .msg-row{gap:10px!important;align-items:flex-end!important}
 .msg-avatar-outside{width:30px!important;height:30px!important;border:1px solid #395274!important;background:#15263d!important}
@@ -1105,7 +1105,7 @@ main{min-height:100dvh;display:flex;align-items:center;justify-content:center;pa
 .msg-time{color:#bed0e9!important;font-size:10px!important;margin-top:6px!important}
 .date-label{margin:14px 0 22px!important}
 .date-label-inner{background:#1b304d!important;border:1px solid #324b70!important;border-radius:999px!important;padding:5px 18px!important;box-shadow:none!important;color:#dce9fc!important}
-.send-box{background:#101d30!important;border:0!important;border-top:1px solid var(--lc-border)!important;border-radius:0!important;padding:15px 20px!important;gap:12px!important;align-items:center!important;flex-wrap:nowrap!important;box-shadow:none!important}
+.send-box{background:var(--tx-surface-soft)!important;border:0!important;border-top:1px solid var(--lc-border)!important;border-radius:0!important;padding:15px 20px!important;gap:12px!important;align-items:center!important;flex-wrap:nowrap!important;box-shadow:none!important}
 .send-box:focus-within{box-shadow:none!important;border-top-color:#345984!important}
 #msg{min-width:0!important;min-height:38px!important;padding:10px 4px!important;color:#f3f7ff!important;line-height:1.5!important;font-size:14px!important;background:transparent!important}
 #msg::placeholder{color:#8196b5!important}
@@ -1160,7 +1160,7 @@ main {
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  border-radius: 14px !important;
+  border-radius: 12px !important;
 }
 
 /* Header kekal di atas */
