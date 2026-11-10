@@ -2052,7 +2052,8 @@ async function stickyApiRequest(path, method, body) {
   return result;
 }
 
-async function saveNoteToFirebase(note) {
+
+async function saveNoteToFirebase(note, action) {
   if (!note || !note.id) {
     throw new Error("Invalid note");
   }
@@ -2063,18 +2064,15 @@ async function saveNoteToFirebase(note) {
     throw new Error("Login session unavailable");
   }
 
-  const existing = findNoteById(note.id);
-  const action = existing ? "edit" : "create";
+  if (action !== "create" && action !== "edit") {
+    throw new Error("Invalid note action");
+  }
 
   if (!hasStickyPermission(action)) {
     throw new Error(`${action} permission denied`);
   }
 
-  if (existing && !canModifyNote(existing)) {
-    throw new Error("Note ownership mismatch");
-  }
-
-  if (!existing) {
+  if (action === "create") {
     return stickyApiRequest(
       "/api/sticky-notes",
       "POST",
@@ -2085,6 +2083,17 @@ async function saveNoteToFirebase(note) {
         color: note.color
       }
     );
+  }
+
+  // Edit mesti mempunyai nota asal dan UID pemilik
+  const existing = findNoteById(note.id);
+
+  if (!existing) {
+    throw new Error("Note not loaded or no longer exists");
+  }
+
+  if (!canNoteAction(existing, "edit")) {
+    throw new Error("Edit permission denied");
   }
 
   const ownerUid = getNoteOwnerUid(existing);
@@ -2539,9 +2548,16 @@ userEmail: currentUser.email,
     };
   }
 
-  window.NewUI?.setButtonLoading?.(els.saveBtn, true, {text:"Saving..."});
-  try {
-    await saveNoteToFirebase(note);
+const saveAction = editingId ? "edit" : "create";
+
+window.NewUI?.setButtonLoading?.(
+  els.saveBtn,
+  true,
+  { text: "Saving..." }
+);
+
+try {
+  await saveNoteToFirebase(note, saveAction);
     const wasEditing = Boolean(editingId);
     closeModal();
     window.NewUI?.showToast?.(wasEditing ? "Note updated" : "Note saved", "success");
@@ -2636,9 +2652,10 @@ function togglePin(id){
     updatedAt: Date.now()
   };
 
-  saveNoteToFirebase(updated).catch(err => {
-    console.error("Pin failed:", err);
-  });
+saveNoteToFirebase(updated, "edit").catch(err => {
+  console.error("Pin failed:", err);
+  window.NewUI?.showToast?.("Pin failed", "error");
+});
 }
 function toggleArchive(id){
   const note = notes.find(n => n.id === id);
@@ -2650,9 +2667,10 @@ if (!note || !canNoteAction(note, "edit")) return;
     updatedAt: Date.now()
   };
 
-  saveNoteToFirebase(updated).catch(err => {
-    console.error("Archive failed:", err);
-  });
+saveNoteToFirebase(updated, "edit").catch(err => {
+  console.error("Archive failed:", err);
+  window.NewUI?.showToast?.("Archive failed", "error");
+});
 }
 /* =========================
    THEME / PARENT
