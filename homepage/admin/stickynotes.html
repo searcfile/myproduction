@@ -1584,6 +1584,116 @@ let notesLoading = true;
 let editingId = null;
 let deleteId = null;
 let activeFilters = ["all"];
+    
+/* ==========================================
+   STICKY NOTES - SAVE & RESTORE FILTER BY UID
+   ========================================== */
+
+const STICKY_STATE_PREFIX = "5g88.pageState.v1";
+const STICKY_RESET_PREFIX = "5g88.pageReset.v1";
+const STICKY_PAGE = "stickynotes.html";
+
+let stickyFilterReady = false;
+let stickyFilterUid = null;
+let stickyChip = null;
+let stickySaveTimer = null;
+
+function getStickyStateKey(uid = stickyFilterUid) {
+  if (!uid) return null;
+  return `${STICKY_STATE_PREFIX}:${uid}:${STICKY_PAGE}`;
+}
+
+function getStickyResetKey(uid = stickyFilterUid) {
+  if (!uid) return null;
+  return `${STICKY_RESET_PREFIX}:${uid}:${STICKY_PAGE}`;
+}
+
+function saveStickyFilter() {
+  if (!stickyFilterReady || !stickyFilterUid) return;
+
+  const key = getStickyStateKey();
+  if (!key) return;
+
+  // Jangan simpan semula ketika reset tab pending
+  if (sessionStorage.getItem(getStickyResetKey()) === "1") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(key, JSON.stringify({
+      search: els.searchInput?.value || "",
+      filters: [...activeFilters]
+    }));
+  } catch (error) {
+    console.warn("[Sticky Notes] Save filter failed:", error);
+  }
+}
+
+function scheduleStickyFilterSave() {
+  clearTimeout(stickySaveTimer);
+
+  if (!stickyFilterReady) return;
+
+  stickySaveTimer = setTimeout(saveStickyFilter, 250);
+}
+
+function restoreStickyFilter(uid) {
+  if (!uid) return;
+
+  clearTimeout(stickySaveTimer);
+
+  stickyFilterReady = false;
+  stickyFilterUid = uid;
+
+  const stateKey = getStickyStateKey(uid);
+  const resetKey = getStickyResetKey(uid);
+
+  let saved = null;
+
+  try {
+    if (sessionStorage.getItem(resetKey) === "1") {
+      // Icon SVG Refresh Tab ditekan
+      localStorage.removeItem(stateKey);
+      sessionStorage.removeItem(resetKey);
+    } else {
+      saved = JSON.parse(
+        localStorage.getItem(stateKey) || "null"
+      );
+    }
+  } catch (error) {
+    console.warn("[Sticky Notes] Restore failed:", error);
+  }
+
+  const allowed = new Set([
+    "all", "pinned", "recent", "archived"
+  ]);
+
+  const filters = Array.isArray(saved?.filters)
+    ? [...new Set(saved.filters.filter(v => allowed.has(v)))]
+    : ["all"];
+
+  activeFilters = filters;
+
+  if (els.searchInput) {
+    els.searchInput.value =
+      typeof saved?.search === "string"
+        ? saved.search
+        : "";
+  }
+
+  // Restore chip menggunakan API NewUI
+  stickyChip?.setValue?.([...filters]);
+
+  stickyFilterReady = true;
+  renderNotes();
+}
+
+// Simpan perubahan terakhir sebelum keluar halaman
+window.addEventListener("pagehide", () => {
+  clearTimeout(stickySaveTimer);
+  saveStickyFilter();
+});
+
 let selectedColor = "#1668dc";
 let notesRef = null;
 let notesListener = null;
@@ -2257,7 +2367,15 @@ els.closeModal?.addEventListener("click", closeModal);
 els.cancelBtn?.addEventListener("click", closeModal);
 els.saveBtn?.addEventListener("click", handleSave);
 
-els.searchInput?.addEventListener("input", renderNotes);
+els.searchInput?.addEventListener("input", () => {
+  renderNotes();
+  scheduleStickyFilterSave();
+});
+
+els.searchInput?.addEventListener("change", () => {
+  renderNotes();
+  saveStickyFilter();
+});
 // Reuse the exact custom NewUI search with rotating sync icon.
 window.NewUI?.init?.(document);
 window.NewUI?.syncSearch?.(els.searchInput, {
@@ -2268,15 +2386,30 @@ els.noteModal?.addEventListener("click", (e) => {
 });
 
 
-// Shared chip dropdown, not the page's previous hardcoded dropdown.
+
+// Shared chip dropdown - Sticky Notes
 const FILTER_OPTIONS = [
-  {value:"all",label:"All"}, {value:"pinned",label:"Pinned"},
-  {value:"recent",label:"Recent"}, {value:"archived",label:"Archived"}
+  { value: "all", label: "All" },
+  { value: "pinned", label: "Pinned" },
+  { value: "recent", label: "Recent" },
+  { value: "archived", label: "Archived" }
 ];
-window.NewUI?.chips?.("#stickyFilter", {
-  placeholder:"Filter notes", options:FILTER_OPTIONS, value:["all"],
-  onChange(values){ activeFilters = values; renderNotes(); }
+
+stickyChip = window.NewUI?.chips?.("#stickyFilter", {
+  placeholder: "Filter notes",
+  options: FILTER_OPTIONS,
+  value: ["all"],
+
+  onChange(values) {
+    activeFilters = Array.isArray(values)
+      ? [...values]
+      : [];
+
+    renderNotes();
+    scheduleStickyFilterSave();
+  }
 });
+
 els.notesGrid?.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-action]");
   if(!btn) return;
@@ -2319,13 +2452,29 @@ document.addEventListener("keydown", (e) => {
 
   // Ambil pengguna yang benar-benar login melalui Firebase
   firebase.auth().onAuthStateChanged(async (user) => {
+
 if (!user) {
   detachNotesListener();
+
+  clearTimeout(stickySaveTimer);
+
+  stickyFilterReady = false;
+  stickyFilterUid = null;
+
   notes = [];
   notesLoading = false;
+  activeFilters = ["all"];
+
+  if (els.searchInput) {
+    els.searchInput.value = "";
+  }
+
+  stickyChip?.setValue?.(["all"]);
+
   renderNotes();
   return;
 }
+
 
     try {
       const snapshot = await firebase.database()
@@ -2364,15 +2513,26 @@ const nextUser = {
 
 
 
+
 const oldUid = currentUser.uid || "";
 
 currentUser = nextUser;
+
+// Restore hanya apabila UID bertukar atau
+// halaman baru dibuka.
+if (
+  stickyFilterUid !== user.uid ||
+  !stickyFilterReady
+) {
+  restoreStickyFilter(user.uid);
+}
 
 if (oldUid !== user.uid || !notesRef) {
   loadNotes();
 } else {
   renderNotes();
 }
+
 
 
     } catch (error) {
