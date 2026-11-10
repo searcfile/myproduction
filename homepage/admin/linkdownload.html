@@ -624,132 +624,135 @@ if (!can('view')) return;
 refreshButton.addEventListener('click', refreshGridOnly);
 
 /* ==========================================
-   LINK DOWNLOAD - SAVE & RESTORE BY UID
-   SAME AS STICKY NOTES
+   LINK DOWNLOAD - SAVE & RESTORE FILTER
    ========================================== */
 
-const LD_STATE_PREFIX = "5g88.pageState.v1";
-const LD_RESET_PREFIX = "5g88.pageReset.v1";
-const LD_PAGE = "linkdownload.html";
-
+const LD_FILTER_PREFIX = "5g88.pageState.v1";
 let ldFilterReady = false;
-let ldFilterUid = null;
-let ldSaveTimer = null;
-let ldPendingPlatforms = null;
-let ldFilterDirty = false;
 
-function getLdStateKey(uid = ldFilterUid) {
-  if (!uid) return null;
-  return `${LD_STATE_PREFIX}:${uid}:${LD_PAGE}`;
+function getLdFilterKey() {
+  const user = firebase.auth().currentUser;
+  const sessionUid = sessionStorage.getItem(
+    "5g88.adminSession"
+  );
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    user.uid !== sessionUid
+  ) {
+    return null;
+  }
+
+  return `${LD_FILTER_PREFIX}:${user.uid}:linkdownload.html`;
 }
 
-function getLdResetKey(uid = ldFilterUid) {
-  if (!uid) return null;
-  return `${LD_RESET_PREFIX}:${uid}:${LD_PAGE}`;
+
+function getLdResetKey() {
+  const key = getLdFilterKey();
+  if (!key) return null;
+
+  return key.replace(
+    "5g88.pageState.v1:",
+    "5g88.pageReset.v1:"
+  );
 }
 
 function isLdResetPending() {
   const key = getLdResetKey();
-  return !!key && sessionStorage.getItem(key) === "1";
+
+  return !!key &&
+    sessionStorage.getItem(key) === "1";
 }
 
-
 function saveLdFilter() {
-  if (!ldFilterReady || !ldFilterUid) return;
-  if (isLdResetPending()) return;
-  if (!ldFilterDirty) return;
+  // Jangan simpan semasa restore/reset.
+  if (!ldFilterReady || isLdResetPending()) return;
 
-  const key = getLdStateKey();
+  const key = getLdFilterKey();
   if (!key) return;
 
   try {
-    localStorage.setItem(key, JSON.stringify({
-      search: search.value || "",
-      platforms: [...(chip?.getValue?.() || [])]
-    }));
-
-    ldFilterDirty = false;
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        search: search.value,
+        platforms: chip?.getValue?.() || []
+      })
+    );
   } catch (error) {
-    console.warn("[Link Download] Save failed:", error);
+    console.warn(
+      "[Link Download] Save failed:",
+      error
+    );
   }
 }
 
-function scheduleLdFilterSave() {
-  if (!ldFilterReady || !ldFilterUid) return;
-  if (isLdResetPending()) return;
+function restoreLdFilter() {
+  if (ldFilterReady) return;
 
-  ldFilterDirty = true;
+  const key = getLdFilterKey();
+  if (!key) return;
 
-  clearTimeout(ldSaveTimer);
-  ldSaveTimer = setTimeout(saveLdFilter, 250);
-}
+  const resetKey = getLdResetKey();
 
+  // Icon refresh tab meminta reset.
+  if (isLdResetPending()) {
+    localStorage.removeItem(key);
 
+    search.value = "";
+    chip?.setValue?.([]);
 
-function restoreLdFilter(uid) {
-  if (!uid) return;
+    ldFilterReady = true;
 
-  clearTimeout(ldSaveTimer);
+    // Buang marker hanya selepas reset siap.
+    sessionStorage.removeItem(resetKey);
 
-ldFilterReady = false;
-ldFilterUid = uid;
-ldFilterDirty = false;
-  const stateKey = getLdStateKey(uid);
-  const resetKey = getLdResetKey(uid);
+    render();
+    return;
+  }
 
   let saved = null;
 
   try {
-    if (sessionStorage.getItem(resetKey) === "1") {
-      localStorage.removeItem(stateKey);
-      sessionStorage.removeItem(resetKey);
-    } else {
-      saved = JSON.parse(
-        localStorage.getItem(stateKey) || "null"
-      );
-    }
+    saved = JSON.parse(
+      localStorage.getItem(key) || "null"
+    );
   } catch (error) {
-    console.warn("[Link Download] Restore failed:", error);
+    console.warn(
+      "[Link Download] Restore failed:",
+      error
+    );
   }
 
-  // Restore Search terus selepas UID disahkan.
-  const restoredSearch =
-    typeof saved?.search === "string"
-      ? saved.search
-      : "";
+  if (saved && typeof saved === "object") {
+    search.value = String(saved.search ?? "");
 
-  search.value = restoredSearch;
-  search.defaultValue = restoredSearch;
+    const availablePlatforms = new Set(
+      Object.values(records)
+        .filter(card =>
+          isCard(card) && visibleForSite(card)
+        )
+        .map(card => clean(card.platform))
+        .filter(Boolean)
+    );
 
+    const selectedPlatforms =
+      Array.isArray(saved.platforms)
+        ? saved.platforms.filter(value =>
+            availablePlatforms.has(value)
+          )
+        : [];
 
-ldPendingPlatforms = Array.isArray(saved?.platforms)
-  ? [...new Set(
-      saved.platforms.filter(
-        value => typeof value === "string"
-      )
-    )]
-  : [];
+    chip?.setValue?.(selectedPlatforms);
+  }
 
-const cachedPlatforms = [...ldPendingPlatforms];
-
-chip?.setOptions?.(
-  cachedPlatforms.map(value => ({
-    value,
-    label: value
-  }))
-);
-
-chip?.setValue?.(cachedPlatforms);
-
-ldFilterDirty = false;
-ldFilterReady = true;
-
+  ldFilterReady = true;
 }
 
   
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
 function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
-
 
 function refreshOptions() {
   const values = [
@@ -763,12 +766,9 @@ function refreshOptions() {
     )
   ].sort((a, b) => a.localeCompare(b));
 
-  // Kali pertama, guna pilihan dari localStorage.
-  // Selepas itu, guna pilihan semasa pengguna.
-  const previous = Array.isArray(ldPendingPlatforms)
-    ? ldPendingPlatforms
-    : (chip?.getValue?.() || []);
+  const previous = chip?.getValue?.() || [];
 
+  // Tahan Auto Save semasa options berubah.
   const wasReady = ldFilterReady;
   ldFilterReady = false;
 
@@ -786,11 +786,7 @@ function refreshOptions() {
   } finally {
     ldFilterReady = wasReady;
   }
-
-  // Selesai menggunakan pilihan tersimpan.
-  ldPendingPlatforms = null;
 }
-
 
   function render(){
  if(loading||!siteAccessReady)return;
@@ -985,56 +981,30 @@ chip = NewUI.chips('#ldPlatforms', {
   options: [],
 
   onChange: () => {
-    if (!ldFilterReady) return;
-
     render();
-    scheduleLdFilterSave();
+    saveLdFilter();
   }
 });
 
-
  NewUI.syncSearch(search,{onSearch:async()=>{await new Promise(resolve=>setTimeout(resolve,450));render();}});
  
-
-
 search.addEventListener('input', () => {
   render();
-  scheduleLdFilterSave();
+  saveLdFilter();
 });
 
 search.addEventListener('change', () => {
   render();
-
-  if (!ldFilterReady) return;
-
-  // Pastikan perubahan terakhir disimpan
-  ldFilterDirty = true;
-  clearTimeout(ldSaveTimer);
   saveLdFilter();
 });
-
-
 
  const createButton=$('#ldCreate');createButton.hidden=true;
  createButton.onclick=()=>openEditor();
  try{
   if(!window.firebase?.apps?.length)throw Error('Firebase app not initialized. Check ../firebase.js');
   db=firebase.database();
-
-const user = await new Promise((resolve, reject) => {
-  const unsub = firebase.auth().onAuthStateChanged(
-    u => {
-      unsub();
-      u ? resolve(u) : reject(Error('Login required'));
-    },
-    reject
-  );
-});
-
-restoreLdFilter(user.uid);
-
-const token = await user.getIdTokenResult(true);
-
+  const user=await new Promise((resolve,reject)=>{const unsub=firebase.auth().onAuthStateChanged(u=>{unsub();u?resolve(u):reject(Error('Login required'));},reject);});
+  const token=await user.getIdTokenResult(true);
   if(token.claims.secondVerified!==true)throw Error('Second password verification required');
   const profileSnap=await db.ref('adminUsers/'+user.uid).once('value');
   adminProfile=profileSnap.val();
@@ -1066,21 +1036,24 @@ sites = Object.fromEntries(
 );
 
   }
-
-if (!can('view')) {
+  if (!can('view')) {
   throw new Error('Link Download view permission denied');
 }
 
 createButton.hidden = !can('create');
-siteAccessReady = true;
-
+siteAccessReady=true;
  
-
-
 db.ref(PATH).on('value', snap => {
   records = snap.val() || {};
   loading = false;
+
+
   refreshOptions();
+
+
+  if (!ldFilterReady) {
+    restoreLdFilter();
+  }
 
   if (!gridRefreshing) {
     render();
@@ -1095,54 +1068,11 @@ db.ref(PATH).on('value', snap => {
  }catch(err){loading=false;showEmpty('Access unavailable');console.error(err);toast(err.message,'error');}
 }
 
-
-
 window.addEventListener("pagehide", () => {
-  clearTimeout(ldSaveTimer);
-
   if (isLdResetPending()) return;
-
-  // Jangan simpan semula state lama jika
-  // pengguna tidak membuat perubahan.
-  if (!ldFilterDirty) return;
 
   saveLdFilter();
 });
-
-
-window.addEventListener("storage", (event) => {
-  if (!ldFilterUid) return;
-  if (event.storageArea !== localStorage) return;
-
-  const key = getLdStateKey();
-
-  if (event.key !== key && event.key !== null) {
-    return;
-  }
-
-  // Jika state UID ini telah dipadam,
-  // kembali kepada default.
-  if (localStorage.getItem(key) === null) {
-    clearTimeout(ldSaveTimer);
-
-    ldFilterDirty = false;
-    ldPendingPlatforms = [];
-
-    const wasReady = ldFilterReady;
-    ldFilterReady = false;
-
-    try {
-      search.value = "";
-      search.defaultValue = "";
-      chip?.setValue?.([]);
-    } finally {
-      ldFilterReady = wasReady;
-    }
-
-    render();
-  }
-});
-
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 
