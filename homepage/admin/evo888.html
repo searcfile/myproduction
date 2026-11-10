@@ -132,6 +132,16 @@
 #gameLog.screenshot-mode td {
   box-sizing: content-box;
 }
+
+html {
+  margin: 0;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.16) transparent;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -139,13 +149,20 @@ body {
   line-height: 1.42857;
   font-weight: 400;
   background: var(--page-bg);
-  margin: 0 0 20px;
+
+  margin: 0;
+  padding: 0 0 20px;
+
+  min-height: 100dvh;
+  height: auto;
   overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow-y: visible;
 }
-  .screenshot-mode th {border: 1px solid #ddd !important;}
-  html { scrollbar-width: none;-ms-overflow-style: none;}html.body::-webkit-scrollbar {display: none;}
+
+.screenshot-mode th {
+  border: 1px solid #ddd !important;
+}
+
   table {width: 65%;border-collapse: collapse;margin-top: 10px;font-size: 26px;}
   th {padding: 22px 26px;border: 2.5px solid #ddd;background: #3c8dbc;color: white;text-align: center;}
   td {padding: 22px 26px;border: 1px solid #ddd;border: 1px solid rgba(0, 0, 0, 0.05);text-align: center;}
@@ -359,33 +376,22 @@ border-radius:4px;
   max-width:98px !important;
   padding:0 !important;
 }
-*{
-  scrollbar-width:thin;
-  scrollbar-color: rgba(255,255,255,.16) transparent;
+
+/* ===== BODY - AUTO VERTICAL SCROLL ===== */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-*::-webkit-scrollbar{
-  width:8px;
-  height:8px;
+html {
+  overflow-y: auto;
 }
 
-*::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,.16);
-  border-radius:999px;
-}
-
-*::-webkit-scrollbar-track{
-  background:transparent;
-}
-
-/* ===== BODY ===== */
-html, body{
-  max-width:100%;
-  overflow-x:hidden;
-}
-
-body{
-  overflow-y:auto;
+body {
+  min-height: 100dvh;
+  height: auto;
+  overflow-y: visible;
 }
 
 /* ===== TABLE WRAP ===== */
