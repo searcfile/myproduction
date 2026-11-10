@@ -238,9 +238,9 @@ body {
     }
 
     .item-card{
-      background:var(--page-bg2);
+      background:var(--tx-surface);
       border-radius:6px;
-      border:1px solid var(--border-input);
+      border:1px solid var(--tx-border);
       padding:12px 12px 14px;
       display:flex;
       flex-direction:column;
@@ -248,20 +248,16 @@ body {
       position:relative;
       overflow:hidden;
       cursor:default;
-      transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease,
-        border-color 0.16s ease;
+      transition: all 0.3s;
       min-height:260px;
-
-      /* 6 card per baris dengan gap 16px (5 gap = 80) */
       flex: 0 0 calc((100% - 80px) / 6);
       max-width: calc((100% - 80px) / 6);
-
       /* bantu GPU */
       will-change: transform;
     }
-
+.item-card:hover{
+    background:var(--tx-hover);
+}
     /* matikan glow radial berat, biar render lebih ringan */
     .item-card::before{
       content:"";
