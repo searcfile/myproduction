@@ -97,13 +97,31 @@
 
     *{ box-sizing:border-box; margin:0; padding:0; }
 
-body{
-  min-height:100vh;
+/* ===== ITEM COLLECTION - AUTO PAGE SCROLL ===== */
+html {
+  margin: 0;
+  height: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+
+body {
+  min-height: 100dvh;
+  height: auto;
+
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:var(--page-bg);
-  color:var(--page-text);
-  margin:0;
-  padding:0;
+  background: var(--page-bg);
+  color: var(--page-text);
+
+  margin: 0;
+  padding: 0 0 20px;
+
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .wrapper{
@@ -826,10 +844,14 @@ grid-template-columns:
 }
 
 /* Wrapper untuk loading pada bahagian card sahaja */
+/* ===== ITEM COLLECTION - AUTO GRID HEIGHT ===== */
 .item-page .item-grid-wrapper {
   position: relative;
   width: 100%;
-  min-height: max(240px, calc(100dvh - 150px));
+
+  min-height: 0;
+  height: auto;
+
   isolation: isolate;
 }
 
