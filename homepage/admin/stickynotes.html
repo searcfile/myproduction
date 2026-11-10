@@ -2113,11 +2113,14 @@ function canModifyNote(note) {
 
   if (!uid || !note) return false;
 
-  // Super Admin boleh mengubah semua nota
   if (isSuperAdmin()) return true;
 
-  // Site Admin hanya boleh mengubah nota sendiri
-  return note.ownerUid === uid;
+  const ownerUid = note.ownerUid || note.userUid;
+
+  return (
+    currentUser.role === "siteadmin" &&
+    ownerUid === uid
+  );
 }
 
 function getNoteOwnerUid(note) {
@@ -2394,7 +2397,9 @@ userEmail: currentUser.email,
     message: err.message,
     uid: authUser.uid,
     role: currentUser.role,
-    path: getUserNotesPath()
+    path: note
+  ? `stickyNotes/${note.ownerUid || note.userUid}/${note.id}`
+  : getUserNotesPath()
   });
 
   window.NewUI?.showToast?.(
