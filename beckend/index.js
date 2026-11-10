@@ -5323,6 +5323,37 @@ app.delete(
 const STICKY_MODULE = "stickynotes.html";
 const STICKY_PATH = "stickyNotes";
 
+/* Site assignments untuk filter Sticky Notes Super Admin */
+app.get(
+  "/api/sticky-notes/owner-sites",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const snapshot = await db.ref("adminUsers").once("value");
+      const profiles = snapshot.val() || {};
+      const owners = {};
+
+      for (const [uid, profile] of Object.entries(profiles)) {
+        if (!["siteadmin", "superadmin"].includes(profile?.role)) {
+          continue;
+        }
+
+        owners[uid] = {
+          siteIds: Array.isArray(profile.siteIds)
+            ? profile.siteIds.filter(id => typeof id === "string")
+            : []
+        };
+      }
+
+      return res.json({ ok: true, owners });
+    } catch (error) {
+      console.error("Sticky owner sites:", error);
+      return fail(res, 500, "Cannot load note owner sites");
+    }
+  }
+);
+
 const stickyIdOK = id =>
   typeof id === "string" &&
   /^note_[a-zA-Z0-9_-]{1,100}$/.test(id);
