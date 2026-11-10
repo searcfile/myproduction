@@ -57,7 +57,39 @@
 })();
 </script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="./logo.svg" type="image/svg+xml"><title>5G88 · Link Download</title><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./new-ui.css"><style>
-:root{--ld-bg:#000;--ld-surface:#1f1f1f;--ld-input:#141414;--ld-border:#424242;--ld-text:rgba(255,255,255,.88);--ld-muted:rgba(255,255,255,.46);--ld-blue:#1668dc}body.light-theme,html[data-admin-theme=light]{--ld-bg:#fff;--ld-surface:#fff;--ld-input:#fff;--ld-border:#d9d9d9;--ld-text:rgba(0,0,0,.88);--ld-muted:rgba(0,0,0,.46)}*{box-sizing:border-box}html,body{margin:0;min-width:0}body{background:var(--ld-bg);color:var(--ld-text);font:14px Arial,sans-serif}.ld-page{width:100%;padding:0 12px;min-width:0}
+:root{--ld-bg:#000;--ld-surface:#1f1f1f;--ld-input:#141414;--ld-border:#424242;--ld-text:rgba(255,255,255,.88);--ld-muted:rgba(255,255,255,.46);--ld-blue:#1668dc}body.light-theme,html[data-admin-theme=light]{--ld-bg:#fff;--ld-surface:#fff;--ld-input:#fff;--ld-border:#d9d9d9;--ld-text:rgba(0,0,0,.88);--ld-muted:rgba(0,0,0,.46)}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  min-width: 0;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+
+  background: var(--ld-bg);
+  color: var(--ld-text);
+  font: 14px Arial, sans-serif;
+}
+
+.ld-page {
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+}
+
  
 .ld-toolbar {
   display: grid;
@@ -395,19 +427,13 @@
   }
 }
 
-
-
 .ld-grid-wrapper {
   position: relative;
   width: 100%;
-  min-height: max(240px, calc(100dvh - 150px));
+  min-height: 0;
+  height: auto;
   isolation: isolate;
 }
-
-
-
-
-
 /* ==========================================
    LINK DOWNLOAD - REFRESH GRID OVERLAY
    ========================================== */
