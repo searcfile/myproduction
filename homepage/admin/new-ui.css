@@ -14,6 +14,7 @@ html[data-admin-theme="light"] {
     --tx-surface-soft: #f6f9fd;
     --tx-hover: #f8fbff;
     --tx-slide:#00000073;
+    --main-tab-border:#e2e8f0;
 
   --panel2:#fafafa;
 
@@ -33,7 +34,6 @@ html[data-admin-theme="light"] {
   --input-line-active:#0958d9;
   --input-line-focus:#1677ff;
 
-  --tab-border:green;
   --tab-bg:rgba(255,255,255,.02);
    
   --dropdown-bg:#1f1f1f;
@@ -58,6 +58,7 @@ html[data-admin-theme="light"] {
     --tx-surface-soft: #1c2b42;
     --tx-hover: #1d304b;
     --tx-slide:rgba(255,255,255,0.25);
+    --main-tab-border:#303030;
  
   --panel2: #171e28;
    
@@ -76,7 +77,6 @@ html[data-admin-theme="light"] {
   --input-line-active:#1554ad;
   --input-line-focus:#1668dc;
    
-  --tab-border:#303030;
   --tab-bg:rgba(255,255,255,.04);
    
   --dropdown-bg:#1f1f1f;
