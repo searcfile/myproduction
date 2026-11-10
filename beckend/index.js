@@ -5524,29 +5524,21 @@ app.patch(
         return fail(res, 403, "Note owner mismatch");
       }
 
-      // Transaction mengelakkan edit mencipta nota baru
-      // jika nota telah dipadam serentak.
-      const result = await ref.transaction(current => {
-        if (!current) return;
-        if (current.userUid && current.userUid !== uid) {
-          return;
-        }
+const updatedNote = {
+  ...existing,
+  ...updates,
+  updatedAt: now()
+};
 
-        return {
-          ...current,
-          ...updates,
-          updatedAt: now()
-        };
-      }, undefined, false);
+await ref.update({
+  ...updates,
+  updatedAt: updatedNote.updatedAt
+});
 
-      if (!result.committed) {
-        return fail(res, 409, "Note changed or removed");
-      }
-
-      return res.json({
-        ok: true,
-        note: result.snapshot.val()
-      });
+return res.json({
+  ok: true,
+  note: updatedNote
+});
     } catch (error) {
       console.error("Sticky edit:", error);
       return fail(res, 500, "Cannot edit note");
@@ -5585,19 +5577,9 @@ app.delete(
         return fail(res, 403, "Note owner mismatch");
       }
 
-      const result = await ref.transaction(current => {
-        if (!current) return;
-        if (current.userUid && current.userUid !== uid) {
-          return;
-        }
-        return null;
-      }, undefined, false);
+await ref.remove();
 
-      if (!result.committed) {
-        return fail(res, 409, "Note changed or removed");
-      }
-
-      return res.json({ ok: true });
+return res.json({ ok: true });
     } catch (error) {
       console.error("Sticky delete:", error);
       return fail(res, 500, "Cannot delete note");
