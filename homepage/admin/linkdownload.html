@@ -624,130 +624,109 @@ if (!can('view')) return;
 refreshButton.addEventListener('click', refreshGridOnly);
 
 /* ==========================================
-   LINK DOWNLOAD - SAVE & RESTORE FILTER
+   LINK DOWNLOAD - SAVE & RESTORE BY UID
+   SAME AS STICKY NOTES
    ========================================== */
 
-const LD_FILTER_PREFIX = "5g88.pageState.v1";
+const LD_STATE_PREFIX = "5g88.pageState.v1";
+const LD_RESET_PREFIX = "5g88.pageReset.v1";
+const LD_PAGE = "linkdownload.html";
+
 let ldFilterReady = false;
+let ldFilterUid = null;
+let ldSaveTimer = null;
 
-function getLdFilterKey() {
-  const user = firebase.auth().currentUser;
-  const sessionUid = sessionStorage.getItem(
-    "5g88.adminSession"
-  );
-
-  if (
-    !user ||
-    user.isAnonymous ||
-    user.uid !== sessionUid
-  ) {
-    return null;
-  }
-
-  return `${LD_FILTER_PREFIX}:${user.uid}:linkdownload.html`;
+function getLdStateKey(uid = ldFilterUid) {
+  if (!uid) return null;
+  return `${LD_STATE_PREFIX}:${uid}:${LD_PAGE}`;
 }
 
-
-function getLdResetKey() {
-  const key = getLdFilterKey();
-  if (!key) return null;
-
-  return key.replace(
-    "5g88.pageState.v1:",
-    "5g88.pageReset.v1:"
-  );
+function getLdResetKey(uid = ldFilterUid) {
+  if (!uid) return null;
+  return `${LD_RESET_PREFIX}:${uid}:${LD_PAGE}`;
 }
 
 function isLdResetPending() {
   const key = getLdResetKey();
-
-  return !!key &&
-    sessionStorage.getItem(key) === "1";
+  return !!key && sessionStorage.getItem(key) === "1";
 }
 
 function saveLdFilter() {
-  // Jangan simpan semasa restore/reset.
-  if (!ldFilterReady || isLdResetPending()) return;
+  if (!ldFilterReady || !ldFilterUid) return;
+  if (isLdResetPending()) return;
 
-  const key = getLdFilterKey();
+  const key = getLdStateKey();
   if (!key) return;
 
   try {
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        search: search.value,
-        platforms: chip?.getValue?.() || []
-      })
-    );
+    localStorage.setItem(key, JSON.stringify({
+      search: search.value || "",
+      platforms: [...(chip?.getValue?.() || [])]
+    }));
   } catch (error) {
-    console.warn(
-      "[Link Download] Save failed:",
-      error
-    );
+    console.warn("[Link Download] Save failed:", error);
   }
 }
 
-function restoreLdFilter() {
-  if (ldFilterReady) return;
+function scheduleLdFilterSave() {
+  clearTimeout(ldSaveTimer);
 
-  const key = getLdFilterKey();
-  if (!key) return;
+  if (!ldFilterReady) return;
 
-  const resetKey = getLdResetKey();
+  ldSaveTimer = setTimeout(saveLdFilter, 250);
+}
 
-  // Icon refresh tab meminta reset.
-  if (isLdResetPending()) {
-    localStorage.removeItem(key);
+function restoreLdFilter(uid) {
+  if (!uid) return;
 
-    search.value = "";
-    chip?.setValue?.([]);
+  clearTimeout(ldSaveTimer);
 
-    ldFilterReady = true;
+  ldFilterReady = false;
+  ldFilterUid = uid;
 
-    // Buang marker hanya selepas reset siap.
-    sessionStorage.removeItem(resetKey);
-
-    render();
-    return;
-  }
+  const stateKey = getLdStateKey(uid);
+  const resetKey = getLdResetKey(uid);
 
   let saved = null;
 
   try {
-    saved = JSON.parse(
-      localStorage.getItem(key) || "null"
-    );
+    if (sessionStorage.getItem(resetKey) === "1") {
+      localStorage.removeItem(stateKey);
+      sessionStorage.removeItem(resetKey);
+    } else {
+      saved = JSON.parse(
+        localStorage.getItem(stateKey) || "null"
+      );
+    }
   } catch (error) {
-    console.warn(
-      "[Link Download] Restore failed:",
-      error
-    );
+    console.warn("[Link Download] Restore failed:", error);
   }
 
-  if (saved && typeof saved === "object") {
-    search.value = String(saved.search ?? "");
+  search.value =
+    typeof saved?.search === "string"
+      ? saved.search
+      : "";
 
-    const availablePlatforms = new Set(
-      Object.values(records)
-        .filter(card =>
-          isCard(card) && visibleForSite(card)
-        )
-        .map(card => clean(card.platform))
-        .filter(Boolean)
-    );
+  const availablePlatforms = new Set(
+    Object.values(records)
+      .filter(card => isCard(card) && visibleForSite(card))
+      .map(card => clean(card.platform))
+      .filter(Boolean)
+  );
 
-    const selectedPlatforms =
-      Array.isArray(saved.platforms)
-        ? saved.platforms.filter(value =>
+  const selectedPlatforms =
+    Array.isArray(saved?.platforms)
+      ? [...new Set(
+          saved.platforms.filter(value =>
             availablePlatforms.has(value)
           )
-        : [];
+        )]
+      : [];
 
-    chip?.setValue?.(selectedPlatforms);
-  }
+  chip?.setValue?.(selectedPlatforms);
 
   ldFilterReady = true;
+  render();
 }
 
   
@@ -982,21 +961,24 @@ chip = NewUI.chips('#ldPlatforms', {
 
   onChange: () => {
     render();
-    saveLdFilter();
+    scheduleLdFilterSave();
   }
 });
 
+
  NewUI.syncSearch(search,{onSearch:async()=>{await new Promise(resolve=>setTimeout(resolve,450));render();}});
  
+
 search.addEventListener('input', () => {
   render();
-  saveLdFilter();
+  scheduleLdFilterSave();
 });
 
 search.addEventListener('change', () => {
   render();
   saveLdFilter();
 });
+
 
  const createButton=$('#ldCreate');createButton.hidden=true;
  createButton.onclick=()=>openEditor();
@@ -1043,16 +1025,15 @@ sites = Object.fromEntries(
 createButton.hidden = !can('create');
 siteAccessReady=true;
  
+
 db.ref(PATH).on('value', snap => {
   records = snap.val() || {};
   loading = false;
 
-
   refreshOptions();
 
-
-  if (!ldFilterReady) {
-    restoreLdFilter();
+  if (!ldFilterReady || ldFilterUid !== user.uid) {
+    restoreLdFilter(user.uid);
   }
 
   if (!gridRefreshing) {
@@ -1060,6 +1041,7 @@ db.ref(PATH).on('value', snap => {
   }
 
 }, err => {
+
   loading = false;
   showEmpty('Unable to load cards');
   toast(err.message, 'error');
@@ -1068,11 +1050,15 @@ db.ref(PATH).on('value', snap => {
  }catch(err){loading=false;showEmpty('Access unavailable');console.error(err);toast(err.message,'error');}
 }
 
+
 window.addEventListener("pagehide", () => {
+  clearTimeout(ldSaveTimer);
+
   if (isLdResetPending()) return;
 
   saveLdFilter();
 });
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 
