@@ -636,6 +636,7 @@ let ldFilterReady = false;
 let ldFilterUid = null;
 let ldSaveTimer = null;
 let ldPendingPlatforms = null;
+let ldFilterDirty = false;
 
 function getLdStateKey(uid = ldFilterUid) {
   if (!uid) return null;
@@ -652,9 +653,11 @@ function isLdResetPending() {
   return !!key && sessionStorage.getItem(key) === "1";
 }
 
+
 function saveLdFilter() {
   if (!ldFilterReady || !ldFilterUid) return;
   if (isLdResetPending()) return;
+  if (!ldFilterDirty) return;
 
   const key = getLdStateKey();
   if (!key) return;
@@ -664,18 +667,23 @@ function saveLdFilter() {
       search: search.value || "",
       platforms: [...(chip?.getValue?.() || [])]
     }));
+
+    ldFilterDirty = false;
   } catch (error) {
     console.warn("[Link Download] Save failed:", error);
   }
 }
 
 function scheduleLdFilterSave() {
+  if (!ldFilterReady || !ldFilterUid) return;
+  if (isLdResetPending()) return;
+
+  ldFilterDirty = true;
+
   clearTimeout(ldSaveTimer);
-
-  if (!ldFilterReady) return;
-
   ldSaveTimer = setTimeout(saveLdFilter, 250);
 }
+
 
 
 function restoreLdFilter(uid) {
@@ -683,9 +691,9 @@ function restoreLdFilter(uid) {
 
   clearTimeout(ldSaveTimer);
 
-  ldFilterReady = false;
-  ldFilterUid = uid;
-
+ldFilterReady = false;
+ldFilterUid = uid;
+ldFilterDirty = false;
   const stateKey = getLdStateKey(uid);
   const resetKey = getLdResetKey(uid);
 
@@ -733,6 +741,7 @@ chip?.setOptions?.(
 
 chip?.setValue?.(cachedPlatforms);
 
+ldFilterDirty = false;
 ldFilterReady = true;
 
 }
@@ -987,6 +996,7 @@ chip = NewUI.chips('#ldPlatforms', {
  NewUI.syncSearch(search,{onSearch:async()=>{await new Promise(resolve=>setTimeout(resolve,450));render();}});
  
 
+
 search.addEventListener('input', () => {
   render();
   scheduleLdFilterSave();
@@ -994,8 +1004,15 @@ search.addEventListener('input', () => {
 
 search.addEventListener('change', () => {
   render();
+
+  if (!ldFilterReady) return;
+
+  // Pastikan perubahan terakhir disimpan
+  ldFilterDirty = true;
+  clearTimeout(ldSaveTimer);
   saveLdFilter();
 });
+
 
 
  const createButton=$('#ldCreate');createButton.hidden=true;
@@ -1079,12 +1096,51 @@ db.ref(PATH).on('value', snap => {
 }
 
 
+
 window.addEventListener("pagehide", () => {
   clearTimeout(ldSaveTimer);
 
   if (isLdResetPending()) return;
 
+  // Jangan simpan semula state lama jika
+  // pengguna tidak membuat perubahan.
+  if (!ldFilterDirty) return;
+
   saveLdFilter();
+});
+
+
+window.addEventListener("storage", (event) => {
+  if (!ldFilterUid) return;
+  if (event.storageArea !== localStorage) return;
+
+  const key = getLdStateKey();
+
+  if (event.key !== key && event.key !== null) {
+    return;
+  }
+
+  // Jika state UID ini telah dipadam,
+  // kembali kepada default.
+  if (localStorage.getItem(key) === null) {
+    clearTimeout(ldSaveTimer);
+
+    ldFilterDirty = false;
+    ldPendingPlatforms = [];
+
+    const wasReady = ldFilterReady;
+    ldFilterReady = false;
+
+    try {
+      search.value = "";
+      search.defaultValue = "";
+      chip?.setValue?.([]);
+    } finally {
+      ldFilterReady = wasReady;
+    }
+
+    render();
+  }
 });
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
