@@ -305,9 +305,6 @@ body {
       will-change: transform;
     }
 
-    .item-card:hover .image-wrap img{
-      transform:scale(1.04);
-    }
 
     .item-info{
       display:flex;
@@ -447,52 +444,6 @@ body {
         max-width:100%;
       }
     }
-  /* ================= SCROLLBAR GLOBAL ================= */
-
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 6px; /* nipis */
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 10px;
-  transition: all 0.25s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-
-/* Firefox */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #555 transparent;
-}
-  :where(button, a, .btn, [tabindex]):focus-visible{
-  outline: 3px solid #15325b;
-  outline-offset: 1px;
-  transition: outline-offset 0s, outline 0s;
-}
-:where(.input, input, select, textarea, [tabindex]):focus{
-  border-color: #1668dc !important;
-  outline: 0 !important;
-  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
-  transition: all .2s ease;
-}
-select:focus,
-select:focus-visible{
-  border-color: #1668dc !important;
-  outline: none !important;
-  box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
-  background-color: transparent;
-  transition: all .2s ease;
-}
 
 /* ITEM COLLECTION - modern, responsive, scoped */
 .item-page{max-width:none;width:calc(100% - 24px);margin:0 12px}
