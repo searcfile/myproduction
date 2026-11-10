@@ -2009,51 +2009,114 @@ stickyRefreshButton.addEventListener(
   refreshStickyNotesOnly
 );
 
-function saveNoteToFirebase(note) {
-  if (!note || !note.id) {
-    return Promise.reject(new Error("Invalid note"));
+
+/* ==========================================
+   STICKY NOTES - SECURE BACKEND REQUEST
+   ========================================== */
+
+const STICKY_API_BASE =
+  "https://fiveg88-admin-backend-v2.onrender.com";
+
+async function stickyApiRequest(path, method, body) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw new Error("Login session unavailable");
   }
 
-  const authUser = firebase.auth().currentUser;
+  const token = await user.getIdToken();
 
-  if (!authUser) {
-    return Promise.reject(new Error("Login session unavailable"));
-  }
+  const response = await fetch(
+    `${STICKY_API_BASE}${path}`,
+    {
+      method,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      ...(body !== undefined
+        ? { body: JSON.stringify(body) }
+        : {})
+    }
+  );
 
-  const ownerUid = getNoteOwnerUid(note);
+  const result = await response.json().catch(() => ({}));
 
-  console.log("[STICKY NOTES SAVE CHECK]", {
-    loginUid: authUser.uid,
-    ownerUid,
-    role: currentUser.role,
-    noteId: note.id,
-    canModify: canModifyNote(note)
-  });
-
-  if (!canModifyNote(note)) {
-    return Promise.reject(
-      new Error("Permission denied: note ownership mismatch")
+  if (!response.ok || result.ok !== true) {
+    throw new Error(
+      result.message ||
+      `Request failed (${response.status})`
     );
   }
 
-  const { ownerUid: _ownerUid, ...noteData } = note;
-
-  return db.ref(`stickyNotes/${ownerUid}/${note.id}`)
-    .set(noteData);
+  return result;
 }
 
-function deleteNoteFromFirebase(id) {
+async function saveNoteToFirebase(note) {
+  if (!note || !note.id) {
+    throw new Error("Invalid note");
+  }
+
+  const user = firebase.auth().currentUser;
+
+  if (!user || currentUser.uid !== user.uid) {
+    throw new Error("Login session unavailable");
+  }
+
+  const existing = findNoteById(note.id);
+  const action = existing ? "edit" : "create";
+
+  if (!hasStickyPermission(action)) {
+    throw new Error(`${action} permission denied`);
+  }
+
+  if (existing && !canModifyNote(existing)) {
+    throw new Error("Note ownership mismatch");
+  }
+
+  if (!existing) {
+    return stickyApiRequest(
+      "/api/sticky-notes",
+      "POST",
+      {
+        id: note.id,
+        title: note.title,
+        body: note.body,
+        color: note.color
+      }
+    );
+  }
+
+  const ownerUid = getNoteOwnerUid(existing);
+
+  return stickyApiRequest(
+    `/api/sticky-notes/${encodeURIComponent(ownerUid)}/${encodeURIComponent(note.id)}`,
+    "PATCH",
+    {
+      title: note.title,
+      body: note.body,
+      color: note.color,
+      pinned: Boolean(note.pinned),
+      archived: Boolean(note.archived)
+    }
+  );
+}
+
+async function deleteNoteFromFirebase(id) {
   const note = findNoteById(id);
 
-  if (!note || !canModifyNote(note)) {
-    return Promise.reject(new Error("Permission denied"));
+  if (!note || !canNoteAction(note, "delete")) {
+    throw new Error("Delete permission denied");
   }
 
   const ownerUid = getNoteOwnerUid(note);
 
-  return db.ref(`stickyNotes/${ownerUid}/${id}`)
-    .remove();
+  return stickyApiRequest(
+    `/api/sticky-notes/${encodeURIComponent(ownerUid)}/${encodeURIComponent(id)}`,
+    "DELETE"
+  );
 }
+
 
 /* =========================
    RENDER
@@ -2121,7 +2184,41 @@ if(activeFilters.includes("all") && activeFilters.includes("archived")){
 function isSuperAdmin() {
   return currentUser.role === "superadmin";
 }
+function hasStickyPermission(action) {
+  // Super Admin bebas semua tindakan
+  if (isSuperAdmin()) return true;
 
+  if (currentUser.role !== "siteadmin") {
+    return false;
+  }
+
+  const actions =
+    currentUser.permissions?.stickynotes_html || [];
+
+  return (
+    Array.isArray(actions) &&
+    actions.includes("show") &&
+    actions.includes("view") &&
+    actions.includes(action)
+  );
+}
+
+function canNoteAction(note, action) {
+  if (!note || !canModifyNote(note)) return false;
+
+  return hasStickyPermission(action);
+}
+function updateStickyPermissionUI() {
+  const canCreate = hasStickyPermission("create");
+
+  if (els.createBtn) {
+    els.createBtn.hidden = !canCreate;
+  }
+
+  if (els.floatingCreateBtn) {
+    els.floatingCreateBtn.hidden = !canCreate;
+  }
+}
 function canModifyNote(note) {
   const authUser = firebase.auth().currentUser;
 
@@ -2202,9 +2299,14 @@ if (!list.length) {
 
   if (els.emptyState) els.emptyState.style.display = "none";
 
-  list.forEach(note => {
-    const card = document.createElement("div");
-        const canModify = canModifyNote(note);
+list.forEach(note => {
+  const card = document.createElement("div");
+
+  const canEdit = canNoteAction(note, "edit");
+  const canDelete = canNoteAction(note, "delete");
+
+  const canPin = canEdit;
+  const canArchive = canEdit;
     card.className = "note-card";
     card.style.background = note.color || "#fff4b8";
 
@@ -2214,7 +2316,7 @@ if (!list.length) {
 
   <div class="note-head-actions">
     <button class="pin ${note.pinned ? "is-pinned" : "is-unpinned"}" 
-    ${canModify ? "" : "disabled"}
+    ${canPin ? "" : "disabled"}
     title="Pin note"
     data-action="pin"
     data-id="${note.id}">
@@ -2231,7 +2333,7 @@ if (!list.length) {
 
     <button
   class="archive-btn ${note.archived ? "is-archived" : "is-unarchived"}"
-  ${canModify ? "" : "disabled"}
+  ${canArchive ? "" : "disabled"}
   title="${note.archived ? "Unarchive note" : "Archive note"}"
   data-action="archive"
   data-id="${note.id}">
@@ -2256,15 +2358,38 @@ if (!list.length) {
   <svg class="note-user-icon" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8V22h19.2v-2.8c0-3.2-6.4-4.8-9.6-4.8z"/>
   </svg>
-  ${escapeHtml(note.userName || "Guest")}
+  ${escapeHtml(
+  note.userName === "Site Admin" &&
+  note.ownerUid === currentUser.uid &&
+  currentUser.role === "siteadmin"
+    ? currentUser.username
+    : (note.userName || "Guest")
+)}
 </span>
         <span>${formatTime(note.updatedAt)}</span>
       </div>
 
-${canModify ? `
+${canEdit || canDelete ? `
 <div class="note-actions">
-  <button class="btn-edit-new" data-action="edit" data-id="${note.id}">Edit</button>
-  <button class="btn-delete-new" data-action="delete" data-id="${note.id}">Delete</button>
+
+  ${canEdit ? `
+    <button
+      class="btn-edit-new"
+      data-action="edit"
+      data-id="${escapeHtml(note.id)}">
+      Edit
+    </button>
+  ` : ""}
+
+  ${canDelete ? `
+    <button
+      class="btn-delete-new"
+      data-action="delete"
+      data-id="${escapeHtml(note.id)}">
+      Delete
+    </button>
+  ` : ""}
+
 </div>
 ` : ""}
     `;
@@ -2297,7 +2422,21 @@ function renderColors(){
 let stickyNoteSharedModal = null;
 let stickyConfirmSharedModal = null;
 function openModal(note = null) {
-  if (note && !canModifyNote(note)) {
+  if (note) {
+    if (!canNoteAction(note, "edit")) {
+      window.NewUI?.showToast?.(
+        "Edit permission denied",
+        "error"
+      );
+      return;
+    }
+  } else if (!hasStickyPermission("create")) {
+    window.NewUI?.showToast?.(
+      "Create permission denied",
+      "error"
+    );
+    return;
+  }
     window.NewUI?.showToast?.(
       "Permission denied",
       "error"
@@ -2354,7 +2493,13 @@ if (!authUser || currentUser.uid !== authUser.uid) {
   );
   return;
 }
-
+if (!editingId && !hasStickyPermission("create")) {
+  window.NewUI?.showToast?.(
+    "Create permission denied",
+    "error"
+  );
+  return;
+}
   const now = Date.now();
 
   let note;
@@ -2362,7 +2507,7 @@ if (!authUser || currentUser.uid !== authUser.uid) {
 if (editingId) {
   const old = findNoteById(editingId);
 
-  if (!old || !canModifyNote(old)) {
+    if (!old || !canNoteAction(old, "edit")) {
     window.NewUI?.showToast?.(
       "Permission denied",
       "error"
@@ -2434,7 +2579,7 @@ userEmail: currentUser.email,
 async function openConfirm(id, target) {
     const note = findNoteById(id);
 
-if (!note || !canModifyNote(note)) {
+if (!note || !canNoteAction(note, "delete")) {
   window.NewUI?.showToast?.(
     "Permission denied",
     "error"
@@ -2489,7 +2634,7 @@ function deleteNote(){
 
 function togglePin(id){
   const note = notes.find(n => n.id === id);
-  if (!note || !canModifyNote(note)) return;
+ if (!note || !canNoteAction(note, "edit")) return;
 
   const updated = {
     ...note,
@@ -2503,7 +2648,7 @@ function togglePin(id){
 }
 function toggleArchive(id){
   const note = notes.find(n => n.id === id);
- if (!note || !canModifyNote(note)) return;
+if (!note || !canNoteAction(note, "edit")) return;
 
   const updated = {
     ...note,
@@ -2539,8 +2684,20 @@ window.addEventListener("message", (e) => {
 /* =========================
    EVENTS
 ========================= */
-els.createBtn?.addEventListener("click", () => openModal());
-els.floatingCreateBtn?.addEventListener("click", () => openModal());
+function openCreateNote() {
+  if (!hasStickyPermission("create")) {
+    window.NewUI?.showToast?.(
+      "You do not have permission to create notes",
+      "error"
+    );
+    return;
+  }
+
+  openModal();
+}
+
+els.createBtn?.addEventListener("click", openCreateNote);
+els.floatingCreateBtn?.addEventListener("click", openCreateNote);
 
 els.closeModal?.addEventListener("click", closeModal);
 els.cancelBtn?.addEventListener("click", closeModal);
@@ -2596,7 +2753,18 @@ els.notesGrid?.addEventListener("click", (e) => {
   const id = btn.dataset.id;
   const action = btn.dataset.action;
   const note = notes.find(n => n.id === id);
-if (!note || !canModifyNote(note)) return;
+if (!note) return;
+
+const requiredAction =
+  action === "delete" ? "delete" : "edit";
+
+if (!canNoteAction(note, requiredAction)) {
+  window.NewUI?.showToast?.(
+    "Permission denied",
+    "error"
+  );
+  return;
+}
   if(action === "edit" && note) openModal(note);
   if (action === "delete") {
   openConfirm(id, btn);
@@ -2611,10 +2779,16 @@ document.addEventListener("keydown", (e) => {
     closeConfirm();
   }
 
-  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n"){
-    e.preventDefault();
+if (
+  (e.ctrlKey || e.metaKey) &&
+  e.key.toLowerCase() === "n"
+) {
+  e.preventDefault();
+
+  if (hasStickyPermission("create")) {
     openModal();
   }
+}
 });
 
 /* =========================
@@ -2675,17 +2849,14 @@ const username =
 const displayName =
   profile.role === "superadmin"
     ? "Super Admin"
-    : profile.role === "siteadmin"
-      ? "Site Admin"
-      : username;
-
-
-
+    : username;
+        
 const nextUser = {
   uid: user.uid,
-  username: username,
+  username,
   name: displayName,
   role: profile.role || "",
+  permissions: profile.permissions || {},
   email: user.email || "",
   photo: user.photoURL || ""
 };
@@ -2696,7 +2867,7 @@ const nextUser = {
 const oldUid = currentUser.uid || "";
 
 currentUser = nextUser;
-
+updateStickyPermissionUI();
 // Restore hanya apabila UID bertukar atau
 // halaman baru dibuka.
 if (
