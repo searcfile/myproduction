@@ -1246,56 +1246,52 @@ select:focus-visible{
 .note-title{color:#fff!important;}
 .note-body{min-height:0!important;}
 
+
 /* ==========================================
-   STICKY NOTES - SINGLE NO DATA CARD
+   STICKY NOTES - NO DATA
    SAME AS LINK DOWNLOAD
    ========================================== */
 
-/* Outer holder - jangan jadi card */
 #emptyState.sticky-empty-holder {
   display: none;
   width: 100%;
   min-width: 0;
+  min-height: 160px;
   padding: 0 !important;
   margin: 0 !important;
+
+  background: var(--tx-surface, #1f1f1f) !important;
+  border: 1px solid var(--tx-border, #424242) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Shared UI hanya untuk icon + text */
+#emptyState .shared-empty-card,
+#emptyState .shared-empty {
+  width: 100%;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
 
-/* Hanya inner shared card yang ada background */
-#emptyState .shared-empty-card {
-  width: 100% !important;
-  min-width: 0;
-  min-height: 160px;
-  padding: 0 !important;
-  margin: 0 !important;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--tx-surface) !important;
-  border: 1px solid var(--tx-border) !important;
-  border-radius: 12px !important;
-  box-shadow: none !important;
-}
-
-/* Icon dan tulisan No Data */
 #emptyState .shared-empty {
-  width: 100%;
-  min-height: 160px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
 }
+
 
 .dialog{max-width:calc(100vw - 24px)!important;}
 .dialog .input,.dialog .textarea{width:100%;min-width:0;}
@@ -1931,7 +1927,7 @@ function renderNotes(){
 
 
 if (!list.length) {
-  els.emptyState.style.display = "block";
+  els.emptyState.style.display = "flex";
 
   const label = "No Data";
 
