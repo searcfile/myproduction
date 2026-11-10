@@ -1866,12 +1866,26 @@ if (isSuperAdmin) {
 notesLoading = false;
 renderNotes();
 
-  }, (error) => {
-    console.error("Sticky Notes Firebase error:", error);
-notes = [];
-notesLoading = false;
-renderNotes();
+}, (error) => {
+  console.error("Sticky Notes Firebase error:", {
+    code: error.code,
+    message: error.message,
+    uid: firebase.auth().currentUser?.uid,
+    role: currentUser.role,
+    path: ref.toString()
   });
+
+  notes = [];
+  notesLoading = false;
+  renderNotes();
+
+  window.NewUI?.showToast?.(
+    error.code === "PERMISSION_DENIED"
+      ? "Sticky Notes: Firebase permission denied"
+      : "Unable to load Sticky Notes",
+    "error"
+  );
+});
 }
 
 
@@ -2296,10 +2310,22 @@ userEmail: currentUser.email,
     const wasEditing = Boolean(editingId);
     closeModal();
     window.NewUI?.showToast?.(wasEditing ? "Note updated" : "Note saved", "success");
-  } catch(err) {
-    console.error("Save note failed:", err);
-    window.NewUI?.showToast?.("Save failed. Please check Firebase rules.", "error");
-  } finally {
+} catch (err) {
+  console.error("Sticky Notes save error:", {
+    code: err.code,
+    message: err.message,
+    uid: authUser.uid,
+    role: currentUser.role,
+    path: getUserNotesPath()
+  });
+
+  window.NewUI?.showToast?.(
+    err.code === "PERMISSION_DENIED"
+      ? "Permission denied: Firebase rejected this save"
+      : `Save failed: ${err.message || "Unknown error"}`,
+    "error"
+  );
+} finally {
     await window.NewUI?.setButtonLoading?.(els.saveBtn, false, {minDuration:850});
   }
 }
