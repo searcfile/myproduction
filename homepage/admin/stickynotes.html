@@ -1260,16 +1260,19 @@ select:focus-visible{
   padding: 0 !important;
   margin: 0 !important;
 
-  background: var(--tx-surface, #1f1f1f) !important;
-  border: 1px solid var(--tx-border, #424242) !important;
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
 
   align-items: center;
   justify-content: center;
   overflow: hidden;
+    transition: all 0.3s;
 }
-
+#emptyState.sticky-empty-holder:hover{
+    background:var(--tx-hover);
+}
 /* Shared UI hanya untuk icon + text */
 #emptyState .shared-empty-card,
 #emptyState .shared-empty {
