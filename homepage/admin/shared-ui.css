@@ -4978,12 +4978,10 @@ body .header {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 100%;
-height: var(--admin-tabs-height);
-padding: 12px 12px 8px !important;
+  height: var(--admin-tabs-height);
+  padding: 12px 12px 8px !important;
   gap: 0;
-
   background: var(--bg-main);
   overflow: visible !important;
 }
@@ -4998,17 +4996,15 @@ padding: 12px 12px 8px !important;
   position: relative;
   display: flex;
   align-items: center;
-
   width: 100%;
   height: 52px;
   min-width: 0;
   padding: 5px;
   gap: 3px;
   background: var(--input);
-  border: 1px solid #303030;
+  border: 1px solid var(--main-tab-border);
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,.2);
-
   overflow: visible;
   box-sizing: border-box;
 }
