@@ -1671,7 +1671,7 @@ function restoreStickyFilter(uid) {
     ? [...new Set(saved.filters.filter(v => allowed.has(v)))]
     : ["all"];
 
-  activeFilters = filters;
+  activeFilters = filters.length ? filters : ["all"];
 
   if (els.searchInput) {
     els.searchInput.value =
@@ -1681,7 +1681,7 @@ function restoreStickyFilter(uid) {
   }
 
   // Restore chip menggunakan API NewUI
-  stickyChip?.setValue?.([...filters]);
+ stickyChip?.setValue?.([...activeFilters]);
 
   stickyFilterReady = true;
   renderNotes();
@@ -2009,14 +2009,36 @@ stickyRefreshButton.addEventListener(
   refreshStickyNotesOnly
 );
 
-function saveNoteToFirebase(note){
-  if(!note || !note.id) return Promise.resolve();
-  return db.ref(`${getUserNotesPath()}/${note.id}`).set(note);
+function saveNoteToFirebase(note) {
+  if (!note || !note.id) {
+    return Promise.reject(new Error("Invalid note"));
+  }
+
+  const ownerUid = getNoteOwnerUid(note);
+
+  if (!canModifyNote(note)) {
+    return Promise.reject(new Error("Permission denied"));
+  }
+
+  // ownerUid hanya digunakan sebagai lokasi database,
+  // bukan disimpan sebagai field baru.
+  const { ownerUid: _ownerUid, ...noteData } = note;
+
+  return db.ref(`stickyNotes/${ownerUid}/${note.id}`)
+    .set(noteData);
 }
 
-function deleteNoteFromFirebase(id){
-  if(!id) return Promise.resolve();
-  return db.ref(`${getUserNotesPath()}/${id}`).remove();
+function deleteNoteFromFirebase(id) {
+  const note = findNoteById(id);
+
+  if (!note || !canModifyNote(note)) {
+    return Promise.reject(new Error("Permission denied"));
+  }
+
+  const ownerUid = getNoteOwnerUid(note);
+
+  return db.ref(`stickyNotes/${ownerUid}/${id}`)
+    .remove();
 }
 
 /* =========================
@@ -2044,8 +2066,8 @@ function getVisibleNotes(){
   const q = (els.searchInput?.value || "").trim().toLowerCase();
 
   let list = [...notes];
-if(activeFilters.length === 0){
-  return [];
+if (activeFilters.length === 0) {
+  activeFilters = ["all"];
 }
 const sevenDays = Date.now() - (7 * 24 * 60 * 60 * 1000);
 
@@ -2082,12 +2104,44 @@ if(activeFilters.includes("all") && activeFilters.includes("archived")){
   return list;
 }
 
+function isSuperAdmin() {
+  return currentUser.role === "superadmin";
+}
+
 function canModifyNote(note) {
-  return Boolean(
-    note &&
-    firebase.auth().currentUser?.uid ===
-      (note.ownerUid || note.userUid)
-  );
+  const uid = firebase.auth().currentUser?.uid;
+
+  if (!uid || !note) return false;
+
+  // Super Admin boleh mengubah semua nota
+  if (isSuperAdmin()) return true;
+
+  // Site Admin hanya boleh mengubah nota sendiri
+  return note.ownerUid === uid;
+}
+
+function getNoteOwnerUid(note) {
+  const uid = firebase.auth().currentUser?.uid;
+
+  if (!uid || !note) {
+    throw new Error("Note or login session unavailable");
+  }
+
+  const ownerUid = note.ownerUid || note.userUid;
+
+  if (!ownerUid) {
+    throw new Error("Note owner UID is missing");
+  }
+
+  if (!isSuperAdmin() && ownerUid !== uid) {
+    throw new Error("Permission denied");
+  }
+
+  return ownerUid;
+}
+
+function findNoteById(id) {
+  return notes.find(note => note.id === id) || null;
 }
 function renderNotes() {
   renderUser();
@@ -2157,7 +2211,13 @@ if (!list.length) {
       `}
     </button>
 
-    <button class="archive-btn ${note.archived ? "is-archived" : "is-unarchived"}" title="${note.archived ? "Unarchive note" : "Archive note"}" data-action="archive" data-id="${note.id}">
+    <button
+  class="archive-btn ${note.archived ? "is-archived" : "is-unarchived"}"
+  ${canModify ? "" : "disabled"}
+  title="${note.archived ? "Unarchive note" : "Archive note"}"
+  data-action="archive"
+  data-id="${note.id}">
+  
       ${note.archived ? `
         <svg class="archive-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M24 11.986v9.014h-24v-9.014l5.477-8.986h2.317l-5.46 9h4.666l2.25 3h5.5l2.25-3h4.669l-5.467-9h2.344l5.454 8.986zm-10-3.986h3l-5-5-5 5h3v5h4v-5zm-11.666 4"/>
@@ -2218,7 +2278,15 @@ function renderColors(){
 
 let stickyNoteSharedModal = null;
 let stickyConfirmSharedModal = null;
-function openModal(note = null){
+function openModal(note = null) {
+  if (note && !canModifyNote(note)) {
+    window.NewUI?.showToast?.(
+      "Permission denied",
+      "error"
+    );
+    return;
+  }
+
   editingId = note ? note.id : null;
   selectedColor = note?.color || COLORS[0];
 
@@ -2273,20 +2341,30 @@ if (!authUser || currentUser.uid !== authUser.uid) {
 
   let note;
 
-  if(editingId){
-    const old = notes.find(n => n.id === editingId);
-    if(!old) return;
+if (editingId) {
+  const old = findNoteById(editingId);
 
-    note = {
-      ...old,
-      title: title || "Untitled",
-      body,
-      color: selectedColor,
-      userUid: authUser.uid,
-userName: currentUser.name,
-userEmail: currentUser.email,
-      updatedAt: now
-    };
+  if (!old || !canModifyNote(old)) {
+    window.NewUI?.showToast?.(
+      "Permission denied",
+      "error"
+    );
+    return;
+  }
+
+  note = {
+    ...old,
+    title: title || "Untitled",
+    body,
+    color: selectedColor,
+
+    // Kekalkan pembuat asal
+    userUid: old.userUid || old.ownerUid,
+    userName: old.userName,
+    userEmail: old.userEmail,
+
+    updatedAt: now
+  };
   }else{
     const id = "note_" + now + "_" + Math.random().toString(16).slice(2);
 
@@ -2334,6 +2412,15 @@ userEmail: currentUser.email,
    DELETE / PIN
 ========================= */
 async function openConfirm(id, target) {
+    const note = findNoteById(id);
+
+if (!note || !canModifyNote(note)) {
+  window.NewUI?.showToast?.(
+    "Permission denied",
+    "error"
+  );
+  return;
+}
   if (!id) return;
 
   if (!window.NewUI?.confirm) {
@@ -2382,7 +2469,7 @@ function deleteNote(){
 
 function togglePin(id){
   const note = notes.find(n => n.id === id);
-  if(!note) return;
+  if (!note || !canModifyNote(note)) return;
 
   const updated = {
     ...note,
@@ -2396,7 +2483,7 @@ function togglePin(id){
 }
 function toggleArchive(id){
   const note = notes.find(n => n.id === id);
-  if(!note) return;
+ if (!note || !canModifyNote(note)) return;
 
   const updated = {
     ...note,
