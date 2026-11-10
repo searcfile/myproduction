@@ -113,9 +113,12 @@ background: var(--tx-bg);
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 
-  width: calc(100% - 24px);
-  margin: 0 12px;
-  box-sizing: border-box;
+
+width: 100%;
+margin: 0;
+padding: 0 12px;
+box-sizing: border-box;
+
 
   align-items: start;
 }
@@ -628,9 +631,13 @@ select:focus-visible{
    SAME AS LINK DOWNLOAD
    ========================================== */
 
+
+/* ==========================================
+   TIPS GAME - NO DATA SAME AS LINK DOWNLOAD
+   ========================================== */
+
 .tips-no-data {
   grid-column: 1 / -1;
-
   width: 100%;
   min-width: 0;
   min-height: 160px;
@@ -638,7 +645,6 @@ select:focus-visible{
   display: grid;
   place-items: center;
 
-  /* Tiada card luar */
   margin: 0;
   padding: 0;
   background: transparent;
@@ -648,13 +654,13 @@ select:focus-visible{
   box-sizing: border-box;
 }
 
-/* Shared No Data jadi satu-satunya card */
-.tips-no-data > * {
+.tips-no-data > .shared-empty {
   width: 100%;
-  max-width: 100%;
+  min-height: 160px;
   margin: 0;
   box-sizing: border-box;
 }
+
 
 #tipsCreate[hidden],
 .platform-box .btn-edit-new[hidden],
@@ -1924,11 +1930,18 @@ function applyTipsFilters() {
 
     row.appendChild(empty);
 
-    if (typeof window.showEmptyState === 'function') {
-      window.showEmptyState(empty, 'No Data');
-    } else {
-      empty.textContent = 'No Data';
-    }
+
+if (typeof window.showEmptyState === 'function') {
+  window.showEmptyState(
+    empty,
+    'No Data',
+    'large',
+    'center'
+  );
+} else {
+  empty.textContent = 'No Data';
+}
+
   }
 }
 function applyPlatformActive(box, active) {
