@@ -2519,28 +2519,43 @@ updateOpenIndicators();
 }
 
 
-  function openSidebar() {
 
-    document
-      .getElementById("sidebar")
-      ?.classList.add("active");
+/* ==========================================
+   SIDEBAR - KEEP OPEN BETWEEN TABS
+   ========================================== */
 
-    document
-      .getElementById("overlay")
-      ?.classList.add("active");
+const SIDEBAR_STATE_KEY = "5g88.sidebar.open";
+
+function openSidebar() {
+  document
+    .getElementById("sidebar")
+    ?.classList.add("active");
+
+  document
+    .getElementById("overlay")
+    ?.classList.add("active");
+
+  sessionStorage.setItem(SIDEBAR_STATE_KEY, "1");
+}
+
+function closeSidebar() {
+  document
+    .getElementById("sidebar")
+    ?.classList.remove("active");
+
+  document
+    .getElementById("overlay")
+    ?.classList.remove("active");
+
+  sessionStorage.removeItem(SIDEBAR_STATE_KEY);
+}
+
+function restoreSidebarState() {
+  if (sessionStorage.getItem(SIDEBAR_STATE_KEY) === "1") {
+    openSidebar();
   }
+}
 
-
-  function closeSidebar() {
-
-    document
-      .getElementById("sidebar")
-      ?.classList.remove("active");
-
-    document
-      .getElementById("overlay")
-      ?.classList.remove("active");
-  }
 
 
   function toggleSidebar() {
@@ -8540,6 +8555,9 @@ function initHardReloadReveal() {
 }
 function init() {
   createShell();
+
+  // Pulihkan sidebar selepas berpindah tab
+  restoreSidebarState();
 
   renderTabs();
   initLivechatUnreadListener();
