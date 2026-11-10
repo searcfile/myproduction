@@ -2359,13 +2359,9 @@ if (
   notesLoading ||
   (
     currentUser.role === "superadmin" &&
-    (
-      !stickySiteSelectionReady ||
-      (
-        stickySelectedSiteIds.length > 0 &&
-        !stickyOwnerSitesReady
-      )
-    )
+    stickySiteSelectionReady &&
+    stickySelectedSiteIds.length > 0 &&
+    !stickyOwnerSitesReady
   )
 ) {
   els.notesGrid.replaceChildren();
