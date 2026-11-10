@@ -4997,6 +4997,39 @@ function setupHeaderSearch() {
   let loading = false;
   let ready = false;
 
+window.addEventListener("message", event => {
+  if (event.origin !== location.origin) return;
+  if (event.data?.type !== "5G88_STICKY_REQUEST_SITES") {
+    return;
+  }
+
+  const frame = [...document.querySelectorAll("iframe")]
+    .find(item => {
+      try {
+        const url = new URL(item.src, location.href);
+
+        return (
+          item.contentWindow === event.source &&
+          url.origin === location.origin &&
+          url.pathname.split("/").pop().toLowerCase() ===
+            "stickynotes.html"
+        );
+      } catch {
+        return false;
+      }
+    });
+
+  if (!frame || !ready) return;
+
+  frame.contentWindow?.postMessage(
+    {
+      type: "5G88_STICKY_SITE_SELECTION",
+      siteIds: [...selectedIds]
+    },
+    location.origin
+  );
+});
+
 /* MOBILE SITE CHIPS - INPUT ASAL DIKEKALKAN */
 const mobileInputWrap = mobileInput.parentElement;
 
