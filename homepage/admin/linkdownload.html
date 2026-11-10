@@ -58,7 +58,31 @@
 </script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="./logo.svg" type="image/svg+xml"><title>5G88 · Link Download</title><link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./new-ui.css"><style>
 :root{--ld-bg:#000;--ld-surface:#1f1f1f;--ld-input:#141414;--ld-border:#424242;--ld-text:rgba(255,255,255,.88);--ld-muted:rgba(255,255,255,.46);--ld-blue:#1668dc}body.light-theme,html[data-admin-theme=light]{--ld-bg:#fff;--ld-surface:#fff;--ld-input:#fff;--ld-border:#d9d9d9;--ld-text:rgba(0,0,0,.88);--ld-muted:rgba(0,0,0,.46)}*{box-sizing:border-box}html,body{margin:0;min-width:0}body{background:var(--ld-bg);color:var(--ld-text);font:14px Arial,sans-serif}.ld-page{width:100%;padding:0 12px;min-width:0}
-  .ld-toolbar{display:grid;grid-template-columns:minmax(0,400px) minmax(0,400px) 1fr;gap:10px;align-items:center;padding:12px;border:1px solid var(--tx-border);background:var(--tx-surface-soft);border-radius:12px;margin-bottom:8px;min-width:0}
+ 
+.ld-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(max-content, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  border: 1px solid var(--tx-border);
+  background: var(--tx-surface-soft);
+  border-radius: 12px;
+}
+
+.ld-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
   .ld-search,.ld-filter{min-width:0;width:100%}
   .ld-toolbar
   .shared-sync-search,
@@ -172,7 +196,12 @@
     background-color: rgba(255, 255, 255, 0.08);
 }
   .ld-actions{display:flex;gap:8px;padding-top:9px;border-top:1px solid var(--ld-border)}.ld-actions .ld-button{flex:1;min-width:0}.ld-empty{grid-column:1/-1;width:100%;min-height:160px;display:grid;place-items:center;;background:var(--tx-surface);border-radius:12px;padding:0;color:var(--ld-muted)}.ld-modal-form{display:flex;flex-direction:column;gap:14px}.ld-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ld-field{display:flex;flex-direction:column;gap:7px;min-width:0}.ld-field label,.ld-label{font-size:12px;font-weight:600}.ld-input{height:34px;width:100%;min-width:0;border:1px solid var(--ld-border);border-radius:6px;background:var(--ld-input);color:var(--ld-text);padding:0 10px;font:inherit}.ld-input:focus{outline:0;border-color:#1668dc}.ld-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--ld-border);padding-top:14px}.ld-rows{display:flex;flex-direction:column;gap:10px}.ld-row{border:1px solid var(--ld-border);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:10px}.ld-row-head{display:flex;justify-content:space-between;align-items:center}.ld-row-fields{display:grid;grid-template-columns:1fr 1.5fr;gap:10px}.ld-row-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ld-radio{display:flex;gap:13px;align-items:center;flex-wrap:wrap;font-size:12px}.ld-radio label{display:flex;align-items:center;gap:4px;cursor:pointer}.ld-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:14px}.ld-hint{color:var(--ld-muted);font-size:12px;line-height:1.5}.ld-url-image{display:flex;gap:8px;align-items:center}.ld-url-image>*:first-child{flex:1}.ld-upload{min-height:34px}.ld-modal-form .shared-image-upload{max-width:100%}.ld-modal-form .shared-modal-actions{display:none}
-  @media(max-width:830px){.ld-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ld-create{grid-column:1/-1}}@media(max-width:640px){.ld-toolbar{grid-template-columns:minmax(0,1fr)}.ld-create{grid-column:1;justify-self:end}.ld-form-grid,.ld-row-fields{grid-template-columns:minmax(0,1fr)}}
+  @media (max-width: 640px) {
+  .ld-form-grid,
+  .ld-row-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 /* =========================================
    LINK DOWNLOAD - CUSTOM MODAL INPUT
    ========================================= */
@@ -235,47 +264,137 @@
   overflow-y: auto;
 }
 
-/* LINK DOWNLOAD - REFRESH + CREATE */
 
-.ld-toolbar-actions {
+
+
+/* ==========================================
+   LINK DOWNLOAD - TOOLBAR RESPONSIVE
+   SAME AS GAME LOGO
+   ========================================== */
+
+/* SEARCH + PLATFORM FILTER */
+.ld-toolbar .ld-search,
+.ld-toolbar .ld-filter,
+.ld-toolbar .shared-sync-search,
+.ld-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* REFRESH + CREATE WRAPPER */
+.ld-toolbar .ld-toolbar-actions {
   grid-column: 3;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  justify-self: end;
+  flex-wrap: nowrap;
   gap: 8px;
+
+  width: max-content;
   min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.ld-toolbar-actions .ld-create {
-  justify-self: auto;
-}
+/* BUTTONS */
+.ld-toolbar #ldRefresh,
+.ld-toolbar #ldCreate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 
-#ldRefresh,
-#ldCreate {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: max-content;
+  max-width: 100%;
   height: 32px;
+  padding: 0 14px;
+  margin: 0;
+
+  font-size: 13px;
+  line-height: 1;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
-#ldRefresh[hidden],
-#ldCreate[hidden] {
+/* PERMISSION */
+.ld-toolbar #ldRefresh[hidden],
+.ld-toolbar #ldCreate[hidden] {
   display: none !important;
 }
 
+/* ==========================================
+   TABLET / PHONE
+   ========================================== */
 
-@media (max-width: 1080px) {
-  .ld-toolbar-actions {
-    grid-column: 1 / -1;
+@media (max-width: 1100px) {
+
+  .ld-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
-}
 
-@media (max-width: 640px) {
-  .ld-toolbar-actions {
+  .ld-toolbar .ld-search,
+  .ld-toolbar .ld-filter {
     grid-column: 1;
-    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ld-toolbar .ld-toolbar-actions {
+    grid-column: 1;
+    justify-self: end;
+    justify-content: flex-end;
+
+    width: max-content;
+    max-width: 100%;
+    min-width: 0;
+    margin-left: auto;
+    flex-wrap: nowrap;
+  }
+
+  .ld-toolbar #ldRefresh,
+  .ld-toolbar #ldCreate {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    padding: 0 14px;
   }
 }
 
-/* LINK DOWNLOAD - REFRESH GRID WRAPPER */
+/* ==========================================
+   SMALL PHONE
+   ========================================== */
+
+@media (max-width: 380px) {
+
+  .ld-toolbar {
+    gap: 8px;
+  }
+
+  .ld-toolbar .ld-toolbar-actions {
+    width: 100%;
+    justify-self: stretch;
+    margin-left: 0;
+  }
+
+  .ld-toolbar #ldRefresh,
+  .ld-toolbar #ldCreate {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  .ld-toolbar #ldRefresh:only-child {
+    flex: 1 1 100%;
+  }
+}
+
 
 
 .ld-grid-wrapper {
