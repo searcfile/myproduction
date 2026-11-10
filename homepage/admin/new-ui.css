@@ -37,7 +37,7 @@ html[data-admin-theme="light"] {
   --tab-bg:rgba(255,255,255,.02);
    
   --dropdown-bg:#1f1f1f;
-  --dropdown-bg-active:#111a2c;
+  --dropdown-bg-active:#15325b;
 
   --caret-color:rgba(0,0,0,.88);
 
@@ -80,7 +80,7 @@ html[data-admin-theme="light"] {
   --tab-bg:rgba(255,255,255,.04);
    
   --dropdown-bg:#1f1f1f;
-  --dropdown-bg-active:#111a2c;
+  --dropdown-bg-active:#e6f4ff;
 
   --caret-color:#ffffff;
   --list-hover:rgba(255,255,255,.08);
