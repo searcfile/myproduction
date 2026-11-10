@@ -723,10 +723,9 @@ function restoreLdFilter(uid) {
         )]
       : [];
 
-  chip?.setValue?.(selectedPlatforms);
+chip?.setValue?.(selectedPlatforms);
 
-  ldFilterReady = true;
-  render();
+ldFilterReady = true;
 }
 
   
@@ -960,6 +959,8 @@ chip = NewUI.chips('#ldPlatforms', {
   options: [],
 
   onChange: () => {
+    if (!ldFilterReady) return;
+
     render();
     scheduleLdFilterSave();
   }
