@@ -1245,9 +1245,58 @@ select:focus-visible{
 .note-card:hover{box-shadow:0 10px 26px rgba(0,0,0,.20);}
 .note-title{color:#fff!important;}
 .note-body{min-height:0!important;}
-.sticky-empty-holder{width:100%;}
-.sticky-empty-holder .shared-empty-card{min-height:160px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-input,#424242);background:var(--page-bg2,#1f1f1f);border-radius:12px;}
-.sticky-empty-holder .shared-empty{min-height:160px;}
+
+/* ==========================================
+   STICKY NOTES - SINGLE NO DATA CARD
+   SAME AS LINK DOWNLOAD
+   ========================================== */
+
+/* Outer holder - jangan jadi card */
+#emptyState.sticky-empty-holder {
+  display: none;
+  width: 100%;
+  min-width: 0;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Hanya inner shared card yang ada background */
+#emptyState .shared-empty-card {
+  width: 100% !important;
+  min-width: 0;
+  min-height: 160px;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--tx-surface) !important;
+  border: 1px solid var(--tx-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* Icon dan tulisan No Data */
+#emptyState .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .dialog{max-width:calc(100vw - 24px)!important;}
 .dialog .input,.dialog .textarea{width:100%;min-width:0;}
 .dialog .new-ui-input-wrap{width:100%;display:block;}
@@ -1880,13 +1929,26 @@ function renderNotes(){
   const list = getVisibleNotes();
   els.notesGrid.innerHTML = "";
 
-  if(!list.length){
-    els.emptyState.style.display = "block";
-    const label = notes.length ? "No Data" : "No data";
-    if (window.showEmptyState) window.showEmptyState(els.emptyState, label, "large", "center", true);
-    else els.emptyState.textContent = label;
-    return;
+
+if (!list.length) {
+  els.emptyState.style.display = "block";
+
+  const label = "No Data";
+
+  if (window.showEmptyState) {
+    window.showEmptyState(
+      els.emptyState,
+      label,
+      "large",
+      "center"
+    );
+  } else {
+    els.emptyState.textContent = label;
   }
+
+  return;
+}
+
 
   if (els.emptyState) els.emptyState.style.display = "none";
 
