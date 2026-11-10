@@ -793,7 +793,10 @@ if (getCurrentFile() === targetFile) {
 }
 
 setActiveFile(targetFile);
-
+// Kekalkan status sidebar sebelum navigasi halaman.
+if (document.getElementById("sidebar")?.classList.contains("active")) {
+  sessionStorage.setItem(SIDEBAR_STATE_KEY, "1");
+}
 // Tandakan navigasi tab untuk Smart Content Loader.
 sessionStorage.setItem(
   "5g88.smartTabNavigation",
@@ -7057,48 +7060,60 @@ if (accountDropdown && accountButton && accountPanel) {
   });
 }
 
-// Initialize custom header colors
-initHeaderColors();
+    // Initialize custom header colors
+    initHeaderColors();
 
     document
-      .getElementById(
-        "logoutBtn"
-      )
+      .getElementById("logoutBtn")
       ?.addEventListener(
         "click",
         handleLogout
       );
 
+    /* ==========================================
+       SIDEBAR - CLOSE ONLY ON OUTSIDE CLICK
+       ========================================== */
 
     document.addEventListener(
       "click",
       event => {
 
-        if (
-          !event.target.closest(
-            "#sidebar"
-          ) &&
-          !event.target.closest(
-            "#menuIcon"
-          )
-        ) {
+        // Dapatkan laluan asal klik.
+        const path = event.composedPath();
 
+        // Semak klik dalam sidebar.
+        const clickedSidebar = path.some(el =>
+          el instanceof Element &&
+          el.id === "sidebar"
+        );
+
+        // Semak klik pada menu icon.
+        const clickedMenuIcon = path.some(el =>
+          el instanceof Element &&
+          el.id === "menuIcon"
+        );
+
+        // Sidebar hanya tutup apabila klik di luar.
+        if (!clickedSidebar && !clickedMenuIcon) {
           closeSidebar();
         }
 
+        // Kekalkan fungsi dropdown header.
+        const clickedDropdown = path.some(el =>
+          el instanceof Element &&
+          el.matches(".dropdown-wrapper")
+        );
 
-        if (
-          !event.target.closest(
-            ".dropdown-wrapper"
-          )
-        ) {
-
+        if (!clickedDropdown) {
           closeHeaderDropdowns();
         }
 
       }
     );
 
+    /* ==========================================
+       WINDOW RESIZE
+       ========================================== */
 
     window.addEventListener(
       "resize",
@@ -7108,25 +7123,23 @@ initHeaderColors();
       }
     );
 
+    /* ==========================================
+       THEME STORAGE SYNC
+       ========================================== */
 
     window.addEventListener(
       "storage",
       event => {
 
         if (
-          event.key ===
-          "adminTheme"
+          event.key === "adminTheme"
         ) {
-
           applyTheme();
         }
 
       }
     );
   }
-
-
-
   /* ==========================================================
      SHARED FIREBASE / VISIBILITY / NOTIFICATION / PASSWORD
      ========================================================== */
