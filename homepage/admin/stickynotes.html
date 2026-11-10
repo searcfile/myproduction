@@ -2354,19 +2354,25 @@ function renderNotes() {
 
   // Sembunyikan paparan lama ketika Firebase loading
 
+
 if (
   notesLoading ||
   (
     currentUser.role === "superadmin" &&
-    stickySiteSelectionReady &&
-    stickySelectedSiteIds.length > 0 &&
-    !stickyOwnerSitesReady
+    (
+      !stickySiteSelectionReady ||
+      (
+        stickySelectedSiteIds.length > 0 &&
+        !stickyOwnerSitesReady
+      )
+    )
   )
 ) {
   els.notesGrid.replaceChildren();
   els.emptyState.style.display = "none";
   return;
 }
+
 
 
   const list = getVisibleNotes();
