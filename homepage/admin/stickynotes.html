@@ -1253,99 +1253,7 @@ select:focus-visible{
 .dialog .new-ui-input-wrap{width:100%;display:block;}
 .dialog-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
 .dialog-foot button{min-width:95px;height:32px;}
-/* STICKY NOTES - RESPONSIVE STABLE */
 
-/* Tablet */
-@media (max-width: 900px) {
-  .sticky-toolbar {
-    grid-template-columns:
-      minmax(0, 1fr)
-      minmax(0, 1fr) !important;
-  }
-
-  .sticky-toolbar .sticky-search,
-  .sticky-toolbar .sticky-filter {
-    max-width: 100% !important;
-  }
-
-  .sticky-toolbar .sticky-create {
-    grid-column: 2 !important;
-    justify-self: end !important;
-  }
-}
-
-/* Mobile */
-@media (max-width: 620px) {
-  .content {
-    padding: 10px !important;
-  }
-
-  .sticky-shell {
-    padding: 10px !important;
-  }
-
-  .sticky-toolbar {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 8px !important;
-  }
-
-  .sticky-toolbar .sticky-search {
-    grid-column: 1 !important;
-  }
-
-  .sticky-toolbar .sticky-filter {
-    grid-column: 1 !important;
-  }
-
-  .sticky-toolbar .sticky-create {
-    grid-column: 1 !important;
-    justify-self: end !important;
-  }
-
-  .notes-grid {
-    grid-template-columns:
-      repeat(auto-fill, minmax(min(100%, 220px), 1fr)) !important;
-  }
-
-  .note-card {
-    height: 270px !important;
-    min-height: 270px !important;
-  }
-}
-
-/* ==========================================
-   STICKY NOTES - REFRESH BUTTON
-   ========================================== */
-
-.sticky-toolbar {
-  grid-template-columns:
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(max-content, 1fr) !important;
-}
-
-.sticky-toolbar-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  min-width: 0;
-  justify-self: end;
-}
-
-.sticky-toolbar-actions > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  height: 32px;
-  padding: 0 15px;
-  white-space: nowrap;
-}
-
-.sticky-toolbar-actions .sticky-create {
-  margin: 0 !important;
-}
 
 /* ==========================================
    STICKY NOTES - LOADING OVERLAY
@@ -1388,26 +1296,145 @@ select:focus-visible{
   text-align: center;
 }
 
-/* Tablet */
-@media (max-width: 900px) {
-  .sticky-toolbar-actions {
-    grid-column: 2;
+
+/* ==========================================
+   STICKY NOTES - RESPONSIVE LIKE GAME LOGO
+   ========================================== */
+
+/* DESKTOP */
+.content-toolbar.sticky-toolbar {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(max-content, 1fr) !important;
+
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.sticky-toolbar > * {
+  min-width: 0;
+}
+
+.sticky-toolbar .sticky-search,
+.sticky-toolbar .sticky-filter {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.sticky-toolbar .shared-sync-search,
+.sticky-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* REFRESH + CREATE */
+.sticky-toolbar .sticky-toolbar-actions {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  flex-wrap: nowrap;
+  gap: 8px;
+
+  width: max-content;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* BUTTON SIZE */
+.sticky-toolbar .sticky-toolbar-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: max-content;
+  max-width: 100%;
+  height: 32px !important;
+  padding: 0 15px !important;
+  margin: 0 !important;
+
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.sticky-toolbar .sticky-toolbar-actions > button[hidden] {
+  display: none !important;
+}
+
+/* ==========================================
+   TABLET / PHONE - 1100px
+   ========================================== */
+
+@media (max-width: 1100px) {
+
+  .content-toolbar.sticky-toolbar {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .sticky-toolbar .sticky-search,
+  .sticky-toolbar .sticky-filter {
+    grid-column: 1;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
+  .sticky-toolbar .sticky-toolbar-actions {
+    grid-column: 1;
     justify-self: end;
+    justify-content: flex-end;
+    width: max-content;
+    max-width: 100%;
+    margin-left: auto;
+    flex-wrap: nowrap;
+  }
+
+  .sticky-toolbar .sticky-toolbar-actions > button {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: 0;
+    padding: 0 15px !important;
   }
 }
 
-/* Phone */
-@media (max-width: 620px) {
-  .sticky-toolbar-actions {
-    grid-column: 1;
+/* ==========================================
+   SMALL PHONE
+   ========================================== */
+
+@media (max-width: 380px) {
+
+  .sticky-toolbar .sticky-toolbar-actions {
     width: 100%;
     justify-self: stretch;
+    margin-left: 0;
   }
 
-  .sticky-toolbar-actions > button {
+  .sticky-toolbar .sticky-toolbar-actions > button {
     flex: 1 1 0;
     min-width: 0;
-    padding: 0 8px;
+    padding: 0 8px !important;
+    font-size: 12px;
+  }
+
+  .sticky-toolbar .sticky-toolbar-actions > button:only-child {
+    flex: 1 1 100%;
   }
 }
 
