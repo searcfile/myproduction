@@ -5261,6 +5261,28 @@ function saveSelection() {
       }
     })
   );
+    // Sync pilihan site ke Sticky Notes dalam iframe
+  document.querySelectorAll("iframe").forEach(frame => {
+    try {
+      const url = new URL(frame.src, location.href);
+
+      if (
+        url.origin === location.origin &&
+        url.pathname.split("/").pop().toLowerCase() ===
+          "stickynotes.html"
+      ) {
+        frame.contentWindow?.postMessage(
+          {
+            type: "5G88_STICKY_SITE_SELECTION",
+            siteIds: [...selectedIds]
+          },
+          location.origin
+        );
+      }
+    } catch (error) {
+      console.warn("Sticky site sync:", error);
+    }
+  });
 }
 
 
