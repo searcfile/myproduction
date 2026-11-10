@@ -1580,6 +1580,7 @@ let currentUser = {
 };
 
 let notes = [];
+let notesLoading = true;
 let editingId = null;
 let deleteId = null;
 let activeFilters = ["all"];
@@ -1690,8 +1691,12 @@ function detachNotesListener(){
 }
 
 
+
 function loadNotes() {
   detachNotesListener();
+
+  notesLoading = true;
+  renderNotes();
 
   const user = firebase.auth().currentUser;
 
@@ -1708,10 +1713,11 @@ if (!user) {
     photo: ""
   };
 
-  notes = [];
-  renderUser();
-  renderNotes();
-  return;
+notes = [];
+notesLoading = false;
+renderUser();
+renderNotes();
+return;
 }
 
 
@@ -1726,17 +1732,19 @@ if (!user) {
 
     const data = snap.val() || {};
 
-    notes = Object.keys(data).map(id => ({
-      id,
-      ...data[id]
-    }));
+notes = Object.keys(data).map(id => ({
+  id,
+  ...data[id]
+}));
 
-    renderNotes();
+notesLoading = false;
+renderNotes();
 
   }, (error) => {
     console.error("Sticky Notes Firebase error:", error);
-    notes = [];
-    renderNotes();
+notes = [];
+notesLoading = false;
+renderNotes();
   });
 }
 
@@ -1917,15 +1925,24 @@ if(activeFilters.includes("all") && activeFilters.includes("archived")){
   return list;
 }
 
-function renderNotes(){
+
+function renderNotes() {
   renderUser();
   renderCounts();
 
+  if (!els.notesGrid || !els.emptyState) return;
 
-  if(!els.notesGrid) return;
+  // Sembunyikan paparan lama ketika Firebase loading
+  if (notesLoading) {
+    els.notesGrid.replaceChildren();
+    els.emptyState.style.display = "none";
+    return;
+  }
 
   const list = getVisibleNotes();
-  els.notesGrid.innerHTML = "";
+
+  els.notesGrid.replaceChildren();
+
 
 
 if (!list.length) {
@@ -2302,12 +2319,13 @@ document.addEventListener("keydown", (e) => {
 
   // Ambil pengguna yang benar-benar login melalui Firebase
   firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) {
-      detachNotesListener();
-      notes = [];
-      renderNotes();
-      return;
-    }
+if (!user) {
+  detachNotesListener();
+  notes = [];
+  notesLoading = false;
+  renderNotes();
+  return;
+}
 
     try {
       const snapshot = await firebase.database()
