@@ -1830,8 +1830,14 @@ return;
 }
 
 
-  const uid = user.uid;
-  const ref = db.ref(`stickyNotes/${uid}`);
+const uid = user.uid;
+const isSuperAdmin = currentUser.role === "superadmin";
+
+const ref = db.ref(
+  isSuperAdmin
+    ? "stickyNotes"
+    : `stickyNotes/${uid}`
+);
 
   notesRef = ref;
 
@@ -1839,12 +1845,23 @@ return;
     if (firebase.auth().currentUser?.uid !== uid) return;
     if (notesRef !== ref) return;
 
-    const data = snap.val() || {};
+const data = snap.val() || {};
 
-notes = Object.keys(data).map(id => ({
-  id,
-  ...data[id]
-}));
+if (isSuperAdmin) {
+  notes = Object.entries(data).flatMap(([ownerUid, userNotes]) =>
+    Object.entries(userNotes || {}).map(([id, note]) => ({
+      ...note,
+      id,
+      ownerUid
+    }))
+  );
+} else {
+  notes = Object.entries(data).map(([id, note]) => ({
+    ...note,
+    id,
+    ownerUid: uid
+  }));
+}
 
 notesLoading = false;
 renderNotes();
@@ -1895,9 +1912,15 @@ async function refreshStickyNotesOnly() {
             const startTime = performance.now();
 
             // Fetch semula nota user daripada Firebase
-            const snapshot = await firebase.database()
-              .ref(`stickyNotes/${user.uid}`)
-              .once("value");
+const isSuperAdmin = currentUser.role === "superadmin";
+
+const snapshot = await firebase.database()
+  .ref(
+    isSuperAdmin
+      ? "stickyNotes"
+      : `stickyNotes/${user.uid}`
+  )
+  .once("value");
 
             // Elakkan data user lama masuk
             // jika login bertukar semasa loading
@@ -1905,12 +1928,23 @@ async function refreshStickyNotesOnly() {
               return;
             }
 
-            const data = snapshot.val() || {};
+const data = snapshot.val() || {};
 
-            notes = Object.keys(data).map(id => ({
-              id,
-              ...data[id]
-            }));
+if (isSuperAdmin) {
+  notes = Object.entries(data).flatMap(([ownerUid, userNotes]) =>
+    Object.entries(userNotes || {}).map(([id, note]) => ({
+      ...note,
+      id,
+      ownerUid
+    }))
+  );
+} else {
+  notes = Object.entries(data).map(([id, note]) => ({
+    ...note,
+    id,
+    ownerUid: user.uid
+  }));
+}
 
             // Render semula nota tanpa reload page
             renderNotes();
@@ -2034,7 +2068,13 @@ if(activeFilters.includes("all") && activeFilters.includes("archived")){
   return list;
 }
 
-
+function canModifyNote(note) {
+  return Boolean(
+    note &&
+    firebase.auth().currentUser?.uid ===
+      (note.ownerUid || note.userUid)
+  );
+}
 function renderNotes() {
   renderUser();
   renderCounts();
@@ -2078,6 +2118,7 @@ if (!list.length) {
 
   list.forEach(note => {
     const card = document.createElement("div");
+        const canModify = canModifyNote(note);
     card.className = "note-card";
     card.style.background = note.color || "#fff4b8";
 
@@ -2086,7 +2127,11 @@ if (!list.length) {
   <div class="note-title">${escapeHtml(note.title || "Untitled")}</div>
 
   <div class="note-head-actions">
-    <button class="pin ${note.pinned ? "is-pinned" : "is-unpinned"}" title="Pin note" data-action="pin" data-id="${note.id}">
+    <button class="pin ${note.pinned ? "is-pinned" : "is-unpinned"}" 
+    ${canModify ? "" : "disabled"}
+    title="Pin note"
+    data-action="pin"
+    data-id="${note.id}">
       ${note.pinned ? `
         <svg class="pin-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M8 17h2v5l-2 2v-7zm2-11.5c0-2.319 1.219-4.35 3.047-5.5h-9.047c.068 1.911 2.429 2.097 2.429 5 0 3.771-3.429 3.291-3.429 10h12c0-1.358-.145-2.412-.369-3.276-2.678-.803-4.631-3.284-4.631-6.224zm6.5-4.5c-2.486 0-4.5 2.015-4.5 4.5s2.014 4.5 4.5 4.5c2.484 0 4.5-2.015 4.5-4.5s-2.016-4.5-4.5-4.5zm-.469 6.484l-1.688-1.637.695-.697.992.94 2.115-2.169.697.696-2.811 2.867z"/>
@@ -2124,10 +2169,12 @@ if (!list.length) {
         <span>${formatTime(note.updatedAt)}</span>
       </div>
 
+${canModify ? `
 <div class="note-actions">
   <button class="btn-edit-new" data-action="edit" data-id="${note.id}">Edit</button>
   <button class="btn-delete-new" data-action="delete" data-id="${note.id}">Delete</button>
 </div>
+` : ""}
     `;
 
     els.notesGrid.appendChild(card);
@@ -2416,7 +2463,7 @@ els.notesGrid?.addEventListener("click", (e) => {
   const id = btn.dataset.id;
   const action = btn.dataset.action;
   const note = notes.find(n => n.id === id);
-
+if (!note || !canModifyNote(note)) return;
   if(action === "edit" && note) openModal(note);
   if (action === "delete") {
   openConfirm(id, btn);
