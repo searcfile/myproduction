@@ -622,9 +622,11 @@ select:focus-visible{
     box-sizing: border-box;
   }
 }
-/* =========================================
-   TIPS GAME - CUSTOM SHARED NO DATA
-   ========================================= */
+
+/* ==========================================
+   TIPS GAME - SINGLE NO DATA CARD
+   SAME AS LINK DOWNLOAD
+   ========================================== */
 
 .tips-no-data {
   grid-column: 1 / -1;
@@ -633,26 +635,28 @@ select:focus-visible{
   min-width: 0;
   min-height: 160px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 
-  padding: 16px;
+  /* Tiada card luar */
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 
   box-sizing: border-box;
-
-  background: var(--page-bg2);
-  border: 1px solid var(--border-input);
-  border-radius: 12px;
 }
 
-/* Pastikan custom empty state berada di tengah */
+/* Shared No Data jadi satu-satunya card */
 .tips-no-data > * {
+  width: 100%;
   max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  box-sizing: border-box;
 }
-      #tipsCreate[hidden],
+
+#tipsCreate[hidden],
 .platform-box .btn-edit-new[hidden],
 .platform-box .btn-delete-new[hidden],
 .platform-box .tips-platform-active[hidden] {
