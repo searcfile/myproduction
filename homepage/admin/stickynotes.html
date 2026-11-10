@@ -2014,14 +2014,28 @@ function saveNoteToFirebase(note) {
     return Promise.reject(new Error("Invalid note"));
   }
 
-  const ownerUid = getNoteOwnerUid(note);
+  const authUser = firebase.auth().currentUser;
 
-  if (!canModifyNote(note)) {
-    return Promise.reject(new Error("Permission denied"));
+  if (!authUser) {
+    return Promise.reject(new Error("Login session unavailable"));
   }
 
-  // ownerUid hanya digunakan sebagai lokasi database,
-  // bukan disimpan sebagai field baru.
+  const ownerUid = getNoteOwnerUid(note);
+
+  console.log("[STICKY NOTES SAVE CHECK]", {
+    loginUid: authUser.uid,
+    ownerUid,
+    role: currentUser.role,
+    noteId: note.id,
+    canModify: canModifyNote(note)
+  });
+
+  if (!canModifyNote(note)) {
+    return Promise.reject(
+      new Error("Permission denied: note ownership mismatch")
+    );
+  }
+
   const { ownerUid: _ownerUid, ...noteData } = note;
 
   return db.ref(`stickyNotes/${ownerUid}/${note.id}`)
@@ -2109,18 +2123,19 @@ function isSuperAdmin() {
 }
 
 function canModifyNote(note) {
-  const uid = firebase.auth().currentUser?.uid;
+  const authUser = firebase.auth().currentUser;
 
-  if (!uid || !note) return false;
+  if (!authUser || !note) return false;
 
-  if (isSuperAdmin()) return true;
-
+  const uid = authUser.uid;
   const ownerUid = note.ownerUid || note.userUid;
 
-  return (
-    currentUser.role === "siteadmin" &&
-    ownerUid === uid
-  );
+  if (!ownerUid) return false;
+    
+  if (currentUser.role === "superadmin") {
+    return true;
+  }
+  return ownerUid === uid;
 }
 
 function getNoteOwnerUid(note) {
