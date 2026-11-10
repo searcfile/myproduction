@@ -2437,12 +2437,6 @@ function openModal(note = null) {
     );
     return;
   }
-    window.NewUI?.showToast?.(
-      "Permission denied",
-      "error"
-    );
-    return;
-  }
 
   editingId = note ? note.id : null;
   selectedColor = note?.color || COLORS[0];
