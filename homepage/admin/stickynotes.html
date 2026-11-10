@@ -1697,6 +1697,82 @@ let selectedColor = "#1668dc";
 let notesRef = null;
 let notesListener = null;
 
+/* ==========================================
+   STICKY NOTES - HEADER SITE FILTER
+   ========================================== */
+
+let stickySelectedSiteIds = [];
+let stickySiteSelectionReady = false;
+let stickyOwnerSites = {};
+let stickyOwnerSitesReady = false;
+
+async function loadStickyOwnerSites() {
+  if (currentUser.role !== "superadmin") {
+    stickyOwnerSites = {};
+    stickyOwnerSitesReady = true;
+    renderNotes();
+    return;
+  }
+
+  stickyOwnerSitesReady = false;
+  renderNotes();
+
+  try {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error("Not logged in");
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+      "https://fiveg88-admin-backend-v2.onrender.com" +
+      "/api/sticky-notes/owner-sites",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.ok !== true) {
+      throw new Error(result.message || "Cannot load site assignments");
+    }
+
+    if (firebase.auth().currentUser?.uid !== user.uid) return;
+
+    stickyOwnerSites = result.owners || {};
+    stickyOwnerSitesReady = true;
+    renderNotes();
+  } catch (error) {
+    console.error("Sticky owner sites:", error);
+
+    stickyOwnerSitesReady = false;
+    renderNotes();
+
+    window.NewUI?.showToast?.(
+      "Unable to load Sticky Notes site assignments",
+      "error"
+    );
+  }
+}
+
+function noteMatchesSelectedSites(note) {
+  if (currentUser.role !== "superadmin") return true;
+
+  // Tiada site dipilih = semua nota
+  if (stickySelectedSiteIds.length === 0) return true;
+
+  const ownerUid = note.ownerUid || note.userUid;
+
+  const ownerSiteIds =
+    stickyOwnerSites[ownerUid]?.siteIds || [];
+
+  return ownerSiteIds.some(id =>
+    stickySelectedSiteIds.includes(id)
+  );
+}
+
 const COLORS = [
   "#006873",
   "#0b0b0b",
@@ -1915,7 +1991,9 @@ async function refreshStickyNotesOnly() {
   }
 
   stickyRefreshing = true;
-
+if (currentUser.role === "superadmin") {
+  await loadStickyOwnerSites();
+}
   try {
     await NewUI.refreshButton.run(
       stickyRefreshButton,
@@ -2151,7 +2229,7 @@ function renderCounts(){
 function getVisibleNotes(){
   const q = (els.searchInput?.value || "").trim().toLowerCase();
 
-  let list = [...notes];
+  let list = notes.filter(noteMatchesSelectedSites);
 if (activeFilters.length === 0) {
   activeFilters = ["all"];
 }
@@ -2274,11 +2352,20 @@ function renderNotes() {
   if (!els.notesGrid || !els.emptyState) return;
 
   // Sembunyikan paparan lama ketika Firebase loading
-  if (notesLoading) {
-    els.notesGrid.replaceChildren();
-    els.emptyState.style.display = "none";
-    return;
-  }
+if (
+  notesLoading ||
+  (
+    currentUser.role === "superadmin" &&
+    (
+      !stickySiteSelectionReady ||
+      !stickyOwnerSitesReady
+    )
+  )
+) {
+  els.notesGrid.replaceChildren();
+  els.emptyState.style.display = "none";
+  return;
+}
 
   const list = getVisibleNotes();
 
@@ -2676,19 +2763,53 @@ saveNoteToFirebase(updated, "edit").catch(err => {
    THEME / PARENT
 ========================= */
 function requestParentData(){
-  try{
-    window.parent.postMessage({ type:"sticky-notes-ready" }, "*");
-    window.parent.postMessage({ type:"request-login" }, "*");
-    window.parent.postMessage({ type:"request-theme" }, "*");
-  }catch{}
+  try {
+    window.parent.postMessage(
+      { type: "sticky-notes-ready" },
+      location.origin
+    );
+
+    window.parent.postMessage(
+      { type: "request-login" },
+      location.origin
+    );
+
+    window.parent.postMessage(
+      { type: "request-theme" },
+      location.origin
+    );
+
+    window.parent.postMessage(
+      { type: "5G88_STICKY_REQUEST_SITES" },
+      location.origin
+    );
+  } catch (error) {
+    console.warn("Sticky parent request:", error);
+  }
 }
 
 
 window.addEventListener("message", (e) => {
+  if (e.origin !== location.origin) return;
+  if (e.source !== window.parent) return;
+
   const data = e.data || {};
 
   if (data.type === "close-sticky-dropdown") {
     filterCombo?.classList.remove("open");
+  }
+
+  if (data.type === "5G88_STICKY_SITE_SELECTION") {
+    if (!Array.isArray(data.siteIds)) return;
+
+    stickySelectedSiteIds = [
+      ...new Set(
+        data.siteIds.filter(id => typeof id === "string")
+      )
+    ];
+
+    stickySiteSelectionReady = true;
+    renderNotes();
   }
 });
 
@@ -2880,6 +3001,12 @@ const oldUid = currentUser.uid || "";
 
 currentUser = nextUser;
 updateStickyPermissionUI();
+if (currentUser.role === "superadmin") {
+  loadStickyOwnerSites();
+} else {
+  stickyOwnerSites = {};
+  stickyOwnerSitesReady = true;
+}
 // Restore hanya apabila UID bertukar atau
 // halaman baru dibuka.
 if (
