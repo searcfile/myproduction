@@ -5317,7 +5317,296 @@ app.delete(
 );
 
 /* =====================================================
-   END BANK ISLAM BANK API
+   STICKY NOTES — SECURE BACKEND API
+   ===================================================== */
+
+const STICKY_MODULE = "stickynotes.html";
+const STICKY_PATH = "stickyNotes";
+
+const stickyIdOK = id =>
+  typeof id === "string" &&
+  /^note_[a-zA-Z0-9_-]{1,100}$/.test(id);
+
+const stickyUidOK = uid =>
+  typeof uid === "string" &&
+  /^[a-zA-Z0-9_-]{1,128}$/.test(uid);
+
+const stickyColors = new Set([
+  "#006873", "#0b0b0b", "#6d00ff",
+  "#1668dc", "#16dccb", "#16dc8b",
+  "#f513d8", "#f51365", "#13f5ec",
+  "#13aaf5", "#dce83c", "#e86d3c",
+  "#e83c3c", "#3ce843"
+]);
+
+function stickyOwner(req, requestedUid) {
+  const uid = requestedUid || req.admin.uid;
+
+  if (!stickyUidOK(uid)) return null;
+
+  if (
+    req.admin.profile.role !== "superadmin" &&
+    uid !== req.admin.uid
+  ) {
+    return null;
+  }
+
+  return uid;
+}
+
+function validateStickyInput(body) {
+  if (
+    !body ||
+    typeof body !== "object" ||
+    Array.isArray(body)
+  ) return null;
+
+  const title = body.title;
+  const text = body.body;
+  const color = body.color;
+
+  if (
+    typeof title !== "string" ||
+    title.length > 150 ||
+    typeof text !== "string" ||
+    text.length > 20000 ||
+    !stickyColors.has(color)
+  ) {
+    return null;
+  }
+
+  return { title, body: text, color };
+}
+
+// CREATE
+app.post(
+  "/api/sticky-notes",
+  requireAdmin,
+  requirePermission(STICKY_MODULE, "create"),
+  async (req, res) => {
+    try {
+      const data = validateStickyInput(req.body);
+      const id = req.body?.id;
+
+      if (!data || !stickyIdOK(id)) {
+        return fail(res, 400, "Invalid note data");
+      }
+
+      // Create sentiasa di bawah UID pengguna sendiri.
+      const uid = req.admin.uid;
+      const ref = db.ref(`${STICKY_PATH}/${uid}/${id}`);
+
+      const profile = req.admin.profile;
+      const timestamp = now();
+
+      const note = {
+        id,
+        ...data,
+        pinned: false,
+        archived: false,
+        userUid: uid,
+        userName: profile.role === "superadmin"
+          ? "Super Admin"
+          : profile.username,
+        userEmail: profile.email || "",
+        createdAt: timestamp,
+        updatedAt: timestamp
+      };
+
+      const result = await ref.transaction(
+        current => current === null ? note : undefined,
+        undefined,
+        false
+      );
+
+      if (!result.committed) {
+        return fail(res, 409, "Note already exists");
+      }
+
+      return res.status(201).json({
+        ok: true,
+        note
+      });
+    } catch (error) {
+      console.error("Sticky create:", error);
+      return fail(res, 500, "Cannot create note");
+    }
+  }
+);
+
+// EDIT / PIN / ARCHIVE
+app.patch(
+  "/api/sticky-notes/:ownerUid/:id",
+  requireAdmin,
+  requirePermission(STICKY_MODULE, "edit"),
+  async (req, res) => {
+    try {
+      const uid = stickyOwner(req, req.params.ownerUid);
+      const id = req.params.id;
+
+      if (!uid) {
+        return fail(res, 403, "Note access denied");
+      }
+
+      if (!stickyIdOK(id)) {
+        return fail(res, 400, "Invalid note ID");
+      }
+
+      const body = req.body || {};
+      const allowed = new Set([
+        "title", "body", "color",
+        "pinned", "archived"
+      ]);
+
+      const keys = Object.keys(body);
+
+      if (
+        !keys.length ||
+        keys.some(key => !allowed.has(key))
+      ) {
+        return fail(res, 400, "Invalid update fields");
+      }
+
+      const updates = {};
+
+      if (
+        keys.some(key =>
+          ["title", "body", "color"].includes(key)
+        )
+      ) {
+        // Validate the fields actually supplied.
+        if (Object.hasOwn(body, "title")) {
+          if (
+            typeof body.title !== "string" ||
+            body.title.length > 150
+          ) return fail(res, 400, "Invalid title");
+
+          updates.title = body.title;
+        }
+
+        if (Object.hasOwn(body, "body")) {
+          if (
+            typeof body.body !== "string" ||
+            body.body.length > 20000
+          ) return fail(res, 400, "Invalid body");
+
+          updates.body = body.body;
+        }
+
+        if (Object.hasOwn(body, "color")) {
+          if (!stickyColors.has(body.color)) {
+            return fail(res, 400, "Invalid color");
+          }
+
+          updates.color = body.color;
+        }
+      }
+
+      for (const field of ["pinned", "archived"]) {
+        if (Object.hasOwn(body, field)) {
+          if (typeof body[field] !== "boolean") {
+            return fail(res, 400, `Invalid ${field}`);
+          }
+          updates[field] = body[field];
+        }
+      }
+
+      const ref = db.ref(`${STICKY_PATH}/${uid}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Note not found");
+      }
+
+      const existing = snapshot.val();
+
+      if (existing.userUid && existing.userUid !== uid) {
+        return fail(res, 403, "Note owner mismatch");
+      }
+
+      // Transaction mengelakkan edit mencipta nota baru
+      // jika nota telah dipadam serentak.
+      const result = await ref.transaction(current => {
+        if (!current) return;
+        if (current.userUid && current.userUid !== uid) {
+          return;
+        }
+
+        return {
+          ...current,
+          ...updates,
+          updatedAt: now()
+        };
+      }, undefined, false);
+
+      if (!result.committed) {
+        return fail(res, 409, "Note changed or removed");
+      }
+
+      return res.json({
+        ok: true,
+        note: result.snapshot.val()
+      });
+    } catch (error) {
+      console.error("Sticky edit:", error);
+      return fail(res, 500, "Cannot edit note");
+    }
+  }
+);
+
+// DELETE
+app.delete(
+  "/api/sticky-notes/:ownerUid/:id",
+  requireAdmin,
+  requirePermission(STICKY_MODULE, "delete"),
+  async (req, res) => {
+    try {
+      const uid = stickyOwner(req, req.params.ownerUid);
+      const id = req.params.id;
+
+      if (!uid) {
+        return fail(res, 403, "Note access denied");
+      }
+
+      if (!stickyIdOK(id)) {
+        return fail(res, 400, "Invalid note ID");
+      }
+
+      const ref = db.ref(`${STICKY_PATH}/${uid}/${id}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, "Note not found");
+      }
+
+      const note = snapshot.val();
+
+      if (note.userUid && note.userUid !== uid) {
+        return fail(res, 403, "Note owner mismatch");
+      }
+
+      const result = await ref.transaction(current => {
+        if (!current) return;
+        if (current.userUid && current.userUid !== uid) {
+          return;
+        }
+        return null;
+      }, undefined, false);
+
+      if (!result.committed) {
+        return fail(res, 409, "Note changed or removed");
+      }
+
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error("Sticky delete:", error);
+      return fail(res, 500, "Cannot delete note");
+    }
+  }
+);
+
+/* =====================================================
+   END STICKY NOTES API
    ===================================================== */
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
