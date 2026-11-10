@@ -1744,11 +1744,12 @@ async function loadStickyOwnerSites() {
     stickyOwnerSites = result.owners || {};
     stickyOwnerSitesReady = true;
     renderNotes();
-  } catch (error) {
-    console.error("Sticky owner sites:", error);
+} catch (error) {
+  console.error("Sticky owner sites:", error);
 
-    stickyOwnerSitesReady = false;
-    renderNotes();
+  stickyOwnerSites = {};
+  stickyOwnerSitesReady = false;
+  renderNotes();
 
     window.NewUI?.showToast?.(
       "Unable to load Sticky Notes site assignments",
@@ -2352,20 +2353,21 @@ function renderNotes() {
   if (!els.notesGrid || !els.emptyState) return;
 
   // Sembunyikan paparan lama ketika Firebase loading
+
 if (
   notesLoading ||
   (
     currentUser.role === "superadmin" &&
-    (
-      !stickySiteSelectionReady ||
-      !stickyOwnerSitesReady
-    )
+    stickySiteSelectionReady &&
+    stickySelectedSiteIds.length > 0 &&
+    !stickyOwnerSitesReady
   )
 ) {
   els.notesGrid.replaceChildren();
   els.emptyState.style.display = "none";
   return;
 }
+
 
   const list = getVisibleNotes();
 
