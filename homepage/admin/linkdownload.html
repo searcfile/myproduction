@@ -713,17 +713,28 @@ function restoreLdFilter(uid) {
   search.value = restoredSearch;
   search.defaultValue = restoredSearch;
 
-  // Baca pilihan chip daripada localStorage sekarang.
-  // Tidak perlu tunggu data kad Firebase.
-  ldPendingPlatforms = Array.isArray(saved?.platforms)
-    ? [...new Set(
-        saved.platforms.filter(
-          value => typeof value === "string"
-        )
-      )]
-    : [];
 
-  ldFilterReady = true;
+ldPendingPlatforms = Array.isArray(saved?.platforms)
+  ? [...new Set(
+      saved.platforms.filter(
+        value => typeof value === "string"
+      )
+    )]
+  : [];
+
+const cachedPlatforms = [...ldPendingPlatforms];
+
+chip?.setOptions?.(
+  cachedPlatforms.map(value => ({
+    value,
+    label: value
+  }))
+);
+
+chip?.setValue?.(cachedPlatforms);
+
+ldFilterReady = true;
+
 }
 
   
@@ -992,8 +1003,21 @@ search.addEventListener('change', () => {
  try{
   if(!window.firebase?.apps?.length)throw Error('Firebase app not initialized. Check ../firebase.js');
   db=firebase.database();
-  const user=await new Promise((resolve,reject)=>{const unsub=firebase.auth().onAuthStateChanged(u=>{unsub();u?resolve(u):reject(Error('Login required'));},reject);});
-  const token=await user.getIdTokenResult(true);
+
+const user = await new Promise((resolve, reject) => {
+  const unsub = firebase.auth().onAuthStateChanged(
+    u => {
+      unsub();
+      u ? resolve(u) : reject(Error('Login required'));
+    },
+    reject
+  );
+});
+
+restoreLdFilter(user.uid);
+
+const token = await user.getIdTokenResult(true);
+
   if(token.claims.secondVerified!==true)throw Error('Second password verification required');
   const profileSnap=await db.ref('adminUsers/'+user.uid).once('value');
   adminProfile=profileSnap.val();
@@ -1032,7 +1056,6 @@ if (!can('view')) {
 
 createButton.hidden = !can('create');
 siteAccessReady = true;
-restoreLdFilter(user.uid);
 
  
 
