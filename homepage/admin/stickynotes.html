@@ -127,17 +127,37 @@
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 }
 
-body{
-  background:var(--page-bg);
-  color:var(--page-text);
-  min-height:100vh;
-  overflow:auto;
+/* ===== STICKY NOTES - AUTO PAGE SCROLL ===== */
+html {
+  margin: 0;
+  min-width: 0;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
 }
 
-.app{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+body {
+  background: var(--page-bg);
+  color: var(--page-text);
+
+  margin: 0;
+  min-width: 0;
+  min-height: 100dvh;
+  height: auto;
+
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.app {
+  min-height: 100dvh;
+  height: auto;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .topbar{
@@ -1116,32 +1136,7 @@ body.dark-theme .note-card{
 .note-body:hover::-webkit-scrollbar-thumb{
   background:rgba(0,0,0,0.45);
 }
-/* ================= SCROLLBAR GLOBAL ================= */
 
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 6px; /* nipis */
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 10px;
-  transition: all 0.25s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-
-/* Firefox */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #555 transparent;
-}
 .note-head-actions{
   display:flex;
   align-items:center;
@@ -1306,10 +1301,14 @@ select:focus-visible{
    STICKY NOTES - LOADING OVERLAY
    ========================================== */
 
+/* ===== STICKY NOTES - AUTO CONTENT HEIGHT ===== */
 .sticky-notes-wrapper {
   position: relative;
   width: 100%;
-  min-height: max(300px, calc(100dvh - 160px));
+
+  min-height: 0;
+  height: auto;
+
   isolation: isolate;
 }
 
