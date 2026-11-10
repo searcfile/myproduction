@@ -635,6 +635,7 @@ const LD_PAGE = "linkdownload.html";
 let ldFilterReady = false;
 let ldFilterUid = null;
 let ldSaveTimer = null;
+let ldPendingPlatforms = null;
 
 function getLdStateKey(uid = ldFilterUid) {
   if (!uid) return null;
@@ -676,6 +677,7 @@ function scheduleLdFilterSave() {
   ldSaveTimer = setTimeout(saveLdFilter, 250);
 }
 
+
 function restoreLdFilter(uid) {
   if (!uid) return;
 
@@ -702,35 +704,32 @@ function restoreLdFilter(uid) {
     console.warn("[Link Download] Restore failed:", error);
   }
 
-  search.value =
+  // Restore Search terus selepas UID disahkan.
+  const restoredSearch =
     typeof saved?.search === "string"
       ? saved.search
       : "";
 
-  const availablePlatforms = new Set(
-    Object.values(records)
-      .filter(card => isCard(card) && visibleForSite(card))
-      .map(card => clean(card.platform))
-      .filter(Boolean)
-  );
+  search.value = restoredSearch;
+  search.defaultValue = restoredSearch;
 
-  const selectedPlatforms =
-    Array.isArray(saved?.platforms)
-      ? [...new Set(
-          saved.platforms.filter(value =>
-            availablePlatforms.has(value)
-          )
-        )]
-      : [];
+  // Baca pilihan chip daripada localStorage sekarang.
+  // Tidak perlu tunggu data kad Firebase.
+  ldPendingPlatforms = Array.isArray(saved?.platforms)
+    ? [...new Set(
+        saved.platforms.filter(
+          value => typeof value === "string"
+        )
+      )]
+    : [];
 
-chip?.setValue?.(selectedPlatforms);
-
-ldFilterReady = true;
+  ldFilterReady = true;
 }
 
   
 const isCard=x=>x&&typeof x==='object'&&typeof x.name==='string';
 function showEmpty(text='No Data'){grid.replaceChildren();const host=el('div','ld-empty');grid.append(host);if(window.showEmptyState)window.showEmptyState(host,text,'large','center');else host.textContent=text;}
+
 
 function refreshOptions() {
   const values = [
@@ -744,9 +743,12 @@ function refreshOptions() {
     )
   ].sort((a, b) => a.localeCompare(b));
 
-  const previous = chip?.getValue?.() || [];
+  // Kali pertama, guna pilihan dari localStorage.
+  // Selepas itu, guna pilihan semasa pengguna.
+  const previous = Array.isArray(ldPendingPlatforms)
+    ? ldPendingPlatforms
+    : (chip?.getValue?.() || []);
 
-  // Tahan Auto Save semasa options berubah.
   const wasReady = ldFilterReady;
   ldFilterReady = false;
 
@@ -764,7 +766,11 @@ function refreshOptions() {
   } finally {
     ldFilterReady = wasReady;
   }
+
+  // Selesai menggunakan pilihan tersimpan.
+  ldPendingPlatforms = null;
 }
+
 
   function render(){
  if(loading||!siteAccessReady)return;
@@ -1019,30 +1025,28 @@ sites = Object.fromEntries(
 );
 
   }
-  if (!can('view')) {
+
+if (!can('view')) {
   throw new Error('Link Download view permission denied');
 }
 
 createButton.hidden = !can('create');
-siteAccessReady=true;
+siteAccessReady = true;
+restoreLdFilter(user.uid);
+
  
+
 
 db.ref(PATH).on('value', snap => {
   records = snap.val() || {};
   loading = false;
-
   refreshOptions();
-
-  if (!ldFilterReady || ldFilterUid !== user.uid) {
-    restoreLdFilter(user.uid);
-  }
 
   if (!gridRefreshing) {
     render();
   }
 
 }, err => {
-
   loading = false;
   showEmpty('Unable to load cards');
   toast(err.message, 'error');
