@@ -2238,10 +2238,33 @@ function renderSidebarTabs() {
   const container = document.getElementById("customSidebarTabs");
   if (!container) return;
 
+
+const SIDEBAR_GROUPS_KEY = "5g88.sidebar.openGroups";
+
+const savedOpenGroups = (() => {
+  try {
+    const saved = JSON.parse(
+      sessionStorage.getItem(SIDEBAR_GROUPS_KEY) || "[]"
+    );
+
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    return [];
+  }
+})();
+
+const currentOpenGroups = [
+  ...container.querySelectorAll(".sidebar-group.is-open")
+].map(el => el.dataset.group);
+
+// Jika sidebar sudah dirender, guna status semasa.
+// Jika halaman baru dibuka, pulihkan status yang disimpan.
 const oldOpenGroups = new Set(
-  [...container.querySelectorAll(".sidebar-group.is-open")]
-    .map(el => el.dataset.group)
+  container.querySelector(".sidebar-group")
+    ? currentOpenGroups
+    : savedOpenGroups
 );
+
 
 const groupNames = {
   main: "Main Menu",
@@ -2419,17 +2442,36 @@ link.appendChild(left);
     group.append(button, panel);
     container.appendChild(group);
 
-    const setOpen = open => {
-      group.classList.toggle("is-open", open);
-      button.setAttribute("aria-expanded", String(open));
-    };
 
-    button.addEventListener("click", () => {
-      setOpen(!group.classList.contains("is-open"));
-    });
+const setOpen = open => {
+  group.classList.toggle("is-open", open);
+  button.setAttribute("aria-expanded", String(open));
+};
 
+// Simpan group yang sedang terbuka.
+const saveOpenGroups = () => {
+  const openGroups = [
+    ...container.querySelectorAll(".sidebar-group.is-open")
+  ].map(el => el.dataset.group);
 
+  sessionStorage.setItem(
+    SIDEBAR_GROUPS_KEY,
+    JSON.stringify(openGroups)
+  );
+};
+
+// Klik tajuk group sahaja yang buka/tutup group.
+button.addEventListener("click", event => {
+  event.stopPropagation();
+
+  setOpen(!group.classList.contains("is-open"));
+
+  saveOpenGroups();
+});
+
+// Pulihkan group selepas berpindah halaman.
 setOpen(oldOpenGroups.has(groupId));
+
 });
 
 /* ==========================================
