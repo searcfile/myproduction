@@ -3608,10 +3608,11 @@ preview.style.setProperty(
   "important"
 );
 
-// Bayang 3D ketika tab diangkat.
+
+// Bayangan 3D biru lembut
 preview.style.setProperty(
   "box-shadow",
-  "0 14px 30px rgba(0,0,0,.48), 0 5px 12px rgba(0,0,0,.28)",
+  "inset 0 2px 0 var(--main-tab-primary), 0 14px 30px rgba(145,202,255,.30), 0 5px 12px rgba(145,202,255,.18)",
   "important"
 );
 
