@@ -32,7 +32,7 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
   <form id="configForm" novalidate>
     <section class="cfg-card">
       <h2>Floating LiveChat</h2>
-      <div id="loading" class="cfg-notice" role="status">Checking your admin account…</div>
+      <div id="loading" class="cfg-notice" role="alert" hidden></div>
       <fieldset id="configFields" disabled style="border:0;margin:0;padding:0;min-width:0">
       <div class="cfg-grid">
         <div class="cfg-field cfg-wide"><span>Floating status</span><div class="cfg-toggle-row"><label class="shared-active-switch"><input type="checkbox" id="enabled" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span></label><span class="muted cfg-hint">Show floating button</span></div></div>
@@ -73,7 +73,7 @@ function toast(msg,ok=true){
   document.querySelector('.cfg-toast')?.remove();const el=document.createElement('div');el.className='cfg-toast';el.textContent=msg;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),3000);
 }
 function syncControls(){window.SharedActiveSwitch?.init?.(document);for(const el of document.querySelectorAll('select[data-shared-dropdown]'))el._sharedDropdown?.refresh?.();}
-function fill(d){savedAllowed={...(d.allowedUids||{})};$('accessMode').value=d.accessMode||'all';$('enabled').checked=!!d.enabled;$('url').value=d.url||'';$('label').value=d.label||'Agent Support';$('side').value=d.side||'right';$('openMode').value=d.openMode||'panel';$('showLabel').value=String(!!d.showLabel);$('width').value=d.width??400;$('height').value=d.height??600;renderUsers();syncControls();$('status').textContent='';}
+function fill(d){savedAllowed={...(d.allowedUids||{})};$('accessMode').value=d.accessMode||'all';$('enabled').checked=!!d.enabled;$('url').value=d.url||'';$('label').value=d.label||'Agent Support';$('side').value=d.side||'right';$('openMode').value=d.openMode||'panel';$('showLabel').value=String(!!d.showLabel);$('width').value=d.width??400;$('height').value=d.height??600;renderUsers();syncControls();}
 function validateUrl(s){if(!s)return '';try{const u=new URL(s);if(u.protocol!=='https:')throw Error();return u.href;}catch{throw new Error('LiveChat URL must start with https://');}}
 function renderUsers(){const selected=$('accessMode').value==='site_selected';$('selectedWrap').hidden=!selected;const list=$('userList');list.replaceChildren();if(!selected)return;for(const u of siteUsers){const label=document.createElement('label');label.className='cfg-user';const sw=document.createElement('span');sw.className='shared-active-switch';const cb=document.createElement('input');cb.type='checkbox';cb.value=u.uid;cb.checked=!!savedAllowed[u.uid];cb.dataset.activeLabel='On';cb.dataset.inactiveLabel='Off';const track=document.createElement('span');track.className='shared-active-track';track.innerHTML='<span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span>';sw.append(cb,track);const name=document.createElement('span');name.textContent=u.name;label.append(sw,name);list.append(label);} $('usersHint').textContent=siteUsers.length?'Select at least one Site Admin.':'No Site Admin accounts found.';window.SharedActiveSwitch?.init?.(list);}
 $('accessMode').addEventListener('change',renderUsers);
@@ -87,17 +87,17 @@ $('configForm').addEventListener('submit',async e=>{
   if(d.label.length>40)throw Error('Label must be 40 characters or less.');if(d.enabled&&!d.url)throw Error('Enter the LiveChat URL before activating.');if(d.enabled&&d.accessMode==='site_selected'&&!Object.keys(allowedUids).length)throw Error('Select at least one Site Admin.');if(!Number.isFinite(d.width)||!Number.isFinite(d.height)||d.width<280||d.width>900||d.height<280||d.height>1000)throw Error('Panel size is outside allowed range.');
   busy=true;$('reset').disabled=true;
   if(window.NewUI?.setButtonLoading)await window.NewUI.setButtonLoading($('save'),true,{text:'Saving...'});else{$('save').disabled=true;$('save').textContent='Saving...';}
-  await firebase.database().ref(PATH).set(d);$('status').textContent='Saved successfully.';toast('LiveChat configuration saved');
- }catch(err){toast(err.message||'Save failed',false);$('status').textContent='';}
+  await firebase.database().ref(PATH).set(d);toast('LiveChat configuration saved');
+ }catch(err){toast(err.message||'Save failed',false);}
  finally{if(busy){if(window.NewUI?.setButtonLoading)await window.NewUI.setButtonLoading($('save'),false);else{$('save').disabled=false;$('save').textContent='Save configuration';}$('reset').disabled=false;busy=false;}}
 });
 async function loadSiteAdmins(user){const token=await user.getIdToken();const response=await fetch(BACKEND+'/api/admin-users',{headers:{Authorization:'Bearer '+token}});const payload=await response.json().catch(()=>({}));if(!response.ok||!payload.ok)throw Error(payload.message||'Cannot load Site Admin list');return(payload.users||[]).filter(u=>u.role==='siteadmin').map(u=>({uid:u.uid,name:String(u.displayName||u.username||u.uid)})).sort((a,b)=>a.name.localeCompare(b.name));}
-function notice(msg,error=false){$('loading').hidden=false;$('loading').textContent=msg;$('loading').classList.toggle('error',error);}
+function notice(msg,error=false){const el=$('loading');el.hidden=!error;el.textContent=error?msg:'';el.classList.toggle('error',error);}
 function init(){
  window.NewUI?.init?.(document);
  if(!window.firebase?.auth||!window.firebase?.database){notice('Firebase is not initialized. Check firebase.js.',true);return;}
  firebase.auth().onAuthStateChanged(async user=>{
-  currentUser=null;$('configFields').disabled=true;notice('Checking your admin account…');
+  currentUser=null;$('configFields').disabled=true;notice('',false);
   if(!user){notice('Please sign in through the admin dashboard.',true);return;}
   try{
    const profile=(await firebase.database().ref(`adminUsers/${user.uid}`).once('value')).val();
@@ -107,7 +107,7 @@ function init(){
    let usersError=null;try{siteUsers=await loadSiteAdmins(user);}catch(err){siteUsers=[];usersError=err;console.warn('Agent Support site admin list:',err);}
    const snap=await firebase.database().ref(PATH).once('value');if(firebase.auth().currentUser?.uid!==user.uid)return;
    currentUser=user;fill({...defaults,...(snap.val()||{})});$('loading').hidden=true;$('configFields').disabled=false;
-   if(usersError){$('status').textContent='Site Admin list could not load. Selected Site Admin mode may be unavailable.';toast('Unable to load Site Admin list',false);}
+   if(usersError){toast('Unable to load Site Admin list',false);}
   }catch(err){notice('Unable to load config: '+(err.message||err),true);}
  });
 }
