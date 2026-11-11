@@ -15,7 +15,11 @@
   name: "Auth Users",
   group: "main"
 },
-
+{
+  file: "config.html",
+  name: "Agent Support Config",
+  group: "main"
+},
     {
       file: "livechat.html",
       name: "Live Chat",
@@ -153,7 +157,11 @@
      ========================================================== */
 
 const SUPERADMIN_ONLY_PAGES = new Set([
-  "users.html","livechat-support.html","notice.html"]);
+  "users.html",
+  "livechat-support.html",
+  "notice.html",
+  "config.html"
+]);
   let currentAdminProfile = null;
 
   function canShowAdminPage(file) {
