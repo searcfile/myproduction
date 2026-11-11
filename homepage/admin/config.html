@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-admin-theme="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Support Floating Config | 5G88</title>
+<link rel="stylesheet" href="./shared-ui.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./new-ui.css">
+<style>
+:root{color-scheme:dark}html[data-admin-theme="light"]{color-scheme:light}
+body{margin:0;padding:20px;background:var(--tx-bg,#000);color:var(--tx-ink,#e5edf8);font:14px 'Source Sans 3',Arial,sans-serif}
+.cfg-wrap{max-width:920px;margin:0 auto}.cfg-card{background:var(--tx-surface,#152237);border:1px solid var(--tx-border,#2b3e5b);border-radius:12px;padding:20px;margin:16px 0}
+h1{font-size:22px;margin:0 0 6px}h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
+.cfg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cfg-field{display:flex;flex-direction:column;gap:7px;min-width:0}.cfg-wide{grid-column:1/-1}
+.cfg-field input,.cfg-field select{width:100%;height:36px;min-width:0;border:1px solid var(--input-line,#424242);border-radius:7px;padding:0 12px;background:var(--input,#141414);color:var(--text,#fff);font:inherit}
+.cfg-field input:focus,.cfg-field select:focus{outline:none;border-color:var(--input-line-focus,#1677ff)}
+.cfg-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cfg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.cfg-btn{border:1px solid var(--tx-border,#2b3e5b);border-radius:7px;padding:9px 17px;cursor:pointer;background:var(--tx-surface-soft,#1c2b42);color:var(--tx-ink,#fff)}.cfg-btn.primary{background:#1668dc;color:white;border-color:#1668dc}.cfg-btn:disabled{opacity:.5;cursor:not-allowed}
+.cfg-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 18px;background:#1d304b;color:white;border:1px solid #3c89e8;border-radius:9px;z-index:9999;box-shadow:0 6px 20px #0005}
+.cfg-status{font-size:12px}.cfg-users{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-height:240px;overflow:auto;padding:10px;border:1px solid var(--tx-border);border-radius:8px}.cfg-user{display:flex;gap:8px;align-items:center;padding:8px;background:var(--tx-surface-soft);border-radius:6px}.cfg-user input{width:auto;height:auto}.cfg-users[hidden]{display:none}.cfg-switch{display:flex;align-items:center;gap:9px;cursor:pointer}.cfg-switch input{accent-color:#1677ff;width:18px;height:18px}
+@media(max-width:650px){body{padding:12px}.cfg-grid{grid-template-columns:1fr}.cfg-wide{grid-column:auto}.cfg-card{padding:15px}}
+</style>
+</head>
+<body>
+<main class="cfg-wrap">
+  <h1>Agent Support Floating Config</h1>
+  <p class="muted">Manage the floating LiveChat button shown in the admin dashboard.</p>
+  <div class="cfg-card" id="loading">Checking your admin account…</div>
+  <form id="configForm" hidden>
+    <section class="cfg-card">
+      <h2>Floating LiveChat</h2>
+      <div class="cfg-grid">
+        <label class="cfg-field cfg-wide"><span>Floating status</span><span class="cfg-switch"><input type="checkbox" id="enabled"> Active (show floating button)</span></label>
+        <label class="cfg-field cfg-wide"><span>Access permission</span><select id="accessMode"><option value="all">All Admin (Super + all Site Admin)</option><option value="site_all">All Site Admin only</option><option value="site_selected">Selected Site Admin only</option><option value="super_only">Super Admin only</option></select></label>
+        <div class="cfg-field cfg-wide" id="selectedWrap" hidden><span>Select Site Admin accounts (by UID)</span><div id="userList" class="cfg-users"></div><small class="muted" id="usersHint">Select at least one Site Admin.</small></div>
+        <label class="cfg-field cfg-wide"><span>LiveChat URL (HTTPS)</span><input id="url" type="url" placeholder="https://your-livechat.example.com/" autocomplete="off"><small class="muted">Use the complete public LiveChat widget/page URL, not a secret API key. Some websites block iframe embedding.</small></label>
+        <label class="cfg-field"><span>Button label</span><input id="label" maxlength="40" placeholder="Agent Support"></label>
+        <label class="cfg-field"><span>Open behavior</span><select id="openMode"><option value="panel">Floating panel (iframe)</option><option value="tab">New browser tab</option></select></label>
+        <label class="cfg-field"><span>Floating side</span><select id="side"><option value="right">Right</option><option value="left">Left</option></select></label>
+        <label class="cfg-field"><span>Button display</span><select id="showLabel"><option value="false">Icon only</option><option value="true">Icon and label</option></select></label>
+        <label class="cfg-field"><span>Panel width (px)</span><input id="width" type="number" min="280" max="900" step="10"></label>
+        <label class="cfg-field"><span>Panel height (px)</span><input id="height" type="number" min="280" max="1000" step="10"></label>
+      </div>
+      <div class="cfg-actions"><button type="button" class="cfg-btn" id="reset">Reset fields</button><button type="submit" class="cfg-btn primary" id="save">Save configuration</button></div>
+      <p class="muted cfg-status" id="status"></p>
+    </section>
+  </form>
+</main>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="./firebase.js"></script>
+<script src="./new-ui.js"></script>
+<script>
+(() => {
+'use strict';
+const PATH='adminConfig/agentSupportFloating';
+const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
+const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false};
+const $=id=>document.getElementById(id);let currentUser=null,toastTimer,siteUsers=[],savedAllowed={};
+function toast(msg,ok=true){if(window.NewUI?.showToast){window.NewUI.showToast(msg,ok?'success':'error',3000);return;}document.querySelector('.cfg-toast')?.remove();const el=document.createElement('div');el.className='cfg-toast';el.textContent=msg;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),3000);}
+function fill(d){savedAllowed=d.allowedUids||{};$('accessMode').value=d.accessMode||'all';renderUsers();$('enabled').checked=!!d.enabled;$('url').value=d.url||'';$('label').value=d.label||'Agent Support';$('side').value=d.side||'right';$('openMode').value=d.openMode||'panel';$('showLabel').value=String(!!d.showLabel);$('width').value=d.width||400;$('height').value=d.height||600;}
+function validateUrl(s){if(!s)return '';try{const u=new URL(s);if(u.protocol!=='https:')throw Error();return u.href;}catch{throw new Error('LiveChat URL must start with https://');}}
+function renderUsers(){const selected=$('accessMode').value==='site_selected';$('selectedWrap').hidden=!selected;const list=$('userList');list.replaceChildren();if(!selected)return;for(const u of siteUsers){const label=document.createElement('label');label.className='cfg-user';const cb=document.createElement('input');cb.type='checkbox';cb.value=u.uid;cb.checked=!!savedAllowed[u.uid];const name=document.createElement('span');name.textContent=u.name;label.append(cb,name);list.append(label);}if(!siteUsers.length)$('usersHint').textContent='No Site Admin accounts found.';}
+$('accessMode').addEventListener('change',renderUsers);
+$('reset').onclick=()=>fill(defaults);
+$('configForm').onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const save=$('save');try{const allowedUids={};if($('accessMode').value==='site_selected')$('userList').querySelectorAll('input:checked').forEach(cb=>allowedUids[cb.value]=true);const d={enabled:$('enabled').checked,accessMode:$('accessMode').value,allowedUids,url:validateUrl($('url').value.trim()),label:$('label').value.trim()||'Agent Support',side:$('side').value,openMode:$('openMode').value,showLabel:$('showLabel').value==='true',width:Number($('width').value),height:Number($('height').value),updatedBy:currentUser.uid,updatedAt:firebase.database.ServerValue.TIMESTAMP};if(d.label.length>40)throw Error('Label must be 40 characters or less.');if(d.enabled&&!d.url)throw Error('Enter the LiveChat URL before activating.');if(d.enabled&&d.accessMode==='site_selected'&&!Object.keys(allowedUids).length)throw Error('Select at least one Site Admin.');if(d.width<280||d.width>900||d.height<280||d.height>1000)throw Error('Panel size is outside allowed range.');save.disabled=true;save.textContent='Saving…';await firebase.database().ref(PATH).set(d);$('status').textContent='Saved successfully.';toast('LiveChat configuration saved');}catch(err){toast(err.message||'Save failed',false);}finally{save.disabled=false;save.textContent='Save configuration';}};
+async function loadSiteAdmins(user){
+  const token=await user.getIdToken();
+  const response=await fetch(BACKEND+'/api/admin-users',{headers:{Authorization:'Bearer '+token}});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok||!payload.ok)throw Error(payload.message||'Cannot load Site Admin list');
+  return (payload.users||[]).filter(u=>u.role==='siteadmin').map(u=>({uid:u.uid,name:String(u.displayName||u.username||u.uid)})).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function init(){if(!window.firebase?.auth||!window.firebase?.database){$('loading').textContent='Firebase is not initialized. Check firebase.js.';return;}firebase.auth().onAuthStateChanged(async user=>{currentUser=null;$('configForm').hidden=true;if(!user){$('loading').textContent='Please sign in through the admin dashboard.';return;}try{const profile=(await firebase.database().ref(`adminUsers/${user.uid}`).once('value')).val();if(profile?.role!=='superadmin'||sessionStorage.getItem('5g88.adminSession')!==user.uid){ $('loading').textContent='Access denied: Super Admin only.';return;}currentUser=user;siteUsers=await loadSiteAdmins(user);const snap=await firebase.database().ref(PATH).once('value');fill({...defaults,...(snap.val()||{})});$('loading').hidden=true;$('configForm').hidden=false;}catch(err){ $('loading').textContent=`Unable to load config: ${err.message}`;}});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body></html>
