@@ -3611,7 +3611,7 @@ preview.style.setProperty(
 // Bayang 3D ketika tab diangkat.
 preview.style.setProperty(
   "box-shadow",
-  "0 14px 30px rgba(0,0,0,.48), 0 5px 12px rgba(0,0,0,.28)",
+  "0 14px 30px var(--main-tab-drag-shadow), 0 5px 12px var(--main-tab-drag-shadow2)",
   "important"
 );
 
