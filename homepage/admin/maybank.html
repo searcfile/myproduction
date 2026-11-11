@@ -67,33 +67,17 @@
   <link rel="stylesheet" href="./new-ui.css">
 </head>
   <style>
-   
-/* MAYBANK - SCROLL FIX */
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
+    /* ===== Paper container ===== */
+.paper{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%) scale(3.7);
+  transform-origin:top center;
+  width:595px;
+  height:500px;
+  overflow:hidden;
 }
- /* ===== Paper container ===== */
-
-/* MAYBANK - SCALED PAPER */
-.paper {
-  position: absolute;
-  top: 0;
-  left: 50%;
-
-  /* Kekalkan scale asal bro */
-  transform: translateX(-50%) scale(3.7);
-  transform-origin: top center;
-
-  width: 595px;
-  height: 842px;
-
-  overflow: visible;
-}
-
 .paper-bg{position:absolute;left:0;top:0}
 
 input, select {
@@ -190,8 +174,7 @@ span.cls_006,div.cls_006{font-family:Arial,serif;font-size:8.1px;color:#000;font
 
 .amt-input{position:absolute;left:125px;border-radius: 3px;transition: all 0.2s;}
 #inRef{border-radius: 3px;transition: all 0.2s;width: 120px !important;}
-      
-</style>
+  </style>
 <body>
   <div class="paper">
     <div class="paper-bg">
@@ -290,7 +273,7 @@ span.cls_006,div.cls_006{font-family:Arial,serif;font-size:8.1px;color:#000;font
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="./firebase.js"></script>
 <script src="./new-ui.js"></script>
-<script defer src="./shared-ui.js"></script>
+<script src="./shared-ui.js"></script>
 <script src="./admin.js"></script>
 <script type="module">
   let counter = 0;
