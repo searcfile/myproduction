@@ -2964,7 +2964,7 @@ margin-top: var(--admin-header-height, 64px) !important;
 .admin-workspace-tab .admin-workspace-tab-refresh svg,
 .admin-workspace-tab .admin-workspace-tab-refresh svg path {
   color: inherit !important;
-  fill: var(--main-tab-primary) !important;
+  fill: currentColor !important;
 }
 
 /* Close kekalkan warna asal */
