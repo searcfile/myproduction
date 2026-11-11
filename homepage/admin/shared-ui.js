@@ -5,6 +5,43 @@
   if (window.__HOMEPAGE_SHARED_UI__) return;
   window.__HOMEPAGE_SHARED_UI__ = true;
 
+  /* ==============================================
+     AGENT SUPPORT FLOATING - AUTO LOAD
+     ============================================== */
+
+  (function loadAgentSupportFloating() {
+
+    // Hanya pasang pada halaman utama browser.
+    // Elakkan floating berganda dalam iframe.
+    if (window.self !== window.top) return;
+
+    const page = (
+      location.pathname.split("/").pop() || "index.html"
+    ).toLowerCase();
+
+    // Jangan pasang pada halaman login.
+    if (page === "login.html") return;
+
+    // Elakkan script dimuatkan dua kali.
+    if (document.querySelector(
+      'script[src*="agent-support-floating.js"]'
+    )) return;
+
+    const script = document.createElement("script");
+
+    script.src = "./agent-support-floating.js";
+    script.defer = true;
+
+    script.onerror = function () {
+      console.error(
+        "[Agent Support] Failed to load floating script"
+      );
+    };
+
+    document.head.appendChild(script);
+
+  })();
+
   /* ==========================================================
      PAGE DEFINITIONS
      ========================================================== */
