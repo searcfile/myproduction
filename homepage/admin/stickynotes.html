@@ -1484,6 +1484,28 @@ select:focus-visible{
   }
 }
 
+/* ==========================================
+   STICKY NOTES - NO DATA FULL WIDTH
+   ========================================== */
+
+.sticky-notes-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 160px;
+  isolation: isolate;
+}
+
+#emptyState.sticky-empty-holder {
+  width: 100%;
+  min-height: 160px;
+  box-sizing: border-box;
+}
+
+#emptyState.sticky-empty-holder .shared-empty {
+  width: 100%;
+  margin: 0 !important;
+}
+
 </style>
 </head>
 
@@ -1978,6 +2000,31 @@ const stickyNotesWrapper =
 
 let stickyRefreshing = false;
 
+/* ==========================================
+   STICKY NOTES - TEMPORARY NO DATA
+   ========================================== */
+
+function showStickyRefreshEmpty() {
+  if (!els.notesGrid || !els.emptyState) return;
+
+  // Kosongkan card lama daripada paparan sahaja
+  els.notesGrid.replaceChildren();
+
+  // Gunakan card No Data sedia ada
+  els.emptyState.style.display = "flex";
+
+  if (window.showEmptyState) {
+    window.showEmptyState(
+      els.emptyState,
+      "No Data",
+      "large",
+      "center"
+    );
+  } else {
+    els.emptyState.textContent = "No Data";
+  }
+}
+
 // Pasang SVG icon Refresh daripada NewUI
 NewUI.refreshButton.init(stickyRefreshButton);
 
@@ -1991,11 +2038,22 @@ async function refreshStickyNotesOnly() {
     return;
   }
 
-  stickyRefreshing = true;
-if (currentUser.role === "superadmin") {
-  await loadStickyOwnerSites();
-}
-  try {
+
+stickyRefreshing = true;
+
+try {
+  if (currentUser.role === "superadmin") {
+    await loadStickyOwnerSites();
+  }
+
+  // Tampilkan No Data sebelum loading bermula
+  showStickyRefreshEmpty();
+
+  // Beri browser masa untuk memaparkan card
+  await new Promise(resolve =>
+    setTimeout(resolve, 150)
+  );
+
     await NewUI.refreshButton.run(
       stickyRefreshButton,
       async () => {
@@ -2078,9 +2136,14 @@ if (isSuperAdmin) {
       "error"
     );
 
-  } finally {
-    stickyRefreshing = false;
-  }
+
+} finally {
+  // Pulihkan paparan berdasarkan data nota terkini
+  renderNotes();
+
+  stickyRefreshing = false;
+}
+
 }
 
 stickyRefreshButton.addEventListener(
