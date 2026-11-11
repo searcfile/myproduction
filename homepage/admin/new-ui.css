@@ -17,6 +17,10 @@ html[data-admin-theme="light"] {
     --main-tab-border:#e2e8f0;
     --main-tab-text: #475569;
     --ant-color-icon:rgba(0,0,0,.45);
+    --main-tab-active-bg:#e6f4ff;
+    --main-tab-active-border:#91caff;
+    --main-tab-primary:#1677ff;
+    --main-tab-hover-bg: rgba(15, 23, 42, 0.05);
    
     --panel2:#fafafa;
 
@@ -63,6 +67,11 @@ html[data-admin-theme="light"] {
     --main-tab-border:#303030;
     --main-tab-text: #cbd5e1;
     --ant-color-icon:rgba(255,255,255,.45);
+    --main-tab-active-bg:#e6f4ff;
+    --main-tab-active-border:#91caff;
+    --main-tab-primary:#1677ff;
+    --main-tab-hover-bg: rgba(15, 23, 42, 0.05);
+    --main-tab-hover-bg: rgba(255, 255, 255, 0.08);
  
   --panel2: #171e28;
    
