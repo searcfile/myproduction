@@ -1505,7 +1505,25 @@ select:focus-visible{
   width: 100%;
   margin: 0 !important;
 }
-
+.shared-sync-search-input, #searchInput {
+    flex: 1 1 auto;
+    width: calc(100% - 32px) !important;
+    min-width: 0;
+    height: 32px !important;
+    margin: 0 !important;
+    padding: 4px 11px !important;
+    border: 1px solid var(--input-line, #424242) !important;
+    border-radius: 6px 0 0 6px !important;
+    background: var(--input, #141414) !important;
+    color: var(--text, #fff) !important;
+    font: inherit;
+    font-size: 14px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all .2s ease;
+}
 </style>
 </head>
 
