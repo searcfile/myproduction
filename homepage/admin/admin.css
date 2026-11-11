@@ -1802,7 +1802,7 @@ html {
   border:1px solid transparent;
   border-radius:7px;
   background:transparent;
-  color:#cbd5e1 !important;
+  color:var(--main-tab-text) !important;
   font-size:14px;
   line-height:1.2;
   white-space:nowrap;
