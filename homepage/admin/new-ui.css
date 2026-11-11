@@ -1005,8 +1005,14 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   background: #ffffff1a;
   color: #fff;
   border-color: #ffffff29;
+  transition: all 0.3s;
 }
-
+.admin-site-selector
+.shared-chip-dropdown-trigger:hover {
+   bacground:#ffffff29;
+   border-color:#ffffff4d;
+   color:#fff;
+}
 .admin-site-selector
 .shared-chip-dropdown-panel {
   width:100%;
