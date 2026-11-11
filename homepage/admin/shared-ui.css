@@ -3237,9 +3237,9 @@ margin-top: var(--admin-header-height, 64px) !important;
 /* Tab aktif: bayangan biru */
 .admin-workspace-tab.workspace-drag-source.active-tab {
   opacity: .35 !important;
-  background: #162b44 !important;
-  border: 1px solid #315987 !important;
-  box-shadow: inset 0 2px 0 #91caff !important;
+  background: var(--main-tab-active-bg) !important;
+  border: 1px solid var(--main-tab-active-border) !important;
+  box-shadow: inset 0 2px 0 var(--main-tab-primary) !important;
   filter: none !important;
 }
 
@@ -3324,10 +3324,10 @@ margin-top: var(--admin-header-height, 64px) !important;
 
 /* Floating preview: sama tinggi dan lebar */
 .workspace-drag-preview {
-  background: #162b44 !important;
-  border: 1px solid #315987 !important;
+  background: var(--main-tab-active-bg) !important;
+  border: 1px solid var(--main-tab-active-border) !important;
   border-radius: 8px !important;
-  color: #91caff !important;
+  color: var(--main-tab-primary) !important;
 
   opacity: 1 !important;
   overflow: visible !important;
@@ -3336,7 +3336,7 @@ margin-top: var(--admin-header-height, 64px) !important;
   scale: 1 !important;
 
   box-shadow:
-    inset 0 2px 0 #91caff,
+    inset 0 2px 0 var(--main-tab-primary),
     0 12px 28px rgba(0, 0, 0, .45) !important;
 
   filter: none !important;
@@ -3351,7 +3351,7 @@ margin-top: var(--admin-header-height, 64px) !important;
   text-overflow: clip !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
-  color: #91caff !important;
+  color: var(--main-tab-primary) !important;
   font-weight: 600 !important;
 }
 
