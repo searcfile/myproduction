@@ -1719,7 +1719,7 @@ body.light-theme .app-update-message{
 /* Firefox */
 html {
   scrollbar-width: thin;
-  scrollbar-color: #555 transparent;
+  scrollbar-color: #555 #242424;
 }
 
 /* ==========================================================
