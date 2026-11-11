@@ -1855,7 +1855,7 @@ html {
   padding:0;
   border:none;
   background:transparent;
-  color:var(--close);
+  color:var(--ant-color-icon);
   font-size:12px;
   cursor:pointer;
   pointer-events:auto;
@@ -1867,9 +1867,7 @@ html {
 .tab .close-tab svg{
   width:1em;
   height:1em;
-
   display:block;
-
   fill:currentColor;
 }
 
