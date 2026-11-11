@@ -792,6 +792,23 @@ if (getCurrentFile() === targetFile) {
   return;
 }
 
+// Simpan group sidebar sebelum berpindah halaman.
+const sidebarGroupsContainer =
+  document.getElementById("customSidebarTabs");
+
+if (sidebarGroupsContainer) {
+  const openGroups = [
+    ...sidebarGroupsContainer.querySelectorAll(
+      ".sidebar-group.is-open"
+    )
+  ].map(group => group.dataset.group);
+
+  sessionStorage.setItem(
+    "5g88.sidebar.openGroups",
+    JSON.stringify(openGroups)
+  );
+}
+
 setActiveFile(targetFile);
 // Kekalkan status sidebar sebelum navigasi halaman.
 if (document.getElementById("sidebar")?.classList.contains("active")) {
