@@ -3592,19 +3592,19 @@ Object.assign(preview.style, {
 // Warna biru sama seperti active tab.
 preview.style.setProperty(
   "background",
-  "#162b44",
+  "var(--main-tab-active-bg)",
   "important"
 );
 
 preview.style.setProperty(
   "border",
-  "1px solid #315987",
+  "1px solid var(--main-tab-active-border)",
   "important"
 );
 
 preview.style.setProperty(
   "color",
-  "#91caff",
+  "var(--main-tab-primary)",
   "important"
 );
 
