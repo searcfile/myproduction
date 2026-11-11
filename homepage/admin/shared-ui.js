@@ -3485,7 +3485,7 @@ function initWorkspaceTabDrag(tabList) {
       // Semua text dan icon ketika drag guna biru.
       target.style.setProperty(
         "color",
-        "#91caff",
+        "var(--main-tab-primary)",
         "important"
       );
     });
