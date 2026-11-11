@@ -1,8 +1,18 @@
 
+
 (() => {
   "use strict";
 
+  // Dashboard shell hanya untuk index.html
+  const adminPageFile = (
+    window.location.pathname.split("/").pop() || "index.html"
+  ).toLowerCase();
+
+  if (adminPageFile !== "index.html") return;
+
   if (window.__HOMEPAGE_SHARED_UI__) return;
+  window.__HOMEPAGE_SHARED_UI__ = true;
+
   window.__HOMEPAGE_SHARED_UI__ = true;
 
   /* ==========================================================
