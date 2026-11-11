@@ -2,45 +2,49 @@
 (() => {
   "use strict";
 
-  if (window.__HOMEPAGE_SHARED_UI__) return;
-  window.__HOMEPAGE_SHARED_UI__ = true;
-
-  /* ==============================================
-     AGENT SUPPORT FLOATING - AUTO LOAD
-     ============================================== */
+  /* ==========================================
+     AGENT SUPPORT FLOATING - AUTO LOADER
+     ========================================== */
 
   (function loadAgentSupportFloating() {
-
-    // Hanya pasang pada halaman utama browser.
-    // Elakkan floating berganda dalam iframe.
     if (window.self !== window.top) return;
 
     const page = (
       location.pathname.split("/").pop() || "index.html"
     ).toLowerCase();
 
-    // Jangan pasang pada halaman login.
     if (page === "login.html") return;
 
-    // Elakkan script dimuatkan dua kali.
-    if (document.querySelector(
-      'script[src*="agent-support-floating.js"]'
-    )) return;
+    if (
+      window.__agentSupportFloatingInit ||
+      document.querySelector(
+        'script[data-agent-support-loader="true"]'
+      )
+    ) return;
 
     const script = document.createElement("script");
+    script.src = new URL(
+      "./agent-support-floating.js",
+      location.href
+    ).href;
+    script.dataset.agentSupportLoader = "true";
 
-    script.src = "./agent-support-floating.js";
-    script.defer = true;
+    script.onload = () => {
+      console.log("[Agent Support] Script loaded:", page);
+    };
 
-    script.onerror = function () {
+    script.onerror = () => {
       console.error(
-        "[Agent Support] Failed to load floating script"
+        "[Agent Support] Script failed to load:",
+        script.src
       );
     };
 
     document.head.appendChild(script);
-
   })();
+
+  if (window.__HOMEPAGE_SHARED_UI__) return;
+  window.__HOMEPAGE_SHARED_UI__ = true;
 
   /* ==========================================================
      PAGE DEFINITIONS
