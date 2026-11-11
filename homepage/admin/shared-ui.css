@@ -870,6 +870,41 @@ a.tab-open .check-icon{
   fill: currentColor;
 }
 
+/* ==========================================
+   USERNAME DROPDOWN ARROW - 10PX
+   ========================================== */
+
+.header .user-dropdown > .user-button > .username-dropdown-arrow {
+  display: block;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px;
+  min-height: 10px;
+  flex: 0 0 10px;
+
+  margin-left: 2px;
+
+  fill: currentColor;
+  color: inherit;
+
+  transform: rotate(0deg);
+  transform-origin: center;
+
+  transition: transform 0.2s ease;
+}
+
+/* Dropdown buka - arrow ke atas */
+.header .user-dropdown.account-dropdown-open
+> .user-button > .username-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* Dropdown tutup - arrow ke bawah */
+.header .user-dropdown:not(.account-dropdown-open)
+> .user-button > .username-dropdown-arrow {
+  transform: rotate(0deg);
+}
+
 .user-button:hover{
   border-color:#fff6;
   color:#fff;
