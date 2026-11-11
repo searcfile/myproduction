@@ -6713,11 +6713,12 @@ let displayName = String(
   }
 
 if (!displayName) {
-  displayName = "";
+  displayName = "Account";
 }
-  if (userNameText) {
-    userNameText.textContent = displayName;
-  }
+
+if (userNameText) {
+  userNameText.textContent = displayName;
+}
 
   if (userEmail) {
     userEmail.textContent = email || "-";
@@ -6778,9 +6779,9 @@ if (
   window.location.replace("./index.html");
   return;
 }
-    const name = String(
-      profile.displayName || profile.username || "Admin"
-    ).trim();
+const name = String(
+  profile.displayName || profile.username || "Account"
+).trim() || "Account";
 
     const nameEl = document.getElementById("userNameText");
     const infoEl = document.getElementById("userEmail");
