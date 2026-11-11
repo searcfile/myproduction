@@ -1231,48 +1231,6 @@ select:focus-visible{
 }
 .sticky-search,.sticky-filter{min-width:0;width:100%;}
 .sticky-search .shared-sync-search{width:100%;max-width:none;min-width:0;}
-
-/* ==========================================
-   STICKY NOTES - SEARCH PRE INIT
-   Prevent white flash before NewUI syncSearch
-   ========================================== */
-
-.sticky-search #searchInput {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  height: 32px;
-  padding: 4px 11px;
-
-  background: var(--page-input);
-  color: var(--page-text);
-  border: 1px solid var(--border-input);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.sticky-search #searchInput::placeholder {
-  color: var(--blur);
-  opacity: 1;
-}
-
-/* Selepas NewUI siap */
-.sticky-search #searchInput.shared-sync-search-input {
-  border-radius: 6px 0 0 6px;
-}
-
-/* Light theme */
-body.light-theme .sticky-search #searchInput {
-  background: #ffffff;
-  color: rgba(0,0,0,.85);
-  border-color: #d9d9d9;
-}
-
 .sticky-search input{width:100%!important;min-width:0!important;}
 .sticky-filter .shared-chip-dropdown{width:100%;}
 .sticky-filter .shared-chip-dropdown-trigger{min-height:32px;}
@@ -1558,18 +1516,7 @@ body.light-theme .sticky-search #searchInput {
     <section class="content">
       <div class="sticky-shell">
         <div class="content-toolbar sticky-toolbar">
-          
-<div class="sticky-search">
-  <input
-    id="searchInput"
-    class="search"
-    type="search"
-    placeholder="Search"
-    autocomplete="off"
-    aria-label="Search notes"
-  >
-</div>
-
+          <div class="sticky-search"><input id="searchInput" type="search" placeholder="Search" autocomplete="off" aria-label="Search notes"></div>
           <div id="stickyFilter" class="sticky-filter" aria-label="Filter notes"></div>
           
 <div class="sticky-toolbar-actions">
