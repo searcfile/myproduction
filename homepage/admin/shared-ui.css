@@ -860,7 +860,8 @@ a.tab-open .check-icon{
    DESKTOP USERNAME SVG - 16PX ONLY
    ========================================== */
 
-.header .user-dropdown > .user-button > svg {
+/* Icon username sahaja */
+.header .user-dropdown > .user-button > svg:not(.sidebar-arrow-icon) {
   display: block;
   width: 16px !important;
   height: 16px !important;
@@ -871,17 +872,16 @@ a.tab-open .check-icon{
 }
 
 /* ==========================================
-   USERNAME DROPDOWN ARROW - 10PX
+   USERNAME ARROW - REUSE SIDEBAR ICON
    ========================================== */
 
-.header .user-dropdown > .user-button > .username-dropdown-arrow {
+.header .user-dropdown > .user-button > svg.sidebar-arrow-icon {
   display: block;
   width: 10px !important;
   height: 10px !important;
-  min-width: 10px;
-  min-height: 10px;
-  flex: 0 0 10px;
-
+  min-width: 10px !important;
+  min-height: 10px !important;
+  flex: 0 0 10px !important;
   margin-left: 2px;
 
   fill: currentColor;
@@ -889,21 +889,21 @@ a.tab-open .check-icon{
 
   transform: rotate(0deg);
   transform-origin: center;
-
   transition: transform 0.2s ease;
 }
 
-/* Dropdown buka - arrow ke atas */
+/* Dropdown buka - arrow naik */
 .header .user-dropdown.account-dropdown-open
-> .user-button > .username-dropdown-arrow {
+> .user-button > svg.sidebar-arrow-icon {
   transform: rotate(180deg);
 }
 
-/* Dropdown tutup - arrow ke bawah */
+/* Dropdown tutup - arrow turun */
 .header .user-dropdown:not(.account-dropdown-open)
-> .user-button > .username-dropdown-arrow {
+> .user-button > svg.sidebar-arrow-icon {
   transform: rotate(0deg);
 }
+
 
 .user-button:hover{
   border-color:#fff6;
