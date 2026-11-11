@@ -842,28 +842,17 @@ a.tab-open .check-icon{
   display:flex;
   align-items:center;
   justify-content:center;
-
   gap:8px;
-
-  height:32px;
-
+  height:44px;
   padding:0 15px;
-
-  border:1px solid var(--border2);
-  border-radius:6px;
-
-  background:var(--backgroundbtn);
-
-  color:var(--colorbtn);
-
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius:10px;
+  background: #ffffff14;
+  color: #fff;
   font-size:14px;
-
   white-space:nowrap;
-
   cursor:pointer;
-
   box-shadow:0 2px 0 rgba(255,255,255,.04);
-
   transition:all .3s ease;
 }
 
