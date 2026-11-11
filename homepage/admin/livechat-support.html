@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+<script>
+  (function () {
+    const isFloating =
+      new URLSearchParams(location.search)
+        .get("floating") === "1";
+
+    if (isFloating) {
+      document.documentElement.classList.add(
+        "asf-embed-mode"
+      );
+    }
+  })();
+</script>
+
     <style>
   html.fiveg88-hard-reload,
   html.fiveg88-hard-reload body {
@@ -1672,6 +1687,31 @@ body.dark-theme {--lc-blue:#5b9bff}
 }
 @media(max-width:390px){.chat-header-right>.new-ui-input-wrap{width:100px!important}#searchMessage.new-ui-input{padding-left:8px!important;font-size:11px!important}.send-tool-btn{width:25px!important}.send-main-btn{width:34px!important;min-width:34px!important;height:34px!important}}
 @media(prefers-reduced-motion:reduce){.user-item{transform:none!important}}
+
+/* ==========================================
+   AGENT SUPPORT - FLOATING MODE ONLY
+   ========================================== */
+
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .livechat-layout {
+  width: 100% !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+}
+
+/* Pastikan kandungan chat memenuhi panel */
+html.asf-embed-mode .user-list-panel,
+html.asf-embed-mode .chat-detail-panel {
+  height: 100dvh !important;
+}
 
   </style>
 </head>
