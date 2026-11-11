@@ -8704,11 +8704,31 @@ function initHardReloadReveal() {
   }, 15000);
 }
 
+
 function init() {
+
+  // FLOATING AGENT SUPPORT MODE
+  // Jangan bina header, sidebar atau tabbar
+  // apabila LiveChat dibuka dalam floating panel.
+  const isAgentSupportFloating =
+    window.location.pathname
+      .split("/")
+      .pop()
+      .toLowerCase() === "livechat-support.html" &&
+    new URLSearchParams(window.location.search)
+      .get("floating") === "1";
+
+  if (isAgentSupportFloating) {
+    console.log(
+      "[Agent Support] Floating mode: shared shell disabled"
+    );
+    return;
+  }
 
   // Bezakan refresh browser dengan navigasi tab.
   const navigation =
     performance.getEntriesByType("navigation")[0];
+
 
   const isReload = navigation?.type === "reload";
 
