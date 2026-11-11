@@ -7,7 +7,7 @@ html.fiveg88-hard-reload body{visibility:hidden!important}
 html.fiveg88-hard-reload::after{content:"";position:fixed;inset:0;background:#fff;z-index:2147483647}
 </style>
 <script>
-(function(){const KEY='5g88.hardReloadIntent';window.addEventListener('keydown',e=>{if((e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='r')||(e.ctrlKey&&e.key==='F5'))sessionStorage.setItem(KEY,String(Date.now()));},true);const saved=Number(sessionStorage.getItem(KEY));sessionStorage.removeItem(KEY);const nav=performance.getEntriesByType('navigation')[0];if(nav?.type==='reload'&&saved>0&&Date.now()-saved<10000){document.documentElement.classList.add('fiveg88-hard-reload');setTimeout(()=>document.documentElement.classList.remove('fiveg88-hard-reload'),20000);}})();
+(function(){const KEY='5g88.hardReloadIntent';window.addEventListener('keydown',e=>{if((e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='r')||(e.ctrlKey&&e.key==='F5'))sessionStorage.setItem(KEY,String(Date.now()));},true);const saved=Number(sessionStorage.getItem(KEY));sessionStorage.removeItem(KEY);const nav=performance.getEntriesByType('navigation')[0];if(nav?.type==='reload'&&saved>0&&Date.now()-saved<10000){document.documentElement.classList.add('fiveg88-hard-reload');window.addEventListener('load',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.remove('fiveg88-hard-reload'))),{once:true});setTimeout(()=>document.documentElement.classList.remove('fiveg88-hard-reload'),12000);}})();
 </script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Agent Support Floating Config | 5G88</title>
@@ -26,7 +26,7 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
 .cfg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap}
 .cfg-btn{min-height:36px;border:1px solid var(--tx-border,#2b3e5b);border-radius:7px;padding:7px 16px;cursor:pointer;background:var(--tx-surface-soft,#1c2b42);color:var(--tx-ink,#fff);font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .cfg-btn:hover{filter:brightness(1.12)}.cfg-btn.primary{background:#1668dc;color:white;border-color:#1668dc}.cfg-btn:disabled{opacity:.55;cursor:not-allowed}
-.cfg-users{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-height:240px;overflow:auto;padding:10px;border:1px solid var(--tx-border);border-radius:8px}
+.cfg-status{display:none!important}.cfg-users{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-height:240px;overflow:auto;padding:10px;border:1px solid var(--tx-border);border-radius:8px}
 .cfg-user{display:flex;gap:9px;align-items:center;padding:8px;background:var(--tx-surface-soft);border-radius:6px;cursor:pointer}.cfg-user .shared-active-switch{flex-shrink:0}
 .cfg-toggle-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.cfg-hint{font-size:12px;line-height:1.5}
 .cfg-notice{padding:12px 14px;border:1px solid var(--tx-border);border-radius:8px;background:var(--tx-surface-soft);font-size:13px;margin-bottom:16px}
