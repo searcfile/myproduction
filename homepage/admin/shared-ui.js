@@ -1668,11 +1668,15 @@ aria-label="Search tabs"
   id="userName"
   class="user-button"
   aria-label="Account"
+  aria-expanded="false"
+  aria-controls="dropdownContent"
   title="Account">
 
   ${ICON_USERNAME}
 
   <span id="userNameText">Account</span>
+
+  ${ICON_ARROW}
 
 </button>
 
