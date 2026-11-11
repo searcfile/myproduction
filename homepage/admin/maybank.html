@@ -68,16 +68,24 @@
 </head>
   <style>
     /* ===== Paper container ===== */
-.paper{
-  position:absolute;
-  top:0;
-  left:50%;
-  transform:translateX(-50%) scale(3.7);
-  transform-origin:top center;
-  width:595px;
-  height:500px;
-  overflow:hidden;
+
+/* MAYBANK - SCALED PAPER */
+.paper {
+  position: relative;
+  top: auto;
+  left: auto;
+
+  width: 595px;
+  height: 842px;
+
+  margin: 0 auto;
+
+  transform: scale(3.7);
+  transform-origin: top center;
+
+  overflow: visible;
 }
+
 .paper-bg{position:absolute;left:0;top:0}
 
 input, select {
@@ -171,38 +179,25 @@ span.cls_006,div.cls_006{font-family:Arial,serif;font-size:8.1px;color:#000;font
 .d-colon{position:absolute;bottom:0px;width:24px}
 .d-colon1{left:256px}
 .d-colon2{left:286px}
-/* ================= SCROLLBAR GLOBAL ================= */
-
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 6px; /* nipis */
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 10px;
-  transition: all 0.25s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-
-/* Firefox */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #555 transparent;
-}
 
 .amt-input{position:absolute;left:125px;border-radius: 3px;transition: all 0.2s;}
 #inRef{border-radius: 3px;transition: all 0.2s;width: 120px !important;}
+      
+/* MAYBANK - SCROLLABLE SCALED CONTENT */
+body {
+  margin: 0;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.paper {
+  margin-bottom: calc(842px * 2.7);
+}
   </style>
 <body>
-
+  <div class="paper">
     <div class="paper-bg">
       <img
         src="https://raw.githubusercontent.com/paradisefb/main/main/resources/Images/universal/background1.jpg"
@@ -293,7 +288,7 @@ html {
       <button class="btn btn-red   pos-reset" id="btnReset" type="button">Reset</button>
       <button class="btn btn-green pos-change" id="btnChangeMode" type="button">Change</button>
     </div>
-
+  </div>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
