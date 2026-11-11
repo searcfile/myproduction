@@ -2870,7 +2870,7 @@ margin-top: var(--admin-header-height, 64px) !important;
 /* Ketika drag - Refresh ikut warna floating tab */
 .workspace-drag-preview
 .admin-workspace-tab-refresh {
-  color: #91caff !important;
+  color: var(--main-tab-primary) !important;
 }
 /* Refresh dan Close */
 .admin-workspace-tab-actions{
@@ -2964,7 +2964,7 @@ margin-top: var(--admin-header-height, 64px) !important;
 .admin-workspace-tab .admin-workspace-tab-refresh svg,
 .admin-workspace-tab .admin-workspace-tab-refresh svg path {
   color: inherit !important;
-  fill: currentColor !important;
+  fill: var(--main-tab-primary) !important;
 }
 
 /* Close kekalkan warna asal */
