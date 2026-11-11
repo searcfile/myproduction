@@ -1832,14 +1832,13 @@ html {
    ========================================================== */
 
 .active-tab{
-  color:#91caff !important;
+  color:var(--main-tab-primary)!important;
   font-weight:600;
-  background:#162b44;
-  border-color:#315987;
-  box-shadow: inset 0 2px 0 #91caff;
+  background:var(--main-tab-active-bg);
+  border-color:var(--main-tab-active-border);
+  box-shadow: inset 0 2px 0 var(--main-tab-primary);
   z-index:3;
 }
-
 /* ==========================================================
    CLOSE TAB
    ========================================================== */
