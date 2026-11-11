@@ -1,7 +1,18 @@
-/* 5G88 Agent Support Floating - load on admin index.html only */
+/* 5G88 Agent Support Floating - all admin pages */
 (() => {
   'use strict';
-  if ((location.pathname.split('/').pop() || 'index.html').toLowerCase() !== 'index.html') return;
+
+  // Jangan buat floating kedua di dalam iframe dashboard.
+  if (window.self !== window.top) return;
+
+  // Jangan paparkan floating pada halaman login.
+  const currentPage =
+    (location.pathname.split('/').pop() || 'index.html')
+      .toLowerCase();
+
+  if (currentPage === 'login.html') return;
+
+  // Elakkan initialization berganda.
   if (window.__agentSupportFloatingInit) return;
   window.__agentSupportFloatingInit = true;
   const CONFIG_PATH = 'adminConfig/agentSupportFloating';
