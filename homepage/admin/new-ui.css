@@ -16,8 +16,9 @@ html[data-admin-theme="light"] {
     --tx-slide:#00000073;
     --main-tab-border:#e2e8f0;
     --main-tab-text: #475569;
-
-  --panel2:#fafafa;
+    --ant-color-icon:rgba(0,0,0,.45);
+   
+    --panel2:#fafafa;
 
   --text:rgba(0,0,0,.88);
   --text2:rgba(0,0,0,.25);
@@ -61,6 +62,7 @@ html[data-admin-theme="light"] {
     --tx-slide:rgba(255,255,255,0.25);
     --main-tab-border:#303030;
     --main-tab-text: #cbd5e1;
+    --ant-color-icon:rgba(255,255,255,.45);
  
   --panel2: #171e28;
    
