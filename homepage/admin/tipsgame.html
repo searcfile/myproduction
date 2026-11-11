@@ -1405,11 +1405,31 @@ function tipsCanSeePlatform(record) {
     id => record.siteVisibility?.[id] === true
   );
 }
+
 const platformIdByName = new Map();
 let tipsRecords = {};
 let tipsDb = null;
 let tipsLoaded = false;
+
 const tipsCreate = document.getElementById('tipsCreate');
+
+// Paparkan satu card sahaja, tanpa nested card.
+function showTipsEmptyCard(message = 'No Data') {
+  const row = document.getElementById('row-1');
+  if (!row) return;
+
+  row.querySelector('.tips-no-data')?.remove();
+
+  const empty = document.createElement('div');
+  empty.className = 'tips-no-data';
+  empty.textContent = message;
+
+  row.appendChild(empty);
+}
+
+// Paparkan loading sementara API belum selesai.
+showTipsEmptyCard('Loading...');
+
 
 /* ==========================================
    TIPS GAME - REFRESH BUTTON
@@ -1956,28 +1976,17 @@ function applyTipsFilters() {
   });
 
 
-// Paparkan No Data selepas data selesai dimuatkan.
-if (tipsLoaded && visibleCount === 0) {
-  const empty = document.createElement('div');
 
-  empty.className = 'tips-no-data';
-
-  row.appendChild(empty);
-
-  if (typeof window.showEmptyState === 'function') {
-    window.showEmptyState(
-      empty,
-      'No Data',
-      'large',
-      'center'
-    );
-
-  } else {
-    empty.textContent = 'No Data';
-  }
+// Paparkan No Data apabila tiada platform yang kelihatan.
+if (visibleCount === 0) {
+  showTipsEmptyCard(
+    tipsLoaded ? 'No Data' : 'Loading...'
+  );
 }
 
 }
+
+
 function applyPlatformActive(box, active) {
 
   box.classList.toggle('tips-platform-disabled', !active);
@@ -2122,8 +2131,20 @@ async function startTipsRealtime() {
     restoreTipsFilters();
 
 
+
 } catch (error) {
   console.error('Tips Game API:', error);
+
+  tipsLoaded = false;
+
+  showTipsEmptyCard('Failed to load Tips Game');
+
+  tipsToast(
+    'Cannot load Tips Game: ' + error.message,
+    'error'
+  );
+}
+
 
   const row = document.getElementById('row-1');
 
