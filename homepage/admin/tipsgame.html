@@ -1405,9 +1405,20 @@ NewUI.refreshButton.init(tipsRefreshButton);
 async function refreshTipsGridOnly() {
   if (tipsRefreshing || !tipsLoaded) return;
 
-  tipsRefreshing = true;
+tipsRefreshing = true;
 
-  try {
+// Kosongkan grid dan paparkan No Data sementara
+clearTipsIntervals();
+
+const tipsRow = document.getElementById('row-1');
+
+if (tipsRow) {
+  tipsRow.replaceChildren();
+}
+
+applyTipsFilters();
+
+try {
     await NewUI.refreshButton.run(
       tipsRefreshButton,
       async () => {
@@ -1452,6 +1463,7 @@ async function refreshTipsGridOnly() {
 
   } catch (error) {
     console.error('[Tips Game] Refresh failed:', error);
+    renderPlatformsFromDatabase();
 
     tipsToast(
       error.message || 'Failed to refresh platforms',
@@ -1933,7 +1945,7 @@ function applyTipsFilters() {
   });
 
   // Paparkan custom No Data jika tiada hasil
-  if (tipsLoaded && visibleCount === 0) {
+ if (visibleCount === 0) {
     const empty = document.createElement('div');
     empty.className = 'tips-no-data';
 
@@ -2118,8 +2130,19 @@ window.addEventListener("pagehide", () => {
   saveTipsFilters();
 });
 
-// Legacy card buttons use inline handlers. Expose only the existing UI actions.
-Object.assign(window,{refreshList,copyTips,toggleAuto,togglePercent,toggleNumber});
+// Legacy card buttons use inline handlers.
+Object.assign(window, {
+  refreshList,
+  copyTips,
+  toggleAuto,
+  togglePercent,
+  toggleNumber
+});
+
+// Tampilkan No Data sebelum data pertama selesai dimuatkan
+applyTipsFilters();
+
+// Mulakan loading data Tips Game
 startTipsRealtime();
 
 function toggleNumber(name, btn) {
