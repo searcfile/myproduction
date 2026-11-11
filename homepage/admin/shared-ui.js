@@ -8418,22 +8418,27 @@ function initSmartContentLoading() {
 
   sessionStorage.removeItem(tabKey);
 
-  const loader = document.createElement("div");
-  loader.id = "smartContentLoader";
 
-  Object.assign(loader.style, {
-    position: "fixed",
-    left: "0",
-    right: "0",
-    bottom: "0",
-    top: "0",
-    zIndex: "2147483646",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#000",
-    pointerEvents: "auto"
-  });
+const loader = document.createElement("div");
+loader.id = "smartContentLoader";
+
+Object.assign(loader.style, {
+  position: "fixed",
+  left: "0",
+  right: "0",
+  bottom: "0",
+  top: "0",
+
+  // Loader di bawah sidebar, overlay dan header.
+  zIndex: "900",
+
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "#000",
+  pointerEvents: "auto"
+});
+
 
   loader.setAttribute("role", "status");
   loader.setAttribute("aria-live", "polite");
