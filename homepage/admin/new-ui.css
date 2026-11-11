@@ -15,6 +15,7 @@ html[data-admin-theme="light"] {
     --tx-hover: #f8fbff;
     --tx-slide:#00000073;
     --main-tab-border:#e2e8f0;
+    --main-tab-text: #475569;
 
   --panel2:#fafafa;
 
@@ -59,6 +60,7 @@ html[data-admin-theme="light"] {
     --tx-hover: #1d304b;
     --tx-slide:rgba(255,255,255,0.25);
     --main-tab-border:#303030;
+    --main-tab-text: #cbd5e1;
  
   --panel2: #171e28;
    
