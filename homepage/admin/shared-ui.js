@@ -1672,7 +1672,7 @@ aria-label="Search tabs"
 
   ${ICON_USERNAME}
 
-  <span id="userNameText"></span>
+  <span id="userNameText">Account</span>
 
 </button>
 
