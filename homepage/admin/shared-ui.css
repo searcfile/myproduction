@@ -1974,7 +1974,7 @@ body.light-theme .theme-toggle-knob{
 }
 
 .tab:hover{
-  background:rgba(255, 255, 255, 0.08) !important;
+  background:var(--main-tab-hover-bg) !important;
 }
 
 /* .tab:not(.active-tab):active{
