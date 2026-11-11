@@ -1009,7 +1009,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 }
 .admin-site-selector
 .shared-chip-dropdown-trigger:hover {
-   bacground:#ffffff29;
+   background:#ffffff29;
    border-color:#ffffff4d;
    color:#fff;
 }
