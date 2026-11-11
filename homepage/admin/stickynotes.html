@@ -1524,6 +1524,38 @@ select:focus-visible{
     -webkit-appearance: none;
     transition: all .2s ease;
 }
+    .shared-sync-search-button {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--input-line, #424242);
+    border-radius: 0 6px 6px 0;
+    background: var(--input, #141414);
+    color: var(--muted, #999);
+    cursor: pointer;
+    outline: none;
+    position: relative;
+    z-index: 1;
+    transition: border-color .2s, color .2s, background .2s;
+}
+.shared-chip-dropdown-trigger {
+    position: relative;
+    width: 100%;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 1px 32px 1px 3px;
+    border: 1px solid var(--input-line);
+    border-radius: 6px;
+    background: var(--input);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: border-color .2s ease;
+}
 </style>
 </head>
 
