@@ -2604,6 +2604,7 @@ function openSidebar() {
   sessionStorage.setItem(SIDEBAR_STATE_KEY, "1");
 }
 
+
 function closeSidebar() {
   document
     .getElementById("sidebar")
@@ -2613,8 +2614,26 @@ function closeSidebar() {
     .getElementById("overlay")
     ?.classList.remove("active");
 
+  // Reset status sidebar.
   sessionStorage.removeItem(SIDEBAR_STATE_KEY);
+
+  // Reset group yang tersimpan.
+  sessionStorage.removeItem("5g88.sidebar.openGroups");
+
+  // Tutup semua group dalam sidebar.
+  document.querySelectorAll(
+    "#customSidebarTabs .sidebar-group.is-open"
+  ).forEach(group => {
+    group.classList.remove("is-open");
+
+    const button = group.querySelector(
+      ".sidebar-group-toggle"
+    );
+
+    button?.setAttribute("aria-expanded", "false");
+  });
 }
+
 
 function restoreSidebarState() {
   if (sessionStorage.getItem(SIDEBAR_STATE_KEY) === "1") {
