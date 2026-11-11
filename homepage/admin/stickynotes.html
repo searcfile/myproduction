@@ -2416,8 +2416,6 @@ function renderNotes() {
   if (!els.notesGrid || !els.emptyState) return;
 
   // Sembunyikan paparan lama ketika Firebase loading
-
-
 if (
   notesLoading ||
   (
@@ -2427,8 +2425,7 @@ if (
     !stickyOwnerSitesReady
   )
 ) {
-  els.notesGrid.replaceChildren();
-  els.emptyState.style.display = "none";
+  showStickyRefreshEmpty();
   return;
 }
 
@@ -2996,9 +2993,9 @@ if (
 ========================= */
 
 (function init(){
-
-  // Minta maklumat daripada halaman admin utama
+  showStickyRefreshEmpty();
   requestParentData();
+
 
   setTimeout(requestParentData, 500);
   setTimeout(requestParentData, 1200);
