@@ -3022,19 +3022,18 @@ margin-top: var(--admin-header-height, 64px) !important;
 
 /* Hover Refresh */
 .admin-workspace-tab-refresh:hover{
-  background:rgba(255,255,255,0.08) !important;
+  background:var(--main-tab-hover-bg)  !important;
 }
 /* Hover Refresh */
 .admin-workspace-tab-refresh:active{
-  background:rgba(255,255,255,0.18) !important;
+  background:var(--main-tab-hover-bg) !important;
 }
 /* Hover Close */
 .admin-workspace-tab-close:hover{
-  background:rgba(255,255,255,0.08) !important;
-  color:rgba(255,255,255,0.85) !important;
+  background:var(--main-tab-hover-bg)  !important;
 }
 .admin-workspace-tab-close:active{
-  background:rgba(255,255,255,0.08) !important;
+  background:var(--main-tab-hover-bg)  !important;
   color:#1554ad !important;
 }
 /* ==========================================================
