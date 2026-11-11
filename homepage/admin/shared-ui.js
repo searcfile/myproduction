@@ -8654,13 +8654,28 @@ function initHardReloadReveal() {
     }
   }, 15000);
 }
+
 function init() {
+
+  // Bezakan refresh browser dengan navigasi tab.
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  const isReload = navigation?.type === "reload";
+
+  if (isReload) {
+    // Refresh mesti menutup sidebar dan semua group.
+    sessionStorage.removeItem(SIDEBAR_STATE_KEY);
+    sessionStorage.removeItem("5g88.sidebar.openGroups");
+  }
+
   createShell();
 
-  // Pulihkan sidebar selepas berpindah tab
+  // Navigasi tab biasa masih mengekalkan sidebar.
   restoreSidebarState();
 
   renderTabs();
+
   initLivechatUnreadListener();
   // White Shield untuk refresh browser.
   initHardReloadReveal();
