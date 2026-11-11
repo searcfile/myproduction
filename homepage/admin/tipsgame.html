@@ -936,6 +936,29 @@ select:focus-visible{
 
 }
 
+/* TIPS GAME - NO DATA SAME AS LINK DOWNLOAD */
+#row-1 > .tips-no-data {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  min-height: 160px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--tx-surface);
+  border: 1px solid var(--tx-border);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+#row-1 > .tips-no-data > .shared-empty {
+  width: 100%;
+  min-height: 160px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
   </style>
 <body>
   <div class="tips-admin-toolbar">
@@ -1932,24 +1955,27 @@ function applyTipsFilters() {
     if (show) visibleCount++;
   });
 
-  // Paparkan custom No Data jika tiada hasil
-  if (tipsLoaded && visibleCount === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'tips-no-data';
 
-    row.appendChild(empty);
+// Paparkan No Data selepas data selesai dimuatkan.
+if (tipsLoaded && visibleCount === 0) {
+  const empty = document.createElement('div');
 
+  empty.className = 'tips-no-data';
 
-if (typeof window.showEmptyState === 'function') {
-  window.showEmptyState(
-    empty,
-    'No Data',
-    'large',
-    'center'
-  );
-} else {
-  empty.textContent = 'No Data';
+  row.appendChild(empty);
+
+  if (typeof window.showEmptyState === 'function') {
+    window.showEmptyState(
+      empty,
+      'No Data',
+      'large',
+      'center'
+    );
+  } else {
+    empty.textContent = 'No Data';
+  }
 }
+
 
   }
 }
@@ -2095,14 +2121,40 @@ async function startTipsRealtime() {
     // Restore filter selepas semua platform tersedia.
     restoreTipsFilters();
 
-  } catch (error) {
-    console.error('Tips Game API:', error);
 
-    tipsToast(
-      'Cannot load Tips Game: ' + error.message,
-      'error'
-    );
+} catch (error) {
+  console.error('Tips Game API:', error);
+
+  const row = document.getElementById('row-1');
+
+  if (row) {
+    row.replaceChildren();
+
+    const empty = document.createElement('div');
+    empty.className = 'tips-no-data';
+
+    row.appendChild(empty);
+
+    const message = 'Failed to load Tips Game';
+
+    if (typeof window.showEmptyState === 'function') {
+      window.showEmptyState(
+        empty,
+        message,
+        'large',
+        'center'
+      );
+    } else {
+      empty.textContent = message;
+    }
   }
+
+  tipsToast(
+    'Cannot load Tips Game: ' + error.message,
+    'error'
+  );
+}
+
 }
 tipsCreate.addEventListener('click',()=>openPlatformEditor());
 
