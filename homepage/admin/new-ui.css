@@ -67,9 +67,9 @@ html[data-admin-theme="light"] {
     --main-tab-border:#303030;
     --main-tab-text: #cbd5e1;
     --ant-color-icon:rgba(255,255,255,.45);
-    --main-tab-active-bg:#e6f4ff;
-    --main-tab-active-border:#91caff;
-    --main-tab-primary:#1677ff;
+    --main-tab-active-bg:#162b44;
+    --main-tab-active-border:#315987;
+    --main-tab-primary:#91caff;
     --main-tab-hover-bg: rgba(15, 23, 42, 0.05);
     --main-tab-hover-bg: rgba(255, 255, 255, 0.08);
  
