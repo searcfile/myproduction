@@ -21,6 +21,8 @@ html[data-admin-theme="light"] {
     --main-tab-active-border:#91caff;
     --main-tab-primary:#1677ff;
     --main-tab-hover-bg: rgba(15, 23, 42, 0.05);
+    --main-tab-drag-shadow:rgba(255,255,255,.48);
+    --main-tab-drag-shadow2:rgba(255,255,255,.28);
    
     --panel2:#fafafa;
 
@@ -71,6 +73,8 @@ html[data-admin-theme="light"] {
     --main-tab-active-border:#315987;
     --main-tab-primary:#91caff;
     --main-tab-hover-bg: rgba(255, 255, 255, 0.08);
+    --main-tab-drag-shadow:rgba(0,0,0,.48);
+    --main-tab-drag-shadow2:rgba(0,0,0,.28);
  
   --panel2: #171e28;
    
