@@ -3122,10 +3122,12 @@ margin-top: var(--admin-header-height, 64px) !important;
 }
 
 .admin-workspace-more-item:hover{
-  background:var(--close-hover2);
+  color:var(--dropdown-color-hover);
+  background:var(--dropdown-bg-hover);
 }
 
 .admin-workspace-more-item.active{
+    color:var(--dropdown-color-hover);
   background:var(--dropdown-bg-active);
 }
 
