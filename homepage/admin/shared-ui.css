@@ -5160,15 +5160,6 @@ body.light-theme
   color: #1668dc;
 }
 
-body.light-theme
-.admin-workspace-tab-card
-.admin-workspace-more-button.is-active,
-body.light-theme
-.admin-workspace-tab-card
-.admin-workspace-more-button[aria-expanded="true"] {
-  background: #1668dc;
-  color: #ffffff;
-}
 
 body.light-theme
 .admin-workspace-tab-card
