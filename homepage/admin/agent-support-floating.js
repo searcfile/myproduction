@@ -16,15 +16,26 @@
   const positionKey=()=>`5g88.agentSupportFloat.position.v1:${uid}`;
   const savedY=()=>{try{const v=JSON.parse(localStorage.getItem(positionKey()));return Number.isFinite(v?.y)?v.y:null;}catch{return null;}};
   const saveY=y=>{if(uid)localStorage.setItem(positionKey(),JSON.stringify({y}));};
-  const limits=()=>({min:Math.min(100,Math.max(0,innerHeight-(root?.offsetHeight||48))),max:Math.max(0,innerHeight-(root?.offsetHeight||48))});
+const limits = () => {
+  const height = root?.offsetHeight || 56;
+
+  return {
+    min: 0,
+    max: Math.max(0, window.innerHeight - height)
+  };
+};
   function position(y){if(!root)return;const {min,max}=limits();root.style.top=`${clamp(y,min,max)}px`;}
   function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;}
   function animationEnabled(){return config.animationMode==='float'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;}
   function animate(now){
     if(!root||!animationEnabled()||paused||dragging||panel){raf=0;return;}
     const {min,max}=limits();
-    const range = Math.min(
-  clamp(+config.animationRange || 400, 10, 700),
+const range = Math.min(
+  clamp(
+    Number(config.animationRange) || 400,
+    10,
+    Math.max(10, max - min)
+  ),
   Math.max(0, max - min)
 );
     const speed=clamp(+config.animationSpeed||35,5,150);
