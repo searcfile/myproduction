@@ -2199,7 +2199,7 @@ body.tab-dragging-active *{
 
 .tab-search-item.active{
   background:var(--dropdown-bg-active) !important;
-  color:var(--text-main) !important;
+  color:var(--dropdown-color) !important;
   font-weight:600;
 }
 
