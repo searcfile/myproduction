@@ -24,6 +24,8 @@ html[data-admin-theme="light"] {
     --main-tab-drag-shadow:rgba(255,255,255,.48);
     --main-tab-drag-shadow2:rgba(255,255,255,.28);
     --overflow-border:#e2e8f0;
+
+   --floating-border:#91caff;
    
     --panel2:#fafafa;
 
@@ -77,7 +79,8 @@ html[data-admin-theme="light"] {
     --main-tab-drag-shadow:rgba(0,0,0,.48);
     --main-tab-drag-shadow2:rgba(0,0,0,.28);
     --overflow-border:#363636;
- 
+     
+    --floating-border:#15325b;
   --panel2: #171e28;
    
   --text: rgba(255,255,255,0.85);
