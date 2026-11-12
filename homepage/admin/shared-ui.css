@@ -3077,8 +3077,8 @@ margin-top: var(--admin-header-height, 64px) !important;
 }
 
 .admin-workspace-more-button:hover{
-  color:#91caff !important;
-  background:#162b44 !important;
+    background: var(--main-tab-active-bg);
+    color: var(--main-tab-primary);
 }
 
 .admin-workspace-more:not(.has-hidden-tabs)
