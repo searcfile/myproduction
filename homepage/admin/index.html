@@ -47,26 +47,36 @@
   overflow: hidden;
 }
 
-/* Full content area */
+
+/* HOME - NO DATA AT TOP */
 #homeEmptyState {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+
   width: 100%;
-  padding: 12px;
+  height: auto;
+  padding: 12px 9px;
   box-sizing: border-box;
   pointer-events: none;
 }
 
+
 /* Card No Data */
 #homeEmptyState .shared-empty {
   width: 100%;
-  min-height: 110px;
+  min-height: 160px;
   margin: 0 !important;
   flex: 0 0 auto;
+  border-radius: 12px;
 }
+
 
 /* Hide empty state */
 #homeEmptyState[hidden],
