@@ -191,10 +191,10 @@ button.addEventListener('pointerup',()=>{
   overflow: hidden;
   white-space: nowrap;
 
-  background: #1f1f1f;
+  background: var(--dropdown-bg);
   color: #1668dc;
 
-  border: 1px solid #303030;
+  border: 1px solid var(--main-tab-border);
   border-right: 0;
   border-radius: 16px 0 0 16px;
 
