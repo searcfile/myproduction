@@ -1363,6 +1363,37 @@ html.asf-embed-mode .send-box {
   flex-shrink: 0 !important;
 }
 
+/* ==========================================
+   FLOATING MODE - HIDE EXTRA ADMIN UI
+   ========================================== */
+
+/* Dalam floating, hanya paparkan main LiveChat */
+html.asf-embed-mode body > :not(main):not(script):not(audio) {
+  display: none !important;
+}
+
+/* Pastikan main menjadi satu-satunya layout */
+html.asf-embed-mode body > main {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+/* Chat memenuhi keseluruhan iframe */
+html.asf-embed-mode body > main > .chat-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
 </style>
 </head>
 <body>
