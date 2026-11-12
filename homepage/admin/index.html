@@ -30,38 +30,51 @@
   <meta name="twitter:description" content="The 5G88 website provides an editing page with various available features and is completely free of charge, with no usage fees. This page is only available for major partnership agents and is strictly prohibited from being shared with other agents.">
   <meta name="twitter:image" content="https://myproduction-v2-5g88myr1.vercel.app/logo.svg">
 </head>
-  <style>
-  /* HOME - CUSTOM EMPTY STATE */
-  #mainContainer {
-    position: relative;
-    min-height: calc(
-      100dvh - var(--admin-header-height, 64px)
-      - var(--admin-tabs-height, 52px)
-    );
-  }
 
-  #homeEmptyState {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
+<style>
+/* =========================================
+   HOME - NO DATA CENTER
+========================================= */
 
-  #homeEmptyState .shared-empty {
-    width: 100%;
-    min-height: 0;
-  }
+#mainContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
 
-  #homeEmptyState[hidden] {
-    display: none !important;
-  }
-  /* Hide empty state when iframe content exists */
-  #mainContainer:has(iframe) #homeEmptyState {
-    display: none !important;
-  }
+/* Full content area */
+#homeEmptyState {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* Card No Data */
+#homeEmptyState .shared-empty {
+  width: 100%;
+  min-height: 110px;
+  margin: 0 !important;
+  flex: 0 0 auto;
+}
+
+/* Hide empty state */
+#homeEmptyState[hidden],
+#mainContainer:has(iframe) #homeEmptyState {
+  display: none !important;
+}
 </style>
+
 <body>
 <div class="container" id="mainContainer">
   <div id="homeEmptyState" role="status" aria-live="polite"></div>
