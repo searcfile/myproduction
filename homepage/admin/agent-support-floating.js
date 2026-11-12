@@ -12,7 +12,7 @@
   let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
   const isSiteFloating=()=>profile?.role==='siteadmin';
   const activeUrl=()=>isSiteFloating()?config.siteUrl:config.url;
-  const activeLabel=()=>isSiteFloating()?(config.siteLabel||'LiveChat'):(activeLabel());
+  const activeLabel=()=>isSiteFloating()?(config.siteLabel||'LiveChat'):(config.label||'Agent Support');
   const activeSide=()=>isSiteFloating()?(config.siteSide||'right'):(config.side||'right');
   let siteUnreadCleanup=null;
   function stopSiteUnreadListener(){if(siteUnreadCleanup){siteUnreadCleanup();siteUnreadCleanup=null;}}
