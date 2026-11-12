@@ -230,7 +230,7 @@ transition:
   opacity: 0;
 
   white-space: nowrap;
-  color: #fff;
+  color: var(--text);
 
   font-size: 13px;
   font-weight: 600;
