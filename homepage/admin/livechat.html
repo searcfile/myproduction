@@ -1310,38 +1310,46 @@ main {
   }
 }
       
+
 /* ==========================================
-   LIVECHAT - FLOATING MODE ONLY
+   LIVECHAT FLOATING - FULL PANEL
    ========================================== */
 
 html.asf-embed-mode,
 html.asf-embed-mode body {
   width: 100% !important;
   height: 100% !important;
+  min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
 
-html.asf-embed-mode main {
+html.asf-embed-mode body > main {
+  display: flex !important;
+  flex-direction: column !important;
   width: 100% !important;
   height: 100dvh !important;
   min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  display: flex !important;
   overflow: hidden !important;
 }
 
 html.asf-embed-mode .chat-wrapper {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
   width: 100% !important;
   max-width: none !important;
   height: 100% !important;
   max-height: none !important;
   min-height: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: hidden !important;
 }
 
 html.asf-embed-mode .chat-box {
@@ -1349,6 +1357,10 @@ html.asf-embed-mode .chat-box {
   min-height: 0 !important;
   height: auto !important;
   overflow-y: auto !important;
+}
+
+html.asf-embed-mode .send-box {
+  flex-shrink: 0 !important;
 }
 
 </style>
