@@ -32,7 +32,6 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
   <form id="configForm" novalidate>
     <section class="cfg-card">
       <h2>Floating LiveChat</h2>
-      <div id="loading" class="cfg-notice" role="alert" hidden></div>
       <fieldset id="configFields" disabled style="border:0;margin:0;padding:0;min-width:0">
       <div class="cfg-grid">
         <div class="cfg-field cfg-wide"><span>Floating status</span><div class="cfg-toggle-row"><label class="shared-active-switch"><input type="checkbox" id="enabled" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span></label><span class="muted cfg-hint">Show floating button</span></div></div>
@@ -45,9 +44,11 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
         <label class="cfg-field"><span>Button display</span><select id="showLabel" data-shared-dropdown><option value="false">Icon only</option><option value="true">Icon and label</option></select></label>
         <label class="cfg-field"><span>Panel width (px)</span><input id="width" type="number" min="280" max="900" step="10"></label>
         <label class="cfg-field"><span>Panel height (px)</span><input id="height" type="number" min="280" max="1000" step="10"></label>
+        <label class="cfg-field cfg-wide"><span>Button movement animation</span><select id="animationMode" data-shared-dropdown><option value="off">Off (Static)</option><option value="float">Smooth Up &amp; Down</option></select></label>
+        <label class="cfg-field"><span>Animation speed (px/second)</span><input id="animationSpeed" type="number" min="5" max="150" step="5" value="35"><small class="muted cfg-hint">Higher number = faster movement.</small></label>
+        <label class="cfg-field"><span>Movement distance (px)</span><input id="animationRange" type="number" min="10" max="250" step="10" value="90"><small class="muted cfg-hint">Vertical distance from top to bottom.</small></label>
       </div>
       <div class="cfg-actions"><button type="button" class="cfg-btn" id="reset">Reset fields</button><button type="submit" class="cfg-btn primary" id="save">Save configuration</button></div>
-      <p class="muted cfg-status" id="status" aria-live="polite"></p>
       </fieldset>
     </section>
   </form>
@@ -64,7 +65,7 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
 'use strict';
 const PATH='adminConfig/agentSupportFloating';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
-const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false};
+const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:90};
 const $=id=>document.getElementById(id);
 let currentUser=null,toastTimer,siteUsers=[],savedAllowed={},busy=false;
 function toast(msg,ok=true){
@@ -73,7 +74,7 @@ function toast(msg,ok=true){
   document.querySelector('.cfg-toast')?.remove();const el=document.createElement('div');el.className='cfg-toast';el.textContent=msg;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),3000);
 }
 function syncControls(){window.SharedActiveSwitch?.init?.(document);for(const el of document.querySelectorAll('select[data-shared-dropdown]'))el._sharedDropdown?.refresh?.();}
-function fill(d){savedAllowed={...(d.allowedUids||{})};$('accessMode').value=d.accessMode||'all';$('enabled').checked=!!d.enabled;$('url').value=d.url||'';$('label').value=d.label||'Agent Support';$('side').value=d.side||'right';$('openMode').value=d.openMode||'panel';$('showLabel').value=String(!!d.showLabel);$('width').value=d.width??400;$('height').value=d.height??600;renderUsers();syncControls();}
+function fill(d){savedAllowed={...(d.allowedUids||{})};$('accessMode').value=d.accessMode||'all';$('enabled').checked=!!d.enabled;$('url').value=d.url||'';$('label').value=d.label||'Agent Support';$('side').value=d.side||'right';$('openMode').value=d.openMode||'panel';$('showLabel').value=String(!!d.showLabel);$('width').value=d.width??400;$('height').value=d.height??600;$('animationMode').value=d.animationMode||'off';$('animationSpeed').value=d.animationSpeed??35;$('animationRange').value=d.animationRange??90;renderUsers();syncControls();}
 function validateUrl(s){if(!s)return '';try{const u=new URL(s);if(u.protocol!=='https:')throw Error();return u.href;}catch{throw new Error('LiveChat URL must start with https://');}}
 function renderUsers(){const selected=$('accessMode').value==='site_selected';$('selectedWrap').hidden=!selected;const list=$('userList');list.replaceChildren();if(!selected)return;for(const u of siteUsers){const label=document.createElement('label');label.className='cfg-user';const sw=document.createElement('span');sw.className='shared-active-switch';const cb=document.createElement('input');cb.type='checkbox';cb.value=u.uid;cb.checked=!!savedAllowed[u.uid];cb.dataset.activeLabel='On';cb.dataset.inactiveLabel='Off';const track=document.createElement('span');track.className='shared-active-track';track.innerHTML='<span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span>';sw.append(cb,track);const name=document.createElement('span');name.textContent=u.name;label.append(sw,name);list.append(label);} $('usersHint').textContent=siteUsers.length?'Select at least one Site Admin.':'No Site Admin accounts found.';window.SharedActiveSwitch?.init?.(list);}
 $('accessMode').addEventListener('change',renderUsers);
@@ -83,8 +84,8 @@ $('configForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!currentUser||busy)return;
  try{
   const allowedUids={};if($('accessMode').value==='site_selected')$('userList').querySelectorAll('input:checked').forEach(cb=>allowedUids[cb.value]=true);
-  const d={enabled:$('enabled').checked,accessMode:$('accessMode').value,allowedUids,url:validateUrl($('url').value.trim()),label:$('label').value.trim()||'Agent Support',side:$('side').value,openMode:$('openMode').value,showLabel:$('showLabel').value==='true',width:Number($('width').value),height:Number($('height').value),updatedBy:currentUser.uid,updatedAt:firebase.database.ServerValue.TIMESTAMP};
-  if(d.label.length>40)throw Error('Label must be 40 characters or less.');if(d.enabled&&!d.url)throw Error('Enter the LiveChat URL before activating.');if(d.enabled&&d.accessMode==='site_selected'&&!Object.keys(allowedUids).length)throw Error('Select at least one Site Admin.');if(!Number.isFinite(d.width)||!Number.isFinite(d.height)||d.width<280||d.width>900||d.height<280||d.height>1000)throw Error('Panel size is outside allowed range.');
+  const d={enabled:$('enabled').checked,accessMode:$('accessMode').value,allowedUids,url:validateUrl($('url').value.trim()),label:$('label').value.trim()||'Agent Support',side:$('side').value,openMode:$('openMode').value,showLabel:$('showLabel').value==='true',width:Number($('width').value),height:Number($('height').value),animationMode:$('animationMode').value,animationSpeed:Number($('animationSpeed').value),animationRange:Number($('animationRange').value),updatedBy:currentUser.uid,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+  if(d.label.length>40)throw Error('Label must be 40 characters or less.');if(d.enabled&&!d.url)throw Error('Enter the LiveChat URL before activating.');if(d.enabled&&d.accessMode==='site_selected'&&!Object.keys(allowedUids).length)throw Error('Select at least one Site Admin.');if(!Number.isFinite(d.width)||!Number.isFinite(d.height)||d.width<280||d.width>900||d.height<280||d.height>1000)throw Error('Panel size is outside allowed range.');if(!['off','float'].includes(d.animationMode)||!Number.isFinite(d.animationSpeed)||d.animationSpeed<5||d.animationSpeed>150||!Number.isFinite(d.animationRange)||d.animationRange<10||d.animationRange>250)throw Error('Animation settings are outside allowed range.');
   busy=true;$('reset').disabled=true;
   if(window.NewUI?.setButtonLoading)await window.NewUI.setButtonLoading($('save'),true,{text:'Saving...'});else{$('save').disabled=true;$('save').textContent='Saving...';}
   await firebase.database().ref(PATH).set(d);toast('LiveChat configuration saved');
@@ -92,7 +93,7 @@ $('configForm').addEventListener('submit',async e=>{
  finally{if(busy){if(window.NewUI?.setButtonLoading)await window.NewUI.setButtonLoading($('save'),false);else{$('save').disabled=false;$('save').textContent='Save configuration';}$('reset').disabled=false;busy=false;}}
 });
 async function loadSiteAdmins(user){const token=await user.getIdToken();const response=await fetch(BACKEND+'/api/admin-users',{headers:{Authorization:'Bearer '+token}});const payload=await response.json().catch(()=>({}));if(!response.ok||!payload.ok)throw Error(payload.message||'Cannot load Site Admin list');return(payload.users||[]).filter(u=>u.role==='siteadmin').map(u=>({uid:u.uid,name:String(u.displayName||u.username||u.uid)})).sort((a,b)=>a.name.localeCompare(b.name));}
-function notice(msg,error=false){const el=$('loading');el.hidden=!error;el.textContent=error?msg:'';el.classList.toggle('error',error);}
+function notice(msg,error=false){if(error)toast(msg,false);}
 function init(){
  window.NewUI?.init?.(document);
  if(!window.firebase?.auth||!window.firebase?.database){notice('Firebase is not initialized. Check firebase.js.',true);return;}
@@ -106,7 +107,7 @@ function init(){
    // Site Admin lookup is optional for modes not requiring selection.
    let usersError=null;try{siteUsers=await loadSiteAdmins(user);}catch(err){siteUsers=[];usersError=err;console.warn('Agent Support site admin list:',err);}
    const snap=await firebase.database().ref(PATH).once('value');if(firebase.auth().currentUser?.uid!==user.uid)return;
-   currentUser=user;fill({...defaults,...(snap.val()||{})});$('loading').hidden=true;$('configFields').disabled=false;
+   currentUser=user;fill({...defaults,...(snap.val()||{})});$('configFields').disabled=false;
    if(usersError){toast('Unable to load Site Admin list',false);}
   }catch(err){notice('Unable to load config: '+(err.message||err),true);}
  });
