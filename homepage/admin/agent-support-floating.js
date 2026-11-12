@@ -108,7 +108,7 @@ position(center + offset);
   const style=document.createElement('style');style.textContent=`
     .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none;right:0}
     .asf-root.asf-left{left:0;right:auto}
-    .asf-button{display:flex;align-items:center;gap:8px;min-height:48px;min-width:48px;justify-content:center;padding:10px 13px;border:1px solid #69b1ff;border-radius:999px;background:#fff;color:#1668dc;box-shadow:0 8px 24px #0005;cursor:grab;font:600 13px system-ui,sans-serif;transform:translateX(15px);transition:transform .25s ease}
+    .asf-button{display:flex;align-items:center;gap:8px;height:56px;width:44px;justify-content:center;padding:10px 13px;border:1px solid #69b1ff;border-radius:16px 0px 0px 16px;background:#fff;color:#1668dc;box-shadow:0 8px 24px #0005;cursor:grab;font:600 13px system-ui,sans-serif;transform:translateX(15px);transition:transform .25s ease}
     .asf-left .asf-button{transform:translateX(-15px)}
     .asf-button:hover,.asf-button:focus-visible{transform:translateX(0)}
     .asf-button:active{cursor:grabbing}.asf-icon{width:20px;height:20px;flex:none}.asf-label[hidden],.asf-button[hidden]{display:none!important}
