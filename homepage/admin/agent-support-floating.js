@@ -1,35 +1,43 @@
-/* 5G88 Agent Support Floating - all admin pages */
+/* 5G88 Agent Support Floating - all admin pages, animation enabled */
 (() => {
   'use strict';
-
-  // Jangan buat floating kedua di dalam iframe dashboard.
   if (window.self !== window.top) return;
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(page==='login.html')return;
+  if(window.__agentSupportFloatingInit)return;
+  window.__agentSupportFloatingInit=true;
 
-  // Jangan paparkan floating pada halaman login.
-  const currentPage =
-    (location.pathname.split('/').pop() || 'index.html')
-      .toLowerCase();
-
-  if (currentPage === 'login.html') return;
-
-  // Elakkan initialization berganda.
-  if (window.__agentSupportFloatingInit) return;
-  window.__agentSupportFloatingInit = true;
-  const CONFIG_PATH = 'adminConfig/agentSupportFloating';
-  const defaults = {enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false};
-  let config = {...defaults}, profile = null, uid = null, root = null, panel = null, button = null, unsubscribe = null;
-  const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
-  const safeUrl = value => { try {const u=new URL(value);return u.protocol==='https:' ? u.href : '';} catch {return '';} };
-  const positionKey = () => `5g88.agentSupportFloat.position.v1:${uid}`;
-  function savedY(){try {const n=JSON.parse(localStorage.getItem(positionKey()));return Number.isFinite(n.y)?n.y:null;}catch{return null;}}
-  function saveY(y){if(uid)localStorage.setItem(positionKey(),JSON.stringify({y}));}
-  function position(y){if(!root)return;root.style.top=`${clamp(y,145,Math.max(145,innerHeight-root.offsetHeight-8))}px`;}
-  function closePanel(){if(panel){panel.remove();panel=null;}button?.setAttribute('aria-expanded','false');}
+  const CONFIG_PATH='adminConfig/agentSupportFloating';
+  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:90};
+  let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
+  let raf=0,animationBase=0,animationStart=0,paused=false,dragging=false;
+  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+  const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
+  const positionKey=()=>`5g88.agentSupportFloat.position.v1:${uid}`;
+  const savedY=()=>{try{const v=JSON.parse(localStorage.getItem(positionKey()));return Number.isFinite(v?.y)?v.y:null;}catch{return null;}};
+  const saveY=y=>{if(uid)localStorage.setItem(positionKey(),JSON.stringify({y}));};
+  const limits=()=>({min:Math.min(100,Math.max(0,innerHeight-(root?.offsetHeight||48))),max:Math.max(0,innerHeight-(root?.offsetHeight||48))});
+  function position(y){if(!root)return;const {min,max}=limits();root.style.top=`${clamp(y,min,max)}px`;}
+  function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;}
+  function animationEnabled(){return config.animationMode==='float'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;}
+  function animate(now){
+    if(!root||!animationEnabled()||paused||dragging||panel){raf=0;return;}
+    const {min,max}=limits();
+    const range=Math.min(clamp(+config.animationRange||90,10,250),Math.max(0,max-min));
+    const speed=clamp(+config.animationSpeed||35,5,150);
+    const period=Math.max(1000,2*Math.PI*(range/2)/speed*1000);
+    const offset=range/2*Math.sin((now-animationStart)*2*Math.PI/period);
+    position(clamp(animationBase+offset,min,max));
+    raf=requestAnimationFrame(animate);
+  }
+  function startAnimation(){stopAnimation();if(!root||!animationEnabled()||paused||dragging||panel)return;animationStart=performance.now();raf=requestAnimationFrame(animate);}
+  function closePanel(){if(panel){panel.remove();panel=null;}if(button){button.hidden=false;button.setAttribute('aria-expanded','false');}startAnimation();}
   function openPanel(){
     if(panel){closePanel();return;}
     const url=safeUrl(config.url);if(!url)return;
     if(config.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}
-    panel=document.createElement('section');panel.className='asf-panel';panel.setAttribute('aria-label',config.label);
+    stopAnimation();
+    panel=document.createElement('section');panel.className='asf-panel';panel.setAttribute('aria-label',config.label||'Agent Support');
     panel.style.width=`min(${clamp(+config.width||400,280,900)}px, calc(100vw - 20px))`;
     panel.style.height=`min(${clamp(+config.height||600,280,1000)}px, calc(100dvh - 30px))`;
     panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open in new tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="Agent Support LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';
@@ -37,11 +45,12 @@
     panel.querySelector('iframe').src=url;
     panel.querySelector('.asf-close').onclick=closePanel;
     panel.querySelector('.asf-external').onclick=()=>window.open(url,'_blank','noopener,noreferrer');
+    if(config.side==='left'){panel.style.left='10px';panel.style.right='auto';}
     document.body.appendChild(panel);
-    button?.setAttribute('aria-expanded','true');
+    if(button){button.setAttribute('aria-expanded','true');button.hidden=true;}
   }
   function canAccess(){
-    if(!profile || !config.enabled || profile.active!==true || profile.secondPasswordEnabled!==true || sessionStorage.getItem('5g88.adminSession')!==uid)return false;
+    if(!profile||!config.enabled||profile.active!==true||profile.secondPasswordEnabled!==true||sessionStorage.getItem('5g88.adminSession')!==uid)return false;
     const role=profile.role;
     if(role!=='superadmin'&&role!=='siteadmin')return false;
     switch(config.accessMode||'all'){
@@ -53,41 +62,55 @@
     }
   }
   function render(){
-    closePanel();root?.remove();root=null;button=null;
+    stopAnimation();closePanel();stopAnimation();root?.remove();root=null;button=null;
     if(!uid||!canAccess()||!safeUrl(config.url))return;
-    root=document.createElement('div');root.className='asf-root';root.style[config.side==='left'?'left':'right']='14px';
-    button=document.createElement('button');button.className='asf-button';button.type='button';button.setAttribute('aria-label',config.label||'Agent Support');button.setAttribute('aria-expanded','false');
-    button.innerHTML='<span class="asf-icon" aria-hidden="true">☏</span><span class="asf-label"></span>';
+    root=document.createElement('div');root.className='asf-root';
+    root.classList.add(config.side==='left'?'asf-left':'asf-right');
+    button=document.createElement('button');button.className='asf-button';button.type='button';
+    button.setAttribute('aria-label',config.label||'Agent Support');button.setAttribute('aria-expanded','false');
+    button.innerHTML='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg><span class="asf-label"></span>';
     button.querySelector('.asf-label').textContent=config.label||'Agent Support';
     if(!config.showLabel)button.querySelector('.asf-label').hidden=true;
     root.appendChild(button);document.body.appendChild(root);
-    position(savedY()??Math.round(innerHeight*.58));
-    let drag=null, moved=false;
+    animationBase=savedY()??Math.round(innerHeight*.58);position(animationBase);
+    button.addEventListener('pointerenter',()=>{paused=true;stopAnimation();});
+    button.addEventListener('pointerleave',()=>{if(!dragging){animationBase=root.getBoundingClientRect().top;paused=false;startAnimation();}});
+    let drag=null,suppressClick=false;
     button.addEventListener('pointerdown',e=>{
       if(e.button!==0)return;
-      drag={startY:e.clientY,top:root.getBoundingClientRect().top};moved=false;
+      drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};dragging=true;stopAnimation();
       button.setPointerCapture(e.pointerId);
     });
     button.addEventListener('pointermove',e=>{
       if(!drag)return;
-      if(Math.abs(e.clientY-drag.startY)>5)moved=true;
-      if(moved){position(drag.top+e.clientY-drag.startY);e.preventDefault();}
+      if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;
+      if(drag.moved){position(drag.top+e.clientY-drag.startY);e.preventDefault();}
     });
-    button.addEventListener('pointerup',()=>{if(drag&&moved)saveY(root.getBoundingClientRect().top);drag=null;});
-    button.addEventListener('pointercancel',()=>{drag=null;});
-    button.addEventListener('click',e=>{if(moved){e.preventDefault();moved=false;return;}openPanel();});
+    button.addEventListener('pointerup',()=>{
+      if(!drag)return;
+      if(drag.moved){animationBase=root.getBoundingClientRect().top;saveY(animationBase);suppressClick=true;}
+      drag=null;dragging=false;
+      if(!button.matches(':hover')){paused=false;startAnimation();}
+    });
+    button.addEventListener('pointercancel',()=>{drag=null;dragging=false;paused=false;startAnimation();});
+    button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel();});
+    startAnimation();
   }
   const style=document.createElement('style');style.textContent=`
-    .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none}
-    .asf-button{display:flex;align-items:center;gap:8px;min-height:48px;min-width:48px;justify-content:center;padding:10px 13px;border:1px solid #69b1ff;border-radius:999px;background:#1668dc;color:#fff;box-shadow:0 8px 24px #0005;cursor:grab;font:600 13px system-ui,sans-serif}
-    .asf-button:active{cursor:grabbing}.asf-icon{font-size:22px;line-height:1}.asf-label[hidden]{display:none}
-    .asf-panel{position:fixed;z-index:21001;right:70px;bottom:14px;display:flex;flex-direction:column;background:#fff;border:1px solid #91caff;border-radius:12px;overflow:hidden;box-shadow:0 14px 45px #0007}
+    .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none;right:0}
+    .asf-root.asf-left{left:0;right:auto}
+    .asf-button{display:flex;align-items:center;gap:8px;min-height:48px;min-width:48px;justify-content:center;padding:10px 13px;border:1px solid #69b1ff;border-radius:999px;background:#fff;color:#1668dc;box-shadow:0 8px 24px #0005;cursor:grab;font:600 13px system-ui,sans-serif;transform:translateX(15px);transition:transform .25s ease}
+    .asf-left .asf-button{transform:translateX(-15px)}
+    .asf-button:hover,.asf-button:focus-visible{transform:translateX(0)}
+    .asf-button:active{cursor:grabbing}.asf-icon{width:20px;height:20px;flex:none}.asf-label[hidden],.asf-button[hidden]{display:none!important}
+    .asf-panel{position:fixed;z-index:21001;right:10px;bottom:10px;display:flex;flex-direction:column;background:#fff;border:1px solid #91caff;border-radius:12px;overflow:hidden;box-shadow:0 14px 45px #0007}
     .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:#fff;border:0;cursor:pointer;font-size:22px;padding:3px 8px}
     .asf-panel iframe{flex:1;width:100%;border:0;background:#fff}
     @media(max-width:600px){.asf-panel{right:10px;left:10px;bottom:10px;width:auto!important}}
+    @media(prefers-reduced-motion:reduce){.asf-button{transition:none}}
   `;document.head.appendChild(style);
-  window.addEventListener('resize',()=>{if(root)position(root.getBoundingClientRect().top);});
+  window.addEventListener('resize',()=>{if(root){animationBase=clamp(animationBase,limits().min,limits().max);position(animationBase);startAnimation();}});
   function start(){
     if(!window.firebase?.auth||!window.firebase?.database)return;
     firebase.auth().onAuthStateChanged(user=>{
@@ -95,15 +118,13 @@
       uid=user?.uid||null;profile=null;config={...defaults};render();
       if(!uid)return;
       const authUid=uid;
-      firebase.database().ref(`adminUsers/${authUid}`).on('value', profileHandler, profileError);
-      function profileHandler(snap){if(uid!==authUid)return;profile=snap.val()||null;render();}
-      function profileError(err){console.error('Agent Support profile read:',err);profile=null;render();}
-      const previousUnsubscribe=unsubscribe;
-      unsubscribe=()=>{firebase.database().ref(`adminUsers/${authUid}`).off('value',profileHandler);previousUnsubscribe?.();};
-      const ref=firebase.database().ref(CONFIG_PATH);
-      const handler=snap=>{config={...defaults,...(snap.val()||{})};render();};
-      ref.on('value',handler,err=>console.error('Agent Support config read:',err));
-      const offProfile=unsubscribe;unsubscribe=()=>{ref.off('value',handler);offProfile?.();};
+      const profileRef=firebase.database().ref(`adminUsers/${authUid}`);
+      const profileHandler=snap=>{if(uid!==authUid)return;profile=snap.val()||null;render();};
+      profileRef.on('value',profileHandler,err=>{console.error('Agent Support profile read:',err);profile=null;render();});
+      const configRef=firebase.database().ref(CONFIG_PATH);
+      const configHandler=snap=>{if(uid!==authUid)return;config={...defaults,...(snap.val()||{})};render();};
+      configRef.on('value',configHandler,err=>console.error('Agent Support config read:',err));
+      unsubscribe=()=>{profileRef.off('value',profileHandler);configRef.off('value',configHandler);};
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
