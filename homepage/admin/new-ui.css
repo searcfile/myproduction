@@ -47,6 +47,7 @@ html[data-admin-theme="light"] {
 
   --tab-bg:rgba(255,255,255,.02);
    
+  --dropdown-color:#1677ff;
   --dropdown-bg:#ffffff;
   --dropdown-bg-active:#e6f4ff;
 
@@ -100,6 +101,7 @@ html[data-admin-theme="light"] {
    
   --tab-bg:rgba(255,255,255,.04);
    
+  --dropdown-color:rgba(255,255,255,.85);
   --dropdown-bg:#1f1f1f;
   --dropdown-bg-active:#15325b;
 
