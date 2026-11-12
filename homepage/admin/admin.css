@@ -765,12 +765,13 @@ margin-top: var(--admin-header-height, 64px) !important;
   .btn-cpw:hover{border:1px solid var(--gold-hover); color:var(--gold-hover);}
   .btn-cpw:active{border:1px solid var(--gold-active); color:var(--gold-active);}
   /* Empty state */
-#mainContainer{
+/* Empty state */
+#mainContainer {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 136px);
-  min-height: calc(100vh - 136px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
 }
 /* NOTICE MODAL */
