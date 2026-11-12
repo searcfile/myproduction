@@ -5152,21 +5152,6 @@ body .header {
   fill: currentColor;
 }
 
-/* Light theme */
-body.light-theme
-.admin-workspace-tab-card
-.admin-workspace-more-button:hover {
-  background: rgba(22,104,220,.12);
-  color: #1668dc;
-}
-
-
-body.light-theme
-.admin-workspace-tab-card
-.admin-workspace-more-button {
-  background: #fff;
-  border-color: #d9d9d9;
-}
 
 /* Mobile */
 @media (max-width: 600px) {
