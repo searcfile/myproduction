@@ -50,7 +50,7 @@ html[data-admin-theme="light"] {
   --dropdown-color:#1677ff;
   --dropdown-color-hover:#1677ff;
   --dropdown-bg:#ffffff;
-  --dropdown-bg-hover:#eff6ff00;
+  --dropdown-bg-hover:#eff6ff;
   --dropdown-bg-active:#e6f4ff;
 
   --caret-color:rgba(0,0,0,.88);
