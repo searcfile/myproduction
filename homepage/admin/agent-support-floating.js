@@ -398,11 +398,9 @@ right: 3px;
     opacity 200ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
-
   .asf-button:not(:disabled):not([data-dragging="true"]):hover {
     width: 160px;
-
-    border-color: #15325b;
+    border-color: var(--floating-border);
     box-shadow: -4px 6px 24px rgba(15,23,42,.16);
   }
 
