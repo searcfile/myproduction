@@ -2189,11 +2189,13 @@ body.tab-dragging-active *{
   background:
     var(--dropdown-bg-hover) !important;
 
-  color:var(--text-main);
+  color:var(--dropdown-color-hover);
 }
 
 .tab-search-item:active{
-  color:var(--gold-active);
+    background:
+    var(--dropdown-bg-hover) !important;
+  color:var(--dropdown-color-hover);
 }
 /* ACTIVE MODULE */
 
