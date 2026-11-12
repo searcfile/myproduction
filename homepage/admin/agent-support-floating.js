@@ -66,10 +66,10 @@ position(center + offset);
     panel.querySelector('.asf-close').onclick=closePanel;
     panel.querySelector('.asf-external').onclick=()=>window.open(url,'_blank','noopener,noreferrer');
     if (config.side === 'left') {
-  panel.style.left = '10px';
+  panel.style.left = '12px';
   panel.style.right = 'auto';
 } else {
-  panel.style.right = '10px';
+  panel.style.right = '12px';
   panel.style.left = 'auto';
 }
     document.body.appendChild(panel);
