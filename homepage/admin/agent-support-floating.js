@@ -28,28 +28,19 @@ function updateAsfBadge() {
   badge.hidden = count === 0 || !!panel;
 }
 
+
 function countAsfUnread() {
   let total = 0;
 
-  Object.entries(asfUnreadUsers).forEach(([sid, data]) => {
-    // Hanya channel admin
-    if (!sid.startsWith('admin_')) return;
+  Object.values(asfUnreadUsers).forEach(data => {
+    const unreadCount = Number(data?.unreadCountForAdmin || 0);
+    const hasUnread = data?.unreadForAdmin === true;
 
-    const adminUid = sid.slice(6);
-
-    // Jangan kira mesej sendiri
-    if (adminUid === uid) return;
-
-    // Hanya mesej daripada Site Admin
-    if (asfAdminProfiles[adminUid]?.role !== 'siteadmin') {
-      return;
+    if (unreadCount > 0) {
+      total += unreadCount;
+    } else if (hasUnread) {
+      total += 1;
     }
-
-    const count = Number(data?.unreadCountForAdmin || 0);
-
-    total += count > 0
-      ? count
-      : data?.unreadForAdmin === true ? 1 : 0;
   });
 
   asfUnreadCount = total;
@@ -344,8 +335,8 @@ transition:
 
 .asf-badge {
   position: absolute;
-  top: -8px;
-  right: 5px;
+top: -8px;
+right: 3px;
 
   min-width: 22px;
   height: 22px;
@@ -479,7 +470,19 @@ transition:
 };
       profileRef.on('value',profileHandler,err=>{console.error('Agent Support profile read:',err);profile=null;render();});
       const configRef=firebase.database().ref(CONFIG_PATH);
-      const configHandler=snap=>{if(uid!==authUid)return;config={...defaults,...(snap.val()||{})};render();};
+      
+const configHandler = snap => {
+  if (uid !== authUid) return;
+
+  config = {
+    ...defaults,
+    ...(snap.val() || {})
+  };
+
+  render();
+  startAsfUnreadListener();
+};
+
       configRef.on('value',configHandler,err=>console.error('Agent Support config read:',err));
       unsubscribe=()=>{profileRef.off('value',profileHandler);configRef.off('value',configHandler);};
     });
