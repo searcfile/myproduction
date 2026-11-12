@@ -25,7 +25,109 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
 .cfg-notice.error{border-color:#dc4352;color:#ff8f98}
 .cfg-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 18px;background:#1d304b;color:white;border:1px solid #3c89e8;border-radius:9px;z-index:9999;box-shadow:0 6px 20px #0005}
 @media(max-width:650px){body{padding:10px}.cfg-grid{grid-template-columns:1fr}.cfg-wide{grid-column:auto}.cfg-card{padding:16px}.cfg-actions .cfg-btn{flex:1}}
-.cfg-layout{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:14px;align-items:start}.cfg-main{min-width:0}.cfg-nav{position:sticky;top:12px;background:var(--tx-surface,#152237);border:1px solid var(--tx-border,#2b3e5b);border-radius:10px;padding:8px;display:grid;gap:5px}.cfg-nav-btn{width:100%;text-align:left;border:1px solid transparent;border-radius:7px;padding:11px 9px;color:var(--tx-ink,#fff);background:transparent;cursor:pointer;font:600 12px 'Source Sans 3',Arial,sans-serif}.cfg-nav-btn:hover{background:var(--tx-surface-soft,#22344c)}.cfg-nav-btn.active{color:#8fc5ff;background:#173b61;border-color:#2c6db0}.cfg-nav-btn span{margin-right:5px}@media(max-width:750px){.cfg-layout{grid-template-columns:1fr}.cfg-nav{grid-row:1;position:static;display:flex}.cfg-nav-btn{flex:1;text-align:center}}
+
+/* ==========================================
+   AGENT SUPPORT CONFIG - LEFT SIDEBAR
+   ========================================== */
+
+.cfg-layout {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.cfg-main {
+  min-width: 0;
+}
+
+/* Card menu di sebelah kiri */
+.cfg-nav {
+  grid-column: 1;
+  grid-row: 1;
+
+  position: static;
+  align-self: stretch;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 5px;
+
+  min-height: 100%;
+  padding: 8px;
+
+  background: var(--tx-surface, #152237);
+  border: 1px solid var(--tx-border, #2b3e5b);
+  border-radius: 12px;
+}
+
+/* Card form di sebelah kanan */
+.cfg-main {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Butang menu */
+.cfg-nav-btn {
+  width: 100%;
+  flex: 0 0 auto;
+  text-align: left;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 11px 9px;
+
+  color: var(--tx-ink, #fff);
+  background: transparent;
+
+  cursor: pointer;
+  font: 600 12px 'Source Sans 3', Arial, sans-serif;
+}
+
+.cfg-nav-btn:hover {
+  background: var(--tx-surface-soft, #22344c);
+}
+
+.cfg-nav-btn.active {
+  color: #8fc5ff;
+  background: #173b61;
+  border-color: #2c6db0;
+}
+
+.cfg-nav-btn span {
+  margin-right: 5px;
+}
+
+/* ==========================================
+   RESPONSIVE - MOBILE
+   ========================================== */
+
+@media (max-width: 750px) {
+  .cfg-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .cfg-nav {
+    grid-column: 1;
+    grid-row: 1;
+
+    min-height: 0;
+    flex-direction: row;
+    align-self: auto;
+  }
+
+  .cfg-main {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .cfg-nav-btn {
+    flex: 1 1 0;
+    text-align: center;
+  }
+}
 </style>
 </head>
 <body>
