@@ -132,7 +132,17 @@ button.addEventListener('pointerup',()=>{
     startAnimation();
   }
   const style=document.createElement('style');style.textContent=`
-    .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none;right:0;left:auto;width:44px;height:56px;overflow:visible}
+.asf-root{
+  position:fixed;
+  z-index:50000 !important;
+  touch-action:none;
+  user-select:none;
+  right:0;
+  left:auto;
+  width:44px;
+  height:56px;
+  overflow:visible;
+}
     .asf-root.asf-left{left:0;right:auto}
     .asf-button {
   position: absolute;
@@ -219,8 +229,20 @@ transition:
     .asf-button:focus-visible{outline:2px solid #1668dc;outline-offset:2px}
     .asf-button:active{cursor:grabbing}
     .asf-button[hidden]{display:none!important}
-    .asf-panel{position:fixed;z-index:21001;right:10px;bottom:10px;display:flex;flex-direction:column;background:#fff;border:1px solid #91caff;border-radius:12px;overflow:hidden;box-shadow:0 14px 45px #0007}
-    .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
+.asf-panel{
+  position:fixed;
+  z-index:50001 !important;
+  right:10px;
+  bottom:10px;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  border:1px solid #91caff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 14px 45px #0007;
+}
+.asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:#fff;border:0;cursor:pointer;font-size:22px;padding:3px 8px}
     .asf-panel iframe{flex:1;width:100%;border:0;background:#fff}
     @media(max-width:600px){.asf-panel{right:10px;left:10px;bottom:10px;width:auto!important}}
