@@ -109,7 +109,7 @@ button.querySelector('.asf-label').textContent =
   const style=document.createElement('style');style.textContent=`
     .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none;right:0;left:auto;width:44px;height:56px;overflow:visible}
     .asf-root.asf-left{left:0;right:auto}
-    .asf-button{position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;box-sizing:border-box;width:44px;height:56px;padding:0 12px;overflow:hidden;white-space:nowrap;background:#1f1f1f;color:#1668dc;border:1px solid #303030;border-right:0;border-radius:16px 0 0 16px;box-shadow:-3px 4px 18px rgba(15,23,42,.12);cursor:grab;font:600 13px system-ui,sans-serif;transform:none;transition:width 200ms ease,box-shadow 200ms ease,border-color 200ms ease}
+    .asf-button{position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;box-sizing:border-box;width:44px;height:56px;padding:0;overflow:hidden;white-space:nowrap;background:#1f1f1f;color:#1668dc;border:1px solid #303030;border-right:0;border-radius:16px 0 0 16px;box-shadow:-3px 4px 18px rgba(15,23,42,.12);cursor:grab;font:600 13px system-ui,sans-serif;transform:none;transition:width 200ms ease,box-shadow 200ms ease,border-color 200ms ease}
     .asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
     .asf-icon {
     width: 20px;
