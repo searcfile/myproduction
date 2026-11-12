@@ -96,12 +96,26 @@ button.querySelector('.asf-label').textContent =
       if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;
       if(drag.moved){position(drag.top+e.clientY-drag.startY);e.preventDefault();}
     });
-    button.addEventListener('pointerup',()=>{
-      if(!drag)return;
-      if(drag.moved){animationBase=root.getBoundingClientRect().top;saveY(animationBase);suppressClick=true;}
-      drag=null;dragging=false;
-      if(!button.matches(':hover')){paused=false;startAnimation();}
-    });
+button.addEventListener('pointerup',()=>{
+  if(!drag)return;
+
+  if(drag.moved){
+    animationBase=root.getBoundingClientRect().top;
+    saveY(animationBase);
+    suppressClick=true;
+  }
+
+  // Penting: reset status dragging selepas mouse dilepaskan.
+  delete button.dataset.dragging;
+
+  drag=null;
+  dragging=false;
+
+  if(!button.matches(':hover')){
+    paused=false;
+    startAnimation();
+  }
+});
     button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;dragging=false;paused=false;startAnimation();});
     button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel();});
     startAnimation();
@@ -141,10 +155,10 @@ button.querySelector('.asf-label').textContent =
 
   transform: none;
 
-  transition:
-    width 200ms ease,
-    box-shadow 200ms ease,
-    border-color 200ms ease;
+transition:
+  width 300ms cubic-bezier(.22,1,.36,1),
+  box-shadow 300ms ease,
+  border-color 300ms ease;
 }
     .asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
 .asf-icon {
@@ -160,31 +174,33 @@ button.querySelector('.asf-label').textContent =
 .asf-label {
   display: inline-block;
   flex: 0 0 auto;
+
   max-width: 0;
   overflow: hidden;
   opacity: 0;
+
   white-space: nowrap;
   color: #fff;
+
   font-size: 13px;
   font-weight: 600;
   line-height: 1;
+
   transition:
-    max-width 200ms ease,
-    opacity 150ms ease;
+    max-width 300ms cubic-bezier(.22,1,.36,1),
+    opacity 200ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
 
   .asf-button:not(:disabled):not([data-dragging="true"]):hover {
-    width: max-content;
-    min-width: 136px;
-    padding-right: 16px;
+    width: 160px;
 
     border-color: #15325b;
     box-shadow: -4px 6px 24px rgba(15,23,42,.16);
   }
 
   .asf-button:not(:disabled):not([data-dragging="true"]):hover .asf-label {
-    max-width: 180px;
+    max-width: 110px;
     opacity: 1;
   }
 
