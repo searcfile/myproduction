@@ -65,7 +65,6 @@ position(center + offset);
     panel.querySelector('iframe').src=url;
     panel.querySelector('.asf-close').onclick=closePanel;
     panel.querySelector('.asf-external').onclick=()=>window.open(url,'_blank','noopener,noreferrer');
-    if(config.side==='left'){panel.style.left='10px';panel.style.right='auto';}
     document.body.appendChild(panel);
     if(button){button.setAttribute('aria-expanded','true');button.hidden=true;}
   }
@@ -229,23 +228,39 @@ transition:
     .asf-button:focus-visible{outline:2px solid #1668dc;outline-offset:2px}
     .asf-button:active{cursor:grabbing}
     .asf-button[hidden]{display:none!important}
-.asf-panel{
-  position:fixed;
-  z-index:50001 !important;
-  right:10px;
-  bottom:10px;
-  display:flex;
-  flex-direction:column;
-  background:#fff;
-  border:1px solid #91caff;
-  border-radius:12px;
-  overflow:hidden;
-  box-shadow:0 14px 45px #0007;
+.asf-panel {
+  position: fixed;
+  /* Center horizontal + vertical */
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  z-index: 50001 !important;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #91caff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 14px 45px #0007;
 }
 .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:#fff;border:0;cursor:pointer;font-size:22px;padding:3px 8px}
     .asf-panel iframe{flex:1;width:100%;border:0;background:#fff}
-    @media(max-width:600px){.asf-panel{right:10px;left:10px;bottom:10px;width:auto!important}}
+@media (max-width: 600px) {
+  .asf-panel {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 30px);
+
+    transform: translate(-50%, -50%);
+  }
+}
     @media(prefers-reduced-motion:reduce){.asf-button,.asf-label{transition:none}}
   `;document.head.appendChild(style);
   window.addEventListener('resize',()=>{if(root){animationBase=clamp(animationBase,limits().min,limits().max);position(animationBase);startAnimation();}});
