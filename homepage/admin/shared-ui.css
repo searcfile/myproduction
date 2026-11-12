@@ -3147,7 +3147,7 @@ margin-top: var(--admin-header-height, 64px) !important;
 
 .admin-workspace-more-item.active
 .admin-workspace-more-name{
-  color:var(--text-main);
+  color:var(--dropdown-color);
   font-weight:600;
 }
 
