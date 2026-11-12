@@ -103,34 +103,159 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
    RESPONSIVE - MOBILE
    ========================================== */
 
+
+/* ==========================================
+   5G88 - RESPONSIVE SLIDE SIDEBAR
+   ========================================== */
+
+/* Desktop */
+.cfg-sidebar-toggle,
+.cfg-sidebar-overlay {
+  display: none;
+}
+
 @media (max-width: 750px) {
-  .cfg-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+
+  .cfg-wrap {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 10px 12px;
   }
 
-  .cfg-nav {
-    grid-column: 1;
-    grid-row: 1;
-
-    min-height: 0;
-    flex-direction: row;
-    align-self: auto;
+  .cfg-layout {
+    display: block;
   }
 
   .cfg-main {
-    grid-column: 1;
-    grid-row: 2;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Tombol kecil di tepi kiri */
+  .cfg-sidebar-toggle {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 52px;
+    padding: 0;
+
+    background: #173b61;
+    color: #8fc5ff;
+    border: 1px solid #2c6db0;
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10003;
+
+    transition: left .3s ease;
+  }
+
+  /* Background gelap apabila sidebar terbuka */
+  .cfg-sidebar-overlay:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: 10001;
+  }
+
+  /* Sidebar tersembunyi di kiri */
+  .cfg-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+
+    width: min(290px, 85vw) !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 65px 12px 16px !important;
+    gap: 6px !important;
+
+    background: var(--tx-surface, #152237);
+    border: 0 !important;
+    border-right: 1px solid var(--tx-border, #2b3e5b) !important;
+    border-radius: 0 !important;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform .3s ease,
+      visibility .3s ease;
+
+    z-index: 10002;
+  }
+
+  /* Sidebar terbuka */
+  .cfg-nav.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  /* Tombol ikut tepi sidebar */
+  .cfg-sidebar-toggle.is-open {
+    left: min(290px, 85vw);
   }
 
   .cfg-nav-btn {
-    flex: 1 1 0;
-    text-align: center;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    min-height: 42px;
+    text-align: left !important;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg-nav,
+  .cfg-sidebar-toggle {
+    transition: none !important;
+  }
+}
+
 </style>
 </head>
 <body>
+
+<!-- MOBILE CONFIG SIDEBAR -->
+<button
+  type="button"
+  id="cfgSidebarToggle"
+  class="cfg-sidebar-toggle"
+  aria-label="Open config sidebar"
+  aria-controls="cfgSidebar"
+  aria-expanded="false"
+>
+  ❯
+</button>
+
+<div
+  id="cfgSidebarOverlay"
+  class="cfg-sidebar-overlay"
+  hidden
+></div>
+
 <main class="cfg-wrap"><div class="cfg-layout"><div class="cfg-main"><form id="agentForm" novalidate><section class="cfg-card" data-card="agent"><h2>Floating LiveChat — Super Admin / Agent Support</h2><fieldset id="agentFields" disabled style="border:0;margin:0;padding:0;min-width:0"><div class="cfg-grid">
         <div class="cfg-field cfg-wide"><span>Agent Support floating status</span><div class="cfg-toggle-row"><label class="shared-active-switch"><input type="checkbox" id="enabled" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob" aria-hidden="true"></span></span></label><span class="muted cfg-hint">Show floating button</span></div></div>
         <label class="cfg-field cfg-wide"><span>Access permission</span><select id="accessMode" data-shared-dropdown><option value="super_only">Super Admin only</option></select></label>
@@ -159,7 +284,7 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
         <label class="cfg-field cfg-wide"><span>Button movement animation</span><select id="siteAnimationMode" data-shared-dropdown><option value="off">Off (Static)</option><option value="float">Smooth Up &amp; Down</option></select></label>
         <label class="cfg-field"><span>Animation speed (px/second)</span><input id="siteAnimationSpeed" type="number" min="5" max="150" step="5" value="35"><small class="muted cfg-hint">Higher number = faster movement.</small></label>
         <label class="cfg-field"><span>Movement distance (px)</span><input id="siteAnimationRange" type="number" min="10" max="700" step="10" value="400"><small class="muted cfg-hint">Vertical distance from top to bottom.</small></label>
-        </div><div class="cfg-actions"><button type="button" class="btn-cancel-new" id="siteReset">Reset fields</button><button type="submit" class="btn-primary-new" id="siteSave">Save Site Admin</button></div></fieldset></section></form></div><aside class="cfg-nav"><button type="button" class="cfg-nav-btn active" data-target="agent"><span>▣</span> Agent Support</button><button type="button" class="cfg-nav-btn" data-target="site"><span>▤</span> Site Admin</button></aside></div></main>
+        </div><div class="cfg-actions"><button type="button" class="btn-cancel-new" id="siteReset">Reset fields</button><button type="submit" class="btn-primary-new" id="siteSave">Save Site Admin</button></div></fieldset></section></form></div><aside class="cfg-nav" id="cfgSidebar"><button type="button" class="cfg-nav-btn active" data-target="agent"><span>▣</span> Agent Support</button><button type="button" class="cfg-nav-btn" data-target="site"><span>▤</span> Site Admin</button></aside></div></main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -191,6 +316,75 @@ function validate(d,type){if(d.enabled&&!d.url)throw Error('Enter the LiveChat U
 async function save(type,e){e.preventDefault();if(!currentUser||busy)return;try{const d=collect(type);validate(d,type);busy=true;const reset=$(type==='site'?'siteReset':'reset'),button=$(type==='site'?'siteSave':'save');reset.disabled=true;button.disabled=true;button.textContent='Saving...';try{await firebase.database().ref(type==='site'?SITE_PATH:AGENT_PATH).update(d);configs[type]={...d};toast(type==='site'?'Site Admin LiveChat saved':'Agent Support saved');}finally{reset.disabled=false;button.disabled=false;button.textContent=type==='site'?'Save Site Admin':'Save Agent Support';busy=false;}}catch(err){toast(err.message||'Save failed',false);}}
 for(const type of ['agent','site']){field(type,'accessMode').addEventListener('change',()=>renderUsers(type));$(type==='site'?'siteUserList':'userList').addEventListener('change',e=>{if(e.target.matches('input[type="checkbox"]')){configs[type].allowedUids??={};configs[type].allowedUids[e.target.value]=e.target.checked;}});$(type==='site'?'siteReset':'reset').onclick=()=>{if(!currentUser||busy)return;fill(type,type==='site'?siteDefaults:agentDefaults);toast('Fields reset. Click Save to apply changes.');};$(type==='site'?'siteForm':'agentForm').addEventListener('submit',e=>save(type,e));}
 document.querySelectorAll('.cfg-nav-btn').forEach(btn=>btn.addEventListener('click',()=>{const type=btn.dataset.target;document.querySelectorAll('.cfg-nav-btn').forEach(b=>b.classList.toggle('active',b===btn));$('agentForm').hidden=type!=='agent';$('siteForm').hidden=type!=='site';sync();}));
+
+/* ==========================================
+   MOBILE CONFIG SIDEBAR
+   ========================================== */
+
+const cfgSidebar = document.getElementById('cfgSidebar');
+const cfgSidebarToggle = document.getElementById('cfgSidebarToggle');
+const cfgSidebarOverlay = document.getElementById('cfgSidebarOverlay');
+
+const cfgMobileQuery = window.matchMedia('(max-width: 750px)');
+
+function setCfgSidebar(open) {
+  if (!cfgSidebar || !cfgSidebarToggle || !cfgSidebarOverlay) {
+    return;
+  }
+
+  const shouldOpen = Boolean(open && cfgMobileQuery.matches);
+
+  cfgSidebar.classList.toggle('is-open', shouldOpen);
+  cfgSidebarToggle.classList.toggle('is-open', shouldOpen);
+
+  cfgSidebarToggle.textContent = shouldOpen ? '❮' : '❯';
+
+  cfgSidebarToggle.setAttribute(
+    'aria-expanded',
+    String(shouldOpen)
+  );
+
+  cfgSidebarToggle.setAttribute(
+    'aria-label',
+    shouldOpen ? 'Close config sidebar' : 'Open config sidebar'
+  );
+
+  cfgSidebarOverlay.hidden = !shouldOpen;
+}
+
+// Klik tombol kecil
+cfgSidebarToggle?.addEventListener('click', () => {
+  setCfgSidebar(!cfgSidebar.classList.contains('is-open'));
+});
+
+// Klik background luar sidebar
+cfgSidebarOverlay?.addEventListener('click', () => {
+  setCfgSidebar(false);
+});
+
+// Pilih menu Agent Support / Site Admin
+cfgSidebar?.querySelectorAll('.cfg-nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setCfgSidebar(false);
+  });
+});
+
+// Tekan Escape untuk tutup
+document.addEventListener('keydown', event => {
+  if (
+    event.key === 'Escape' &&
+    cfgSidebar?.classList.contains('is-open')
+  ) {
+    setCfgSidebar(false);
+    cfgSidebarToggle?.focus();
+  }
+});
+
+// Tutup apabila kembali ke desktop
+cfgMobileQuery.addEventListener('change', () => {
+  setCfgSidebar(false);
+});
+
 async function loadSiteAdmins(user){const token=await user.getIdToken();const response=await fetch(BACKEND+'/api/admin-users',{headers:{Authorization:'Bearer '+token}});const payload=await response.json().catch(()=>({}));if(!response.ok||!payload.ok)throw Error(payload.message||'Cannot load Site Admin list');return(payload.users||[]).filter(u=>u.role==='siteadmin').map(u=>({uid:u.uid,name:String(u.displayName||u.username||u.uid)})).sort((a,b)=>a.name.localeCompare(b.name));}
 function init(){window.NewUI?.init?.(document);if(!window.firebase?.auth||!window.firebase?.database){toast('Firebase is not initialized.',false);return;}firebase.auth().onAuthStateChanged(async user=>{currentUser=null;$('agentFields').disabled=true;$('siteFields').disabled=true;if(!user){toast('Please sign in through the admin dashboard.',false);return;}try{const profile=(await firebase.database().ref(`adminUsers/${user.uid}`).once('value')).val();if(firebase.auth().currentUser?.uid!==user.uid)return;if(profile?.role!=='superadmin'||sessionStorage.getItem('5g88.adminSession')!==user.uid){toast('Access denied: Super Admin only.',false);return;}let usersError=null;try{siteUsers=await loadSiteAdmins(user);}catch(err){siteUsers=[];usersError=err;console.warn('Site Admin list:',err);}const [agentSnap,siteSnap]=await Promise.all([firebase.database().ref(AGENT_PATH).once('value'),firebase.database().ref(SITE_PATH).once('value')]);if(firebase.auth().currentUser?.uid!==user.uid)return;currentUser=user;const legacy=agentSnap.val()||{};fill('agent',{...agentDefaults,...legacy,accessMode:'super_only'});const siteData=siteSnap.exists()?siteSnap.val():{...siteDefaults,enabled:!!legacy.siteEnabled,accessMode:legacy.siteAccessMode||'site_all',allowedUids:legacy.siteAllowedUids||{},url:legacy.siteUrl||'',label:legacy.siteLabel||'LiveChat',side:legacy.siteSide||'right'};fill('site',siteData);$('agentFields').disabled=false;$('siteFields').disabled=false;if(usersError)toast('Unable to load Site Admin list',false);}catch(err){toast('Unable to load config: '+(err.message||err),false);}});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
