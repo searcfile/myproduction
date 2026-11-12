@@ -1363,35 +1363,56 @@ html.asf-embed-mode .send-box {
   flex-shrink: 0 !important;
 }
 
+
 /* ==========================================
-   FLOATING MODE - HIDE EXTRA ADMIN UI
+   5G88 LIVECHAT - FLOATING ONLY
    ========================================== */
 
-/* Dalam floating, hanya paparkan main LiveChat */
-html.asf-embed-mode body > :not(main):not(script):not(audio) {
+/* Sembunyikan dashboard header dan tabbar */
+html.asf-embed-mode #homepageSharedShell,
+html.asf-embed-mode #homepageSharedShell *,
+html.asf-embed-mode #g88HeaderPicker {
   display: none !important;
 }
 
-/* Pastikan main menjadi satu-satunya layout */
+/* Buang ruang dashboard */
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* LiveChat memenuhi iframe */
 html.asf-embed-mode body > main {
   position: fixed !important;
   inset: 0 !important;
   z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
   width: 100% !important;
   height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: hidden !important;
 }
 
-/* Chat memenuhi keseluruhan iframe */
 html.asf-embed-mode body > main > .chat-wrapper {
+  flex: 1 1 auto !important;
   width: 100% !important;
-  height: 100% !important;
   max-width: none !important;
+  height: 100% !important;
   max-height: none !important;
   min-height: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
 }
 
 </style>
@@ -1768,24 +1789,33 @@ let isMarkingUserRead = false;
 
 
 
+
 function isLivechatVisible() {
   // Jangan mark read jika browser tab tersembunyi.
   if (document.visibilityState !== "visible") {
     return false;
   }
 
-  // Semak halaman yang benar-benar aktif.
+  // Floating LiveChat dianggap aktif apabila iframe kelihatan.
+  const isFloating =
+    new URLSearchParams(window.location.search)
+      .get("floating") === "1";
+
+  if (isFloating) {
+    return true;
+  }
+
   const currentFile = window.location.pathname
     .split("/")
     .pop()
     .toLowerCase();
 
-  // Untuk halaman LiveChat yang dibuka secara langsung.
+  // LiveChat dibuka secara langsung.
   if (window.parent === window) {
     return currentFile === "livechat.html";
   }
 
-  // Untuk LiveChat di dalam iframe.
+  // LiveChat dibuka dalam tab dashboard.
   try {
     if (
       typeof window.parent.isLivechatTabActive === "function"
@@ -1798,6 +1828,7 @@ function isLivechatVisible() {
 
   return false;
 }
+
 
 
 
