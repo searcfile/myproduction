@@ -8930,7 +8930,21 @@ window.initTabBarSearch =
     );
   };
 
+// ==========================================
+// AGENT SUPPORT - OPEN IN ADMIN TAB
+// ==========================================
+window.addEventListener('5g88:open-admin-tab', (event) => {
+  const { file } = event.detail || {};
 
+  if (file !== 'livechat-support.html') return;
+
+  // Gunakan sistem tabbar admin asal
+  window.addTab(
+    'Agent Support',
+    './livechat-support.html',
+    { group: 'standalone-top' }
+  );
+});
   /* ==========================================================
      START
      ========================================================== */
