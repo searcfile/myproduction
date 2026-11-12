@@ -76,7 +76,18 @@ document.addEventListener('keydown', (event) => {
     panel.querySelector('strong').textContent=config.label||'Agent Support';
     panel.querySelector('iframe').src=url;
     panel.querySelector('.asf-close').onclick=closePanel;
-    panel.querySelector('.asf-external').onclick=()=>window.open(url,'_blank','noopener,noreferrer');
+panel.querySelector('.asf-external').onclick = () => {
+  // Minta dashboard membuka Agent Support dalam tab admin
+  window.dispatchEvent(new CustomEvent('5g88:open-admin-tab', {
+    detail: {
+      file: 'livechat-support.html',
+      name: 'Agent Support'
+    }
+  }));
+
+  // Tutup floating panel
+  closePanel();
+};
     if (config.side === 'left') {
   panel.style.left = '12px';
   panel.style.right = 'auto';
