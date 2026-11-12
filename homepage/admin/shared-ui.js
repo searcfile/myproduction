@@ -8951,21 +8951,63 @@ window.initTabBarSearch =
     );
   };
 
-// ==========================================
-// AGENT SUPPORT - OPEN IN ADMIN TAB
-// ==========================================
+
+/* ==========================================
+   FLOATING LIVECHAT - OPEN ADMIN TAB
+   Agent Support + Site Admin
+   ========================================== */
+
 window.addEventListener('5g88:open-admin-tab', (event) => {
-  const { file } = event.detail || {};
 
-  if (file !== 'livechat-support.html') return;
+  const file = String(event.detail?.file || '')
+    .split(/[?#]/)[0]
+    .split('/')
+    .pop()
+    .toLowerCase();
 
-  // Gunakan sistem tabbar admin asal
+  let target = null;
+
+  // Agent Support - Super Admin
+  if (file === 'livechat-support.html') {
+    target = {
+      file: 'livechat-support.html',
+      name: 'Agent Support',
+      group: 'standalone-top'
+    };
+  }
+
+  // LiveChat - Site Admin
+  else if (file === 'livechat.html') {
+    target = {
+      file: 'livechat.html',
+      name: 'Live Chat',
+      group: 'main'
+    };
+  }
+
+  if (!target) return;
+
+  // Semak permission menggunakan sistem asal
+  if (
+    !canShowAdminPage(target.file) ||
+    !canViewAdminPage(target.file)
+  ) {
+    console.warn(
+      '[Floating LiveChat] Permission denied:',
+      target.file
+    );
+    return;
+  }
+
+  // Buka melalui sistem tabbar sedia ada
   window.addTab(
-    'Agent Support',
-    './livechat-support.html',
-    { group: 'standalone-top' }
+    target.name,
+    './' + target.file,
+    { group: target.group }
   );
+
 });
+
   /* ==========================================================
      START
      ========================================================== */
