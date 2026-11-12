@@ -5125,8 +5125,8 @@ body .header {
 .admin-workspace-more-button.is-active,
 .admin-workspace-tab-card
 .admin-workspace-more-button[aria-expanded="true"] {
-  background: #162b44;
-  color: #91caff;
+  background: var(--main-tab-active-bg);
+  color: var(--main-tab-primary);
 }
 
 /* Active + hover */
@@ -5134,8 +5134,8 @@ body .header {
 .admin-workspace-more-button.is-active:hover,
 .admin-workspace-tab-card
 .admin-workspace-more-button[aria-expanded="true"]:hover {
-  background: #3c89e8;
-  color: #ffffff;
+  background: var(--main-tab-active-bg);
+  color: var(--main-tab-primary);
 }
 
 /* Press */
