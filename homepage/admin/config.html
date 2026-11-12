@@ -450,7 +450,132 @@ cfgMobileQuery.addEventListener('change', () => {
 });
 
 async function loadSiteAdmins(user){const token=await user.getIdToken();const response=await fetch(BACKEND+'/api/admin-users',{headers:{Authorization:'Bearer '+token}});const payload=await response.json().catch(()=>({}));if(!response.ok||!payload.ok)throw Error(payload.message||'Cannot load Site Admin list');return(payload.users||[]).filter(u=>u.role==='siteadmin').map(u=>({uid:u.uid,name:String(u.displayName||u.username||u.uid)})).sort((a,b)=>a.name.localeCompare(b.name));}
-function init(){window.NewUI?.init?.(document);if(!window.firebase?.auth||!window.firebase?.database){toast('Firebase is not initialized.',false);return;}firebase.auth().onAuthStateChanged(async user=>{currentUser=null;$('agentFields').disabled=true;$('siteFields').disabled=true;if(!user){toast('Please sign in through the admin dashboard.',false);return;}try{const profile=(await firebase.database().ref(`adminUsers/${user.uid}`).once('value')).val();if(firebase.auth().currentUser?.uid!==user.uid)return;if(profile?.role!=='superadmin'||sessionStorage.getItem('5g88.adminSession')!==user.uid){toast('Access denied: Super Admin only.',false);return;}let usersError=null;try{siteUsers=await loadSiteAdmins(user);}catch(err){siteUsers=[];usersError=err;console.warn('Site Admin list:',err);}const [agentSnap,siteSnap]=await Promise.all([firebase.database().ref(AGENT_PATH).once('value'),firebase.database().ref(SITE_PATH).once('value')]);if(firebase.auth().currentUser?.uid!==user.uid)return;currentUser=user;const legacy=agentSnap.val()||{};fill('agent',{...agentDefaults,...legacy,accessMode:'super_only'});const siteData=siteSnap.exists()?siteSnap.val():{...siteDefaults,enabled:!!legacy.siteEnabled,accessMode:legacy.siteAccessMode||'site_all',allowedUids:legacy.siteAllowedUids||{},url:legacy.siteUrl||'',label:legacy.siteLabel||'LiveChat',side:legacy.siteSide||'right'};fill('site',siteData);$('agentFields').disabled=false;$('siteFields').disabled=false;if(usersError)toast('Unable to load Site Admin list',false);}catch(err){toast('Unable to load config: '+(err.message||err),false);}});}
+
+function init() {
+  window.NewUI?.init?.(document);
+
+  if (!window.firebase?.auth || !window.firebase?.database) {
+    toast('Firebase is not initialized.', false);
+    return;
+  }
+
+  const agentFields = $('agentFields');
+  const siteFields = $('siteFields');
+
+  function lockConfig() {
+    currentUser = null;
+    agentFields.disabled = true;
+    siteFields.disabled = true;
+  }
+
+  function sessionExpired() {
+    lockConfig();
+
+    // Jika Config dibuka dalam dashboard iframe,
+    // biarkan dashboard induk mengurus login.
+    if (window.parent !== window) {
+      window.parent.postMessage({
+        type: '5g88:session-expired'
+      }, window.location.origin);
+
+      return;
+    }
+
+    // Jika Config dibuka sebagai halaman sendiri.
+    window.location.replace('./login.html');
+  }
+
+  firebase.auth().onAuthStateChanged(async user => {
+    lockConfig();
+
+    if (!user) {
+      sessionExpired();
+      return;
+    }
+
+    try {
+      const profileSnap = await firebase.database()
+        .ref(`adminUsers/${user.uid}`)
+        .once('value');
+
+      if (firebase.auth().currentUser?.uid !== user.uid) {
+        return;
+      }
+
+      const profile = profileSnap.val();
+
+      const sessionUid = sessionStorage.getItem(
+        '5g88.adminSession'
+      );
+
+      if (
+        profile?.role !== 'superadmin' ||
+        sessionUid !== user.uid
+      ) {
+        sessionExpired();
+        return;
+      }
+
+      let usersError = null;
+
+      try {
+        siteUsers = await loadSiteAdmins(user);
+      } catch (err) {
+        siteUsers = [];
+        usersError = err;
+        console.warn('Site Admin list:', err);
+      }
+
+      const [agentSnap, siteSnap] = await Promise.all([
+        firebase.database().ref(AGENT_PATH).once('value'),
+        firebase.database().ref(SITE_PATH).once('value')
+      ]);
+
+      if (firebase.auth().currentUser?.uid !== user.uid) {
+        return;
+      }
+
+      currentUser = user;
+
+      const legacy = agentSnap.val() || {};
+
+      fill('agent', {
+        ...agentDefaults,
+        ...legacy,
+        accessMode: 'super_only'
+      });
+
+      const siteData = siteSnap.exists()
+        ? siteSnap.val()
+        : {
+            ...siteDefaults,
+            enabled: !!legacy.siteEnabled,
+            accessMode: legacy.siteAccessMode || 'site_all',
+            allowedUids: legacy.siteAllowedUids || {},
+            url: legacy.siteUrl || '',
+            label: legacy.siteLabel || 'LiveChat',
+            side: legacy.siteSide || 'right'
+          };
+
+      fill('site', siteData);
+
+      agentFields.disabled = false;
+      siteFields.disabled = false;
+
+      if (usersError) {
+        toast('Unable to load Site Admin list', false);
+      }
+
+    } catch (err) {
+      lockConfig();
+
+      toast(
+        'Unable to load config: ' + (err.message || err),
+        false
+      );
+    }
+  });
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
