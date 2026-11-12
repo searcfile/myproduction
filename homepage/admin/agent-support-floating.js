@@ -109,23 +109,86 @@ button.querySelector('.asf-label').textContent =
   const style=document.createElement('style');style.textContent=`
     .asf-root{position:fixed;z-index:21000;touch-action:none;user-select:none;right:0;left:auto;width:44px;height:56px;overflow:visible}
     .asf-root.asf-left{left:0;right:auto}
-    .asf-button{position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;box-sizing:border-box;width:44px;height:56px;padding:0;overflow:hidden;white-space:nowrap;background:#1f1f1f;color:#1668dc;border:1px solid #303030;border-right:0;border-radius:16px 0 0 16px;box-shadow:-3px 4px 18px rgba(15,23,42,.12);cursor:grab;font:600 13px system-ui,sans-serif;transform:none;transition:width 200ms ease,box-shadow 200ms ease,border-color 200ms ease}
-    .asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
-    .asf-icon {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 43px;
-    color: #1668dc;
-    display: grid;
-    place-items: center;
-    pointer-events: none;
-    font-size: 20px;
+    .asf-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+
+  box-sizing: border-box;
+  width: 44px;
+  height: 56px;
+  padding: 0;
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  background: #1f1f1f;
+  color: #1668dc;
+
+  border: 1px solid #303030;
+  border-right: 0;
+  border-radius: 16px 0 0 16px;
+
+  box-shadow: -3px 4px 18px rgba(15,23,42,.12);
+  cursor: grab;
+
+  font: 600 13px system-ui, sans-serif;
+
+  transform: none;
+
+  transition:
+    width 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
-    .asf-label{display:inline-block;max-width:0;overflow:hidden;opacity:0;white-space:nowrap;color:#fff;font-size:13px;font-weight:600;transition:max-width 200ms ease,opacity 150ms ease}
-    @media(hover:hover) and (pointer:fine){
-      .asf-button:not(:disabled):not([data-dragging="true"]):hover{width:136px;border-color:#15325b;box-shadow:-4px 6px 24px rgba(15,23,42,.16)}
-      .asf-button:not(:disabled):not([data-dragging="true"]):hover .asf-label{max-width:100px;opacity:1}
-    }
+    .asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
+.asf-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin-left: 11px;
+  margin-right: 11px;
+  color: #1668dc;
+  display: block;
+  pointer-events: none;
+}
+.asf-label {
+  display: inline-block;
+  flex: 0 0 auto;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    max-width 200ms ease,
+    opacity 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+
+  .asf-button:not(:disabled):not([data-dragging="true"]):hover {
+    width: max-content;
+    min-width: 136px;
+    padding-right: 16px;
+
+    border-color: #15325b;
+    box-shadow: -4px 6px 24px rgba(15,23,42,.16);
+  }
+
+  .asf-button:not(:disabled):not([data-dragging="true"]):hover .asf-label {
+    max-width: 180px;
+    opacity: 1;
+  }
+
+}
     .asf-button:focus-visible{outline:2px solid #1668dc;outline-offset:2px}
     .asf-button:active{cursor:grabbing}
     .asf-button[hidden]{display:none!important}
