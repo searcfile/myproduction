@@ -58,7 +58,7 @@
 },
 {
   file: "config.html",
-  name: "Agent Support Config",
+  name: "Skin Config",
   group: "main"
 },
     {
