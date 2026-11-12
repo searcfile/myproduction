@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+<script>
+(function () {
+  const isFloating =
+    new URLSearchParams(window.location.search)
+      .get('floating') === '1';
+
+  if (isFloating) {
+    document.documentElement.classList.add(
+      'asf-embed-mode'
+    );
+  }
+})();
+</script>
+
     <style>
   html.fiveg88-hard-reload,
   html.fiveg88-hard-reload body {
@@ -1294,6 +1309,48 @@ main {
     height: auto !important;
   }
 }
+      
+/* ==========================================
+   LIVECHAT - FLOATING MODE ONLY
+   ========================================== */
+
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode main {
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .chat-wrapper {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.asf-embed-mode .chat-box {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+}
+
 </style>
 </head>
 <body>
