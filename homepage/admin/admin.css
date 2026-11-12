@@ -2187,7 +2187,7 @@ body.tab-dragging-active *{
 
 .tab-search-item:hover{
   background:
-    var(--close-hover2) !important;
+    var(--dropdown-bg-hover) !important;
 
   color:var(--text-main);
 }
