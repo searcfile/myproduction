@@ -52,6 +52,18 @@ position(center + offset);
   }
   function startAnimation(){stopAnimation();if(!root||!animationEnabled()||paused||dragging||panel)return;animationStart=performance.now();raf=requestAnimationFrame(animate);}
   function closePanel(){if(panel){panel.remove();panel=null;}if(button){button.hidden=false;button.setAttribute('aria-expanded','false');}startAnimation();}
+  // ==========================================
+// AGENT SUPPORT - CLOSE PANEL WITH ESC
+// ==========================================
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+
+  // Hanya tutup jika panel sedang terbuka
+  if (!panel) return;
+
+  event.preventDefault();
+  closePanel();
+});
   function openPanel(){
     if(panel){closePanel();return;}
     const url=safeUrl(config.url);if(!url)return;
