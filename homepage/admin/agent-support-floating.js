@@ -18,7 +18,51 @@ const positionKey=type=>`5g88.floating.position.v2:${type}:${uid}`;
 function savedY(type){try{let value=localStorage.getItem(positionKey(type));if(!value&&type==='agent'){value=localStorage.getItem(`5g88.agentSupportFloat.position.v1:${uid}`);}const parsed=JSON.parse(value);return Number.isFinite(parsed?.y)?parsed.y:null;}catch{return null;}}
 function saveY(type,y){if(uid)localStorage.setItem(positionKey(type),JSON.stringify({y}));}
 function eligible(){return !!uid&&!!profile&&profile.active===true&&profile.secondPasswordEnabled===true&&sessionStorage.getItem('5g88.adminSession')===uid;}
-function canAccess(type){if(!eligible())return false;const d=configs[type];if(!d.enabled||!safeUrl(d.url))return false;if(type==='agent')return profile.role==='superadmin';if(profile.role!=='siteadmin')return false;return d.accessMode==='site_all'||(d.accessMode==='site_selected'&&d.allowedUids?.[uid]===true);}
+
+function canAccess(type) {
+  if (!eligible()) return false;
+
+  const d = configs[type];
+
+  if (!d.enabled || !safeUrl(d.url)) {
+    return false;
+  }
+
+  const role = profile.role;
+
+  // Floating Agent Support
+  if (type === 'agent') {
+    return role === 'superadmin';
+  }
+
+  // Floating LiveChat Site Admin
+  if (type === 'site') {
+
+    // Super Admin boleh melihat kedua-dua floating
+    if (role === 'superadmin') {
+      return true;
+    }
+
+    // Akaun selain Site Admin tidak dibenarkan
+    if (role !== 'siteadmin') {
+      return false;
+    }
+
+    // Semua Site Admin
+    if (d.accessMode === 'site_all') {
+      return true;
+    }
+
+    // Site Admin yang dipilih sahaja
+    if (d.accessMode === 'site_selected') {
+      return d.allowedUids?.[uid] === true;
+    }
+
+    return false;
+  }
+
+  return false;
+}
 function limits(inst){return {min:0,max:Math.max(0,innerHeight-(inst.root?.offsetHeight||56))};}
 function position(inst,y){if(!inst.root)return;const {min,max}=limits(inst);inst.root.style.top=`${clamp(y,min,max)}px`;}
 function stopAnimation(inst){if(inst.raf)cancelAnimationFrame(inst.raf);inst.raf=0;}
