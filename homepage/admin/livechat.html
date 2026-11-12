@@ -2612,6 +2612,33 @@ if (!currentIsGuest) {
       readByAdmin: false
     });
 
+    // ==========================================
+    // LIVECHAT - REALTIME UNREAD FOR ADMIN
+    // ==========================================
+    try {
+      const sid = currentActiveId;
+
+      if (sid) {
+        const userRef = db.ref(`users/${sid}`);
+        const unreadRef = userRef.child('unreadCountForAdmin');
+
+        await unreadRef.transaction(current => {
+          const count = Number(current) || 0;
+          return Math.max(0, count) + 1;
+        });
+
+        await userRef.update({
+          unreadForAdmin: true,
+          lastChatTime: time
+        });
+      }
+    } catch (unreadError) {
+      console.error(
+        '[LiveChat] Unread update failed:',
+        unreadError
+      );
+    }
+
     setTimeout(() => onNewMessageRendered({ forceToBottom: true, instant: false }), 0);
 
     if (msgInputEl) {
