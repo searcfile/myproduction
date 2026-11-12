@@ -8,7 +8,7 @@
   window.__agentSupportFloatingInit=true;
 
   const CONFIG_PATH='adminConfig/agentSupportFloating';
-  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:90};
+  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400};
   let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
   let raf=0,animationBase=0,animationStart=0,paused=false,dragging=false;
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -23,11 +23,20 @@
   function animate(now){
     if(!root||!animationEnabled()||paused||dragging||panel){raf=0;return;}
     const {min,max}=limits();
-    const range=Math.min(clamp(+config.animationRange||90,10,250),Math.max(0,max-min));
+    const range = Math.min(
+  clamp(+config.animationRange || 400, 10, 700),
+  Math.max(0, max - min)
+);
     const speed=clamp(+config.animationSpeed||35,5,150);
     const period=Math.max(1000,2*Math.PI*(range/2)/speed*1000);
     const offset=range/2*Math.sin((now-animationStart)*2*Math.PI/period);
-    position(clamp(animationBase+offset,min,max));
+    const center = clamp(
+  animationBase,
+  min + range / 2,
+  max - range / 2
+);
+
+position(center + offset);
     raf=requestAnimationFrame(animate);
   }
   function startAnimation(){stopAnimation();if(!root||!animationEnabled()||paused||dragging||panel)return;animationStart=performance.now();raf=requestAnimationFrame(animate);}
