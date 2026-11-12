@@ -237,25 +237,18 @@ transition:
     .asf-button[hidden]{display:none!important}
 .asf-panel {
   position: fixed;
-
-  /* Tengah secara vertical */
   top: 50%;
   right: 10px;
   left: auto;
   bottom: auto;
-
   transform: translateY(-50%);
-
   z-index: 50001 !important;
-
   display: flex;
   flex-direction: column;
-
   background: #fff;
-  border: 1px solid #91caff;
-  border-radius: 12px;
+  border: 1px solid var(--tx-border);
+  border-radius: 18px;
   overflow: hidden;
-
   box-shadow: 0 14px 45px #0007;
 }
 .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
