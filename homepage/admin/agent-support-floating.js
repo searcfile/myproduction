@@ -8,8 +8,29 @@
   window.__agentSupportFloatingInit=true;
 
   const CONFIG_PATH='adminConfig/agentSupportFloating';
-  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400};
+  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400,siteEnabled:false,siteAccessMode:'site_all',siteAllowedUids:{},siteUrl:'',siteLabel:'LiveChat',siteSide:'right'};
   let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
+  const isSiteFloating=()=>profile?.role==='siteadmin';
+  const activeUrl=()=>isSiteFloating()?config.siteUrl:config.url;
+  const activeLabel=()=>isSiteFloating()?(config.siteLabel||'LiveChat'):(activeLabel());
+  const activeSide=()=>isSiteFloating()?(config.siteSide||'right'):(config.side||'right');
+  let siteUnreadCleanup=null;
+  function stopSiteUnreadListener(){if(siteUnreadCleanup){siteUnreadCleanup();siteUnreadCleanup=null;}}
+  function startSiteUnreadListener(){
+    stopSiteUnreadListener();
+    if(!uid||profile?.role!=='siteadmin'||!canAccess())return;
+    const listenerUid=uid;
+    const ref=firebase.database().ref(`chats/admin_${uid}`);
+    const handler=snapshot=>{
+      if(uid!==listenerUid)return;
+      let total=0;
+      snapshot.forEach(child=>{const msg=child.val();if(msg?.from==='admin'&&msg.readByUser!==true)total++;});
+      asfUnreadCount=total;updateAsfBadge();
+    };
+    ref.on('value',handler,error=>console.error('Site Admin LiveChat unread:',error));
+    siteUnreadCleanup=()=>ref.off('value',handler);
+  }
+
   // ==========================================
 // AGENT SUPPORT - UNREAD BADGE
 // ==========================================
@@ -61,7 +82,9 @@ function stopAsfUnreadListener() {
 }
 
 function startAsfUnreadListener() {
+  stopSiteUnreadListener();
   stopAsfUnreadListener();
+  if(profile?.role==='siteadmin'){startSiteUnreadListener();return;}
 
   // Badge hanya untuk Super Admin
   if (!uid || !canAccess() || profile?.role !== 'superadmin') {
@@ -164,29 +187,29 @@ document.addEventListener('keydown', (event) => {
 });
   function openPanel(){
     if(panel){closePanel();return;}
-    const url=safeUrl(config.url);if(!url)return;
+    const url=safeUrl(activeUrl());if(!url)return;
     if(config.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}
     stopAnimation();
-    panel=document.createElement('section');panel.className='asf-panel';panel.setAttribute('aria-label',config.label||'Agent Support');
+    panel=document.createElement('section');panel.className='asf-panel';panel.setAttribute('aria-label',activeLabel());
     panel.style.width=`min(${clamp(+config.width||400,280,900)}px, calc(100vw - 20px))`;
     panel.style.height=`min(${clamp(+config.height||600,280,1000)}px, calc(100dvh - 30px))`;
     panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open in new tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="Agent Support LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';
-    panel.querySelector('strong').textContent=config.label||'Agent Support';
+    panel.querySelector('strong').textContent=activeLabel();
     panel.querySelector('iframe').src=url;
     panel.querySelector('.asf-close').onclick=closePanel;
 panel.querySelector('.asf-external').onclick = () => {
   // Minta dashboard membuka Agent Support dalam tab admin
   window.dispatchEvent(new CustomEvent('5g88:open-admin-tab', {
     detail: {
-      file: 'livechat-support.html',
-      name: 'Agent Support'
+      file: isSiteFloating() ? 'livechat.html' : 'livechat-support.html',
+      name: activeLabel()
     }
   }));
 
   // Tutup floating panel
   closePanel();
 };
-    if (config.side === 'left') {
+    if (activeSide() === 'left') {
   panel.style.left = '12px';
   panel.style.right = 'auto';
 } else {
@@ -202,27 +225,25 @@ if (button) {
 updateAsfBadge();
   }
   function canAccess(){
-    if(!profile||!config.enabled||profile.active!==true||profile.secondPasswordEnabled!==true||sessionStorage.getItem('5g88.adminSession')!==uid)return false;
-    const role=profile.role;
-    if(role!=='superadmin'&&role!=='siteadmin')return false;
-    switch(config.accessMode||'all'){
-      case 'all':return true;
-      case 'site_all':return role==='siteadmin';
-      case 'site_selected':return role==='siteadmin'&&config.allowedUids?.[uid]===true;
-      case 'super_only':return role==='superadmin';
-      default:return false;
+    if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||sessionStorage.getItem('5g88.adminSession')!==uid)return false;
+    if(profile.role==='superadmin')return config.enabled===true && ['all','super_only'].includes(config.accessMode||'all');
+    if(profile.role==='siteadmin'){
+      if(config.siteEnabled!==true)return false;
+      const mode=config.siteAccessMode||'site_all';
+      return mode==='site_all'||(mode==='site_selected'&&config.siteAllowedUids?.[uid]===true);
     }
+    return false;
   }
   function render(){
     stopAnimation();closePanel();stopAnimation();root?.remove();root=null;button=null;
-    if(!uid||!canAccess()||!safeUrl(config.url))return;
+    if(!uid||!canAccess()||!safeUrl(activeUrl()))return;
     root=document.createElement('div');root.className='asf-root';
-    root.classList.add(config.side==='left'?'asf-left':'asf-right');
+    root.classList.add(activeSide()==='left'?'asf-left':'asf-right');
     button=document.createElement('button');button.className='asf-button';button.type='button';
-    button.setAttribute('aria-label',config.label||'Agent Support');button.setAttribute('aria-expanded','false');
+    button.setAttribute('aria-label',activeLabel());button.setAttribute('aria-expanded','false');
     button.innerHTML='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg><span class="asf-label"></span>';
 button.querySelector('.asf-label').textContent =
-  config.label || 'Agent Support';
+  activeLabel();
 
 // ==========================================
 // AGENT SUPPORT - RED UNREAD BADGE
@@ -456,6 +477,7 @@ right: 3px;
     firebase.auth().onAuthStateChanged(user=>{
       if(unsubscribe){unsubscribe();unsubscribe=null;}
       stopAsfUnreadListener();
+      stopSiteUnreadListener();
       uid=user?.uid||null;profile=null;config={...defaults};render();
       if(!uid)return;
       const authUid=uid;
