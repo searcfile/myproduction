@@ -11,7 +11,19 @@ const defaults={enabled:false,accessMode:'super_only',allowedUids:{},url:'',labe
 const siteDefaults={...defaults,accessMode:'site_all',label:'LiveChat'};
 const configs={agent:{...defaults},site:{...siteDefaults}};
 const instances={agent:null,site:null};
-let uid=null,profile=null,unsubscribe=null,unreadCleanup=null,unreadCount=0;
+let uid = null;
+let profile = null;
+let unsubscribe = null;
+
+const unreadCleanup = {
+  agent: null,
+  site: null
+};
+
+const unreadCounts = {
+  agent: 0,
+  site: 0
+};
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
 const positionKey=type=>`5g88.floating.position.v2:${type}:${uid}`;
@@ -138,7 +150,20 @@ function startAnimation(inst) {
   inst.raf = requestAnimationFrame(time => animate(inst, time));
 }
 
-function updateBadge(type){const inst=instances[type];if(!inst)return;const badge=inst.root?.querySelector('.asf-badge');if(!badge)return;badge.textContent=unreadCount>99?'99+':String(Math.max(0,unreadCount));badge.hidden=unreadCount<=0||!!inst.panel;}
+
+function updateBadge(type) {
+  const inst = instances[type];
+  if (!inst) return;
+
+  const badge = inst.root?.querySelector('.asf-badge');
+  if (!badge) return;
+
+  const count = Math.max(0, unreadCounts[type] || 0);
+
+  badge.textContent = count > 99 ? '99+' : String(count);
+
+  badge.hidden = count === 0 || !!inst.panel;
+}
 function closePanel(inst){if(!inst)return;inst.panel?.remove();inst.panel=null;if(inst.button){inst.button.hidden=false;inst.button.setAttribute('aria-expanded','false');}updateBadge(inst.type);startAnimation(inst);}
 function openPanel(inst){if(inst.panel){closePanel(inst);return;}const d=inst.config,url=safeUrl(d.url);if(!url)return;if(d.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}stopAnimation(inst);const panel=document.createElement('section');inst.panel=panel;panel.className='asf-panel';panel.setAttribute('aria-label',d.label);panel.style.width=`min(${clamp(+d.width||400,280,900)}px, calc(100vw - 20px))`;panel.style.height=`min(${clamp(+d.height||600,280,1000)}px, calc(100dvh - 30px))`;panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open admin tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';panel.querySelector('strong').textContent=d.label;panel.querySelector('iframe').src=url;panel.querySelector('.asf-close').onclick=()=>closePanel(inst);panel.querySelector('.asf-external').onclick=()=>{window.dispatchEvent(new CustomEvent('5g88:open-admin-tab',{detail:{file:inst.type==='site'?'livechat.html':'livechat-support.html',name:d.label}}));closePanel(inst);};if(d.side==='left'){panel.style.left='12px';panel.style.right='auto';}else{panel.style.right='12px';panel.style.left='auto';}document.body.appendChild(panel);inst.button.hidden=true;inst.button.setAttribute('aria-expanded','true');updateBadge(inst.type);}
 const svg='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg>';
@@ -148,8 +173,98 @@ function render(type){destroy(type);if(!canAccess(type))return;const d=configs[t
   : Math.round(window.innerHeight * 0.70);
 inst.animationBase = savedY(type) ?? defaultY;
 position(inst,inst.animationBase);updateBadge(type);button.addEventListener('pointerenter',()=>{inst.paused=true;stopAnimation(inst);});button.addEventListener('pointerleave',()=>{if(!inst.dragging){inst.animationBase=root.getBoundingClientRect().top;inst.paused=false;startAnimation(inst);}});let drag=null,suppressClick=false;button.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};inst.dragging=true;stopAnimation(inst);button.dataset.dragging='true';button.setPointerCapture(e.pointerId);});button.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){position(inst,drag.top+e.clientY-drag.startY);e.preventDefault();}});button.addEventListener('pointerup',()=>{if(!drag)return;if(drag.moved){inst.animationBase=root.getBoundingClientRect().top;saveY(type,inst.animationBase);suppressClick=true;}delete button.dataset.dragging;drag=null;inst.dragging=false;if(!button.matches(':hover')){inst.paused=false;startAnimation(inst);}});button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;inst.dragging=false;inst.paused=false;startAnimation(inst);});button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel(inst);});startAnimation(inst);}
-function stopUnread(){unreadCleanup?.();unreadCleanup=null;unreadCount=0;updateBadge('agent');updateBadge('site');}
-function startUnread(){stopUnread();if(profile?.role==='superadmin'&&canAccess('agent')){const ref=firebase.database().ref('users');const handler=snap=>{let total=0;snap.forEach(child=>{const d=child.val()||{};const count=Number(d.unreadCountForAdmin||0);total+=count>0?count:(d.unreadForAdmin===true?1:0);});unreadCount=total;updateBadge('agent');};ref.on('value',handler,err=>console.error('Agent Support unread:',err));unreadCleanup=()=>ref.off('value',handler);}else if(profile?.role==='siteadmin'&&canAccess('site')){const ref=firebase.database().ref(`chats/admin_${uid}`);const handler=snap=>{let total=0;snap.forEach(child=>{const msg=child.val();if(msg?.from==='admin'&&msg.readByUser!==true)total++;});unreadCount=total;updateBadge('site');};ref.on('value',handler,err=>console.error('Site LiveChat unread:',err));unreadCleanup=()=>ref.off('value',handler);}}
+
+function stopUnread() {
+  for (const type of ['agent', 'site']) {
+    if (typeof unreadCleanup[type] === 'function') {
+      unreadCleanup[type]();
+    }
+
+    unreadCleanup[type] = null;
+    unreadCounts[type] = 0;
+
+    updateBadge(type);
+  }
+}
+
+function startUnread() {
+  stopUnread();
+
+  if (!uid || !profile) return;
+
+  const db = firebase.database();
+
+  // =====================================
+  // 1. AGENT SUPPORT UNREAD
+  // =====================================
+  if (
+    profile.role === 'superadmin' &&
+    canAccess('agent')
+  ) {
+    const ref = db.ref('users');
+
+    const handler = snapshot => {
+      let total = 0;
+
+      snapshot.forEach(child => {
+        const data = child.val() || {};
+
+        const count = Number(
+          data.unreadCountForAdmin || 0
+        );
+
+        total += count > 0
+          ? count
+          : (data.unreadForAdmin === true ? 1 : 0);
+      });
+
+      unreadCounts.agent = total;
+      updateBadge('agent');
+    };
+
+    ref.on('value', handler, error => {
+      console.error('Agent unread error:', error);
+    });
+
+    unreadCleanup.agent = () => {
+      ref.off('value', handler);
+    };
+  }
+
+  // =====================================
+  // 2. LIVECHAT SITE ADMIN UNREAD
+  // =====================================
+  if (canAccess('site')) {
+    const ref = db.ref(`chats/admin_${uid}`);
+
+    const handler = snapshot => {
+      let total = 0;
+
+      snapshot.forEach(child => {
+        const message = child.val();
+
+        if (
+          message?.from === 'admin' &&
+          message.readByUser !== true
+        ) {
+          total++;
+        }
+      });
+
+      unreadCounts.site = total;
+      updateBadge('site');
+    };
+
+    ref.on('value', handler, error => {
+      console.error('Site LiveChat unread error:', error);
+    });
+
+    unreadCleanup.site = () => {
+      ref.off('value', handler);
+    };
+  }
+}
+
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=Object.values(instances).filter(inst=>inst?.panel);if(!open.length)return;e.preventDefault();open.forEach(closePanel);});
 const style=document.createElement('style');style.textContent=`
 .asf-root{
