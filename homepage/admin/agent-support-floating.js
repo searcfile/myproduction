@@ -1,306 +1,40 @@
-/* 5G88 Agent Support Floating - all admin pages, animation enabled */
+/* 5G88 Dual Floating LiveChat - separate Agent Support and Site Admin */
 (() => {
-  'use strict';
-  if (window.self !== window.top) return;
-  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  if(page==='login.html')return;
-  if(window.__agentSupportFloatingInit)return;
-  window.__agentSupportFloatingInit=true;
-
-  const CONFIG_PATH='adminConfig/agentSupportFloating';
-  const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400,siteEnabled:false,siteAccessMode:'site_all',siteAllowedUids:{},siteUrl:'',siteLabel:'LiveChat',siteSide:'right'};
-  let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
-  const isSiteFloating=()=>profile?.role==='siteadmin';
-  const activeUrl=()=>isSiteFloating()?config.siteUrl:config.url;
-  const activeLabel=()=>isSiteFloating()?(config.siteLabel||'LiveChat'):(config.label||'Agent Support');
-  const activeSide=()=>isSiteFloating()?(config.siteSide||'right'):(config.side||'right');
-  let siteUnreadCleanup=null;
-  function stopSiteUnreadListener(){if(siteUnreadCleanup){siteUnreadCleanup();siteUnreadCleanup=null;}}
-  function startSiteUnreadListener(){
-    stopSiteUnreadListener();
-    if(!uid||profile?.role!=='siteadmin'||!canAccess())return;
-    const listenerUid=uid;
-    const ref=firebase.database().ref(`chats/admin_${uid}`);
-    const handler=snapshot=>{
-      if(uid!==listenerUid)return;
-      let total=0;
-      snapshot.forEach(child=>{const msg=child.val();if(msg?.from==='admin'&&msg.readByUser!==true)total++;});
-      asfUnreadCount=total;updateAsfBadge();
-    };
-    ref.on('value',handler,error=>console.error('Site Admin LiveChat unread:',error));
-    siteUnreadCleanup=()=>ref.off('value',handler);
-  }
-
-  // ==========================================
-// AGENT SUPPORT - UNREAD BADGE
-// ==========================================
-let asfUnreadCount = 0;
-let asfUnreadUsers = {};
-let asfAdminProfiles = {};
-let asfUnreadCleanup = null;
-
-function updateAsfBadge() {
-  const badge = root?.querySelector('.asf-badge');
-  if (!badge) return;
-
-  const count = Math.max(0, asfUnreadCount);
-
-  badge.textContent = count > 99 ? '99+' : String(count);
-  badge.hidden = count === 0 || !!panel;
-}
-
-
-function countAsfUnread() {
-  let total = 0;
-
-  Object.values(asfUnreadUsers).forEach(data => {
-    const unreadCount = Number(data?.unreadCountForAdmin || 0);
-    const hasUnread = data?.unreadForAdmin === true;
-
-    if (unreadCount > 0) {
-      total += unreadCount;
-    } else if (hasUnread) {
-      total += 1;
-    }
-  });
-
-  asfUnreadCount = total;
-  updateAsfBadge();
-}
-
-function stopAsfUnreadListener() {
-  if (asfUnreadCleanup) {
-    asfUnreadCleanup();
-    asfUnreadCleanup = null;
-  }
-
-  asfUnreadUsers = {};
-  asfAdminProfiles = {};
-  asfUnreadCount = 0;
-
-  updateAsfBadge();
-}
-
-function startAsfUnreadListener() {
-  stopSiteUnreadListener();
-  stopAsfUnreadListener();
-  if(profile?.role==='siteadmin'){startSiteUnreadListener();return;}
-
-  // Badge hanya untuk Super Admin
-  if (!uid || !canAccess() || profile?.role !== 'superadmin') {
-    return;
-  }
-
-  const db = firebase.database();
-  const usersRef = db.ref('users');
-  const adminsRef = db.ref('adminUsers');
-
-  const usersHandler = snapshot => {
-    asfUnreadUsers = snapshot.val() || {};
-    countAsfUnread();
-  };
-
-  const adminsHandler = snapshot => {
-    asfAdminProfiles = snapshot.val() || {};
-    countAsfUnread();
-  };
-
-  usersRef.on('value', usersHandler, error => {
-    console.error('Agent Support unread users:', error);
-  });
-
-  adminsRef.on('value', adminsHandler, error => {
-    console.error('Agent Support unread profiles:', error);
-  });
-
-  asfUnreadCleanup = () => {
-    usersRef.off('value', usersHandler);
-    adminsRef.off('value', adminsHandler);
-  };
-}
-  let raf=0,animationBase=0,animationStart=0,paused=false,dragging=false;
-  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-  const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
-  const positionKey=()=>`5g88.agentSupportFloat.position.v1:${uid}`;
-  const savedY=()=>{try{const v=JSON.parse(localStorage.getItem(positionKey()));return Number.isFinite(v?.y)?v.y:null;}catch{return null;}};
-  const saveY=y=>{if(uid)localStorage.setItem(positionKey(),JSON.stringify({y}));};
-const limits = () => {
-  const height = root?.offsetHeight || 56;
-
-  return {
-    min: 0,
-    max: Math.max(0, window.innerHeight - height)
-  };
-};
-  function position(y){if(!root)return;const {min,max}=limits();root.style.top=`${clamp(y,min,max)}px`;}
-  function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;}
-  function animationEnabled(){return config.animationMode==='float'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;}
-  function animate(now){
-    if(!root||!animationEnabled()||paused||dragging||panel){raf=0;return;}
-    const {min,max}=limits();
-const range = Math.min(
-  clamp(
-    Number(config.animationRange) || 400,
-    10,
-    Math.max(10, max - min)
-  ),
-  Math.max(0, max - min)
-);
-    const speed=clamp(+config.animationSpeed||35,5,150);
-    const period=Math.max(1000,2*Math.PI*(range/2)/speed*1000);
-    const offset=range/2*Math.sin((now-animationStart)*2*Math.PI/period);
-    const center = clamp(
-  animationBase,
-  min + range / 2,
-  max - range / 2
-);
-
-position(center + offset);
-    raf=requestAnimationFrame(animate);
-  }
-  function startAnimation(){stopAnimation();if(!root||!animationEnabled()||paused||dragging||panel)return;animationStart=performance.now();raf=requestAnimationFrame(animate);}
-function closePanel() {
-  if (panel) {
-    panel.remove();
-    panel = null;
-  }
-
-  if (button) {
-    button.hidden = false;
-    button.setAttribute('aria-expanded', 'false');
-  }
-
-  updateAsfBadge();
-  startAnimation();
-}
-  // ==========================================
-// AGENT SUPPORT - CLOSE PANEL WITH ESC
-// ==========================================
-document.addEventListener('keydown', (event) => {
-  if (event.key !== 'Escape') return;
-
-  // Hanya tutup jika panel sedang terbuka
-  if (!panel) return;
-
-  event.preventDefault();
-  closePanel();
-});
-  function openPanel(){
-    if(panel){closePanel();return;}
-    const url=safeUrl(activeUrl());if(!url)return;
-    if(config.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}
-    stopAnimation();
-    panel=document.createElement('section');panel.className='asf-panel';panel.setAttribute('aria-label',activeLabel());
-    panel.style.width=`min(${clamp(+config.width||400,280,900)}px, calc(100vw - 20px))`;
-    panel.style.height=`min(${clamp(+config.height||600,280,1000)}px, calc(100dvh - 30px))`;
-    panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open in new tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="Agent Support LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';
-    panel.querySelector('strong').textContent=activeLabel();
-    panel.querySelector('iframe').src=url;
-    panel.querySelector('.asf-close').onclick=closePanel;
-panel.querySelector('.asf-external').onclick = () => {
-  // Minta dashboard membuka Agent Support dalam tab admin
-  window.dispatchEvent(new CustomEvent('5g88:open-admin-tab', {
-    detail: {
-      file: isSiteFloating() ? 'livechat.html' : 'livechat-support.html',
-      name: activeLabel()
-    }
-  }));
-
-  // Tutup floating panel
-  closePanel();
-};
-    if (activeSide() === 'left') {
-  panel.style.left = '12px';
-  panel.style.right = 'auto';
-} else {
-  panel.style.right = '12px';
-  panel.style.left = 'auto';
-}
-    document.body.appendChild(panel);
-if (button) {
-  button.setAttribute('aria-expanded', 'true');
-  button.hidden = true;
-}
-
-updateAsfBadge();
-  }
-  function canAccess(){
-    if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||sessionStorage.getItem('5g88.adminSession')!==uid)return false;
-    if(profile.role==='superadmin')return config.enabled===true && ['all','super_only'].includes(config.accessMode||'all');
-    if(profile.role==='siteadmin'){
-      if(config.siteEnabled!==true)return false;
-      const mode=config.siteAccessMode||'site_all';
-      return mode==='site_all'||(mode==='site_selected'&&config.siteAllowedUids?.[uid]===true);
-    }
-    return false;
-  }
-  function render(){
-    stopAnimation();closePanel();stopAnimation();root?.remove();root=null;button=null;
-    if(!uid||!canAccess()||!safeUrl(activeUrl()))return;
-    root=document.createElement('div');root.className='asf-root';
-    root.classList.add(activeSide()==='left'?'asf-left':'asf-right');
-    button=document.createElement('button');button.className='asf-button';button.type='button';
-    button.setAttribute('aria-label',activeLabel());button.setAttribute('aria-expanded','false');
-    button.innerHTML='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg><span class="asf-label"></span>';
-button.querySelector('.asf-label').textContent =
-  activeLabel();
-
-// ==========================================
-// AGENT SUPPORT - RED UNREAD BADGE
-// ==========================================
-const badge = document.createElement('span');
-
-badge.className = 'asf-badge';
-badge.setAttribute('aria-label', 'Unread messages');
-badge.hidden = true;
-
-root.appendChild(button);
-root.appendChild(badge);
-
-document.body.appendChild(root);
-
-// Paparkan jumlah unread terkini
-updateAsfBadge();
-    animationBase=savedY()??Math.round(innerHeight*.58);position(animationBase);
-    button.addEventListener('pointerenter',()=>{paused=true;stopAnimation();});
-    button.addEventListener('pointerleave',()=>{if(!dragging){animationBase=root.getBoundingClientRect().top;paused=false;startAnimation();}});
-    let drag=null,suppressClick=false;
-    button.addEventListener('pointerdown',e=>{
-      if(e.button!==0)return;
-      drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};dragging=true;stopAnimation();
-      button.dataset.dragging='true';
-      button.setPointerCapture(e.pointerId);
-    });
-    button.addEventListener('pointermove',e=>{
-      if(!drag)return;
-      if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;
-      if(drag.moved){position(drag.top+e.clientY-drag.startY);e.preventDefault();}
-    });
-button.addEventListener('pointerup',()=>{
-  if(!drag)return;
-
-  if(drag.moved){
-    animationBase=root.getBoundingClientRect().top;
-    saveY(animationBase);
-    suppressClick=true;
-  }
-
-  // Penting: reset status dragging selepas mouse dilepaskan.
-  delete button.dataset.dragging;
-
-  drag=null;
-  dragging=false;
-
-  if(!button.matches(':hover')){
-    paused=false;
-    startAnimation();
-  }
-});
-    button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;dragging=false;paused=false;startAnimation();});
-    button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel();});
-    startAnimation();
-  }
-  const style=document.createElement('style');style.textContent=`
+'use strict';
+if(window.self!==window.top)return;
+if((location.pathname.split('/').pop()||'index.html').toLowerCase()==='login.html')return;
+if(window.__agentSupportFloatingInit)return;
+window.__agentSupportFloatingInit=true;
+const AGENT_PATH='adminConfig/agentSupportFloating';
+const SITE_PATH='adminConfig/siteAdminFloating';
+const defaults={enabled:false,accessMode:'super_only',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400};
+const siteDefaults={...defaults,accessMode:'site_all',label:'LiveChat'};
+const configs={agent:{...defaults},site:{...siteDefaults}};
+const instances={agent:null,site:null};
+let uid=null,profile=null,unsubscribe=null,unreadCleanup=null,unreadCount=0;
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
+const positionKey=type=>`5g88.floating.position.v2:${type}:${uid}`;
+function savedY(type){try{let value=localStorage.getItem(positionKey(type));if(!value&&type==='agent'){value=localStorage.getItem(`5g88.agentSupportFloat.position.v1:${uid}`);}const parsed=JSON.parse(value);return Number.isFinite(parsed?.y)?parsed.y:null;}catch{return null;}}
+function saveY(type,y){if(uid)localStorage.setItem(positionKey(type),JSON.stringify({y}));}
+function eligible(){return !!uid&&!!profile&&profile.active===true&&profile.secondPasswordEnabled===true&&sessionStorage.getItem('5g88.adminSession')===uid;}
+function canAccess(type){if(!eligible())return false;const d=configs[type];if(!d.enabled||!safeUrl(d.url))return false;if(type==='agent')return profile.role==='superadmin';if(profile.role!=='siteadmin')return false;return d.accessMode==='site_all'||(d.accessMode==='site_selected'&&d.allowedUids?.[uid]===true);}
+function limits(inst){return {min:0,max:Math.max(0,innerHeight-(inst.root?.offsetHeight||56))};}
+function position(inst,y){if(!inst.root)return;const {min,max}=limits(inst);inst.root.style.top=`${clamp(y,min,max)}px`;}
+function stopAnimation(inst){if(inst.raf)cancelAnimationFrame(inst.raf);inst.raf=0;}
+function animationEnabled(inst){return inst.config.animationMode==='float'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;}
+function animate(inst,now){if(!inst.root||!animationEnabled(inst)||inst.paused||inst.dragging||inst.panel){inst.raf=0;return;}const {min,max}=limits(inst);const range=Math.min(clamp(Number(inst.config.animationRange)||400,10,700),Math.max(0,max-min));const speed=clamp(Number(inst.config.animationSpeed)||35,5,150);const period=Math.max(1000,2*Math.PI*(range/2)/speed*1000);const offset=range/2*Math.sin((now-inst.animationStart)*2*Math.PI/period);const center=clamp(inst.animationBase,min+range/2,max-range/2);position(inst,center+offset);inst.raf=requestAnimationFrame(now=>animate(inst,now));}
+function startAnimation(inst){stopAnimation(inst);if(!inst.root||!animationEnabled(inst)||inst.paused||inst.dragging||inst.panel)return;inst.animationStart=performance.now();inst.raf=requestAnimationFrame(now=>animate(inst,now));}
+function updateBadge(type){const inst=instances[type];if(!inst)return;const badge=inst.root?.querySelector('.asf-badge');if(!badge)return;badge.textContent=unreadCount>99?'99+':String(Math.max(0,unreadCount));badge.hidden=unreadCount<=0||!!inst.panel;}
+function closePanel(inst){if(!inst)return;inst.panel?.remove();inst.panel=null;if(inst.button){inst.button.hidden=false;inst.button.setAttribute('aria-expanded','false');}updateBadge(inst.type);startAnimation(inst);}
+function openPanel(inst){if(inst.panel){closePanel(inst);return;}const d=inst.config,url=safeUrl(d.url);if(!url)return;if(d.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}stopAnimation(inst);const panel=document.createElement('section');inst.panel=panel;panel.className='asf-panel';panel.setAttribute('aria-label',d.label);panel.style.width=`min(${clamp(+d.width||400,280,900)}px, calc(100vw - 20px))`;panel.style.height=`min(${clamp(+d.height||600,280,1000)}px, calc(100dvh - 30px))`;panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open admin tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';panel.querySelector('strong').textContent=d.label;panel.querySelector('iframe').src=url;panel.querySelector('.asf-close').onclick=()=>closePanel(inst);panel.querySelector('.asf-external').onclick=()=>{window.dispatchEvent(new CustomEvent('5g88:open-admin-tab',{detail:{file:inst.type==='site'?'livechat.html':'livechat-support.html',name:d.label}}));closePanel(inst);};if(d.side==='left'){panel.style.left='12px';panel.style.right='auto';}else{panel.style.right='12px';panel.style.left='auto';}document.body.appendChild(panel);inst.button.hidden=true;inst.button.setAttribute('aria-expanded','true');updateBadge(inst.type);}
+const svg='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg>';
+function destroy(type){const inst=instances[type];if(!inst)return;stopAnimation(inst);inst.panel?.remove();inst.root?.remove();instances[type]=null;}
+function render(type){destroy(type);if(!canAccess(type))return;const d=configs[type];const inst={type,config:d,root:null,button:null,panel:null,raf:0,animationBase:0,animationStart:0,paused:false,dragging:false};instances[type]=inst;const root=document.createElement('div');inst.root=root;root.className='asf-root '+(d.side==='left'?'asf-left':'asf-right');root.dataset.floating=type;const button=document.createElement('button');inst.button=button;button.type='button';button.className='asf-button';button.setAttribute('aria-label',d.label||'LiveChat');button.setAttribute('aria-expanded','false');button.innerHTML=svg+'<span class="asf-label"></span>';button.querySelector('.asf-label').textContent=d.label||'LiveChat';const badge=document.createElement('span');badge.className='asf-badge';badge.hidden=true;badge.setAttribute('aria-label','Unread messages');root.append(button,badge);document.body.appendChild(root);inst.animationBase=savedY(type)??Math.round(innerHeight*(type==='agent'?.40:.70));position(inst,inst.animationBase);updateBadge(type);button.addEventListener('pointerenter',()=>{inst.paused=true;stopAnimation(inst);});button.addEventListener('pointerleave',()=>{if(!inst.dragging){inst.animationBase=root.getBoundingClientRect().top;inst.paused=false;startAnimation(inst);}});let drag=null,suppressClick=false;button.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};inst.dragging=true;stopAnimation(inst);button.dataset.dragging='true';button.setPointerCapture(e.pointerId);});button.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){position(inst,drag.top+e.clientY-drag.startY);e.preventDefault();}});button.addEventListener('pointerup',()=>{if(!drag)return;if(drag.moved){inst.animationBase=root.getBoundingClientRect().top;saveY(type,inst.animationBase);suppressClick=true;}delete button.dataset.dragging;drag=null;inst.dragging=false;if(!button.matches(':hover')){inst.paused=false;startAnimation(inst);}});button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;inst.dragging=false;inst.paused=false;startAnimation(inst);});button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel(inst);});startAnimation(inst);}
+function stopUnread(){unreadCleanup?.();unreadCleanup=null;unreadCount=0;updateBadge('agent');updateBadge('site');}
+function startUnread(){stopUnread();if(profile?.role==='superadmin'&&canAccess('agent')){const ref=firebase.database().ref('users');const handler=snap=>{let total=0;snap.forEach(child=>{const d=child.val()||{};const count=Number(d.unreadCountForAdmin||0);total+=count>0?count:(d.unreadForAdmin===true?1:0);});unreadCount=total;updateBadge('agent');};ref.on('value',handler,err=>console.error('Agent Support unread:',err));unreadCleanup=()=>ref.off('value',handler);}else if(profile?.role==='siteadmin'&&canAccess('site')){const ref=firebase.database().ref(`chats/admin_${uid}`);const handler=snap=>{let total=0;snap.forEach(child=>{const msg=child.val();if(msg?.from==='admin'&&msg.readByUser!==true)total++;});unreadCount=total;updateBadge('site');};ref.on('value',handler,err=>console.error('Site LiveChat unread:',err));unreadCleanup=()=>ref.off('value',handler);}}
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=Object.values(instances).filter(inst=>inst?.panel);if(!open.length)return;e.preventDefault();open.forEach(closePanel);});
+const style=document.createElement('style');style.textContent=`
 .asf-root{
   position:fixed;
   z-index:50000 !important;
@@ -471,43 +205,7 @@ right: 3px;
 }
     @media(prefers-reduced-motion:reduce){.asf-button,.asf-label{transition:none}}
   `;document.head.appendChild(style);
-  window.addEventListener('resize',()=>{if(root){animationBase=clamp(animationBase,limits().min,limits().max);position(animationBase);startAnimation();}});
-  function start(){
-    if(!window.firebase?.auth||!window.firebase?.database)return;
-    firebase.auth().onAuthStateChanged(user=>{
-      if(unsubscribe){unsubscribe();unsubscribe=null;}
-      stopAsfUnreadListener();
-      stopSiteUnreadListener();
-      uid=user?.uid||null;profile=null;config={...defaults};render();
-      if(!uid)return;
-      const authUid=uid;
-      const profileRef=firebase.database().ref(`adminUsers/${authUid}`);
-      const profileHandler = snap => {
-  if (uid !== authUid) return;
-
-  profile = snap.val() || null;
-
-  render();
-  startAsfUnreadListener();
-};
-      profileRef.on('value',profileHandler,err=>{console.error('Agent Support profile read:',err);profile=null;render();});
-      const configRef=firebase.database().ref(CONFIG_PATH);
-      
-const configHandler = snap => {
-  if (uid !== authUid) return;
-
-  config = {
-    ...defaults,
-    ...(snap.val() || {})
-  };
-
-  render();
-  startAsfUnreadListener();
-};
-
-      configRef.on('value',configHandler,err=>console.error('Agent Support config read:',err));
-      unsubscribe=()=>{profileRef.off('value',profileHandler);configRef.off('value',configHandler);};
-    });
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+window.addEventListener('resize',()=>{for(const inst of Object.values(instances)){if(!inst?.root)continue;inst.animationBase=clamp(inst.animationBase,limits(inst).min,limits(inst).max);position(inst,inst.animationBase);startAnimation(inst);}});
+function start(){if(!window.firebase?.auth||!window.firebase?.database)return;firebase.auth().onAuthStateChanged(user=>{unsubscribe?.();unsubscribe=null;stopUnread();destroy('agent');destroy('site');uid=user?.uid||null;profile=null;configs.agent={...defaults};configs.site={...siteDefaults};if(!uid)return;const current=uid;const db=firebase.database(),profileRef=db.ref(`adminUsers/${current}`),agentRef=db.ref(AGENT_PATH),siteRef=db.ref(SITE_PATH);const refresh=()=>{render('agent');render('site');startUnread();};const profileHandler=snap=>{if(uid!==current)return;profile=snap.val()||null;refresh();};const agentHandler=snap=>{if(uid!==current)return;configs.agent={...defaults,...(snap.val()||{})};refresh();};const siteHandler=snap=>{if(uid!==current)return;configs.site={...siteDefaults,...(snap.val()||{})};refresh();};profileRef.on('value',profileHandler,err=>console.error('Floating profile:',err));agentRef.on('value',agentHandler,err=>console.error('Agent floating config:',err));siteRef.on('value',siteHandler,err=>console.error('Site floating config:',err));unsubscribe=()=>{profileRef.off('value',profileHandler);agentRef.off('value',agentHandler);siteRef.off('value',siteHandler);};});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
