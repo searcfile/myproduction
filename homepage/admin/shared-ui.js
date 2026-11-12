@@ -8707,21 +8707,42 @@ function initHardReloadReveal() {
 
 function init() {
 
-  // FLOATING AGENT SUPPORT MODE
-  // Jangan bina header, sidebar atau tabbar
-  // apabila LiveChat dibuka dalam floating panel.
-  const isAgentSupportFloating =
-    window.location.pathname
-      .split("/")
-      .pop()
-      .toLowerCase() === "livechat-support.html" &&
+
+  /* ==========================================
+     5G88 - FLOATING LIVECHAT MODE
+     ========================================== */
+
+  const currentPage = (
+    window.location.pathname.split("/").pop() || ""
+  ).toLowerCase();
+
+  const isFloating =
     new URLSearchParams(window.location.search)
       .get("floating") === "1";
 
-  if (isAgentSupportFloating) {
-    console.log(
-      "[Agent Support] Floating mode: shared shell disabled"
+  const isFloatingLivechat =
+    isFloating &&
+    (
+      currentPage === "livechat.html" ||
+      currentPage === "livechat-support.html"
     );
+
+  if (isFloatingLivechat) {
+    document.documentElement.classList.add(
+      "asf-embed-mode"
+    );
+
+    const existingShell =
+      document.getElementById("homepageSharedShell");
+
+    if (existingShell) {
+      existingShell.remove();
+    }
+
+    console.log(
+      "[5G88] Floating LiveChat: shared shell disabled"
+    );
+
     return;
   }
 
