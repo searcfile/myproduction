@@ -10,6 +10,100 @@
   const CONFIG_PATH='adminConfig/agentSupportFloating';
   const defaults={enabled:false,accessMode:'all',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400};
   let config={...defaults},profile=null,uid=null,root=null,button=null,panel=null,unsubscribe=null;
+  // ==========================================
+// AGENT SUPPORT - UNREAD BADGE
+// ==========================================
+let asfUnreadCount = 0;
+let asfUnreadUsers = {};
+let asfAdminProfiles = {};
+let asfUnreadCleanup = null;
+
+function updateAsfBadge() {
+  const badge = root?.querySelector('.asf-badge');
+  if (!badge) return;
+
+  const count = Math.max(0, asfUnreadCount);
+
+  badge.textContent = count > 99 ? '99+' : String(count);
+  badge.hidden = count === 0 || !!panel;
+}
+
+function countAsfUnread() {
+  let total = 0;
+
+  Object.entries(asfUnreadUsers).forEach(([sid, data]) => {
+    // Hanya channel admin
+    if (!sid.startsWith('admin_')) return;
+
+    const adminUid = sid.slice(6);
+
+    // Jangan kira mesej sendiri
+    if (adminUid === uid) return;
+
+    // Hanya mesej daripada Site Admin
+    if (asfAdminProfiles[adminUid]?.role !== 'siteadmin') {
+      return;
+    }
+
+    const count = Number(data?.unreadCountForAdmin || 0);
+
+    total += count > 0
+      ? count
+      : data?.unreadForAdmin === true ? 1 : 0;
+  });
+
+  asfUnreadCount = total;
+  updateAsfBadge();
+}
+
+function stopAsfUnreadListener() {
+  if (asfUnreadCleanup) {
+    asfUnreadCleanup();
+    asfUnreadCleanup = null;
+  }
+
+  asfUnreadUsers = {};
+  asfAdminProfiles = {};
+  asfUnreadCount = 0;
+
+  updateAsfBadge();
+}
+
+function startAsfUnreadListener() {
+  stopAsfUnreadListener();
+
+  // Badge hanya untuk Super Admin
+  if (!uid || !canAccess() || profile?.role !== 'superadmin') {
+    return;
+  }
+
+  const db = firebase.database();
+  const usersRef = db.ref('users');
+  const adminsRef = db.ref('adminUsers');
+
+  const usersHandler = snapshot => {
+    asfUnreadUsers = snapshot.val() || {};
+    countAsfUnread();
+  };
+
+  const adminsHandler = snapshot => {
+    asfAdminProfiles = snapshot.val() || {};
+    countAsfUnread();
+  };
+
+  usersRef.on('value', usersHandler, error => {
+    console.error('Agent Support unread users:', error);
+  });
+
+  adminsRef.on('value', adminsHandler, error => {
+    console.error('Agent Support unread profiles:', error);
+  });
+
+  asfUnreadCleanup = () => {
+    usersRef.off('value', usersHandler);
+    adminsRef.off('value', adminsHandler);
+  };
+}
   let raf=0,animationBase=0,animationStart=0,paused=false,dragging=false;
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
@@ -51,7 +145,20 @@ position(center + offset);
     raf=requestAnimationFrame(animate);
   }
   function startAnimation(){stopAnimation();if(!root||!animationEnabled()||paused||dragging||panel)return;animationStart=performance.now();raf=requestAnimationFrame(animate);}
-  function closePanel(){if(panel){panel.remove();panel=null;}if(button){button.hidden=false;button.setAttribute('aria-expanded','false');}startAnimation();}
+function closePanel() {
+  if (panel) {
+    panel.remove();
+    panel = null;
+  }
+
+  if (button) {
+    button.hidden = false;
+    button.setAttribute('aria-expanded', 'false');
+  }
+
+  updateAsfBadge();
+  startAnimation();
+}
   // ==========================================
 // AGENT SUPPORT - CLOSE PANEL WITH ESC
 // ==========================================
@@ -96,7 +203,12 @@ panel.querySelector('.asf-external').onclick = () => {
   panel.style.left = 'auto';
 }
     document.body.appendChild(panel);
-    if(button){button.setAttribute('aria-expanded','true');button.hidden=true;}
+if (button) {
+  button.setAttribute('aria-expanded', 'true');
+  button.hidden = true;
+}
+
+updateAsfBadge();
   }
   function canAccess(){
     if(!profile||!config.enabled||profile.active!==true||profile.secondPasswordEnabled!==true||sessionStorage.getItem('5g88.adminSession')!==uid)return false;
@@ -120,7 +232,23 @@ panel.querySelector('.asf-external').onclick = () => {
     button.innerHTML='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg><span class="asf-label"></span>';
 button.querySelector('.asf-label').textContent =
   config.label || 'Agent Support';
-    root.appendChild(button);document.body.appendChild(root);
+
+// ==========================================
+// AGENT SUPPORT - RED UNREAD BADGE
+// ==========================================
+const badge = document.createElement('span');
+
+badge.className = 'asf-badge';
+badge.setAttribute('aria-label', 'Unread messages');
+badge.hidden = true;
+
+root.appendChild(button);
+root.appendChild(badge);
+
+document.body.appendChild(root);
+
+// Paparkan jumlah unread terkini
+updateAsfBadge();
     animationBase=savedY()??Math.round(innerHeight*.58);position(animationBase);
     button.addEventListener('pointerenter',()=>{paused=true;stopAnimation();});
     button.addEventListener('pointerleave',()=>{if(!dragging){animationBase=root.getBoundingClientRect().top;paused=false;startAnimation();}});
@@ -210,7 +338,48 @@ transition:
   box-shadow 300ms ease,
   border-color 300ms ease;
 }
-    .asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
+/* ==========================================
+   AGENT SUPPORT - UNREAD RED BADGE
+========================================== */
+
+.asf-badge {
+  position: absolute;
+  top: -8px;
+  right: 5px;
+
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ff4d4f;
+  color: #ffffff;
+
+  border: 2px solid var(--dropdown-bg, #1f1f1f);
+  border-radius: 999px;
+
+  font: 700 11px Arial, sans-serif;
+  line-height: 1;
+
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Bila floating berada di sebelah kiri */
+.asf-root.asf-left .asf-badge {
+  right: auto;
+  left: 5px;
+}
+
+/* Sembunyikan jika tiada unread */
+.asf-badge[hidden] {
+  display: none !important;
+}
+.asf-left .asf-button{left:0;right:auto;border:1px solid #303030;border-left:0;border-radius:0 16px 16px 0}
 .asf-icon {
   width: 20px;
   height: 20px;
@@ -295,11 +464,19 @@ transition:
     if(!window.firebase?.auth||!window.firebase?.database)return;
     firebase.auth().onAuthStateChanged(user=>{
       if(unsubscribe){unsubscribe();unsubscribe=null;}
+      stopAsfUnreadListener();
       uid=user?.uid||null;profile=null;config={...defaults};render();
       if(!uid)return;
       const authUid=uid;
       const profileRef=firebase.database().ref(`adminUsers/${authUid}`);
-      const profileHandler=snap=>{if(uid!==authUid)return;profile=snap.val()||null;render();};
+      const profileHandler = snap => {
+  if (uid !== authUid) return;
+
+  profile = snap.val() || null;
+
+  render();
+  startAsfUnreadListener();
+};
       profileRef.on('value',profileHandler,err=>{console.error('Agent Support profile read:',err);profile=null;render();});
       const configRef=firebase.database().ref(CONFIG_PATH);
       const configHandler=snap=>{if(uid!==authUid)return;config={...defaults,...(snap.val()||{})};render();};
