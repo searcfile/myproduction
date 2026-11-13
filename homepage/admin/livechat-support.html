@@ -2390,10 +2390,10 @@ html, body { height:100% !important; overflow:hidden !important; }
 .activity-history-dropdown {
   width: 320px;
   max-width: calc(100vw - 24px);
-  background: #1f1f1f !important;
-  border: 1px solid #303030 !important;
+  background: var(--dropdown-bg) !important;
+  border: 1px solid var(--main-tab-border) !important;
   border-radius: 10px !important;
-  color: #e5e5e5 !important;
+  color: var(--text) !important;
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
@@ -2404,7 +2404,7 @@ html, body { height:100% !important; overflow:hidden !important; }
   padding: 12px 14px;
   font-size: 13px;
   font-weight: 600;
-  border-bottom: 1px solid #353535;
+  border-bottom: 1px solid var(--overflow-border);
 }
 
 .activity-history-heading svg {
@@ -2473,7 +2473,7 @@ html, body { height:100% !important; overflow:hidden !important; }
 }
 
 .activity-history-item strong {
-  color: #e5e5e5;
+  color: va(--text);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
