@@ -1594,19 +1594,11 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
 .msg-avatar-outside {border-color:var(--lc-border)!important;width:30px!important;height:30px!important;}
 .date-label-inner {background:var(--lc-blue-soft)!important;color:var(--lc-blue)!important;box-shadow:none!important;padding:5px 15px!important;}
 .date-label-inner .day-label,.date-label-inner .full-date-label {color:var(--lc-blue)!important;}
-
 .chat-empty-state {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box !important;
-
   background: var(--lc-panel) !important;
   border: 1px solid var(--lc-border) !important;
-
-  border-radius: 0 12px 12px 0 !important;
-  overflow: hidden !important;
+  border-radius: 0 14px 14px 0 !important;
 }
-
 .chat-empty-inner {color:var(--lc-muted)!important;max-width:350px;line-height:1.6;}
 .chat-empty-inner::before {content:'✉';display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:20px;background:var(--lc-blue-soft);color:var(--lc-blue);font-size:30px;margin:0 auto 16px;}
 /* Stable composer: previews always occupy first row; action buttons never disappear */
@@ -2068,6 +2060,7 @@ html, body { height:100% !important; overflow:hidden !important; }
   max-height:100% !important;
   grid-template-rows:auto minmax(0,1fr) max-content !important;
   overflow:hidden !important;
+  border-radius: 0 12px 12px 0;
 }
 #containerChatBox > #chatBox {
   grid-row:2 !important;
