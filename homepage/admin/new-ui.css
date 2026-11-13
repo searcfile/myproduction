@@ -29,7 +29,7 @@ html[data-admin-theme="light"] {
     --empty-icon-set:#fafafa;
    
    --floating-border:#91caff;
-   --loading-overlay-bg:rgba(255,255,255,.25);
+   --loading-overlay-bg:rgba(255,255,255,.15);
     --panel2:#fafafa;
 
   --text:rgba(0,0,0,.88);
