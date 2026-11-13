@@ -2223,23 +2223,29 @@ html, body { height:100% !important; overflow:hidden !important; }
   flex-shrink: 0;
 }
 
+
 .open-user-activity-btn {
-  width: 28px;
-  height: 28px;
+  width: auto;
+  height: auto;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
+  padding: 0;
+  margin: 0;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: #8db5ed;
   cursor: pointer;
 }
 
+
 .open-user-activity-btn:hover {
-  background: rgba(22,104,220,.18);
-  color: #fff;
+  background: transparent !important;
+  color: #1668dc;
 }
 
 .open-user-activity-btn:disabled {
@@ -2354,7 +2360,27 @@ html, body { height:100% !important; overflow:hidden !important; }
 #chatUserActivity[hidden] {
   display: none !important;
 }
+.chat-activity-row .open-user-activity-btn {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
 
+.chat-activity-row .open-user-activity-btn:hover {
+  background: transparent !important;
+}
+
+.chat-activity-row .open-user-activity-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
 </style>
 </head>
 <body>
