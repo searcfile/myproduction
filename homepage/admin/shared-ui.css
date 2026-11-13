@@ -1,12 +1,6 @@
 
 :root{
-    --tx-ink: #e5edf8;
-    --tx-muted: #9aaac0;
-    --tx-border: #2b3e5b;
-    --tx-surface: #152237;
-    --tx-surface-soft: #1c2b42;
-    --tx-hover: #1d304b;
-  
+
   --bg-main:#000;
   --sidebar:#001529;
  
@@ -60,13 +54,6 @@
    ========================================================== */
 
 body.light-theme{
-    --tx-ink: #17243a;
-    --tx-muted: #697991;
-    --tx-border: #e3eaf3;
-    --tx-surface: #ffffff;
-    --tx-surface-soft: #f6f9fd;
-    --tx-hover: #f8fbff;
-  
   --bg-main:#fff;
   --sidebar:#001529;
 
@@ -3602,22 +3589,17 @@ padding:12px;
     var(--admin-header-height) +
     var(--admin-tabs-height)
   );
-
   left: 0;
   right: 0;
   bottom: 0;
-
   width: 100%;
   height: auto;
   min-height: 0;
-
   z-index: 900;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: var(--bg-main);
+  background: var(--tx-bg);
   box-sizing: border-box;
 }
 
@@ -3649,7 +3631,7 @@ padding:12px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .85);
+  background: var(--text);
   opacity: .25;
   animation: smartPulse 1s linear infinite;
 }
