@@ -3178,6 +3178,7 @@ function getSelectedUserOpenPayload() {
   return { name, email, photo };
 }
 
+
 async function openSelectedUserMainPage(e) {
   if (e) {
     e.preventDefault();
@@ -3191,46 +3192,37 @@ async function openSelectedUserMainPage(e) {
     return;
   }
 
-  const userKey = String(payload.email || "").trim().toLowerCase().replace(/\./g, "_");
-  let syncedTabs = [];
-  let syncedActiveTabUrl = "";
+  const email = String(payload.email || "")
+    .trim()
+    .toLowerCase();
 
-  try {
-    const snap = await db.ref(`users/${userKey}/mainOpenTabs`).once("value");
-    const v = snap.val() || {};
-
-    if (Array.isArray(v.tabs)) {
-      syncedTabs = v.tabs;
-    }
-
-    if (v.activeTabUrl) {
-      syncedActiveTabUrl = String(v.activeTabUrl);
-    }
-  } catch (err) {
-    console.warn("[ADMIN] gagal ambil mainOpenTabs:", err);
+  if (!email) {
+    alert("Selected user has no email.");
+    return;
   }
 
-  const qs = new URLSearchParams({
-    name: payload.name || "",
-    email: payload.email || "",
-    photo: payload.photo || "",
-    adminView: "1",
-    restoreTabs: encodeURIComponent(JSON.stringify(syncedTabs || [])),
-    restoreActiveTab: syncedActiveTabUrl || ""
-  });
+  const loginUrl = new URL(
+    "https://myproduction-v2-5g88myr1.vercel.app/login.html"
+  );
 
-  
-const finalUrl =
-  `https://myproduction-v2-5g88myr1.vercel.app/?${qs.toString()}`;
-  const win = window.open(finalUrl, "_blank", "width=602,height=900");
+  // Identiti yang dipilih untuk dipaparkan.
+  // Bukan bukti login atau kebenaran akses.
+  loginUrl.searchParams.set("selectedEmail", email);
+
+  const win = window.open(
+    loginUrl.href,
+    "_blank",
+    "width=602,height=900"
+  );
 
   if (!win) {
-    alert("Browser blocked the new tab. Please allow popups for this site.");
+    alert("Please allow popups for this site.");
     return;
   }
 
   win.focus();
 }
+
 function normalizeChatMessage(key, raw){
   if (!raw || typeof raw !== "object") return null;
 
