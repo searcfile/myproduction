@@ -2382,6 +2382,108 @@ html, body { height:100% !important; overflow:hidden !important; }
   height: 18px;
   display: block;
 }
+      
+/* =========================================
+   ACTIVITY HISTORY - TIMELINE STYLE
+========================================= */
+
+.activity-history-dropdown {
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  background: #1f1f1f !important;
+  border: 1px solid #303030 !important;
+  border-radius: 10px !important;
+  color: #e5e5e5 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+.activity-history-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid #353535;
+}
+
+.activity-history-heading svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.activity-history-list {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 14px 12px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+
+/* Garis timeline kiri */
+.activity-history-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 5px;
+  padding: 0 0 20px 20px;
+  border: none !important;
+  border-left: 1px solid #404040 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  min-height: 65px;
+}
+
+/* Bulatan hijau */
+.activity-history-item::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 3px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #22c55e;
+  border-radius: 50%;
+  background: #1f1f1f;
+}
+
+/* Aktiviti terakhir tiada garis panjang */
+.activity-history-item:last-child {
+  border-left-color: transparent !important;
+  padding-bottom: 4px;
+}
+
+.activity-history-item strong {
+  color: #e5e5e5;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.activity-history-item small {
+  color: #929292;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* Label jenis aktiviti */
+.activity-history-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #18351f;
+  color: #4ade80;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.activity-history-item:hover {
+  background: transparent !important;
+}
+
 </style>
 </head>
 <body>
@@ -2496,9 +2598,21 @@ html, body { height:100% !important; overflow:hidden !important; }
   class="activity-history-dropdown"
   hidden
 >
-  <div class="activity-history-heading">
-    Activity History
-  </div>
+
+<div class="activity-history-heading">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M12 21q-3.45 0-6.012-2.287T3.05 13H5.1q.35 2.6 2.313 4.3T12 19q2.925 0 4.963-2.037T19 12t-2.037-4.962T12 5q-1.725 0-3.225.8T6.25 8H9v2H3V4h2v2.35q1.275-1.6 3.113-2.475T12 3q1.875 0 3.513.713t2.85 1.924t1.925 2.85t-2.85 1.925T12 21m2.8-4.8L11 12.4V7h2v4.6l3.2 3.2z"/>
+  </svg>
+  <span>Online Activity History</span>
+</div>
+
   <div
     id="activityHistoryList"
     class="activity-history-list"
@@ -3282,21 +3396,28 @@ async function openSelectedUserActivity() {
       return;
     }
 
-    records.forEach(record => {
-      const item = document.createElement("div");
-      item.className = "activity-history-item";
 
-      const name = document.createElement("strong");
-      name.textContent = `Enter ${record.page || "Unknown"}`;
+records.forEach(record => {
+  const item = document.createElement("div");
+  item.className = "activity-history-item";
 
-      const time = document.createElement("small");
-      time.textContent = formatAdminActivityTime(
-        record.timestamp
-      );
+  const name = document.createElement("strong");
+  name.textContent =
+    `Enter ${record.page || "Unknown"}`;
 
-      item.append(name, time);
-      content.appendChild(item);
-    });
+  const tag = document.createElement("span");
+  tag.className = "activity-history-tag";
+  tag.textContent = "Route Change";
+
+  const time = document.createElement("small");
+  time.textContent = formatAdminActivityTime(
+    record.timestamp
+  );
+
+  item.append(name, tag, time);
+  content.appendChild(item);
+});
+
 
   } catch (error) {
     console.error("[Activity History]", error);
