@@ -2430,7 +2430,7 @@ html, body { height:100% !important; overflow:hidden !important; }
   margin-left: 5px;
   padding: 0 0 20px 20px;
   border: none !important;
-  border-left: 1px solid #404040 !important;
+  border-left: 1px solid var(--overflow-border) !important;
   border-radius: 0 !important;
   background: transparent !important;
   min-height: 65px;
@@ -2446,13 +2446,13 @@ html, body { height:100% !important; overflow:hidden !important; }
   height: 9px;
   border: 1px solid #22c55e;
   border-radius: 50%;
-  background: #1f1f1f;
+  background: var(--dropdown-bg);
 }
 
 /* Offline / keluar tab */
 .activity-history-item.activity-history-offline::before {
   border-color: #777 !important;
-  background: #1f1f1f !important;
+  background: var(--dropdown-bg) !important;
 }
 
 .activity-history-item.activity-history-offline
