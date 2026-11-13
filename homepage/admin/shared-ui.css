@@ -3134,10 +3134,7 @@ margin-top: var(--admin-header-height, 64px) !important;
   cursor:pointer;
   transition: all 0.3s;
 }
-.admin-workspace-more-name:hover{
-  color:var(--dropdown-color-hover);
-  background:var(--dropdown-bg-hover);
-}
+
 .admin-workspace-more-item.active
 .admin-workspace-more-name{
   color:var(--dropdown-color);
