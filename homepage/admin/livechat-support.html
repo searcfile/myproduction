@@ -2159,6 +2159,35 @@ html, body { height:100% !important; overflow:hidden !important; }
 }
 
 
+/* ==========================================
+   SITE ADMIN ACTIVITY STATUS
+   ========================================== */
+
+.user-meta-row {
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.admin-activity-text {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 400;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.admin-activity-text[hidden] {
+  display: none !important;
+}
+
+.user-meta-row .online-text,
+.user-meta-row .offline-text {
+  flex-shrink: 0;
+}
+
 </style>
 </head>
 <body>
@@ -2891,6 +2920,80 @@ function bindAdminTyping(){
     });
   });
 }
+
+/* ==========================================
+   SITE ADMIN ACTIVITY - AGENT SUPPORT
+   ========================================== */
+
+let siteAdminActivity = {};
+let siteAdminActivityRef = null;
+
+function formatAdminActivityTime(timestamp) {
+  const date = new Date(Number(timestamp));
+
+  if (!Number.isFinite(date.getTime())) return "";
+
+  const pad = n => String(n).padStart(2, "0");
+
+  return (
+    date.getFullYear() + "-" +
+    pad(date.getMonth() + 1) + "-" +
+    pad(date.getDate()) + " " +
+    pad(date.getHours()) + ":" +
+    pad(date.getMinutes()) + ":" +
+    pad(date.getSeconds())
+  );
+}
+
+function getSiteAdminActivity(memberIds) {
+  const adminSid = (memberIds || []).find(id =>
+    /^admin_[^/]+$/.test(String(id))
+  );
+
+  if (!adminSid) return null;
+
+  const uid = adminSid.slice(6);
+  return siteAdminActivity[uid] || null;
+}
+
+function startSiteAdminActivityListener() {
+  if (siteAdminActivityRef) return;
+
+  const authUser = firebase.auth().currentUser;
+  if (!authUser) return;
+
+  db.ref(`adminUsers/${authUser.uid}/role`)
+    .once("value")
+    .then(snapshot => {
+      if (
+        snapshot.val() !== "superadmin" ||
+        siteAdminActivityRef
+      ) return;
+
+      siteAdminActivityRef = db.ref("adminActivity");
+
+      siteAdminActivityRef.on("value", snapshot => {
+        siteAdminActivity = snapshot.val() || {};
+        scheduleRender();
+      }, error => {
+        console.warn("[Admin Activity Read]", error);
+      });
+    })
+    .catch(error => {
+      console.warn("[Admin Activity Init]", error);
+    });
+}
+
+firebase.auth().onAuthStateChanged(user => {
+  if (siteAdminActivityRef) {
+    siteAdminActivityRef.off();
+    siteAdminActivityRef = null;
+  }
+
+  siteAdminActivity = {};
+
+  if (user) startSiteAdminActivityListener();
+});
 
 /* ======================= SCHEDULE RENDER ======================= */
 function scheduleRender(){
@@ -3813,6 +3916,14 @@ const statusInfo = getUserListStatus(userData);
 const onlineText = statusInfo.text;
 const onlineClass = statusInfo.className;
 
+const memberIds = userData.__mergedMembers || [sanitized];
+
+const adminActivity = getSiteAdminActivity(memberIds);
+
+const activityLabel = adminActivity?.page
+  ? `Enter ${adminActivity.page} · ${formatAdminActivityTime(adminActivity.enteredAt)}`
+  : "";
+
 userLabel.innerHTML = `
   <div class="user-top-row">
 <div class="user-top-left">
@@ -3836,10 +3947,19 @@ userLabel.innerHTML = `
   <div class="datetime-list">Browser : ${browserText}</div>
   <div class="datetime-list">Device ID : ${deviceIdText}</div>
 
-  <div class="user-meta-row">
-    <span class="${onlineClass}">${onlineText}</span>
-  </div>
+<div class="user-meta-row">
+  <span class="${onlineClass}">${onlineText}</span>
+  <span class="admin-activity-text"></span>
+</div>
 `;
+
+const activityEl = userLabel.querySelector(".admin-activity-text");
+
+if (activityEl) {
+  activityEl.textContent = activityLabel;
+  activityEl.title = activityLabel;
+  activityEl.hidden = !activityLabel || !isOnline;
+}
 
     userLabel.style.fontWeight = hasUnread ? "bold" : "normal";
     userDiv.appendChild(userLabel);
