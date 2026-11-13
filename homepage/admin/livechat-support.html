@@ -2223,6 +2223,80 @@ html, body { height:100% !important; overflow:hidden !important; }
   flex-shrink: 0;
 }
 
+.open-user-activity-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8db5ed;
+  cursor: pointer;
+}
+
+.open-user-activity-btn:hover {
+  background: rgba(22,104,220,.18);
+  color: #fff;
+}
+
+.open-user-activity-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.activity-history-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: rgba(0,0,0,.7);
+}
+
+.activity-history-panel {
+  position: relative;
+  width: min(460px,100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #304563;
+  background: #152237;
+  color: #fff;
+}
+
+.activity-history-close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.activity-history-content {
+  display: grid;
+  gap: 8px;
+}
+
+.activity-history-item {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #304563;
+  border-radius: 8px;
+}
+
+.activity-history-item small {
+  color: #91a9c8;
+}
+
 </style>
 </head>
 <body>
@@ -2304,6 +2378,22 @@ html, body { height:100% !important; overflow:hidden !important; }
           <path fill="currentColor" d="M9.76 0C15.417 0 20 4.477 20 10S15.416 20 9.76 20c-3.191 0-6.142-1.437-8.07-3.846a.644.644 0 0 1 .115-.918a.68.68 0 0 1 .94.113a8.96 8.96 0 0 0 7.016 3.343c4.915 0 8.9-3.892 8.9-8.692s-3.985-8.692-8.9-8.692a8.96 8.96 0 0 0-6.944 3.255a.68.68 0 0 1-.942.101a.644.644 0 0 1-.103-.92C3.703 1.394 6.615 0 9.761 0m.545 6.862l2.707 2.707c.262.262.267.68.011.936L10.38 13.15a.66.66 0 0 1-.937-.011a.66.66 0 0 1-.01-.937l1.547-1.548l-10.31.001A.66.66 0 0 1 0 10c0-.361.3-.654.67-.654h10.268L9.38 7.787a.66.66 0 0 1-.01-.937a.66.66 0 0 1 .935.011"></path>
         </svg>
       </button>
+
+        
+<button
+  id="openUserActivityBtn"
+  type="button"
+  class="open-user-activity-btn"
+  title="Activity History"
+  aria-label="Activity History"
+  disabled
+>
+  <svg viewBox="0 0 24 24" width="18" height="18"
+       fill="currentColor" aria-hidden="true">
+    <path d="M12 21q-3.45 0-6.012-2.287T3.05 13H5.1q.35 2.6 2.313 4.3T12 19q2.925 0 4.963-2.037T19 12t-2.037-4.962T12 5q-1.725 0-3.225.8T6.25 8H9v2H3V4h2v2.35q1.275-1.6 3.113-2.475T12 3q1.875 0 3.513.713t2.85 1.924t1.925 2.85T21 12t-.712 3.513t-1.925 2.85t-2.85 1.925T12 21m2.8-4.8L11 12.4V7h2v4.6l3.2 3.2z"/>
+  </svg>
+</button>
+
     </div>
 
     <div id="chatUserStatus">Offline</div>
@@ -2774,6 +2864,11 @@ selectedMergedEmail = "";
   if (openUserMainBtn) {
   openUserMainBtn.disabled = true;
   }
+const activityBtn = document.getElementById("openUserActivityBtn");
+
+if (activityBtn) {
+  activityBtn.disabled = true;
+}
   allMessages = [];
   justOpenedChat = false;
   forceScrollToBottom = false;
@@ -2989,6 +3084,82 @@ function getSiteAdminActivity(memberIds) {
 
   const uid = adminSid.slice(6);
   return siteAdminActivity[uid] || null;
+}
+
+async function openSelectedUserActivity() {
+  const adminSid = selectedChatMemberIds.find(id =>
+    /^admin_[^/]+$/.test(String(id))
+  );
+
+  if (!adminSid) {
+    alert("Please select a Site Admin.");
+    return;
+  }
+
+  const uid = adminSid.slice(6);
+
+  const overlay = document.createElement("div");
+  overlay.className = "activity-history-overlay";
+
+  const panel = document.createElement("div");
+  panel.className = "activity-history-panel";
+
+  const title = document.createElement("h3");
+  title.textContent = "Activity History";
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "activity-history-close";
+  close.textContent = "✕";
+
+  const content = document.createElement("div");
+  content.className = "activity-history-content";
+  content.textContent = "Loading activity...";
+
+  close.onclick = () => overlay.remove();
+  overlay.onclick = e => {
+    if (e.target === overlay) overlay.remove();
+  };
+
+  panel.append(title, close, content);
+  overlay.append(panel);
+  document.body.append(overlay);
+
+  try {
+    const snap = await db
+      .ref(`adminActivityHistory/${uid}`)
+      .orderByChild("timestamp")
+      .limitToLast(100)
+      .once("value");
+
+    const records = Object.values(snap.val() || {})
+      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
+    content.replaceChildren();
+
+    if (!records.length) {
+      content.textContent = "No activity history.";
+      return;
+    }
+
+    records.forEach(record => {
+      const item = document.createElement("div");
+      item.className = "activity-history-item";
+
+      const name = document.createElement("strong");
+      name.textContent = `Enter ${record.page || "Unknown"}`;
+
+      const time = document.createElement("small");
+      time.textContent = formatAdminActivityTime(record.timestamp);
+
+      item.append(name, time);
+      content.append(item);
+    });
+
+  } catch (error) {
+    console.error("[Activity History]", error);
+    content.textContent = "Failed to load activity history.";
+  }
 }
 
 function startSiteAdminActivityListener() {
@@ -4081,6 +4252,13 @@ const openUserMainBtn = document.getElementById("openUserMainBtn");
 if (openUserMainBtn) {
   openUserMainBtn.disabled = false;
 }
+    const activityBtn = document.getElementById("openUserActivityBtn");
+
+if (activityBtn) {
+  activityBtn.disabled = !selectedChatMemberIds.some(id =>
+    /^admin_[^/]+$/.test(String(id))
+  );
+}
       const avatarImg = document.getElementById("chatUserAvatar");
       if (avatarImg){
       avatarImg.src = selectedUserPhoto;
@@ -4835,6 +5013,15 @@ window.onload = ()=>{
   const openUserMainBtn = document.getElementById("openUserMainBtn");
 if (openUserMainBtn) {
   openUserMainBtn.addEventListener("click", openSelectedUserMainPage);
+}
+const openUserActivityBtn =
+  document.getElementById("openUserActivityBtn");
+
+if (openUserActivityBtn) {
+  openUserActivityBtn.addEventListener(
+    "click",
+    openSelectedUserActivity
+  );
 }
 imagePreviewWrap = document.getElementById("imagePreviewWrap");
 imagePreviewList = document.getElementById("imagePreviewList");
