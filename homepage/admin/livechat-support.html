@@ -2018,6 +2018,86 @@ html,body { min-height:0!important; }
   .lc-composer-area .send-box .send-tool-btn {width:22px!important;}
   .lc-composer-area .send-box .send-main-btn {width:30px!important;min-width:30px!important;height:30px!important;}
 }
+
+/* 5G88 FIX: composer is a fixed-height grid row, never a scroll container.
+   Only the message history may scroll. */
+html, body { height:100% !important; overflow:hidden !important; }
+.livechat-layout {
+  height:var(--lc-viewport-height,100dvh) !important;
+  max-height:var(--lc-viewport-height,100dvh) !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+.livechat-layout > .user-list-panel,
+.livechat-layout > .chat-detail-panel,
+.chat-detail-wrap {
+  height:100% !important;
+  max-height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+#containerChatBox {
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  grid-template-rows:auto minmax(0,1fr) max-content !important;
+  overflow:hidden !important;
+}
+#containerChatBox > #chatBox {
+  grid-row:2 !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+}
+#containerChatBox > .lc-composer-area {
+  grid-row:3 !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:visible !important;
+  align-self:end !important;
+  flex:none !important;
+  padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px)) !important;
+}
+.lc-composer-area .send-box {
+  height:auto !important;
+  min-height:54px !important;
+  max-height:none !important;
+  overflow:visible !important;
+  grid-template-rows:auto !important;
+  align-items:center !important;
+  flex-wrap:nowrap !important;
+  padding:8px 10px !important;
+}
+.lc-composer-area .send-box #msg {
+  min-height:34px !important;
+  max-height:100px !important;
+  height:auto;
+  overflow-y:auto !important;
+  align-self:center !important;
+}
+.lc-composer-area .send-box .send-actions,
+.lc-composer-area .send-box .attach-btn {
+  align-self:center !important;
+}
+@media(max-width:768px){
+  .livechat-layout > .user-list-panel,
+  .livechat-layout > .chat-detail-panel {
+    height:calc(100% - 14px) !important;
+    max-height:calc(100% - 14px) !important;
+  }
+  #containerChatBox > .lc-composer-area {
+    max-height:none !important;
+    overflow:visible !important;
+    padding:7px 8px calc(8px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .lc-composer-area .send-box {
+    max-height:none !important;
+    overflow:visible !important;
+    min-height:52px !important;
+  }
+}
+
 </style>
 </head>
 <body>
