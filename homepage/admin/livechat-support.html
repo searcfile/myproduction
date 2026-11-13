@@ -3074,6 +3074,12 @@ function normalizeChatMessage(key, raw){
     raw.userEmail ??
     "";
 
+  const senderRole = String(
+    raw.senderRole ??
+    raw.adminRole ??
+    ""
+  ).trim().toLowerCase();
+
   const photoURL =
     raw.photoURL ??
     raw.photoUrl ??
@@ -3091,6 +3097,7 @@ function normalizeChatMessage(key, raw){
     from: from === "admin" ? "admin" : "user",
     name,
     email,
+    senderRole,
     photoURL,
     text: String(text || ""),
     image: image || "",
@@ -3384,6 +3391,15 @@ function renderChatMessages(messages){
     const timeStr = hasValidTime ? formatDateTimeMY(msg.time) : "";
     const isUser = msg.from !== "admin";
 
+
+const senderRole = String(
+  msg.senderRole || ""
+).trim().toLowerCase();
+
+const originalName = String(
+  msg.name || ""
+).trim();
+
 const rawName = isUser
   ? getSafeDisplayName(
       activeUserIdSanitized,
@@ -3394,12 +3410,18 @@ const rawName = isUser
       {}
     )
   : (
-      String(msg.senderRole || "").trim().toLowerCase() === "superadmin"
-        ? "Admin Support"
-        : (msg.name || "Admin")
+      senderRole === "siteadmin"
+        ? (originalName || "Site Admin")
+        : (
+            senderRole === "superadmin" ||
+            (!senderRole && originalName.toLowerCase() === "admin33")
+          )
+          ? "Admin Support"
+          : (originalName || "Admin")
     );
 
 const senderName = formatUserName(rawName);
+
 
    const avatarURL = isUser
   ? (msg.photoURL || "https://i.imgur.com/MyKVioD.png")
