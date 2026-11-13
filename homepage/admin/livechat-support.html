@@ -1958,6 +1958,66 @@ html.asf-embed-mode .chat-detail-panel {
 @media (prefers-reduced-motion: reduce) {
   #containerChatBox { transition: none !important; }
 }
+
+/* ===========================================================
+   FIX 2026-11-13: composer always visible on small viewports
+   Keep chat header/composer fixed in the layout; scroll messages only.
+   =========================================================== */
+html,body { min-height:0!important; }
+.livechat-layout {
+  height:var(--lc-viewport-height,100dvh)!important;
+  max-height:var(--lc-viewport-height,100dvh)!important;
+  min-height:0!important;
+}
+.user-list-panel,.chat-detail-panel,.chat-detail-wrap {
+  min-height:0!important;
+  max-height:100%!important;
+}
+#containerChatBox {
+  height:100%!important;
+  max-height:100%!important;
+  min-height:0!important;
+  grid-template-rows:minmax(0,auto) minmax(0,1fr) auto!important;
+}
+#containerChatBox > #chatBox {
+  min-height:0!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+#containerChatBox > .lc-composer-area {
+  min-height:0!important;
+  max-height:min(45%,260px)!important;
+  overflow-y:auto!important;
+  flex-shrink:0!important;
+  position:relative;
+  z-index:2;
+}
+.lc-composer-area .send-box {min-width:0!important;max-width:100%!important;}
+.lc-composer-area .send-box #msg {min-width:0!important;}
+@media(max-width:768px){
+  .livechat-layout {height:var(--lc-viewport-height,100dvh)!important;max-height:var(--lc-viewport-height,100dvh)!important;}
+  .livechat-layout .user-list-panel,
+  .livechat-layout .chat-detail-panel {height:100%!important;max-height:100%!important;}
+  .chat-detail-wrap,#containerChatBox {height:100%!important;max-height:100%!important;}
+  #containerChatBox > #chatHeader {min-height:0!important;}
+  #containerChatBox > .lc-composer-area {
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px))!important;
+    max-height:48%!important;
+  }
+  .lc-composer-area .send-box {
+    grid-template-columns:26px minmax(0,1fr) auto!important;
+    padding:6px!important;
+    gap:4px!important;
+  }
+  .lc-composer-area .send-box .send-actions {gap:2px!important;min-width:0!important;}
+  .lc-composer-area .send-box .send-tool-btn {flex-shrink:0!important;}
+}
+@media(max-width:350px){
+  .lc-composer-area .send-box {grid-template-columns:24px minmax(0,1fr) auto!important;gap:2px!important;}
+  .lc-composer-area .send-box .send-actions {gap:0!important;}
+  .lc-composer-area .send-box .send-tool-btn {width:22px!important;}
+  .lc-composer-area .send-box .send-main-btn {width:30px!important;min-width:30px!important;height:30px!important;}
+}
 </style>
 </head>
 <body>
@@ -4602,6 +4662,24 @@ document.addEventListener("keydown", (e) => {
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initLiveChatSyncInputs);
   else initLiveChatSyncInputs();
   window.addEventListener('load',initLiveChatSyncInputs,{once:true});
+})();
+</script>
+
+<script>
+/* Responsive height: use the actual visible viewport (including phone keyboard). */
+(function(){
+  function syncChatViewport(){
+    const vv=window.visualViewport;
+    const h=vv ? vv.height : window.innerHeight;
+    if(!Number.isFinite(h)||h<=0)return;
+    document.documentElement.style.setProperty('--lc-viewport-height',Math.floor(h)+'px');
+  }
+  syncChatViewport();
+  window.addEventListener('resize',syncChatViewport,{passive:true});
+  window.addEventListener('orientationchange',syncChatViewport,{passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',syncChatViewport,{passive:true});
+  }
 })();
 </script>
 </body>
