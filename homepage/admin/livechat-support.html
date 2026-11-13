@@ -2134,11 +2134,25 @@ html, body { height:100% !important; overflow:hidden !important; }
   flex-shrink: 0;
 }
 
+
+/* =====================================
+   BACK BUTTON - MOBILE ONLY
+   ===================================== */
+
+/* Desktop: sembunyikan button */
 #lcMobileBack {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
 }
+
+/* Phone / layar kecil: tampilkan */
+@media (max-width: 768px) {
+  #lcMobileBack {
+    display: inline-flex;
+  }
+}
+
 
 </style>
 </head>
