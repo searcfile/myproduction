@@ -698,17 +698,9 @@ function getUserTabsDbPath() {
   return `adminWorkspaceTabs/${uid}`;
 }
 
-
-
 /* ==========================================
-   SITE ADMIN - ACTIVE PAGE TRACKING
-   ========================================== */
-
-
-
-/* ==========================================
-   SITE ADMIN - ACTIVE PAGE TRACKING V2
-   ENTER + EXIT HISTORY
+   SITE ADMIN - ACTIVITY TRACKER V3
+   EXIT OLD PAGE + ENTER NEW PAGE
    ========================================== */
 
 async function trackSiteAdminTab() {
@@ -741,17 +733,21 @@ async function trackSiteAdminTab() {
     );
 
     const now = Date.now();
-    let previous = null;
-    let changed = false;
 
-    // Transaction mengelakkan dua proses
-    // menukar halaman yang sama serentak.
+    let previous = null;
+
+    // Ambil tab sebelumnya daripada state Firebase
+    // SEBELUM menggantikan tab yang aktif.
     const result = await activityRef.transaction(
       current => {
-        if (
-          current?.pageUrl === file &&
-          current?.page === page.name
-        ) {
+        previous = current
+          ? {
+              page: String(current.page || ""),
+              pageUrl: String(current.pageUrl || "")
+            }
+          : null;
+
+        if (previous?.pageUrl === file) {
           return;
         }
 
@@ -765,78 +761,59 @@ async function trackSiteAdminTab() {
       false
     );
 
-    if (!result.committed) return;
-
-    changed = true;
-
-    // Rekod halaman sebelumnya dibaca daripada
-    // state sebelum pertukaran.
-    // History event disimpan melalui transaction
-    // berasingan di bawah.
-    const lastKey =
-      `5g88.lastActivityTab.${user.uid}`;
-
-    const oldFile = sessionStorage.getItem(lastKey);
-
-    // Baca halaman terakhir daripada rekod history
-    // untuk menentukan exit yang betul apabila
-    // tracker bermula pada dokumen baharu.
-    const historySnap = await historyRef
-      .orderByChild("timestamp")
-      .limitToLast(1)
-      .once("value");
-
-    const lastRecord = Object.values(
-      historySnap.val() || {}
-    )[0];
-
-    if (
-      lastRecord?.type === "enter" &&
-      lastRecord.pageUrl !== file
-    ) {
-      previous = {
-        page: lastRecord.page,
-        pageUrl: lastRecord.pageUrl
-      };
+    // Jika tab sama, jangan tambah Enter berulang.
+    if (!result.committed) {
+      console.log(
+        "[Activity] Same page, skipped:",
+        page.name
+      );
+      return;
     }
 
     const updates = {};
 
-    if (previous) {
+    // EXIT tab sebelumnya
+    if (
+      previous?.pageUrl &&
+      previous.pageUrl !== file
+    ) {
       const exitKey = historyRef.push().key;
 
       updates[exitKey] = {
         type: "exit",
-        page: previous.page,
+        page: previous.page || "Unknown",
         pageUrl: previous.pageUrl,
         timestamp: now
       };
     }
 
+    // ENTER tab baharu
     const enterKey = historyRef.push().key;
 
     updates[enterKey] = {
       type: "enter",
       page: page.name,
       pageUrl: file,
-      timestamp: now
+      timestamp: now + 1
     };
 
     await historyRef.update(updates);
 
-    sessionStorage.setItem(lastKey, file);
-
     console.log(
-      "[Site Admin Activity]",
+      "[Activity] Success:",
       previous?.page || "Start",
       "=>",
       page.name
     );
 
   } catch (error) {
-    console.warn("[Site Admin Activity]", error);
+    console.error(
+      "[Site Admin Activity] Failed:",
+      error
+    );
   }
 }
+
 
 
 
