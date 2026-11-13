@@ -705,6 +705,12 @@ function getUserTabsDbPath() {
    ========================================== */
 
 
+
+/* ==========================================
+   SITE ADMIN - ACTIVE PAGE TRACKING V2
+   ENTER + EXIT HISTORY
+   ========================================== */
+
 async function trackSiteAdminTab() {
   try {
     if (currentAdminProfile?.role !== "siteadmin") return;
@@ -723,35 +729,115 @@ async function trackSiteAdminTab() {
     const page = ADMIN_PAGES.find(p => p.file === file);
     if (!page) return;
 
-    const storageKey = `5g88.lastActivityTab.${user.uid}`;
-    if (sessionStorage.getItem(storageKey) === file) return;
-
     const database = getSharedDb();
     if (!database) return;
 
-    const timestamp = firebase.database.ServerValue.TIMESTAMP;
+    const activityRef = database.ref(
+      `adminActivity/${user.uid}`
+    );
 
-    // Simpan halaman terkini.
-    await database.ref(`adminActivity/${user.uid}`).set({
-      page: page.name,
-      pageUrl: file,
-      enteredAt: timestamp
-    });
+    const historyRef = database.ref(
+      `adminActivityHistory/${user.uid}`
+    );
 
-    // Tambah rekod sejarah baru.
-    await database.ref(`adminActivityHistory/${user.uid}`).push({
+    const now = Date.now();
+    let previous = null;
+    let changed = false;
+
+    // Transaction mengelakkan dua proses
+    // menukar halaman yang sama serentak.
+    const result = await activityRef.transaction(
+      current => {
+        if (
+          current?.pageUrl === file &&
+          current?.page === page.name
+        ) {
+          return;
+        }
+
+        return {
+          page: page.name,
+          pageUrl: file,
+          enteredAt: now
+        };
+      },
+      undefined,
+      false
+    );
+
+    if (!result.committed) return;
+
+    changed = true;
+
+    // Rekod halaman sebelumnya dibaca daripada
+    // state sebelum pertukaran.
+    // History event disimpan melalui transaction
+    // berasingan di bawah.
+    const lastKey =
+      `5g88.lastActivityTab.${user.uid}`;
+
+    const oldFile = sessionStorage.getItem(lastKey);
+
+    // Baca halaman terakhir daripada rekod history
+    // untuk menentukan exit yang betul apabila
+    // tracker bermula pada dokumen baharu.
+    const historySnap = await historyRef
+      .orderByChild("timestamp")
+      .limitToLast(1)
+      .once("value");
+
+    const lastRecord = Object.values(
+      historySnap.val() || {}
+    )[0];
+
+    if (
+      lastRecord?.type === "enter" &&
+      lastRecord.pageUrl !== file
+    ) {
+      previous = {
+        page: lastRecord.page,
+        pageUrl: lastRecord.pageUrl
+      };
+    }
+
+    const updates = {};
+
+    if (previous) {
+      const exitKey = historyRef.push().key;
+
+      updates[exitKey] = {
+        type: "exit",
+        page: previous.page,
+        pageUrl: previous.pageUrl,
+        timestamp: now
+      };
+    }
+
+    const enterKey = historyRef.push().key;
+
+    updates[enterKey] = {
       type: "enter",
       page: page.name,
       pageUrl: file,
-      timestamp
-    });
+      timestamp: now
+    };
 
-    sessionStorage.setItem(storageKey, file);
+    await historyRef.update(updates);
+
+    sessionStorage.setItem(lastKey, file);
+
+    console.log(
+      "[Site Admin Activity]",
+      previous?.page || "Start",
+      "=>",
+      page.name
+    );
 
   } catch (error) {
     console.warn("[Site Admin Activity]", error);
   }
 }
+
 
 
 function syncTabsToFirebase(tabs) {
