@@ -2705,12 +2705,15 @@ async function getAdminIdentity() {
     throw new Error("Admin username not found.");
   }
 
+
   return {
     uid,
     name: username,
+    role: String(profile.role || "").trim().toLowerCase(),
     email: profile.email || authUser.email || "",
     photoURL: DEFAULT_ADMIN_PHOTO
   };
+
 }
 
 function bindAdminPresence(){
@@ -3380,11 +3383,24 @@ function renderChatMessages(messages){
 
     const timeStr = hasValidTime ? formatDateTimeMY(msg.time) : "";
     const isUser = msg.from !== "admin";
+
 const rawName = isUser
-  ? getSafeDisplayName(activeUserIdSanitized, { name: msg.name, email: msg.email }, {})
-  : (msg.name || "Admin");
+  ? getSafeDisplayName(
+      activeUserIdSanitized,
+      {
+        name: msg.name,
+        email: msg.email
+      },
+      {}
+    )
+  : (
+      String(msg.senderRole || "").trim().toLowerCase() === "superadmin"
+        ? "Admin Support"
+        : (msg.name || "Admin")
+    );
 
 const senderName = formatUserName(rawName);
+
    const avatarURL = isUser
   ? (msg.photoURL || "https://i.imgur.com/MyKVioD.png")
   : "https://i.imgur.com/qiZFOs9.png";
@@ -4258,6 +4274,7 @@ console.log("[Agent Support] Message destination:", {
     await db.ref(`chats/${targetSid}`).push({
       from: "admin",
       name: admin.name || "Admin",
+      senderRole: admin.role,
       email: admin.email || "",
       photoURL: admin.photoURL ||
         "https://i.imgur.com/qiZFOs9.png",
