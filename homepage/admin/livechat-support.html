@@ -1454,6 +1454,29 @@ body{
   line-height: 1.25;
   word-break: break-word;
 }
+
+/* ==========================================
+   LAST MESSAGE PREVIEW - USER LIST
+   ========================================== */
+
+.last-message-preview {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 5px 0;
+  color: var(--lc-ink);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.last-message-preview[hidden] {
+  display: none !important;
+}
+
 .chat-user-name-row{
   display:flex;
   align-items:center;
@@ -3717,6 +3740,12 @@ function ensureChatMetaListener(sanitized){
     const t = Number(m.time) || Date.now();
     chatMeta[sanitized].lastChatTime = t;
 
+    // Simpan preview mesej terbaru untuk senarai conversation
+    chatMeta[sanitized].lastMessageText =
+      String(m.text ?? m.message ?? "").trim();
+
+    chatMeta[sanitized].lastMessageTime = t;
+
     // ✅ detect message lama vs baru
     const wasBooted = !!chatMeta[sanitized].booted;
     if(!wasBooted) chatMeta[sanitized].booted = true;
@@ -3822,6 +3851,12 @@ wasBooted &&
     const t = Number(m.time) || chatMeta[sanitized].lastChatTime || Date.now();
     chatMeta[sanitized].lastChatTime = t;
 
+    // Kemaskini preview jika mesej terakhir berubah
+    chatMeta[sanitized].lastMessageText =
+      String(m.text ?? m.message ?? "").trim();
+
+    chatMeta[sanitized].lastMessageTime = t;
+
    if (m.from === "user" && (m.name || m.email || m.photoURL)) {
   chatMeta[sanitized].identity = {
     name: m.name || "",
@@ -3924,9 +3959,19 @@ const onlineClass = statusInfo.className;
 
 const memberIds = userData.__mergedMembers || [sanitized];
 
+const latestMessage = memberIds
+  .map(id => ({
+    text: chatMeta[id]?.lastMessageText || "",
+    time: Number(chatMeta[id]?.lastMessageTime || 0)
+  }))
+  .sort((a, b) => b.time - a.time)[0];
+
+const lastMessagePreview = latestMessage?.text || "";
+
 const adminActivity = getSiteAdminActivity(memberIds);
 
 const activityLabel = adminActivity?.page
+    
   ? `Enter ${adminActivity.page} · ${formatAdminActivityTime(adminActivity.enteredAt)}`
   : "";
 
@@ -3948,15 +3993,26 @@ userLabel.innerHTML = `
     </div>
   </div>
 
-  <div class="datetime-list">Device : ${deviceTypeText}</div>
-  <div class="datetime-list">Browser : ${browserText}</div>
-  <div class="datetime-list">Device ID : ${deviceIdText}</div>
+
+<div class="last-message-preview"></div>
+<div class="datetime-list">Device : ${deviceTypeText}</div>
+<div class="datetime-list">Browser : ${browserText}</div>
+<div class="datetime-list">Device ID : ${deviceIdText}</div>
+
 
 <div class="user-meta-row">
   <span class="${onlineClass}">${onlineText}</span>
   <span class="admin-activity-text"></span>
 </div>
 `;
+
+const previewEl = userLabel.querySelector(".last-message-preview");
+
+if (previewEl) {
+  previewEl.textContent = lastMessagePreview;
+  previewEl.title = lastMessagePreview;
+  previewEl.hidden = !lastMessagePreview;
+}
 
 const activityEl = userLabel.querySelector(".admin-activity-text");
 
