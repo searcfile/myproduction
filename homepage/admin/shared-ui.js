@@ -699,6 +699,51 @@ function getUserTabsDbPath() {
 }
 
 
+
+/* ==========================================
+   SITE ADMIN - ACTIVE PAGE TRACKING
+   ========================================== */
+
+async function trackSiteAdminTab() {
+  try {
+    if (currentAdminProfile?.role !== "siteadmin") return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const file = getCurrentFile();
+
+    if (
+      !file ||
+      file === "index.html" ||
+      !canViewAdminPage(file)
+    ) return;
+
+    const page = ADMIN_PAGES.find(p => p.file === file);
+    if (!page) return;
+
+    const storageKey = `5g88.lastActivityTab.${user.uid}`;
+
+    // Refresh halaman yang sama tidak mengubah masa masuk.
+    if (sessionStorage.getItem(storageKey) === file) return;
+
+    const database = getSharedDb();
+    if (!database) return;
+
+    await database.ref(`adminActivity/${user.uid}`).set({
+      page: page.name,
+      pageUrl: file,
+      enteredAt: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    sessionStorage.setItem(storageKey, file);
+
+  } catch (error) {
+    console.warn("[Site Admin Tab Activity]", error);
+  }
+}
+
+
 function syncTabsToFirebase(tabs) {
   try {
     const sharedDb = getSharedDb();
@@ -6870,8 +6915,13 @@ renderDropdown("bankResitDropdown", "bank");
 renderDropdown("gameLinksDropdown", "list");
 
 
+
 syncCurrentPageTab();
 renderTabs();
+
+// Rekod halaman selepas role dan permission disahkan.
+trackSiteAdminTab();
+
 
 if (getCurrentFile() === "index.html") {
   initDefaultWorkspace();
