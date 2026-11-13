@@ -211,7 +211,7 @@ const alignClass =
 
               <g
                 fill-rule="nonzero"
-                stroke="#3e3e3e"
+                stroke="var(--empty-icon-border)"
               >
 
                 <path
