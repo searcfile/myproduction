@@ -2247,54 +2247,72 @@ html, body { height:100% !important; overflow:hidden !important; }
   cursor: not-allowed;
 }
 
-.activity-history-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-  background: rgba(0,0,0,.7);
-}
 
-.activity-history-panel {
+.chat-user-name-row {
   position: relative;
-  width: min(460px,100%);
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #304563;
-  background: #152237;
-  color: #fff;
 }
 
-.activity-history-close {
+.activity-history-dropdown {
   position: absolute;
-  right: 15px;
-  top: 15px;
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(320px, calc(100vw - 32px));
+  max-height: 300px;
+  overflow: hidden;
+  z-index: 10050;
+  border: 1px solid var(--input-line, #424242);
+  border-radius: 8px;
+  background: var(--dropdown-bg, #1f1f1f);
+  color: var(--text, #fff);
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
 
-.activity-history-content {
-  display: grid;
-  gap: 8px;
+.activity-history-dropdown[hidden] {
+  display: none !important;
+}
+
+.activity-history-heading {
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--input-line, #424242);
+}
+
+.activity-history-list {
+  max-height: 245px;
+  overflow-y: auto;
+  padding: 5px;
+  scrollbar-width: thin;
 }
 
 .activity-history-item {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 5px;
-  padding: 12px;
-  border: 1px solid #304563;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.activity-history-item:hover {
+  background: var(--dropdown-bg-hover, #162b44);
 }
 
 .activity-history-item small {
-  color: #91a9c8;
+  color: var(--muted, #91a9c8);
+  font-size: 11px;
+}
+
+#chatUserActivity {
+  margin-top: 4px;
+  color: #91caff;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+#chatUserActivity[hidden] {
+  display: none !important;
 }
 
 </style>
@@ -2394,9 +2412,26 @@ html, body { height:100% !important; overflow:hidden !important; }
   </svg>
 </button>
 
+<div
+  id="activityHistoryDropdown"
+  class="activity-history-dropdown"
+  hidden
+>
+  <div class="activity-history-heading">
+    Activity History
+  </div>
+  <div
+    id="activityHistoryList"
+    class="activity-history-list"
+  >
+    No activity history.
+  </div>
+</div>
+
     </div>
 
-    <div id="chatUserStatus">Offline</div>
+   <div id="chatUserStatus">Offline</div>
+   <div id="chatUserActivity" hidden></div>
   </div>
 </div>
 
@@ -2857,7 +2892,15 @@ function showEmptyState(){
 detachMergedChatListeners();
 selectedChatMemberIds = [];
 selectedMergedEmail = "";
+updateSelectedUserActivity();
 
+const historyDropdown = document.getElementById(
+  "activityHistoryDropdown"
+);
+
+if (historyDropdown) {
+  historyDropdown.hidden = true;
+}
   selectedUserId = null;
   activeUserIdSanitized = "";
   const openUserMainBtn = document.getElementById("openUserMainBtn");
@@ -3086,44 +3129,57 @@ function getSiteAdminActivity(memberIds) {
   return siteAdminActivity[uid] || null;
 }
 
+
+function updateSelectedUserActivity() {
+  const element = document.getElementById(
+    "chatUserActivity"
+  );
+
+  if (!element) return;
+
+  const activity = getSiteAdminActivity(
+    selectedChatMemberIds
+  );
+
+  if (!activity?.page) {
+    element.textContent = "";
+    element.hidden = true;
+    return;
+  }
+
+  element.textContent =
+    `Enter ${activity.page} · ` +
+    formatAdminActivityTime(activity.enteredAt);
+
+  element.hidden = false;
+}
+
 async function openSelectedUserActivity() {
+  const dropdown = document.getElementById(
+    "activityHistoryDropdown"
+  );
+
+  const content = document.getElementById(
+    "activityHistoryList"
+  );
+
+  if (!dropdown || !content) return;
+
+  if (!dropdown.hidden) {
+    dropdown.hidden = true;
+    return;
+  }
+
   const adminSid = selectedChatMemberIds.find(id =>
     /^admin_[^/]+$/.test(String(id))
   );
 
-  if (!adminSid) {
-    alert("Please select a Site Admin.");
-    return;
-  }
+  if (!adminSid) return;
 
   const uid = adminSid.slice(6);
 
-  const overlay = document.createElement("div");
-  overlay.className = "activity-history-overlay";
-
-  const panel = document.createElement("div");
-  panel.className = "activity-history-panel";
-
-  const title = document.createElement("h3");
-  title.textContent = "Activity History";
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = "activity-history-close";
-  close.textContent = "✕";
-
-  const content = document.createElement("div");
-  content.className = "activity-history-content";
+  dropdown.hidden = false;
   content.textContent = "Loading activity...";
-
-  close.onclick = () => overlay.remove();
-  overlay.onclick = e => {
-    if (e.target === overlay) overlay.remove();
-  };
-
-  panel.append(title, close, content);
-  overlay.append(panel);
-  document.body.append(overlay);
 
   try {
     const snap = await db
@@ -3132,8 +3188,18 @@ async function openSelectedUserActivity() {
       .limitToLast(100)
       .once("value");
 
+    // Jangan paparkan data lama jika user sudah ditukar.
+    const currentSid = selectedChatMemberIds.find(id =>
+      /^admin_[^/]+$/.test(String(id))
+    );
+
+    if (dropdown.hidden || currentSid !== adminSid) return;
+
     const records = Object.values(snap.val() || {})
-      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+      .sort((a, b) =>
+        Number(b.timestamp || 0) -
+        Number(a.timestamp || 0)
+      );
 
     content.replaceChildren();
 
@@ -3150,10 +3216,12 @@ async function openSelectedUserActivity() {
       name.textContent = `Enter ${record.page || "Unknown"}`;
 
       const time = document.createElement("small");
-      time.textContent = formatAdminActivityTime(record.timestamp);
+      time.textContent = formatAdminActivityTime(
+        record.timestamp
+      );
 
       item.append(name, time);
-      content.append(item);
+      content.appendChild(item);
     });
 
   } catch (error) {
@@ -3161,6 +3229,7 @@ async function openSelectedUserActivity() {
     content.textContent = "Failed to load activity history.";
   }
 }
+
 
 function startSiteAdminActivityListener() {
   if (siteAdminActivityRef) return;
@@ -3178,10 +3247,13 @@ function startSiteAdminActivityListener() {
 
       siteAdminActivityRef = db.ref("adminActivity");
 
-      siteAdminActivityRef.on("value", snapshot => {
-        siteAdminActivity = snapshot.val() || {};
-        scheduleRender();
-      }, error => {
+siteAdminActivityRef.on("value", snapshot => {
+  siteAdminActivity = snapshot.val() || {};
+
+  scheduleRender();
+  updateSelectedUserActivity();
+
+}, error => {
         console.warn("[Admin Activity Read]", error);
       });
     })
@@ -4272,9 +4344,19 @@ if (activityBtn) {
       if (searchMsg) searchMsg.value = "";
       renderMessageSearchPanel();
 
-      updateUserPresenceById(sanitized);
-      listenToChat();
-      scheduleRender();
+updateUserPresenceById(sanitized);
+updateSelectedUserActivity();
+
+const historyDropdown = document.getElementById(
+  "activityHistoryDropdown"
+);
+
+if (historyDropdown) {
+  historyDropdown.hidden = true;
+}
+
+listenToChat();
+scheduleRender();
     };
 
     userListBox.appendChild(userDiv);
@@ -5023,6 +5105,24 @@ if (openUserActivityBtn) {
     openSelectedUserActivity
   );
 }
+    document.addEventListener("click", event => {
+  const dropdown = document.getElementById(
+    "activityHistoryDropdown"
+  );
+
+  const button = document.getElementById(
+    "openUserActivityBtn"
+  );
+
+  if (!dropdown || dropdown.hidden) return;
+
+  if (
+    dropdown.contains(event.target) ||
+    button?.contains(event.target)
+  ) return;
+
+  dropdown.hidden = true;
+});
 imagePreviewWrap = document.getElementById("imagePreviewWrap");
 imagePreviewList = document.getElementById("imagePreviewList");
 imageUploadStatus = document.getElementById("imageUploadStatus");
