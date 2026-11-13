@@ -1711,6 +1711,77 @@ html.asf-embed-mode .chat-detail-panel {
   height: 100dvh !important;
 }
 
+
+/* =====================================================
+   LIVECHAT SUPPORT - VISUAL REFRESH ONLY (2026-11-13)
+   No database, message logic, permissions or filters changed.
+===================================================== */
+:root { --lc-ref-bg:#0f1116; --lc-ref-panel:#191c23; --lc-ref-border:#303640; --lc-ref-muted:#9daec7; }
+.livechat-layout{padding:8px!important;grid-template-columns:clamp(320px,24vw,390px) minmax(0,1fr)!important;background:var(--tx-bg)!important}
+.user-list-panel{border:1px solid var(--lc-border)!important;border-radius:13px 0 0 13px!important;overflow:hidden!important}
+.user-list-header{padding:14px 12px 12px!important}
+.user-list-header::before{display:none!important}
+.lc-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;color:var(--lc-ink)}
+.lc-heading strong{font-size:15px;font-weight:750}.lc-count{font-size:11px;color:var(--lc-muted)}
+.user-list-header>.new-ui-input-wrap{width:100%!important}
+#searchUser.new-ui-input{height:33px!important;border-radius:6px!important;background:var(--input)!important;border:1px solid var(--input-line)!important;font-size:12px!important}
+.top-filter-row{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin-top:10px!important}
+#filterAll,#filterUnread,#filterOnline{flex:1 1 0!important;min-width:0!important;height:32px!important;border-radius:7px!important;padding:0 5px!important}
+.user-stats{flex:1 0 100%!important;font-size:11px!important;margin:3px 0 0!important}
+.user-scroll-box{padding:7px 9px!important}
+.user-item{border-radius:8px!important;margin:2px 0!important;padding:11px 8px!important}
+.user-item.active{background:#193455!important;border-color:#3776b9!important}
+.chat-detail-panel{padding:0!important;min-width:0!important}
+#containerChatBox{border-radius:0 13px 13px 0!important;box-shadow:none!important}
+#chatHeader{min-height:78px!important;padding:11px 14px!important}
+#chatUserAvatar{display:none!important}
+.chat-header-left{gap:9px!important}
+#chatUserName{font-size:14px!important}
+#chatUserStatus,.status-sub{font-size:11px!important}
+.chat-header-right{display:flex!important;align-items:center!important;gap:8px!important}
+.lc-header-icon{display:grid;place-items:center;width:32px;height:32px;border:0;background:transparent;color:var(--lc-muted);cursor:pointer;border-radius:7px}
+.lc-header-icon:hover{background:var(--lc-hover);color:var(--lc-blue)}
+.close-chat-btn{width:28px!important;height:28px!important;border-radius:50%!important}
+.lc-mobile-back{display:none;border:0;border-radius:10px;width:40px;height:40px;background:#17375c;color:#69b0ff;font-size:23px;cursor:pointer;flex-shrink:0}
+.chat-box{background:var(--lc-elevated)!important;padding:18px 22px!important}
+.mine .msg-bubble-wrap{background:#1f4d34!important;border:1px solid #287443!important;border-radius:12px!important;box-shadow:none!important}
+.theirs .msg-bubble-wrap{background:var(--lc-panel)!important;border-radius:12px!important;box-shadow:none!important}
+.msg-avatar-outside{width:32px!important;height:32px!important;border-radius:50%!important}
+.lc-composer-area{flex:0 0 auto;min-width:0;border-top:1px solid var(--lc-border);background:var(--lc-panel);padding:10px 14px 14px}
+.lc-auto-reply-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--lc-ink);margin-bottom:8px}
+.lc-auto-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 4px 3px 9px;background:#1668dc;color:#fff;border-radius:18px;font-size:11px}
+.lc-auto-dot{width:16px;height:16px;border-radius:50%;background:white}
+.lc-composer-area .send-box{border:1px solid var(--lc-border)!important;border-radius:12px!important;background:var(--lc-elevated)!important;padding:11px 12px!important;grid-template-columns:28px minmax(0,1fr) auto!important;gap:8px!important;max-height:min(34dvh,260px)!important}
+.lc-composer-area .send-box .attach-btn{width:28px!important;height:34px!important;background:transparent!important}
+.lc-composer-area .send-box #msg{font-size:13px!important;padding:9px 2px!important;min-height:38px!important}
+.lc-composer-area .send-box .send-actions{gap:6px!important}
+.lc-composer-area .send-main-btn{width:34px!important;min-width:34px!important;height:34px!important;border-radius:50%!important}
+.chat-empty-inner{font-size:0!important;text-align:center!important}
+.chat-empty-inner::before{content:'☏'!important;font-size:30px!important;background:var(--lc-panel)!important;border:1px solid var(--lc-border)!important;border-radius:16px!important}
+.chat-empty-inner::after{content:'Select a conversation\A Choose a conversation from the list to view messages and reply.';white-space:pre-line;display:block;font-size:14px;line-height:2;color:var(--lc-muted)}
+#containerChatBox{position:relative!important}
+.lc-search-panel{position:absolute;z-index:15;top:0;right:0;bottom:0;width:min(350px,90%);padding:17px 14px;background:var(--lc-panel);border-left:1px solid var(--lc-border);display:flex;flex-direction:column;gap:12px}
+.lc-search-panel[hidden]{display:none!important}
+.lc-search-title{display:flex;justify-content:space-between;align-items:center;color:var(--lc-ink);font-size:14px}
+.lc-search-title button{border:1px solid var(--lc-border);border-radius:50%;width:24px;height:24px;background:transparent;color:var(--lc-muted);cursor:pointer}
+.lc-search-panel>.new-ui-input-wrap{width:100%!important;flex:none!important}
+#searchMessage.new-ui-input{height:34px!important;border-radius:7px!important;background:var(--input)!important;border:1px solid var(--input-line)!important;font-size:12px!important}
+.lc-search-empty{display:flex;flex-direction:column;align-items:center;gap:12px;margin:auto;color:var(--lc-muted);font-size:12px;text-align:center}
+.lc-search-empty-icon{font-size:36px;opacity:.5}
+@media(max-width:900px) and (min-width:769px){.livechat-layout{grid-template-columns:290px minmax(0,1fr)!important}}
+@media(max-width:768px){
+.livechat-layout{padding:7px!important;display:block!important}
+.user-list-panel,.chat-detail-panel{height:calc(100dvh - 14px)!important;width:100%!important;border:1px solid var(--lc-border)!important;border-radius:12px!important;overflow:hidden!important}
+#containerChatBox{border:0!important;border-radius:12px!important}
+.lc-mobile-back{display:grid;place-items:center}
+#chatHeader{min-height:76px!important;padding:10px!important}
+.chat-box{padding:12px!important}
+.lc-composer-area{padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px))!important}
+.lc-composer-area .send-box{grid-template-columns:26px minmax(0,1fr) auto!important;padding:8px!important;gap:4px!important}
+.lc-composer-area .send-box .send-actions{gap:2px!important}
+.lc-search-panel{width:min(350px,94%)}
+}
+@media(max-width:390px){.lc-composer-area .send-box .send-tool-btn{width:24px!important}.lc-composer-area .send-main-btn{width:32px!important;min-width:32px!important;height:32px!important}.lc-composer-area{padding-left:7px!important;padding-right:7px!important}}
   </style>
 </head>
 <body>
@@ -1718,7 +1789,8 @@ html.asf-embed-mode .chat-detail-panel {
   <!-- LEFT -->
   <aside id="userList" class="user-list-panel">
     <div class="user-list-header">
-      <input type="text" id="searchUser" data-ui="search" placeholder="Search user..." />
+      <div class="lc-heading"><strong>Conversations</strong><span class="lc-count">Users</span></div>
+      <input type="text" id="searchUser" data-ui="search" placeholder="Search conversations" />
 
 <div class="top-filter-row">
   <button id="filterAll" class="active-filter">All</button>
@@ -1756,6 +1828,7 @@ html.asf-embed-mode .chat-detail-panel {
         <div id="chatHeader">
           <div id="chatHeaderUser" class="chat-header-user">
             <div class="chat-header-left">
+              <button type="button" id="lcMobileBack" class="lc-mobile-back" aria-label="Back to conversations">←</button>
               <img id="chatUserAvatar" src="" alt="Avatar" />
   <div class="chat-header-text">
     <div class="chat-user-name-row">
@@ -1779,22 +1852,22 @@ html.asf-embed-mode .chat-detail-panel {
 </div>
 
             <div class="chat-header-right">
-              <input
-                type="text"
-                id="searchMessage"
-                data-ui="search"
-                placeholder="Search messages..."
-              />
-              <button id="closeChatBtn" type="button" class="close-chat-btn" title="Close">
-                ✕
-              </button>
+              <button type="button" id="lcOpenSearch" class="lc-header-icon" title="Search messages" aria-label="Search messages"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg></button>
+              <button id="closeChatBtn" type="button" class="close-chat-btn" title="Close conversation" aria-label="Close conversation">✕</button>
             </div>
           </div>
         </div>
 
+        <div id="lcSearchPanel" class="lc-search-panel" hidden>
+          <div class="lc-search-title"><strong>Search messages</strong><button type="button" id="lcCloseSearch" aria-label="Close search">✕</button></div>
+          <input type="text" id="searchMessage" data-ui="search" placeholder="Search (Min 5 characters)" />
+          <div class="lc-search-empty"><span class="lc-search-empty-icon">▱</span><span>Search within this conversation</span></div>
+        </div>
         <!-- Chat Box -->
 <div class="chat-box" id="chatBox"></div>
 
+<div class="lc-composer-area">
+<div class="lc-auto-reply-label">AI Auto-reply <span class="lc-auto-pill">ON <span class="lc-auto-dot"></span></span></div>
 <div class="send-box">
 <div id="imagePreviewWrap" class="image-preview-wrap" hidden>
   <div id="imagePreviewList" class="image-preview-list"></div>
@@ -1841,6 +1914,7 @@ html.asf-embed-mode .chat-detail-panel {
           </div>
         </div>
 
+        </div><!-- /lc-composer-area -->
         <div id="emojiPickerWrap" class="emoji-picker-wrap" hidden>
           <emoji-picker id="emojiPicker"></emoji-picker>
         </div>
@@ -4285,6 +4359,35 @@ document.addEventListener("keydown", (e) => {
 });
 
 
+</script>
+
+<script>
+/* Presentation-only handlers: existing search/filter/send logic remains unchanged. */
+(function(){
+  const ready=()=>{
+    const panel=document.getElementById('lcSearchPanel');
+    const open=document.getElementById('lcOpenSearch');
+    const close=document.getElementById('lcCloseSearch');
+    const search=document.getElementById('searchMessage');
+    const back=document.getElementById('lcMobileBack');
+    const layout=document.querySelector('.livechat-layout');
+    open?.addEventListener('click',()=>{if(panel){panel.hidden=false;search?.focus();}});
+    close?.addEventListener('click',()=>{if(panel)panel.hidden=true;});
+    back?.addEventListener('click',()=>{
+      if(panel)panel.hidden=true;
+      layout?.classList.remove('mobile-chat-open');
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel&&!panel.hidden)panel.hidden=true;});
+    // Visual counter reflects the existing displayed total, without changing the data source.
+    const count=document.querySelector('.lc-count');
+    const total=document.getElementById('totalUsers');
+    if(count&&total){
+      const sync=()=>{count.textContent=(total.textContent||'0').trim()+' shown';};
+      sync();new MutationObserver(sync).observe(total,{childList:true,characterData:true,subtree:true});
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
+})();
 </script>
 </body>
 </html>
