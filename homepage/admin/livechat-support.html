@@ -1782,7 +1782,36 @@ html.asf-embed-mode .chat-detail-panel {
 .lc-search-panel{width:min(350px,94%)}
 }
 @media(max-width:390px){.lc-composer-area .send-box .send-tool-btn{width:24px!important}.lc-composer-area .send-main-btn{width:32px!important;min-width:32px!important;height:32px!important}.lc-composer-area{padding-left:7px!important;padding-right:7px!important}}
-  </style>
+  
+/* ===== LiveChat UI refinement: original blue bubbles + shared sync-search ===== */
+.mine .msg-bubble-wrap {
+  background: linear-gradient(145deg,#2879ef,#1856bf) !important;
+  border: 1px solid rgba(92,159,255,.35) !important;
+  color:#fff !important;
+}
+.lc-composer-area .lc-auto-reply-label {display:none!important}
+.user-list-header > .shared-sync-search,
+.lc-search-panel > .shared-sync-search {width:100%!important;min-width:0!important;flex:0 0 auto!important}
+.user-list-header .shared-sync-search-input,
+.lc-search-panel .shared-sync-search-input {
+  width:calc(100% - 32px)!important;min-width:0!important;height:34px!important;
+  padding:0 11px!important;border-radius:6px 0 0 6px!important;
+  background:var(--input,#141414)!important;
+  border:1px solid var(--input-line,#424242)!important;
+  background-image:none!important;box-shadow:none!important;
+  color:var(--lc-ink,#fff)!important;font-size:12px!important;
+}
+.user-list-header .shared-sync-search-button,
+.lc-search-panel .shared-sync-search-button {
+  height:34px!important;width:32px!important;min-width:32px!important;
+  border-radius:0 6px 6px 0!important;
+}
+.user-list-header .shared-sync-search-input:focus,
+.lc-search-panel .shared-sync-search-input:focus {border-color:#1668dc!important;box-shadow:none!important}
+@media(max-width:768px){
+ .lc-search-panel > .shared-sync-search{width:100%!important}
+}
+</style>
 </head>
 <body>
 <main class="livechat-layout">
@@ -1790,7 +1819,7 @@ html.asf-embed-mode .chat-detail-panel {
   <aside id="userList" class="user-list-panel">
     <div class="user-list-header">
       <div class="lc-heading"><strong>Conversations</strong><span class="lc-count">Users</span></div>
-      <input type="text" id="searchUser" data-ui="search" placeholder="Search conversations" />
+      <input type="text" id="searchUser" placeholder="Search conversations" />
 
 <div class="top-filter-row">
   <button id="filterAll" class="active-filter">All</button>
@@ -1860,14 +1889,14 @@ html.asf-embed-mode .chat-detail-panel {
 
         <div id="lcSearchPanel" class="lc-search-panel" hidden>
           <div class="lc-search-title"><strong>Search messages</strong><button type="button" id="lcCloseSearch" aria-label="Close search">✕</button></div>
-          <input type="text" id="searchMessage" data-ui="search" placeholder="Search (Min 5 characters)" />
+          <input type="text" id="searchMessage" placeholder="Search (Min 5 characters)" />
           <div class="lc-search-empty"><span class="lc-search-empty-icon">▱</span><span>Search within this conversation</span></div>
         </div>
         <!-- Chat Box -->
 <div class="chat-box" id="chatBox"></div>
 
 <div class="lc-composer-area">
-<div class="lc-auto-reply-label">AI Auto-reply <span class="lc-auto-pill">ON <span class="lc-auto-dot"></span></span></div>
+
 <div class="send-box">
 <div id="imagePreviewWrap" class="image-preview-wrap" hidden>
   <div id="imagePreviewList" class="image-preview-list"></div>
@@ -4387,6 +4416,29 @@ document.addEventListener("keydown", (e) => {
     }
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
+})();
+</script>
+
+<script>
+/* UI only: retain original input IDs and existing live search handlers. */
+(function(){
+  function initLiveChatSyncInputs(){
+    if(!window.NewUI || typeof window.NewUI.syncSearch !== 'function') return;
+    ['searchUser','searchMessage'].forEach(id=>{
+      const input=document.getElementById(id);
+      if(!input || input._syncSearch) return;
+      window.NewUI.syncSearch(input,{
+        onSearch: async (value, el) => {
+          // Existing listeners own filtering; do not modify their logic.
+          el.dispatchEvent(new Event('input',{bubbles:true}));
+          // Keep the existing spinning indicator visible briefly for instant local searches.
+          await new Promise(resolve=>setTimeout(resolve,280));
+        }
+      });
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initLiveChatSyncInputs);
+  else initLiveChatSyncInputs();
 })();
 </script>
 </body>
