@@ -569,6 +569,12 @@ body {
   color:var(--text-dim);
 }
 
+.datetime-list {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .user-meta-row .datetime-list{
   margin-top:0;
   margin-left:auto;
@@ -3995,10 +4001,12 @@ userLabel.innerHTML = `
 
 
 <div class="last-message-preview"></div>
-<div class="datetime-list">Device : ${deviceTypeText}</div>
-<div class="datetime-list">Browser : ${browserText}</div>
-<div class="datetime-list">Device ID : ${deviceIdText}</div>
-
+<div class="datetime-list">
+  Device Browser: ${deviceTypeText} - ${browserText}
+</div>
+<div class="datetime-list">
+  Device ID : ${deviceIdText}
+</div>
 
 <div class="user-meta-row">
   <span class="${onlineClass}">${onlineText}</span>
