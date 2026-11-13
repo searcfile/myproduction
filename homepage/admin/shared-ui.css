@@ -3665,7 +3665,7 @@ padding:12px;
 }
 
 .smart-loading-text {
-  color: #fff;
+  color: var(--text);
   font-size: 14px;
   font-weight: 400;
   text-align: center;
