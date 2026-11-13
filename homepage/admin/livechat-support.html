@@ -1730,7 +1730,12 @@ html.asf-embed-mode .chat-detail-panel {
 .user-stats{flex:1 0 100%!important;font-size:11px!important;margin:3px 0 0!important}
 .user-scroll-box{padding:7px 9px!important}
 .user-item{border-radius:8px!important;margin:2px 0!important;padding:11px 8px!important}
-.user-item.active{background:#193455!important;border-color:#3776b9!important}
+.user-item.active{
+    color: var(--main-tab-primary) !important;
+    background: var(--main-tab-active-bg);
+    border-color: var(--main-tab-active-border);
+    box-shadow: inset 0 2px 0 var(--main-tab-primary);
+}
 .chat-detail-panel{padding:0!important;min-width:0!important}
 #containerChatBox{border-radius:0 13px 13px 0!important;box-shadow:none!important}
 #chatHeader{min-height:78px!important;padding:11px 14px!important}
