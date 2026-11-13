@@ -4477,8 +4477,32 @@ function renderMessageSearchPanel(){
     const item = document.createElement("button");
     item.type = "button";
     item.className = "lc-search-result-item";
-    const name = document.createElement("strong");
-    name.textContent = m.from === "admin" ? (m.name || "Admin") : (m.name || m.email || "User");
+
+const name = document.createElement("strong");
+
+const senderRole = String(
+  m.senderRole || ""
+).trim().toLowerCase();
+
+const originalName = String(
+  m.name || ""
+).trim();
+
+const displayName = m.from === "admin"
+  ? (
+      senderRole === "siteadmin"
+        ? (originalName || "Site Admin")
+        : (
+            senderRole === "superadmin" ||
+            (!senderRole && originalName.toLowerCase() === "admin33")
+          )
+          ? "Admin Support"
+          : (originalName || "Admin")
+    )
+  : (originalName || m.email || "User");
+
+name.textContent = formatUserName(displayName);
+
     const body = document.createElement("span");
     body.className = "lc-search-result-text";
     body.textContent = String(m.text || "");
