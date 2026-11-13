@@ -2449,6 +2449,23 @@ html, body { height:100% !important; overflow:hidden !important; }
   background: #1f1f1f;
 }
 
+/* Offline / keluar tab */
+.activity-history-item.activity-history-offline::before {
+  border-color: #777 !important;
+  background: #1f1f1f !important;
+}
+
+.activity-history-item.activity-history-offline
+.activity-history-tag {
+  background: #303030 !important;
+  color: #b5b5b5 !important;
+}
+
+/* Enter / aktiviti aktif */
+.activity-history-item:not(.activity-history-offline)::before {
+  border-color: #22c55e !important;
+}
+
 /* Aktiviti terakhir tiada garis panjang */
 .activity-history-item:last-child {
   border-left-color: transparent !important;
@@ -3397,17 +3414,34 @@ async function openSelectedUserActivity() {
     }
 
 
+
 records.forEach(record => {
   const item = document.createElement("div");
   item.className = "activity-history-item";
 
+  const type = String(record.type || "enter");
+  const isExit = type === "exit";
+  const isOffline = type === "offline";
+  const isLeaving = isExit || isOffline;
+
+  if (isLeaving) {
+    item.classList.add("activity-history-offline");
+  }
+
   const name = document.createElement("strong");
-  name.textContent =
-    `Enter ${record.page || "Unknown"}`;
+
+  name.textContent = isExit
+    ? `Offline - ${record.page || "Unknown"}`
+    : isOffline
+      ? "Offline"
+      : `Enter ${record.page || "Unknown"}`;
 
   const tag = document.createElement("span");
   tag.className = "activity-history-tag";
-  tag.textContent = "Route Change";
+
+  tag.textContent = isOffline
+    ? "Connection"
+    : "Route Change";
 
   const time = document.createElement("small");
   time.textContent = formatAdminActivityTime(
@@ -3417,6 +3451,7 @@ records.forEach(record => {
   item.append(name, tag, time);
   content.appendChild(item);
 });
+
 
 
   } catch (error) {
