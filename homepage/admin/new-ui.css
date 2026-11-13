@@ -29,7 +29,7 @@ html[data-admin-theme="light"] {
     --empty-icon-set:#fafafa;
    
    --floating-border:#91caff;
-   
+   --loading-overlay-bg:rgba(255,255,255,.25);
     --panel2:#fafafa;
 
   --text:rgba(0,0,0,.88);
@@ -90,6 +90,7 @@ html[data-admin-theme="light"] {
     --empty-icon-set:#1d1d1d;
      
     --floating-border:#15325b;
+   --loading-overlay-bg:rgba(0,0,0,.25);
   --panel2: #171e28;
    
   --text: rgba(255,255,255,0.85);
@@ -2801,7 +2802,7 @@ html.new-ui-modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, .25);
+  background: var(--loading-overlay-bg);
   z-index: 999999;
 }
 
