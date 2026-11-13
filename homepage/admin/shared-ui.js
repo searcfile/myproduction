@@ -704,6 +704,7 @@ function getUserTabsDbPath() {
    SITE ADMIN - ACTIVE PAGE TRACKING
    ========================================== */
 
+
 async function trackSiteAdminTab() {
   try {
     if (currentAdminProfile?.role !== "siteadmin") return;
@@ -723,23 +724,32 @@ async function trackSiteAdminTab() {
     if (!page) return;
 
     const storageKey = `5g88.lastActivityTab.${user.uid}`;
-
-    // Refresh halaman yang sama tidak mengubah masa masuk.
     if (sessionStorage.getItem(storageKey) === file) return;
 
     const database = getSharedDb();
     if (!database) return;
 
+    const timestamp = firebase.database.ServerValue.TIMESTAMP;
+
+    // Simpan halaman terkini.
     await database.ref(`adminActivity/${user.uid}`).set({
       page: page.name,
       pageUrl: file,
-      enteredAt: firebase.database.ServerValue.TIMESTAMP
+      enteredAt: timestamp
+    });
+
+    // Tambah rekod sejarah baru.
+    await database.ref(`adminActivityHistory/${user.uid}`).push({
+      type: "enter",
+      page: page.name,
+      pageUrl: file,
+      timestamp
     });
 
     sessionStorage.setItem(storageKey, file);
 
   } catch (error) {
-    console.warn("[Site Admin Tab Activity]", error);
+    console.warn("[Site Admin Activity]", error);
   }
 }
 
