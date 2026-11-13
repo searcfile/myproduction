@@ -1555,8 +1555,8 @@ body.light-theme {
 html,body { width:100%;height:100%;margin:0;overflow:hidden; }
 body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif!important; }
 *,*::before,*::after {box-sizing:border-box;}
-.livechat-layout {height:100vh!important;height:100dvh!important;width:100%!important;display:grid!important;grid-template-columns: minmax(270px,340px) minmax(0,1fr)!important;gap:0!important;background:var(--lc-bg)!important;overflow:hidden!important;}
-.user-list-panel {height:100%!important;min-height:0!important;background:var(--lc-panel)!important;border-right:1px solid var(--lc-border)!important;}
+.livechat-layout {height:100vh!important;height:100dvh!important;width:100%!important;display:grid!important;padding: 0 12px 0 12px;grid-template-columns: minmax(270px,340px) minmax(0,1fr)!important;gap:0!important;background:var(--tx-bg)!important;overflow:hidden!important;}
+.user-list-panel {height:100%!important;min-height:0!important;background:var(--lc-panel)!important;border-right:1px solid var(--lc-border)!important;border-radius: 16px 0 0 0;}
 .user-list-header {background:var(--lc-panel)!important;border-bottom:1px solid var(--lc-border)!important;padding:20px 16px 16px!important;position:relative!important;}
 .user-list-header::before {content:'Conversations';display:block;font-weight:750;font-size:19px;letter-spacing:-.5px;color:var(--lc-ink);margin-bottom:14px;}
 #searchUser {height:42px!important;border-radius:11px!important;border:1px solid var(--lc-border)!important;background:var(--lc-elevated)!important;color:var(--lc-ink)!important;padding:0 14px!important;font-size:13px!important;}
@@ -1598,7 +1598,7 @@ body { background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-fami
 .msg-avatar-outside {border-color:var(--lc-border)!important;width:30px!important;height:30px!important;}
 .date-label-inner {background:var(--lc-blue-soft)!important;color:var(--lc-blue)!important;box-shadow:none!important;padding:5px 15px!important;}
 .date-label-inner .day-label,.date-label-inner .full-date-label {color:var(--lc-blue)!important;}
-.chat-empty-state {background:var(--lc-panel)!important;border:1px solid var(--lc-border)!important;border-radius:16px!important;}
+.chat-empty-state {background:var(--lc-panel)!important;border:1px solid var(--lc-border)!important;border-radius: 0 14px 14px 0 !important;}
 .chat-empty-inner {color:var(--lc-muted)!important;max-width:350px;line-height:1.6;}
 .chat-empty-inner::before {content:'✉';display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:20px;background:var(--lc-blue-soft);color:var(--lc-blue);font-size:30px;margin:0 auto 16px;}
 /* Stable composer: previews always occupy first row; action buttons never disappear */
