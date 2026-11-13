@@ -2252,6 +2252,45 @@ html, body { height:100% !important; overflow:hidden !important; }
   position: relative;
 }
 
+
+.chat-header-text {
+  position: relative;
+}
+
+.chat-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 4px;
+}
+
+.chat-activity-row #chatUserActivity {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-top: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-activity-row .open-user-activity-btn {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  flex: 0 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-activity-row .open-user-activity-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .activity-history-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -2260,12 +2299,13 @@ html, body { height:100% !important; overflow:hidden !important; }
   max-height: 300px;
   overflow: hidden;
   z-index: 10050;
-  border: 1px solid var(--input-line, #424242);
+  border: 1px solid var(--lc-border, #424242);
   border-radius: 8px;
-  background: var(--dropdown-bg, #1f1f1f);
-  color: var(--text, #fff);
+  background: var(--lc-panel, #1f1f1f);
+  color: var(--lc-ink, #fff);
   box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
+
 
 .activity-history-dropdown[hidden] {
   display: none !important;
@@ -2397,21 +2437,33 @@ html, body { height:100% !important; overflow:hidden !important; }
         </svg>
       </button>
 
-        
-<button
-  id="openUserActivityBtn"
-  type="button"
-  class="open-user-activity-btn"
-  title="Activity History"
-  aria-label="Activity History"
-  disabled
->
-  <svg viewBox="0 0 24 24" width="18" height="18"
-       fill="currentColor" aria-hidden="true">
-    <path d="M12 21q-3.45 0-6.012-2.287T3.05 13H5.1q.35 2.6 2.313 4.3T12 19q2.925 0 4.963-2.037T19 12t-2.037-4.962T12 5q-1.725 0-3.225.8T6.25 8H9v2H3V4h2v2.35q1.275-1.6 3.113-2.475T12 3q1.875 0 3.513.713t2.85 1.924t1.925 2.85T21 12t-.712 3.513t-1.925 2.85t-2.85 1.925T12 21m2.8-4.8L11 12.4V7h2v4.6l3.2 3.2z"/>
-  </svg>
-</button>
+    </div>
 
+
+<div id="chatUserStatus">Offline</div>
+
+<div class="chat-activity-row">
+  <div id="chatUserActivity" hidden></div>
+
+  <button
+    id="openUserActivityBtn"
+    type="button"
+    class="open-user-activity-btn"
+    title="Activity History"
+    aria-label="Activity History"
+    disabled
+  >
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 21q-3.45 0-6.012-2.287T3.05 13H5.1q.35 2.6 2.313 4.3T12 19q2.925 0 4.963-2.037T19 12t-2.037-4.962T12 5q-1.725 0-3.225.8T6.25 8H9v2H3V4h2v2.35q1.275-1.6 3.113-2.475T12 3q1.875 0 3.513.713t2.85 1.924t1.925 2.85t-2.85 1.925T12 21m2.8-4.8L11 12.4V7h2v4.6l3.2 3.2z"/>
+    </svg>
+  </button>
+</div>
 <div
   id="activityHistoryDropdown"
   class="activity-history-dropdown"
@@ -2427,11 +2479,6 @@ html, body { height:100% !important; overflow:hidden !important; }
     No activity history.
   </div>
 </div>
-
-    </div>
-
-   <div id="chatUserStatus">Offline</div>
-   <div id="chatUserActivity" hidden></div>
   </div>
 </div>
 
