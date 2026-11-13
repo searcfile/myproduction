@@ -1847,6 +1847,117 @@ html.asf-embed-mode .chat-detail-panel {
 .lc-search-panel .shared-sync-search > .shared-sync-search-button svg {
   width:14px!important;height:14px!important;
 }
+
+/* ==========================================================
+   5G88 PATCH — Search panel in layout + consistent hover borders
+   UI only. Chat data, Firebase and search handlers unchanged.
+   ========================================================== */
+#containerChatBox {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  transition: grid-template-columns .22s ease;
+}
+#containerChatBox.lc-search-open {
+  grid-template-columns: minmax(0, 1fr) clamp(260px, 34%, 350px);
+}
+#containerChatBox > #chatHeader {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+#containerChatBox > #chatBox {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+}
+#containerChatBox > .lc-composer-area {
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+}
+#containerChatBox > #lcSearchPanel {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  grid-column: 2;
+  grid-row: 1 / 4;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 17px 14px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-left: 1px solid var(--lc-border) !important;
+  border-radius: 0 !important;
+  z-index: 1;
+}
+#containerChatBox > #lcSearchPanel[hidden] { display: none !important; }
+/* Custom sync-search: both the input and the icon button get a hover border. */
+.user-list-header .shared-sync-search > #searchUser,
+.lc-search-panel .shared-sync-search > #searchMessage,
+.user-list-header .shared-sync-search > .shared-sync-search-button,
+.lc-search-panel .shared-sync-search > .shared-sync-search-button {
+  transition: border-color .18s ease, color .18s ease, background-color .18s ease !important;
+}
+.user-list-header .shared-sync-search:hover > #searchUser,
+.user-list-header .shared-sync-search:hover > .shared-sync-search-button,
+.lc-search-panel .shared-sync-search:hover > #searchMessage,
+.lc-search-panel .shared-sync-search:hover > .shared-sync-search-button {
+  border-color: #3c89e8 !important;
+}
+.user-list-header .shared-sync-search:focus-within > #searchUser,
+.user-list-header .shared-sync-search:focus-within > .shared-sync-search-button,
+.lc-search-panel .shared-sync-search:focus-within > #searchMessage,
+.lc-search-panel .shared-sync-search:focus-within > .shared-sync-search-button {
+  border-color: #1668dc !important;
+}
+.user-list-header .shared-sync-search > .shared-sync-search-button:hover,
+.lc-search-panel .shared-sync-search > .shared-sync-search-button:hover {
+  color: #3c89e8 !important;
+  background-color: var(--lc-hover) !important;
+}
+/* Other interactive borders: color and outline change together. */
+.user-item:hover:not(.active) { border-color: #3c89e8 !important; }
+#filterAll:hover:not(.active-filter),
+#filterUnread:hover:not(.active-filter),
+#filterOnline:hover:not(.active-filter),
+.close-chat-btn:hover,
+.lc-search-title button:hover {
+  border-color: #3c89e8 !important;
+}
+.lc-composer-area .send-box:hover { border-color: #3c89e8 !important; }
+.lc-composer-area .send-box:focus-within { border-color: #1668dc !important; }
+@media (min-width: 769px) and (max-width: 1100px) {
+  #containerChatBox.lc-search-open {
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 39%);
+  }
+}
+@media (max-width: 768px) {
+  #containerChatBox.lc-search-open { grid-template-columns: minmax(0, 1fr); }
+  #containerChatBox.lc-search-open > #chatHeader,
+  #containerChatBox.lc-search-open > #chatBox,
+  #containerChatBox.lc-search-open > .lc-composer-area { display: none !important; }
+  #containerChatBox.lc-search-open > #lcSearchPanel {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    border-left: 0 !important;
+    width: 100% !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #containerChatBox { transition: none !important; }
+}
 </style>
 </head>
 <body>
@@ -4436,13 +4547,28 @@ document.addEventListener("keydown", (e) => {
     const search=document.getElementById('searchMessage');
     const back=document.getElementById('lcMobileBack');
     const layout=document.querySelector('.livechat-layout');
-    open?.addEventListener('click',()=>{if(panel){panel.hidden=false;search?.focus();}});
-    close?.addEventListener('click',()=>{if(panel)panel.hidden=true;});
+    const chatContainer=document.getElementById('containerChatBox');
+    function setChatSearchOpen(isOpen){
+      if(!panel || !chatContainer) return;
+      panel.hidden=!isOpen;
+      chatContainer.classList.toggle('lc-search-open',isOpen);
+      open?.setAttribute('aria-expanded',String(isOpen));
+      if(isOpen) requestAnimationFrame(()=>search?.focus());
+    }
+    open?.setAttribute('aria-controls','lcSearchPanel');
+    setChatSearchOpen(false);
+    open?.addEventListener('click',()=>setChatSearchOpen(true));
+    close?.addEventListener('click',()=>{setChatSearchOpen(false);open?.focus();});
     back?.addEventListener('click',()=>{
-      if(panel)panel.hidden=true;
+      setChatSearchOpen(false);
       layout?.classList.remove('mobile-chat-open');
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel&&!panel.hidden)panel.hidden=true;});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape' && panel && !panel.hidden){
+        setChatSearchOpen(false);
+        open?.focus();
+      }
+    });
     // Visual counter reflects the existing displayed total, without changing the data source.
     const count=document.querySelector('.lc-count');
     const total=document.getElementById('totalUsers');
