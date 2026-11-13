@@ -8501,14 +8501,11 @@ Object.assign(loader.style, {
   right: "0",
   bottom: "0",
   top: "0",
-
-  // Loader di bawah sidebar, overlay dan header.
   zIndex: "900",
-
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "#000",
+  background: "var(--tx-bg)",
   pointerEvents: "auto"
 });
 
