@@ -1910,22 +1910,38 @@ html.asf-embed-mode .chat-detail-panel {
 .lc-search-panel .shared-sync-search > .shared-sync-search-button {
   transition: border-color .18s ease, color .18s ease, background-color .18s ease !important;
 }
-.user-list-header .shared-sync-search:hover > #searchUser,
-.user-list-header .shared-sync-search:hover > .shared-sync-search-button,
-.lc-search-panel .shared-sync-search:hover > #searchMessage,
-.lc-search-panel .shared-sync-search:hover > .shared-sync-search-button {
+
+
+/* =========================================
+   5G88 - INDEPENDENT SEARCH HOVER & FOCUS
+   ========================================= */
+
+/* Hover INPUT sahaja */
+.user-list-header .shared-sync-search > #searchUser:hover,
+.lc-search-panel .shared-sync-search > #searchMessage:hover {
   border-color: #3c89e8 !important;
 }
-.user-list-header .shared-sync-search:focus-within > #searchUser,
-.user-list-header .shared-sync-search:focus-within > .shared-sync-search-button,
-.lc-search-panel .shared-sync-search:focus-within > #searchMessage,
-.lc-search-panel .shared-sync-search:focus-within > .shared-sync-search-button {
-  border-color: #1668dc !important;
-}
+
+/* Hover BUTTON sahaja */
 .user-list-header .shared-sync-search > .shared-sync-search-button:hover,
 .lc-search-panel .shared-sync-search > .shared-sync-search-button:hover {
+  border-color: #3c89e8 !important;
   color: #3c89e8 !important;
   background-color: var(--lc-hover) !important;
+}
+
+/* Focus INPUT sahaja */
+.user-list-header .shared-sync-search > #searchUser:focus,
+.lc-search-panel .shared-sync-search > #searchMessage:focus {
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Focus BUTTON sahaja */
+.user-list-header .shared-sync-search > .shared-sync-search-button:focus-visible,
+.lc-search-panel .shared-sync-search > .shared-sync-search-button:focus-visible {
+  border-color: #1668dc !important;
 }
 /* Other interactive borders: color and outline change together. */
 .user-item:hover:not(.active) { border-color: #3c89e8 !important; }
