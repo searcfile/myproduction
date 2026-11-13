@@ -2178,7 +2178,13 @@ html, body { height:100% !important; overflow:hidden !important; }
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
+/* Titik pemisah antara Online dan Activity */
+.admin-activity-text:not([hidden]):not(:empty)::before {
+  content: "•";
+  display: inline-block;
+  margin: 0 6px;
+  color: var(--text-dim);
+}
 .admin-activity-text[hidden] {
   display: none !important;
 }
