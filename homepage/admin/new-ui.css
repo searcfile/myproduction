@@ -2831,7 +2831,7 @@ html.new-ui-modal-open {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .85);
+  background: var(--text);
   opacity: .25;
   animation: dotPulse 1s linear infinite;
 }
@@ -2877,7 +2877,7 @@ html.new-ui-modal-open {
 }
 
 .loading-text {
-  color: #fff;
+  color: var(--text);
   font-size: 14px;
   font-weight: 400;
   text-align: center;
