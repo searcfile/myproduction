@@ -7,7 +7,23 @@ if(window.__agentSupportFloatingInit)return;
 window.__agentSupportFloatingInit=true;
 const AGENT_PATH='adminConfig/agentSupportFloating';
 const SITE_PATH='adminConfig/siteAdminFloating';
-const defaults={enabled:false,accessMode:'super_only',allowedUids:{},url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:400};
+
+const defaults = {
+  enabled: false,
+  accessMode: 'super_only',
+  allowedUids: {},
+  url: '',
+  label: 'Agent Support',
+  side: 'right',
+  width: 400,
+  height: 600,
+  openMode: 'panel',
+  showLabel: false,
+  buttonVisibility: 'always',
+  animationMode: 'off',
+  animationSpeed: 35,
+  animationRange: 400
+};
 const siteDefaults={...defaults,accessMode:'site_all',label:'LiveChat'};
 const configs={agent:{...defaults},site:{...siteDefaults}};
 const instances={agent:null,site:null};
@@ -24,6 +40,69 @@ const unreadCounts = {
   agent: 0,
   site: 0
 };
+
+/* ==========================================
+   FLOATING BUTTON - AUTO HIDE WHEN TAB OPEN
+   ========================================== */
+
+function isRelatedTabOpen(type) {
+  if (!uid) return false;
+
+  const targetFile = type === 'agent'
+    ? 'livechat-support.html'
+    : 'livechat.html';
+
+  try {
+    const key = `openTabs_uid_${uid}`;
+    const tabs = JSON.parse(
+      localStorage.getItem(key) || '[]'
+    );
+
+    if (!Array.isArray(tabs)) return false;
+
+    return tabs.some(tab => {
+      const file = String(
+        typeof tab === 'string'
+          ? tab
+          : (tab?.file || '')
+      )
+        .split(/[?#]/)[0]
+        .split('/')
+        .pop()
+        .toLowerCase();
+
+      return file === targetFile;
+    });
+  } catch (error) {
+    console.warn('[Floating] Tab visibility check:', error);
+    return false;
+  }
+}
+
+function updateFloatingVisibility(type) {
+  const inst = instances[type];
+  if (!inst?.root) return;
+
+  const shouldHide =
+    inst.config.buttonVisibility === 'auto' &&
+    isRelatedTabOpen(type);
+
+  // Hide keseluruhan floating root termasuk badge.
+  // Jangan ganggu floating panel yang sedang dibuka.
+  inst.root.hidden = shouldHide;
+
+  if (shouldHide) {
+    stopAnimation(inst);
+  } else if (!inst.panel) {
+    startAnimation(inst);
+  }
+}
+
+function updateAllFloatingVisibility() {
+  updateFloatingVisibility('agent');
+  updateFloatingVisibility('site');
+}
+
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
 const positionKey=type=>`5g88.floating.position.v2:${type}:${uid}`;
@@ -184,7 +263,10 @@ function render(type){destroy(type);if(!canAccess(type))return;const d=configs[t
   ? Math.round(window.innerHeight * 0.30)
   : Math.round(window.innerHeight * 0.70);
 inst.animationBase = savedY(type) ?? defaultY;
-position(inst,inst.animationBase);updateBadge(type);button.addEventListener('pointerenter',()=>{inst.paused=true;stopAnimation(inst);});button.addEventListener('pointerleave',()=>{if(!inst.dragging){inst.animationBase=root.getBoundingClientRect().top;inst.paused=false;startAnimation(inst);}});let drag=null,suppressClick=false;button.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};inst.dragging=true;stopAnimation(inst);button.dataset.dragging='true';button.setPointerCapture(e.pointerId);});button.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){position(inst,drag.top+e.clientY-drag.startY);e.preventDefault();}});button.addEventListener('pointerup',()=>{if(!drag)return;if(drag.moved){inst.animationBase=root.getBoundingClientRect().top;saveY(type,inst.animationBase);suppressClick=true;}delete button.dataset.dragging;drag=null;inst.dragging=false;if(!button.matches(':hover')){inst.paused=false;startAnimation(inst);}});button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;inst.dragging=false;inst.paused=false;startAnimation(inst);});button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel(inst);});startAnimation(inst);}
+position(inst,inst.animationBase);updateBadge(type);button.addEventListener('pointerenter',()=>{inst.paused=true;stopAnimation(inst);});button.addEventListener('pointerleave',()=>{if(!inst.dragging){inst.animationBase=root.getBoundingClientRect().top;inst.paused=false;startAnimation(inst);}});let drag=null,suppressClick=false;button.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={startY:e.clientY,top:root.getBoundingClientRect().top,moved:false};inst.dragging=true;stopAnimation(inst);button.dataset.dragging='true';button.setPointerCapture(e.pointerId);});button.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){position(inst,drag.top+e.clientY-drag.startY);e.preventDefault();}});button.addEventListener('pointerup',()=>{if(!drag)return;if(drag.moved){inst.animationBase=root.getBoundingClientRect().top;saveY(type,inst.animationBase);suppressClick=true;}delete button.dataset.dragging;drag=null;inst.dragging=false;if(!button.matches(':hover')){inst.paused=false;startAnimation(inst);}});button.addEventListener('pointercancel',()=>{delete button.dataset.dragging;drag=null;inst.dragging=false;inst.paused=false;startAnimation(inst);});button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}openPanel(inst);});
+updateFloatingVisibility(type);
+}
+
 
 function stopUnread() {
   for (const type of ['agent', 'site']) {
@@ -279,6 +361,11 @@ function startUnread() {
 
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=Object.values(instances).filter(inst=>inst?.panel);if(!open.length)return;e.preventDefault();open.forEach(closePanel);});
 const style=document.createElement('style');style.textContent=`
+
+.asf-root[hidden] {
+  display: none !important;
+}
+
 .asf-root{
   position:fixed;
   z-index:50000 !important;
@@ -447,6 +534,23 @@ right: 3px;
 }
     @media(prefers-reduced-motion:reduce){.asf-button,.asf-label{transition:none}}
   `;document.head.appendChild(style);
+  
+/* Update floating apabila tab dashboard berubah */
+window.addEventListener(
+  '5g88:admin-tabs-changed',
+  updateAllFloatingVisibility
+);
+
+/* Sync jika localStorage berubah dari browser tab lain */
+window.addEventListener('storage', event => {
+  if (
+    uid &&
+    event.key === `openTabs_uid_${uid}`
+  ) {
+    updateAllFloatingVisibility();
+  }
+});
+
 window.addEventListener('resize',()=>{for(const inst of Object.values(instances)){if(!inst?.root)continue;inst.animationBase=clamp(inst.animationBase,limits(inst).min,limits(inst).max);position(inst,inst.animationBase);startAnimation(inst);}});
 function start(){if(!window.firebase?.auth||!window.firebase?.database)return;firebase.auth().onAuthStateChanged(user=>{unsubscribe?.();unsubscribe=null;stopUnread();destroy('agent');destroy('site');uid=user?.uid||null;profile=null;configs.agent={...defaults};configs.site={...siteDefaults};if(!uid)return;const current=uid;const db=firebase.database(),profileRef=db.ref(`adminUsers/${current}`),agentRef=db.ref(AGENT_PATH),siteRef=db.ref(SITE_PATH);const refresh=()=>{render('agent');render('site');startUnread();};const profileHandler=snap=>{if(uid!==current)return;profile=snap.val()||null;refresh();};const agentHandler=snap=>{if(uid!==current)return;configs.agent={...defaults,...(snap.val()||{})};refresh();};const siteHandler=snap=>{if(uid!==current)return;configs.site={...siteDefaults,...(snap.val()||{})};refresh();};profileRef.on('value',profileHandler,err=>console.error('Floating profile:',err));agentRef.on('value',agentHandler,err=>console.error('Agent floating config:',err));siteRef.on('value',siteHandler,err=>console.error('Site floating config:',err));unsubscribe=()=>{profileRef.off('value',profileHandler);agentRef.off('value',agentHandler);siteRef.off('value',siteHandler);};});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
