@@ -2050,11 +2050,11 @@ html, body { height:100% !important; overflow:hidden !important; }
   align-self:center !important;
 }
 @media(max-width:768px){
-  .livechat-layout > .user-list-panel,
-  .livechat-layout > .chat-detail-panel {
-    height:calc(100% - 14px) !important;
-    max-height:calc(100% - 14px) !important;
-  }
+.livechat-layout > .user-list-panel,
+.livechat-layout > .chat-detail-panel {
+  height: 100% !important;
+  max-height: 100% !important;
+}
   #containerChatBox > .lc-composer-area {
     max-height:none !important;
     overflow:visible !important;
@@ -2452,6 +2452,59 @@ html, body { height:100% !important; overflow:hidden !important; }
   overflow-y: auto !important;
   overflow-x: hidden !important;
   padding: 14px 12px 8px !important;
+}
+
+/* ==========================================
+   5G88 AGENT SUPPORT
+   FLOATING FULL PANEL FIX
+   ========================================== */
+
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .livechat-layout {
+  display: block !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+html.asf-embed-mode .livechat-layout > .user-list-panel,
+html.asf-embed-mode .livechat-layout > .chat-detail-panel {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .chat-detail-wrap,
+html.asf-embed-mode #containerChatBox {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 </style>
