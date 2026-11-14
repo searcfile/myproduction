@@ -834,17 +834,30 @@ function syncTabsToFirebase(tabs) {
   }
 }
 
-  function saveTabs(tabs) {
-   if (!getTabsStorageKey()) return;
-    const finalTabs = Array.isArray(tabs) ? tabs : [];
 
-    localStorage.setItem(
-      getTabsStorageKey(),
-      JSON.stringify(finalTabs)
-    );
+function saveTabs(tabs) {
+  const storageKey = getTabsStorageKey();
+  if (!storageKey) return;
 
-    syncTabsToFirebase(finalTabs);
-  }
+  const finalTabs = Array.isArray(tabs) ? tabs : [];
+
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify(finalTabs)
+  );
+
+  // Beritahu floating button bahawa senarai tab berubah.
+  window.dispatchEvent(
+    new CustomEvent('5g88:admin-tabs-changed', {
+      detail: {
+        tabs: finalTabs
+      }
+    })
+  );
+
+  syncTabsToFirebase(finalTabs);
+}
+
 
 
   function getActiveFile() {
