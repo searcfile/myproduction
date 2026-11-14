@@ -2565,6 +2565,81 @@ html.asf-embed-mode .user-list-panel {
   box-shadow: none !important;
 }
 
+/* ==========================================
+   5G88 AGENT SUPPORT
+   NEW UI SEARCH - LIGHT / DARK THEME
+   ========================================== */
+
+/* Search wrapper */
+html.asf-embed-mode .user-list-header
+.shared-sync-search {
+  background: var(--lc-elevated) !important;
+  border-radius: 7px !important;
+  overflow: hidden !important;
+}
+
+/* Search input */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > #searchUser {
+  background: var(--lc-elevated) !important;
+  background-color: var(--lc-elevated) !important;
+  color: var(--lc-ink) !important;
+  -webkit-text-fill-color: var(--lc-ink) !important;
+  border-color: var(--lc-border) !important;
+  caret-color: var(--lc-ink) !important;
+}
+
+/* Placeholder */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > #searchUser::placeholder {
+  color: var(--lc-muted) !important;
+  -webkit-text-fill-color: var(--lc-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Search icon button */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > .shared-sync-search-button {
+  background: var(--lc-elevated) !important;
+  background-color: var(--lc-elevated) !important;
+  color: var(--lc-muted) !important;
+  border-color: var(--lc-border) !important;
+}
+
+/* Icon SVG */
+html.asf-embed-mode .user-list-header
+.shared-sync-search-button svg {
+  color: inherit !important;
+}
+
+/* Input hover */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > #searchUser:hover {
+  border-color: #3c89e8 !important;
+}
+
+/* Input focus */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > #searchUser:focus {
+  border-color: #1668dc !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Search button hover */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > .shared-sync-search-button:hover {
+  border-color: #3c89e8 !important;
+  color: #3c89e8 !important;
+}
+
+/* Search button focus */
+html.asf-embed-mode .user-list-header
+.shared-sync-search > .shared-sync-search-button:focus-visible {
+  border-color: #1668dc !important;
+  outline: none !important;
+}
+
 </style>
 </head>
 <body>
