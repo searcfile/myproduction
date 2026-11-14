@@ -45,6 +45,7 @@ const unreadCounts = {
    FLOATING BUTTON - AUTO HIDE WHEN TAB OPEN
    ========================================== */
 
+
 function isRelatedTabOpen(type) {
   if (!uid) return false;
 
@@ -53,31 +54,23 @@ function isRelatedTabOpen(type) {
     : 'livechat.html';
 
   try {
-    const key = `openTabs_uid_${uid}`;
-    const tabs = JSON.parse(
-      localStorage.getItem(key) || '[]'
-    );
+    const key = `activeTabUrl_uid_${uid}`;
+    const activeUrl = localStorage.getItem(key) || '';
 
-    if (!Array.isArray(tabs)) return false;
+    const activeFile = String(activeUrl)
+      .split(/[?#]/)[0]
+      .split('/')
+      .pop()
+      .toLowerCase();
 
-    return tabs.some(tab => {
-      const file = String(
-        typeof tab === 'string'
-          ? tab
-          : (tab?.file || '')
-      )
-        .split(/[?#]/)[0]
-        .split('/')
-        .pop()
-        .toLowerCase();
+    return activeFile === targetFile;
 
-      return file === targetFile;
-    });
   } catch (error) {
-    console.warn('[Floating] Tab visibility check:', error);
+    console.warn('[Floating] Active tab check:', error);
     return false;
   }
 }
+
 
 function updateFloatingVisibility(type) {
   const inst = instances[type];
@@ -555,11 +548,21 @@ right: 3px;
     @media(prefers-reduced-motion:reduce){.asf-button,.asf-label{transition:none}}
   `;document.head.appendChild(style);
   
-/* Update floating apabila tab dashboard berubah */
+
+/* ==========================================
+   FLOATING - SYNC ADMIN TAB VISIBILITY
+   ========================================== */
+
 window.addEventListener(
   '5g88:admin-tabs-changed',
   updateAllFloatingVisibility
 );
+
+window.addEventListener(
+  '5g88:admin-active-tab-changed',
+  updateAllFloatingVisibility
+);
+
 
 /* Sync jika localStorage berubah dari browser tab lain */
 window.addEventListener('storage', event => {
