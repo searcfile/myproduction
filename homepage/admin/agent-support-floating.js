@@ -429,7 +429,7 @@ right: 3px;
   overflow: hidden;
   box-shadow: 0 14px 45px #0007;
 }
-.asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--lc-panel);color:var(text);font:600 13px system-ui,sans-serif}
+.asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--lc-panel);color:var(--text);font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:var(--text);border:0;cursor:pointer;font-size:22px;padding:3px 8px}
     .asf-panel iframe{flex:1;width:100%;border:0;background:var(--lc-panel)}
 @media (max-width: 600px) {
