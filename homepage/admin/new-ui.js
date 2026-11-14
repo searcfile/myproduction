@@ -1,4531 +1,3510 @@
-/* 5G88 New UI — reusable components extracted from supplied legacy shared-ui.js.
-   No Firebase, authentication, sidebar, navigation or permissions are changed. */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+<script>
 (function () {
-  "use strict";
+  const isFloating =
+    new URLSearchParams(window.location.search)
+      .get('floating') === '1';
 
-   
-/* =========================================================
-   5G88 GLOBAL CUSTOM OVERLAY LOADING
-   ========================================================= */
-
-let globalLoadingTimer = null;
-
-function getGlobalLoadingElement() {
-  let overlay = document.getElementById(
-    "globalPageLoading"
-  );
-
-  if (!overlay) {
-    overlay = document.createElement("div");
-
-    overlay.id = "globalPageLoading";
-    overlay.className = "login-loading";
-    overlay.hidden = true;
-
-    overlay.setAttribute("role", "status");
-    overlay.setAttribute("aria-live", "polite");
-    overlay.setAttribute("aria-label", "Loading");
-
-    overlay.innerHTML = `
-      <div class="loading-box">
-        <div class="loading-dots" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-
-        <div class="loading-text">
-          Please wait while fetching...
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-  }
-
-  return overlay;
-}
-
-/* SHOW LOADING */
-
-function showGlobalLoading(
-  text = "Please wait while fetching...",
-  delay = 150
-) {
-  clearTimeout(globalLoadingTimer);
-
-  const show = () => {
-    const overlay = getGlobalLoadingElement();
-
-    const label = overlay.querySelector(
-      ".loading-text"
+  if (isFloating) {
+    document.documentElement.classList.add(
+      'asf-embed-mode'
     );
+  }
+})();
+</script>
 
-    if (label) {
-      label.textContent = String(text);
+    <style>
+  html.fiveg88-hard-reload,
+  html.fiveg88-hard-reload body {
+    background: #ffffff !important;
+  }
+
+  html.fiveg88-hard-reload body {
+    visibility: hidden !important;
+  }
+
+  html.fiveg88-hard-reload::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 2147483647;
+    pointer-events: auto;
+  }
+</style>
+<script>
+(function () {
+  const KEY = "5g88.hardReloadIntent";
+  // Detect Ctrl + Shift + R atau Ctrl + F5
+  window.addEventListener("keydown", function (event) {
+    const hardReload =
+      (event.ctrlKey &&
+       event.shiftKey &&
+       event.key.toLowerCase() === "r") ||
+      (event.ctrlKey && event.key === "F5");
+
+    if (hardReload) {
+      sessionStorage.setItem(KEY, String(Date.now()));
     }
+  }, true);
 
-    overlay.hidden = false;
-  };
+  // Semak sama ada reload datang daripada shortcut tadi
+  const saved = Number(sessionStorage.getItem(KEY));
+  sessionStorage.removeItem(KEY);
 
-  if (delay > 0) {
-    globalLoadingTimer = setTimeout(show, delay);
-  } else {
-    show();
+  const navigation =
+    performance.getEntriesByType("navigation")[0];
+
+  const recentHardReload =
+    navigation?.type === "reload" &&
+    Number.isFinite(saved) &&
+    saved > 0 &&
+    Date.now() - saved < 10000;
+
+  if (recentHardReload) {
+    document.documentElement.classList.add(
+      "fiveg88-hard-reload"
+    );
+  }
+})();
+</script>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LiveChat · User</title>
+  <link rel="stylesheet" href="./shared-ui.css">
+  <link rel="stylesheet" href="./admin.css">
+  <link rel="stylesheet" href="./new-ui.css">
+  <style>
+    :root{
+    --page-bg: #000;
+    --page-text: rgba(255,255,255,0.85);
+    --page-input: #141414;
+    --border-input:#424242;
+    --page-bg2:#1f1f1f;
+    --name:#1668dc;
+    --blur:rgba(255,255,255,0.25);
+
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+
+  --bg-color: #111111;
+  --text-color: #ffffff;
+  --primary-color: #facc15;
+  }
+
+  body.light-theme{
+    --page-bg: #ffffff;
+    --page-text: rgba(0,0,0,0.88);
+    --page-input: #ffffff;
+    --border-input:#d9d9d9;
+    --page-bg2:#ffffff;
+    --name:#1668dc;
+    --blur:#00000063;
+
+    --blue: #1668dc;
+    --blue-hover: #3c89e8;
+    --blue-active: #1554ad;
+  }
+body {
+  background: var(--page-bg);
+  color: var(--page-text);
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html, body { -ms-overflow-style: none; scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+  h1 {
+    color: white;
+    margin: 0;
+    font-size: 30px;
+  }
+
+  .chat-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    border: 2px solid gold;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    height: 85vh;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+  }
+.chat-header {
+  background: linear-gradient(to right,#1668dc, #c5ff4a);
+  padding: 12px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #424242;
+  border-radius: 0;
+  font-size: 1rem;
+  color: white;
+  font-weight: 500;
+  justify-content: space-between;
+  border-top-left-radius: 6px !important;
+  border-top-right-radius: 6px !important;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header .profile img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background:#000;
+}
+
+.chat-header .profile span {
+  font-weight: bold;
+  font-size: 14px;
+  color: #ffffff;
+}
+@media (max-width: 600px){
+  .search-wrapper{
+    width: 100%;
+  }
+
+  .search-input-wrap{
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #searchChat{
+    width: 100%;
+  }
+}
+  .chat-box {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 15px 4px;
+  background: var(--page-bg);
+  height: 60vh;
+  border-radius: 0;
+  border: 1px solid var(--border-input);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
+  overscroll-behavior: contain;
+}
+.user-scroll-box, .chat-box {
+    scrollbar-width: thin;
+    scrollbar-color: var(--blur) transparent;
+}
+.chat-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+  background: #1668dc;
+  border-radius: 6px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+.message {
+  width: 100%;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+.msg-time {
+  position: static;
+  align-self: flex-end;
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.75;
+  color: rgb(255, 255, 255, 85);
+}
+
+.mine .msg-bubble-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+width: auto;
+max-width: min(75%, 356px);
+min-width: 60px;
+align-items: flex-start;
+  padding: 10px 12px;
+  background: #15523E;
+  color: #000;
+  border-top-right-radius: 0;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  word-break: break-word;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.theirs .msg-bubble-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+width: auto;
+max-width: min(75%, 356px);
+min-width: 60px;
+align-items: flex-start;
+  padding: 10px 12px;
+  background: #15523E;
+  color: #000;
+  border-top-left-radius: 0;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  word-break: break-word;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.mine .msg-bubble-wrap::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.theirs .msg-bubble-wrap::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+}
+.mine .msg-time {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.theirs .msg-time {
+  align-self: flex-end;
+  text-align: right;
+}
+.send-box {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 0;
+  background: var(--page-bg);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: var(--page-text);
+  flex-wrap: wrap;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+.send-box:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(22, 104, 220, 0.15);
+}
+
+#msg {
+  flex: 1;
+  min-height: 24px;
+  max-height: 120px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.45;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--page-text);
+  font-family: 'Segoe UI', sans-serif;
+  overflow-y: auto;
+}
+
+#msg::placeholder {
+  color: var(--blur);
+}
+
+#msg:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.send-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.send-tool-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--page-text);
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.send-tool-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.send-tool-btn:hover {
+  color: #fff;
+}
+
+.send-tool-btn:active {
+ color:#b5b5b5;
+}
+
+.send-main-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.send-main-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.send-main-btn:hover {
+  background: var(--blue-hover);
+}
+
+.send-main-btn:active {
+  transform: scale(0.96);
+}
+
+.send-main-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.mine-row {
+  justify-content: flex-end;
+}
+
+.their-row {
+  justify-content: flex-start;
+}
+.msg-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(255, 255, 255, 85);
+}
+  .msg-header small {
+    font-size: 0.75rem;
+    color: #0b6906;
+  }
+
+.msg-text {
+  margin: 0;
+  padding: 0;
+  font-weight: 500;
+  font-size: 13px;
+  color: rgb(255, 255, 255, 65);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+  .date-label {
+    text-align: center;
+    margin: 0 0 20px;
+  }
+
+  .date-label-inner {
+    display: inline-block;
+    background-color: #1668dc;
+    padding: 2px 30px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .date-label-inner .day-label {
+    font-weight: bold;
+  }
+
+  .date-label-inner .full-date-label {
+    font-size: 12px;
+    color: white;
+  }
+@media (max-width: 600px) {
+  .chat-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #searchChat {
+    width: 100%;
+  }
+}
+@media (max-width: 600px){
+  .chat-header{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrapper{
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+.chat-wrapper {
+  background: white;
+  max-width: 640px;
+  margin: 1rem auto 0 auto;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  height: 93vh;
+  overflow: hidden;
+  box-shadow: 0 0 10px #1668dc;
+  border: 1px solid #1668dc;
+  padding: 15px;
+  position: relative;
+}
+
+.search-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.search-input-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%; /* 🔥 penting */
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  pointer-events: none;
+}
+
+#searchChat {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #424242;
+  box-sizing: border-box;
+  outline:none;
+}
+#searchChat:hover{border:1px solid var(--blue-hover);}
+#searchChat:focus{border:1px solid var(--blue);}   
+.msg-avatar-outside {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid white;
+  background-color: black;
+  flex-shrink: 0;
+}
+.msg-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+#startMessage {
+  transition: opacity 0.5s ease;
+  font-size: 16px;
+}
+.chat-box { min-height: 0; }
+
+/* jaga composer selalu terlihat nempel di bawah */
+.send-box {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+/* iPhone safe-area (opsional) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .send-box { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 600px) {
+  .send-box {
+    flex-direction: row !important;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+
+  #msg {
+    flex: 1 1 140px;
+    min-width: 0;
+    min-height: 22px;
+    max-height: 100px;
+    font-size: 14px;
+  }
+
+  .send-tool-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .send-main-btn {
+    width: 34px;
+    height: 34px;
   }
 }
 
-/* HIDE LOADING */
+@media (max-width: 400px) {
+  #msg { font-size: 14px; }
 
-function hideGlobalLoading() {
-  clearTimeout(globalLoadingTimer);
-  globalLoadingTimer = null;
+  .send-tool-btn {
+    width: 24px;
+    height: 24px;
+  }
 
-  const overlay = document.getElementById(
-    "globalPageLoading"
-  );
+  .send-main-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+/* === SEARCH highlight === */
+mark.__hit{ background:#ffe58a; padding:0 2px; border-radius:3px; }
 
-  if (overlay) {
-    overlay.hidden = true;
+/* === Tombol scroll ke bawah (gaya bulat dengan ring) === */
+#toBottomBtn{
+  position: absolute;
+  right: 25px;
+  bottom: calc(var(--composer-h, 64px) + 23px); /* 12px di atas composer */
+  z-index: 20; /* di atas send-box */
+  width:40px; height:40px; border-radius:50%;
+  background:#1668dc;
+  border:1px solid transparent;
+  box-shadow:0 4px 14px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+  display:none; align-items:center; justify-content:center;
+  cursor:pointer; outline:none;
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  transition: transform .1s ease, background .15s ease, border-color .15s ease;transition: all 0.2s;
+  padding:2px 4px;
+}
+#toBottomBtn svg{ width:18px; height:18px; stroke:#fff; stroke-width:2; fill:none; display:block; }
+#toBottomBtn:hover{ background:var(--blue-hover); }
+#toBottomBtn:active{ transform: translateY(1px);background:var(--blue-active); }
+#toBottomBtn.show{ display:flex; }
+@media (max-width:520px){
+  #toBottomBtn{width:35px; height:35px; right:10px;bottom: calc(var(--composer-h, 64px) + 10px);z-index: 20;}
+  #toBottomBtn svg{ width:18px; height:18px; }
+}
+.emoji-picker-wrap{
+  position: absolute;
+  right: 16px;
+  bottom: 78px;
+  z-index: 999;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgba(0,0,0,.35);
+  max-width: calc(100vw - 24px);
+  transition: all 0.2s ease;
+}
+
+emoji-picker{
+  --border-size: 0;
+  --border-radius: 6px;
+  --background: #141414;
+  --input-border-color: #424242;
+  --input-border-radius: 6px;
+  --category-icon-size: 20px;
+  --emoji-size: 1.45rem;
+  --category-button-color: #ffffff;
+  --category-button-active-color: #1668dc;
+  --indicator-color: #1668dc;
+  --outline-color: #1668dc;
+  --num-columns: 8;
+  height: 420px;
+  width: 350px;
+}
+emoji-picker::part(search-input) {
+  border: 1px solid #424242;
+  border-radius: 10px;
+  padding: 6px 10px;
+  outline: none;
+  background: #0b0b0b !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  opacity: 1 !important;
+  transition: all 0.2s ease;
+}
+emoji-picker {
+  color-scheme: dark;
+}
+
+emoji-picker::part(search-input)::placeholder {
+  color: rgba(255,255,255,0.55) !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.55) !important;
+}
+input.search:focus{border:1px solid black;}
+
+
+emoji-picker::part(search-input):focus {
+  border: 1px solid #1668dc;
+  background: #1f1f1f;
+  transition: all 0.2s ease;
+}
+.picker {
+    contain: content;
+    display: flex;
+    flex-direction: column;
+    background: black !important;
+    border: var(--border-size) solid var(--border-color);
+    border-radius: var(--border-radius);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    padding: 10px 0;
+    --total-emoji-size: calc(var(--emoji-size) + (2 * var(--emoji-padding)));
+    --total-category-emoji-size: calc(var(--category-emoji-size) + (2 * var(--category-emoji-padding)));
+}
+emoji-picker::part(search-container),
+emoji-picker::part(category-navigation),
+emoji-picker::part(emoji-list),
+emoji-picker::part(content),
+emoji-picker::part(container) {
+  background: #000 !important;
+}
+@media (max-width: 600px){
+  emoji-picker::part(search-input) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+  }
+}
+@media (max-width: 600px){
+  .emoji-picker-wrap{
+    right: 8px;
+    left: 8px;
+    bottom: 72px;
+    width: auto;
+    max-width: none;
+  }
+
+  emoji-picker{
+    width: 100% !important;
+    height: 320px;
+    --emoji-size: 1.3rem;
+    --num-columns: 7;
   }
 }
 
-/* GLOBAL FUNCTIONS */
+.image-preview-wrap{
+  position: relative;
+  width: 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow: visible;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
 
-window.showGlobalLoading = showGlobalLoading;
-window.hideGlobalLoading = hideGlobalLoading;
+.image-preview-wrap[hidden]{
+  display: none !important;
+}
 
-  function escapeSharedText(
-    value
-  ) {
+.image-preview-list{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    return String(
-      value ?? ""
-    )
-      .replaceAll(
-        "&",
-        "&amp;"
-      )
-      .replaceAll(
-        "<",
-        "&lt;"
-      )
-      .replaceAll(
-        ">",
-        "&gt;"
-      )
-      .replaceAll(
-        '"',
-        "&quot;"
-      )
-      .replaceAll(
-        "'",
-        "&#039;"
-      );
+.image-preview-card{
+  position: relative;
+  width: 78px;
+  height: 78px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-input);
+  background: var(--page-bg2);
+  flex: 0 0 78px;
+}
 
+.image-preview{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--page-bg2);
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.image-preview:hover{
+  transform: scale(1.04);
+  opacity: 0.92;
+}
+.image-add-card{
+  width: 78px;
+  height: 78px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-input);
+  background: var(--page-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 78px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.image-add-card:hover{
+  border-color: var(--blue);
+  background: var(--page-bg2);
+}
+
+.image-add-plus{
+  font-size: 36px;
+  line-height: 1;
+  color: var(--page-text);
+  transform: translateY(-1px);
+}
+
+.image-add-card:hover .image-add-plus{
+  color: var(--blue-hover);
+}
+.image-add-card:active .image-add-plus{
+  color: var(--blue-active);
+}
+.remove-image-btn{
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-image-btn:hover{
+  background: rgba(255,0,0,0.85);
+}
+
+.global-upload-status{
+  width: 100%;
+  min-height: 36px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--page-text);
+  font-size: 12px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+.image-upload-status[hidden]{
+  display: none !important;
+}
+
+.chat-image-group{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 170px));
+  gap: 8px;
+  margin-top: 6px;
+  width: max-content;
+  max-width: 100%;
+}
+
+.chat-image-group:has(.chat-image-wrap:only-child){
+  grid-template-columns: 170px;
+}
+
+.upload-spinner{
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: #ffffff;
+  animation: spinUpload 0.8s linear infinite;
+}
+
+@keyframes spinUpload{
+  to { transform: rotate(360deg); }
+}
+.chat-image-wrap{
+  position: relative;
+  display: block;
+  width: 170px;
+  max-width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0f0f0f;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.chat-image-thumb{
+  display: block;
+  width: 100%;
+  height: 130px;
+  object-fit: contain;
+  object-position: center;
+  background: #0f0f0f;
+}
+
+.chat-image-overlay{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.chat-image-wrap:hover .chat-image-overlay{
+  opacity: 1;
+}
+@media (max-width: 600px){
+  .chat-image-group{
+    grid-template-columns: repeat(2, minmax(0, 120px));
+    width: max-content;
+    max-width: 100%;
   }
 
-
-  /* =======================================================
-     SIZE CLASS
-  ======================================================= */
-
-  function getSharedSizeClass(
-    size
-  ) {
-
-    return (
-      size === "small" ||
-      size === "large"
-    )
-      ? size
-      : "";
-
+  .chat-image-group:has(.chat-image-wrap:only-child){
+    grid-template-columns: 120px;
   }
 
+  .chat-image-wrap{
+    width: 120px;
+  }
 
-  /* =======================================================
-     EMPTY STATE
-  ======================================================= */
+  .chat-image-thumb{
+    height: 96px;
+  }
 
-function createEmptyState(
-  text = "No data",
-  size = "",
-  align = ""
-) {
+  .mine .msg-bubble-wrap,
+  .theirs .msg-bubble-wrap{
+    max-width: min(85%, 252px);
+  }
+}
+.image-lightbox{
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    const safeText =
-      escapeSharedText(
-        text
-      );
+.image-lightbox[hidden]{
+  display: none !important;
+}
+
+.message{
+  overflow: visible;
+}
+
+.message .chat-image-wrap{
+  max-width: 100%;
+}
+.image-lightbox-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+}
+
+.image-lightbox-content{
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.image-lightbox-img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center center;
+  transition: transform 0.08s linear;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.lightbox-close-btn{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.lightbox-close-btn:hover{
+  background: rgba(255,0,0,0.9);
+}
+
+.lightbox-close-btn:active{
+  transform: scale(0.95);
+}
+
+.image-lightbox-content{
+  cursor: default;
+  overflow: hidden;
+}
+
+.image-lightbox-img.is-zoomed{
+  cursor: grab;
+}
+
+.image-lightbox-img.is-dragging{
+  cursor: grabbing;
+  transition: none;
+}
+  /* ================= SCROLLBAR GLOBAL ================= */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px; /* nipis */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
 
 
-    const sizeClass =
-      getSharedSizeClass(
-        size
-      );
+/* === LIVECHAT MODERN UI — EMBEDDED === */
+/* 5G88 LiveChat — Modern UI skin. Load AFTER existing inline styles. */
+:root{--lc-bg:#080f1d;--lc-surface:#101b2c;--lc-surface2:#17253b;--lc-border:#293c59;--lc-muted:#91a8c8;--lc-text:#eaf2ff;--lc-accent:#2478ee;--lc-glow:rgba(36,120,238,.18)}
+*{box-sizing:border-box}
+html,body{min-height:100%;background:var(--tx-bg) !important;color:var(--lc-text)!important}
+body{font-family:Inter,'Segoe UI',system-ui,sans-serif!important}
+      
+.chat-wrapper{width:min(100%,1060px)!important;max-width:1060px!important;height:min(880px,calc(100dvh - 40px))!important;min-height:400px;margin:0 auto!important;padding:0!important;background:var(--lc-bg)!important;border:1px solid var(--tx-border)!important;border-radius:20px!important;box-shadow:0 24px 80px #0008,0 0 0 1px #ffffff05!important;isolation:isolate}
+.chat-header{background:var(--tx-surface-soft)!important;border:0!important;border-bottom:1px solid var(--tx-border)!important;border-radius:0!important;padding:14px 14px!important;gap:10px !important;min-height:78px;flex-wrap:nowrap!important}
+.chat-header .profile{min-width:0;gap:13px}
+.chat-header .profile img{width:48px!important;height:48px!important;object-fit:cover;border:2px solid #4b91fb!important;box-shadow:0 0 0 4px #2676ef24;background:#0e1c32!important}
+.chat-header .profile span{display:block;font-size:16px!important;letter-spacing:.1px;color:var(--tx-ink) !important;white-space:nowrap}
+.support-agent-name{color:#a5b9d4;font-size:11px;line-height:1.5;margin-top:2px}
+#typingStatus{display:inline-flex;color:#5be0b4!important;font-size:11px!important;align-items:center;gap:5px}
+#typingStatus:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.search-wrapper{width:min(330px,42%)!important;flex:0 1 330px!important;min-width:120px;justify-content:flex-end}
+.search-input-wrap{max-width:330px!important}
+#searchChat{height:40px;background:var(--tx-surface) !important;border:1px solid var(--tx-border) !important;border-radius:10px!important;color:#eaf2ff!important;padding-left:38px!important}
+#searchChat::placeholder{color:#8da1bd}
+#searchChat:focus{border-color:#438efa!important;box-shadow:0 0 0 3px #2377f222!important}
+.search-icon{color:#9ab2d2!important}
+.chat-box{flex:1!important;height:auto!important;min-height:0!important;padding:22px clamp(12px,3vw,32px)!important;background:var(--tx-surface)!important;border:0!important;border-radius:0!important;scrollbar-color:#385374 transparent!important}
+.message{margin:14px 0!important}
+.msg-row{gap:10px!important;align-items:flex-end!important}
+.msg-avatar-outside{width:30px!important;height:30px!important;border:1px solid #395274!important;background:#15263d!important}
+.mine .msg-bubble-wrap,.theirs .msg-bubble-wrap{min-width:70px;max-width:min(76%,550px)!important;padding:12px 15px!important;border:1px solid transparent!important;border-radius:16px!important;box-shadow:0 5px 18px #0002!important}
+.mine .msg-bubble-wrap{background:linear-gradient(135deg,#2168d4,#1754ad)!important;border-bottom-right-radius:5px!important;color:white!important}
+.theirs .msg-bubble-wrap{background:#1a2a41!important;border:1px solid #2a4160!important;border-bottom-left-radius:5px!important;color:#eaf2ff!important}
+.mine .msg-bubble-wrap::after,.theirs .msg-bubble-wrap::after{display:none!important}
+.msg-info{font-size:11px!important;color:#fff!important;margin-bottom:4px;font-weight:700;}
+.msg-text{font-size:13px!important;line-height:1.6!important;color:#f1f6ff!important;font-weight:400!important}
+.msg-time{color:#bed0e9!important;font-size:10px!important;margin-top:6px!important}
+.date-label{margin:14px 0 22px!important}
+.date-label-inner{background:#1b304d!important;border:1px solid #324b70!important;border-radius:999px!important;padding:5px 18px!important;box-shadow:none!important;color:#dce9fc!important}
+.send-box{background:var(--tx-surface-soft)!important;border:0!important;border-top:1px solid var(--tx-border)!important;border-radius:0!important;padding:15px 20px!important;gap:12px!important;align-items:center!important;flex-wrap:nowrap!important;box-shadow:none!important}
+.send-box:focus-within{box-shadow:none!important;border-top-color:#345984!important}
+#msg{min-width:0!important;min-height:38px!important;padding:10px 4px!important;color:#f3f7ff!important;line-height:1.5!important;font-size:14px!important;background:transparent!important}
+#msg::placeholder{color:#8196b5!important}
+.send-actions{gap:8px!important}
+.send-tool-btn{width:35px!important;height:35px!important;border-radius:9px!important;color:#a9c0df!important;transition:background .15s,color .15s!important;flex:0 0 auto}
+.send-tool-btn:hover{background:#233b5d!important;color:white!important}
+.send-main-btn{width:42px!important;height:42px!important;background:#2478ee!important;border-radius:12px!important;box-shadow:0 4px 14px #145fd444!important}
+.send-main-btn:hover{background:#3d8afa!important}
+#toBottomBtn{background:#2478ee!important;border-radius:12px!important;right:22px!important;box-shadow:0 6px 20px #0006!important}
+#startMessage{color:#9fb3d0!important;font-size:14px!important;padding:35px 12px!important}
+#noResults{background:#19283f!important;border:1px solid #3b5273!important;color:#dbeaff!important}
+.image-preview-wrap{background:transparent!important}
+.image-preview-card,.image-add-card{border-radius:12px!important;border-color:#3b5373!important;background:#182a42!important}
+.chat-image-wrap{border-radius:12px!important;background:#0d1a2b!important}
+.emoji-picker-wrap{border:1px solid #334967;border-radius:14px!important;box-shadow:0 20px 60px #0009!important}
+.image-lightbox-backdrop{background:#030814ee!important}
+@media(max-width:700px){.chat-wrapper{height:100dvh!important;min-height:0!important;width:100%!important;}.chat-header{padding:14px 14px!important;min-height:78px;gap:10px!important;flex-direction:row!important;align-items:center!important}.chat-header .profile img{width:42px!important;height:42px!important}.chat-header .profile span{font-size:14px!important}.search-wrapper{width:min(180px,42%)!important;flex:0 1 180px!important;margin:0!important}.search-input-wrap{width:100%!important}#searchChat{height:36px;font-size:12px!important}.chat-box{padding:15px 12px!important}.mine .msg-bubble-wrap,.theirs .msg-bubble-wrap{max-width:min(85%,420px)!important}.send-box{padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;gap:6px!important;flex-wrap:wrap!important}.send-tool-btn{width:32px!important;height:32px!important}.send-main-btn{width:38px!important;height:38px!important}#toBottomBtn{right:12px!important}}
+@media(max-width:390px){.chat-header{flex-wrap:wrap!important}.chat-header .profile{width:100%}.search-wrapper{width:100%!important;flex:1 1 100%!important}.search-input-wrap{max-width:none!important}.chat-header{padding:10px 12px!important}.send-actions{gap:3px!important}.send-box{gap:4px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
 
-const alignClass =
-  align === "center"
-    ? "shared-center"
-    : align === "left"
-      ? "shared-left"
-      : "";
-    return `
-      <div
-        class="shared-empty ${sizeClass} ${alignClass}"
-      >
+/* ==========================================
+   5G88 LIVECHAT — RESPONSIVE LAYOUT FIX
+   ========================================== */
 
-        <div
-          class="shared-empty-image"
-        >
+/* Halaman ikut tinggi skrin */
+html,
+body {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
 
-          <svg
-            width="64"
-            height="41"
-            viewBox="0 0 64 41"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
+main {
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  padding: 0 12px 12px !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
 
-            <title>
-              No data
-            </title>
+/* Chat tidak terlalu lebar atau tinggi */
+.chat-wrapper {
+  width: 100% !important;
+  max-width: 850px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+}
+
+/* Header kekal di atas */
+.chat-header {
+  flex: 0 0 auto !important;
+}
+
+/* Hanya bahagian mesej yang scroll */
+.chat-box {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Composer sentiasa di bawah */
+.send-box {
+  position: relative !important;
+  bottom: auto !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 12px 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Preview gambar di baris sendiri */
+.send-box .image-preview-wrap:not([hidden]) {
+  display: flex !important;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 0 8px !important;
+  max-height: 180px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Attachment icon */
+.send-box .attach-btn {
+  flex: 0 0 35px !important;
+  width: 35px !important;
+  height: 35px !important;
+}
+
+/* Textarea ambil ruang tengah */
+.send-box #msg {
+  flex: 1 1 100px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-height: 100px !important;
+}
+
+/* Emoji, gift dan Send kekal di kanan */
+.send-box .send-actions {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-left: auto !important;
+}
+
+/* Send tidak mengecil atau hilang */
+.send-box #sendBtn {
+  display: inline-flex !important;
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  visibility: visible !important;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+
+  .chat-wrapper {
+    max-width: 100% !important;
+  }
+
+  .send-box {
+    padding: 10px 8px
+      calc(10px + env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+  }
+
+  .send-box .attach-btn {
+    flex-basis: 30px !important;
+    width: 30px !important;
+  }
+
+  .send-box .send-actions {
+    gap: 3px !important;
+  }
+
+  .send-box .send-tool-btn {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .send-box #sendBtn {
+    flex-basis: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+  }
+}
+/* LiveChat dalam panel kecil / iframe */
+@media (max-width: 520px) {
+  .chat-container {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .chat-box {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+}
+      
+
+/* ==========================================
+   LIVECHAT FLOATING - FULL PANEL
+   ========================================== */
+
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode body > main {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .chat-wrapper {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode .chat-box {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+}
+
+html.asf-embed-mode .send-box {
+  flex-shrink: 0 !important;
+}
 
 
-            <g
-              transform="translate(0 1)"
-              fill="none"
-              fill-rule="evenodd"
-            >
+/* ==========================================
+   5G88 LIVECHAT - FLOATING ONLY
+   ========================================== */
 
-              <ellipse
-                fill="var(--empty-icon)"
-                cx="32"
-                cy="33"
-                rx="32"
-                ry="7"
-              />
+/* Sembunyikan dashboard header dan tabbar */
+html.asf-embed-mode #homepageSharedShell,
+html.asf-embed-mode #homepageSharedShell *,
+html.asf-embed-mode #g88HeaderPicker {
+  display: none !important;
+}
+
+/* Buang ruang dashboard */
+html.asf-embed-mode,
+html.asf-embed-mode body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* LiveChat memenuhi iframe */
+html.asf-embed-mode body > main {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.asf-embed-mode body > main > .chat-wrapper {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
 
 
-              <g
-                fill-rule="nonzero"
-                stroke="var(--empty-icon-border)"
-              >
+/* =========================================================
+   5G88 LIVECHAT · SITE ADMIN — MODERN SUPPORT UI 2026
+   UI-only enhancement; Firebase/chat/presence logic untouched.
+   Matches Agent Support bubble language and NewUI image preview.
+   ========================================================= */
+:root {
+  --lc-bg:#090f1b;
+  --lc-panel:#111c2e;
+  --lc-elevated:#16243a;
+  --lc-border:#273850;
+  --lc-ink:#eef4ff;
+  --lc-muted:#96a9c3;
+  --lc-blue:#4c94ff;
+  --lc-blue-soft:#1b3455;
+  --lc-hover:#1a2b43;
+}
+body.light-theme, html[data-admin-theme="light"] body {
+  --lc-bg:#f3f6fb;
+  --lc-panel:#ffffff;
+  --lc-elevated:#f8faff;
+  --lc-border:#e3e9f3;
+  --lc-ink:#17243b;
+  --lc-muted:#75849a;
+  --lc-blue:#246be8;
+  --lc-blue-soft:#eaf2ff;
+  --lc-hover:#f0f5fc;
+}
+html,body{height:100%;width:100%;overflow:hidden;}
+body{background:var(--lc-bg)!important;color:var(--lc-ink)!important;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif!important;}
+body>main{height:100dvh;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;padding:clamp(8px,2vw,20px)!important;}
+.chat-wrapper,.chat-container{
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;max-width:1080px!important;
+  height:100%!important;min-height:0!important;
+  margin:0 auto!important;overflow:hidden!important;
+  border:1px solid var(--lc-border)!important;
+  border-radius:16px!important;
+  background:var(--lc-panel)!important;
+  box-shadow:0 14px 44px rgba(0,0,0,.15)!important;
+}
+.chat-header{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  flex:0 0 auto!important;gap:14px!important;flex-wrap:wrap!important;
+  padding:15px 20px!important;min-height:76px!important;
+  background:var(--lc-panel)!important;color:var(--lc-ink)!important;
+  border:0!important;border-bottom:1px solid var(--lc-border)!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+.chat-header .profile{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 200px;}
+.chat-header .profile img{width:42px!important;height:42px!important;object-fit:cover;border:2px solid var(--lc-border)!important;box-shadow:0 0 0 3px var(--lc-blue-soft);}
+.chat-header .profile span,#headerUserName{font-size:15px!important;font-weight:750!important;color:var(--lc-ink)!important;}
+#supportAgentName{font-size:11px!important;color:var(--lc-muted)!important;}
+#typingStatus{color:var(--lc-muted)!important;font-size:11px!important;}
+.search-wrapper{flex:0 1 270px;min-width:150px;max-width:100%;}
+.search-input-wrap{width:100%!important;max-width:100%!important;position:relative;}
+#searchChat{
+  width:100%!important;min-width:0!important;height:38px!important;
+  border:1px solid var(--lc-border)!important;border-radius:10px!important;
+  background:var(--lc-elevated)!important;color:var(--lc-ink)!important;
+  font-size:12px!important;outline:none!important;
+}
+#searchChat:focus{border-color:var(--lc-blue)!important;box-shadow:0 0 0 3px rgba(76,148,255,.12)!important;}
+#searchChat::placeholder,#msg::placeholder{color:var(--lc-muted)!important;opacity:1;}
+.chat-box{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  padding:22px!important;background:var(--lc-elevated)!important;
+  border:0!important;border-radius:0!important;color:var(--lc-ink)!important;
+  scrollbar-width:thin;scrollbar-color:var(--lc-border) transparent;
+}
+.chat-box::-webkit-scrollbar{width:7px;}
+.chat-box::-webkit-scrollbar-thumb{background:var(--lc-border);border-radius:99px;}
+.message{width:100%!important;margin:7px 0!important;}
+.msg-row{display:flex!important;align-items:flex-start!important;gap:9px!important;width:100%!important;min-width:0;}
+.msg-row.mine-row{justify-content:flex-end!important;}
+.msg-row.their-row{justify-content:flex-start!important;}
+.msg-avatar-outside{width:30px!important;height:30px!important;flex:0 0 30px!important;border:1px solid var(--lc-border)!important;border-radius:50%!important;object-fit:cover;}
+.msg-bubble-wrap{display:flex!important;flex-direction:column!important;min-width:0!important;width:fit-content!important;max-width:min(480px,78%)!important;padding:10px 12px!important;line-height:1.55!important;box-sizing:border-box!important;word-break:break-word!important;}
+.mine .msg-bubble-wrap{
+  background:#2268d9!important;color:#fff!important;
+  border:0!important;border-radius:14px 14px 5px 14px!important;
+  box-shadow:0 3px 10px rgba(30,94,201,.12)!important;
+}
+.theirs .msg-bubble-wrap{
+  background:var(--lc-panel)!important;color:var(--lc-ink)!important;
+  border:1px solid var(--lc-border)!important;
+  border-radius:14px 14px 14px 5px!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.035)!important;
+}
+.mine .msg-bubble-wrap::after,.theirs .msg-bubble-wrap::after{display:none!important;}
+.mine .msg-text,.mine .msg-info,.mine .msg-time{color:#fff!important;}
+.theirs .msg-text,.theirs .msg-info{color:var(--lc-ink)!important;}
+.theirs .msg-time{color:var(--lc-muted)!important;}
+.msg-text{font-size:13px!important;font-weight:450!important;line-height:1.55!important;white-space:pre-wrap;overflow-wrap:anywhere;}
+.msg-info{font-size:11px!important;font-weight:700!important;}
+.msg-time{font-size:10px!important;opacity:.8!important;align-self:flex-end!important;margin-top:5px!important;}
+.date-label-inner{background:var(--lc-blue-soft)!important;color:var(--lc-blue)!important;border-radius:20px!important;box-shadow:none!important;padding:5px 15px!important;}
+.date-label-inner *{color:var(--lc-blue)!important;}
+.chat-image-group{max-width:100%!important;}
+.chat-image-wrap{border:1px solid var(--lc-border)!important;border-radius:10px!important;overflow:hidden!important;}
+.chat-image-thumb{background:var(--lc-elevated)!important;}
+.send-box{
+  display:grid!important;grid-template-columns:36px minmax(0,1fr) auto!important;
+  grid-template-rows:auto!important;align-items:center!important;
+  gap:8px 10px!important;flex:0 0 auto!important;
+  width:100%!important;min-width:0!important;max-height:min(38dvh,300px)!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  padding:12px 17px!important;margin:0!important;
+  border:0!important;border-top:1px solid var(--lc-border)!important;
+  border-radius:0!important;background:var(--lc-panel)!important;
+  box-shadow:none!important;
+}
+.send-box .image-preview-wrap:not([hidden]){
+  grid-column:1/-1!important;grid-row:auto!important;display:flex!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  margin:0!important;padding:4px 0 8px!important;max-height:180px!important;
+  overflow:auto!important;flex:initial!important;
+}
+.image-preview-wrap[hidden],.image-upload-status[hidden]{display:none!important;}
+.send-box .attach-btn{
+  grid-column:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:36px!important;height:36px!important;min-width:0!important;flex:none!important;
+  border-radius:10px!important;background:var(--lc-elevated)!important;color:var(--lc-muted)!important;
+  cursor:pointer!important;
+}
+.send-box #msg{
+  grid-column:2!important;align-self:center!important;min-width:0!important;width:100%!important;
+  min-height:38px!important;max-height:100px!important;padding:10px 4px!important;
+  background:transparent!important;color:var(--lc-ink)!important;border:0!important;
+  box-shadow:none!important;font-size:13px!important;resize:none!important;
+}
+.send-box .send-actions{grid-column:3!important;display:flex!important;align-items:center!important;gap:6px!important;flex:0 0 auto!important;margin:0!important;min-width:max-content!important;}
+.send-tool-btn{width:34px!important;height:34px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;color:var(--lc-muted)!important;border-radius:9px!important;}
+.send-tool-btn:hover,.attach-btn:hover{background:var(--lc-hover)!important;color:var(--lc-blue)!important;}
+.send-main-btn,#sendBtn{width:39px!important;height:39px!important;min-width:39px!important;flex:0 0 39px!important;border-radius:11px!important;background:#2268d9!important;color:#fff!important;}
+.send-main-btn:hover:not(:disabled),#sendBtn:hover:not(:disabled){background:#3c89e8!important;}
+.send-main-btn:disabled,#sendBtn:disabled{opacity:.48!important;}
+.image-preview-card,.image-add-card{border-color:var(--lc-border)!important;background:var(--lc-elevated)!important;}
+#toBottomBtn{z-index:12!important;}
+html.asf-embed-mode body>main{padding:0!important;}
+html.asf-embed-mode .chat-wrapper{border:0!important;border-radius:0!important;max-width:none!important;box-shadow:none!important;}
+@media(max-width:700px){
+  body>main{padding:0!important;}
+  .chat-wrapper,.chat-container{max-width:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
+  .chat-header{padding:12px!important;gap:10px!important;min-height:68px!important;}
+  .chat-header .profile{flex:1 1 100%;}
+  .search-wrapper{flex:1 1 100%;max-width:none!important;}
+  .chat-box{padding:13px 10px!important;}
+  .msg-bubble-wrap{max-width:min(440px,82%)!important;}
+  .msg-avatar-outside{width:26px!important;height:26px!important;flex-basis:26px!important;}
+  .send-box{grid-template-columns:32px minmax(0,1fr) auto!important;gap:6px!important;padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px))!important;}
+  .send-box .attach-btn{width:32px!important;height:34px!important;}
+  .send-tool-btn{width:30px!important;height:32px!important;}
+  .send-box .send-actions{gap:2px!important;}
+  #sendBtn{width:36px!important;height:36px!important;min-width:36px!important;flex-basis:36px!important;}
+}
+@media(max-width:380px){
+  .msg-bubble-wrap{max-width:84%!important;}
+  .chat-box{padding:10px 7px!important;}
+  .send-box{gap:4px!important;padding-inline:6px!important;}
+  .send-tool-btn{width:28px!important;}
+}
 
-                <path
-                  d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"
-                />
-
-
-                <path
-                  d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
-                  fill="var(--empty-icon-set)"
-                />
-
-              </g>
-
-            </g>
-
-          </svg>
-
+</style>
+</head>
+<body>
+  <main>
+  <div class="chat-wrapper">
+    <!-- CHAT HEADER -->
+    <div class="chat-header">
+      <div class="profile">
+       <img id="headerUserPhoto" src="https://i.imgur.com/qiZFOs9.png" alt="Support" />
+        <div>
+          <span id="headerUserName">Admin Support</span><div id="supportAgentName" class="support-agent-name">Support team</div>
+          <small id="typingStatus" style="font-size: 12px; font-weight: normal; color: white;">Offline</small>
         </div>
-
-
-        <div
-          class="shared-empty-text"
-        >
-          ${safeText}
-        </div>
-
       </div>
-    `;
+<div class="search-wrapper">
+  <div class="search-input-wrap">
+    <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M15.97 17.031c-1.479 1.238-3.384 1.985-5.461 1.985-4.697 0-8.509-3.812-8.509-8.508S5.812 2 10.509 2c4.695 0 8.508 3.812 8.508 8.508 0 2.078-.747 3.984-1.985 5.461l4.749 4.75c.146.146.219.338.219.531 0 .587-.537.75-.75.75-.192 0-.384-.073-.531-.22zm-5.461-13.53c-3.868 0-7.007 3.14-7.007 7.007s3.139 7.007 7.007 7.007c3.866 0 7.007-3.14 7.007-7.007s-3.141-7.007-7.007-7.007z" fill="currentColor"/>
+    </svg>
+    <input type="text" id="searchChat" placeholder="Search messages..." />
+  </div>
+</div>
+    </div>
 
-  }
+<div class="chat-box" id="chatBox">
+  <div id="startMessage" style="text-align:center; color:white; opacity:0.6; margin-top:10px; font-size:14px;">
+    Welcome to Live Support. Send us a message to get started.
+  </div>
+</div>
+<button id="toBottomBtn" aria-label="Scroll to latest" title="Go to latest">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 10l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+<div id="noResults" style="display:none;position:absolute;top:62px;right:16px;background:#222;color:#fff;border:1px solid #444;border-radius:8px;padding:6px 10px;font-size:12px;">
+  No data
+</div>
+    
+<div class="send-box">
+<div id="imagePreviewWrap" class="image-preview-wrap" hidden>
+  <div id="imagePreviewList" class="image-preview-list"></div>
 
+  <label for="fileInput" id="addMoreImageBtn" class="image-add-card" title="Add image">
+    <span class="image-add-plus">+</span>
+  </label>
 
-  /* =======================================================
-     LOADING STATE
-  ======================================================= */
-
-  function createLoadingState(
-    text = "Loading...",
-    size = ""
-  ) {
-
-    const safeText =
-      escapeSharedText(
-        text
-      );
-
-
-    const sizeClass =
-      getSharedSizeClass(
-        size
-      );
-
-
-    return `
-      <div
-        class="shared-loading ${sizeClass}"
-        role="status"
-        aria-live="polite"
-      >
-
-<div
-  class="shared-loading-dots"
-  aria-hidden="true"
->
-  <span></span>
-  <span></span>
-  <span></span>
-  <span></span>
+  <div id="imageUploadStatus" class="image-upload-status global-upload-status" hidden>
+    <span class="upload-spinner"></span>
+    <span id="imageUploadText">Uploading image...</span>
+  </div>
 </div>
 
+<label for="fileInput" class="send-tool-btn attach-btn" title="Upload Image">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M16.5 6.5l-7.79 7.79a3 3 0 104.24 4.24l8.14-8.14a5 5 0 10-7.07-7.07L5.32 12.02a7 7 0 109.9 9.9l7.07-7.07"
+      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <input type="file" id="fileInput" accept="image/*" multiple hidden>
+</label>
 
-${
-  safeText
-    ? `
-        <div
-          class="shared-loading-text"
-        >
-          ${safeText}
-        </div>
-      `
-    : ""
+  <textarea id="msg" placeholder="Type your message..." rows="1"></textarea>
+
+<div class="send-actions">
+  <button type="button" class="send-tool-btn" title="Gift">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7M12 4v16M3 8h18v4H3V8zm4.5 0h0A2.5 2.5 0 1 1 10 5.5V8H7.5zm9 0H14V5.5A2.5 2.5 0 1 1 16.5 8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <button type="button" class="send-tool-btn" id="emojiBtn" title="Emoji">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M9 10h.01M15 10h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M8.5 14.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <button type="button" id="sendBtn" class="send-main-btn" disabled title="Send">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 20l17-8L4 4l3 8-3 8zm3-8h14"
+        fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+</div>
+<div id="emojiPickerWrap" class="emoji-picker-wrap" hidden>
+  <emoji-picker id="emojiPicker"></emoji-picker>
+</div>
+  </div>
+</main>
+<audio id="notifSound" src="./audio.wav" preload="auto"></audio>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="./firebase.js"></script>
+<script src="./new-ui.js"></script>
+<script src="./shared-ui.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+<script src="./admin.js"></script>
+<script type="module">
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
 }
+let chatInitialized = false;
+let currentUserEmail = null;
+let currentActiveId  = null;
+let currentIsGuest   = false;
+let currentAdminUsername = "";
+let presenceBoundFor = null;
+let forceOpenBottom = true;
+let hideBottomBtnTimer = null;
 
-      </div>
-    `;
+let pendingImages = [];
+let isUploadingImage = false;
+let currentImageUploadToken = 0;
 
-  }
+let msgInputEl = null;
+let sendBtnEl = null;
+let fileInputEl = null;
+let imagePreviewWrapEl = null;
+let imagePreviewListEl = null;
+let imageUploadStatusEl = null;
+let imageUploadTextEl = null;
+let FP_PROMISE = null;
 
+function initFingerprint(){
+  if (FP_PROMISE) return FP_PROMISE;
 
-  /* =======================================================
-     SET EMPTY DIRECTLY
-  ======================================================= */
+  FP_PROMISE = (async () => {
+    try{
+      if (!window.FingerprintJS) {
+        console.warn("FingerprintJS not loaded");
+        return null;
+      }
 
+      const fp = await FingerprintJS.load();
+      const res = await fp.get();
 
-function showEmptyState(
-  target,
-  text = "No data",
-  size = "",
-  align = "",
-  card = false
-) {
-  const element =
-    typeof target === "string"
-      ? document.querySelector(target)
-      : target;
-
-  if (!element) return;
-
-  const emptyHTML = createEmptyState(
-    text,
-    size,
-    align
-  );
-
-  element.innerHTML = card
-    ? `<div class="shared-empty-card">
-         ${emptyHTML}
-       </div>`
-    : emptyHTML;
-}
-
-
-
-  /* =======================================================
-     SET LOADING DIRECTLY
-  ======================================================= */
-
-  function showLoadingState(
-    target,
-    text = "Loading...",
-    size = ""
-  ) {
-
-    const element =
-      typeof target === "string"
-        ? document.querySelector(
-            target
-          )
-        : target;
-
-
-    if (
-      !element
-    ) {
-      return;
-    }
-
-
-    element.innerHTML =
-      createLoadingState(
-        text,
-        size
-      );
-
-  }
-
-
-  /* =======================================================
-     CLEAR CONTENT
-  ======================================================= */
-
-  function clearSharedState(
-    target
-  ) {
-
-    const element =
-      typeof target === "string"
-        ? document.querySelector(
-            target
-          )
-        : target;
-
-
-    if (
-      !element
-    ) {
-      return;
-    }
-
-
-    element.innerHTML = "";
-
-  }
-
-
-  /* =======================================================
-     SHARED SEARCHABLE DROPDOWN
-  ======================================================= */
-
-  function createSharedDropdown(
-    target,
-    options = {}
-  ) {
-
-    const select =
-      typeof target === "string"
-        ? document.querySelector(target)
-        : target;
-
-
-    if (
-      !select ||
-      select.tagName !== "SELECT"
-    ) {
+      return res?.visitorId || null;
+    }catch(e){
+      console.warn("Fingerprint init failed:", e);
       return null;
     }
-
-
-    /* PREVENT DOUBLE INIT */
-
-    if (
-      select.dataset.sharedDropdown ===
-      "true"
-    ) {
-
-      return (
-        select._sharedDropdown ||
-        null
-      );
-
-    }
-
-
-    const config = {
-
-      placeholder:
-        options.placeholder ||
-        select.dataset.placeholder ||
-        "Select option",
-
-      emptyText:
-        options.emptyText ||
-        "No data"
-
-    };
-
-    /* =====================================================
-       ICONS
-    ===================================================== */
-
-    const arrowIcon = `
-      <svg
-        viewBox="0 0 1024 1024"
-        aria-hidden="true"
-      >
-        <path
-          d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
-          fill="currentColor"
-        />
-      </svg>
-    `;
-
-
-    const searchIcon = `
-      <svg
-        viewBox="0 0 1024 1024"
-        aria-hidden="true"
-      >
-        <path
-          d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"
-          fill="currentColor"
-        />
-      </svg>
-    `;
-
-const clearIcon = `
-  <svg
-    viewBox="0 0 1024 1024"
-    aria-hidden="true"
-  >
-    <path
-      d="M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.05-.09l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 00-.07 0z"
-      fill="currentColor"
-    />
-  </svg>
-`;
-    /* =====================================================
-       WRAPPER
-    ===================================================== */
-
-    const wrapper =
-      document.createElement("div");
-
-
-    wrapper.className =
-      "shared-dropdown";
-
-
-    /* =====================================================
-       TRIGGER
-    ===================================================== */
-
-    const trigger =
-      document.createElement("div");
-
-
-    trigger.className =
-      "shared-dropdown-trigger";
-
-
-    /* INPUT */
-
-    const input =
-      document.createElement("input");
-
-
-    input.type =
-      "text";
-
-
-    input.className =
-      "shared-dropdown-input";
-
-
-    input.placeholder =
-      config.placeholder;
-
-
-    input.autocomplete =
-      "off";
-
-
-    input.spellcheck =
-      false;
-
-
-    input.setAttribute(
-      "aria-haspopup",
-      "listbox"
-    );
-
-
-    input.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-
-
-    /* ICON */
-
-    const icon =
-      document.createElement("span");
-
-
-    icon.className =
-      "shared-dropdown-icon";
-
-
-    icon.innerHTML =
-      arrowIcon;
-     
-let isHovering =
-  false;
-
-    trigger.appendChild(
-      input
-    );
-
-
-    trigger.appendChild(
-      icon
-    );
-
-
-    /* =====================================================
-       PANEL
-    ===================================================== */
-
-    const panel =
-      document.createElement("div");
-
-
-    panel.className =
-      "shared-dropdown-panel";
-
-
-    const optionList =
-      document.createElement("div");
-
-
-    optionList.className =
-      "shared-dropdown-options";
-
-
-    optionList.setAttribute(
-      "role",
-      "listbox"
-    );
-
-
-    panel.appendChild(
-      optionList
-    );
-
-
-    /* =====================================================
-       INSERT
-    ===================================================== */
-
-    select.parentNode.insertBefore(
-      wrapper,
-      select
-    );
-
-
-    wrapper.appendChild(
-      select
-    );
-
-
-    wrapper.appendChild(
-      trigger
-    );
-
-
-    wrapper.appendChild(
-      panel
-    );
-
-
-    select.classList.add(
-      "shared-dropdown-native"
-    );
-
-
-    select.dataset.sharedDropdown =
-      "true";
-
-/* =====================================================
-   UPDATE RIGHT ICON
-===================================================== */
-
-function updateIcon() {
-
-  const isOpen =
-    wrapper.classList.contains(
-      "open"
-    );
-
-
-  const hasSearchText =
-    input.value.trim() !== "";
-
-
-  const hasSelectedValue =
-    select.value !== "";
-
-
-  /*
-    OPEN + USER TYPING
-    = ALWAYS CLEAR
-  */
-
-  if (
-    isOpen &&
-    hasSearchText
-  ) {
-
-    icon.innerHTML =
-      clearIcon;
-
-    icon.dataset.icon =
-      "clear";
-
-    return;
-
-  }
-
-
-  /*
-    OPEN + SELECTED VALUE + HOVER INPUT
-    = CLEAR
-  */
-
-  if (
-    isOpen &&
-    hasSelectedValue &&
-    isHovering
-  ) {
-
-    icon.innerHTML =
-      clearIcon;
-
-    icon.dataset.icon =
-      "clear";
-
-    return;
-
-  }
-
-
-  /*
-    OPEN + NOT HOVERING
-    = SEARCH
-  */
-
-  if (
-    isOpen
-  ) {
-
-    icon.innerHTML =
-      searchIcon;
-
-    icon.dataset.icon =
-      "search";
-
-    return;
-
-  }
-
-
-  /*
-    CLOSED + VALUE + HOVER
-    = CLEAR
-  */
-
-  if (
-    !isOpen &&
-    hasSelectedValue &&
-    isHovering
-  ) {
-
-    icon.innerHTML =
-      clearIcon;
-
-    icon.dataset.icon =
-      "clear";
-
-    return;
-
-  }
-
-
-  /*
-    DEFAULT CLOSED
-    = ARROW
-  */
-
-  icon.innerHTML =
-    arrowIcon;
-
-  icon.dataset.icon =
-    "arrow";
-
-}
-    /* =====================================================
-       UPDATE DISPLAY VALUE
-    ===================================================== */
-
-    function updateValue() {
-
-      const selectedOption =
-        select.options[
-          select.selectedIndex
-        ];
-
-
-      const hasValue =
-        selectedOption &&
-        selectedOption.value !== "";
-
-
-      input.value =
-        hasValue
-          ? (
-              selectedOption
-                .textContent ||
-              ""
-            ).trim()
-          : "";
-
-    }
-
-
-    /* =====================================================
-       RENDER OPTIONS
-    ===================================================== */
-
-    function renderOptions(
-      search = ""
-    ) {
-
-      optionList.innerHTML =
-        "";
-
-
-      const keyword =
-        String(
-          search
-        )
-          .trim()
-          .toLowerCase();
-
-
-      let count = 0;
-
-
-      Array
-        .from(
-          select.options
-        )
-        .forEach(
-          option => {
-
-            if (
-              option.value === ""
-            ) {
-              return;
-            }
-
-
-            const text =
-              (
-                option.textContent ||
-                ""
-              ).trim();
-
-
-            if (
-              keyword &&
-              !text
-                .toLowerCase()
-                .includes(
-                  keyword
-                )
-            ) {
-              return;
-            }
-
-
-            const item =
-              document.createElement(
-                "button"
-              );
-
-
-            item.type =
-              "button";
-
-
-            item.className =
-              "shared-dropdown-option";
-
-
-            item.textContent =
-              text;
-
-
-            item.setAttribute(
-              "role",
-              "option"
-            );
-
-
-            item.setAttribute(
-              "aria-selected",
-              option.value ===
-              select.value
-                ? "true"
-                : "false"
-            );
-
-
-            if (
-              option.value ===
-              select.value
-            ) {
-
-              item.classList.add(
-                "active"
-              );
-
-            }
-
-
-            if (
-              option.disabled
-            ) {
-
-              item.disabled =
-                true;
-
-            }
-
-
-            item.addEventListener(
-              "mousedown",
-              event => {
-
-                /*
-                  Prevent input blur before
-                  option selection.
-                */
-
-                event.preventDefault();
-
-              }
-            );
-
-
-            item.addEventListener(
-              "click",
-              event => {
-
-                event.stopPropagation();
-
-
-                if (
-                  option.disabled
-                ) {
-                  return;
-                }
-
-
-                select.value =
-                  option.value;
-
-
-                select.dispatchEvent(
-                  new Event(
-                    "change",
-                    {
-                      bubbles:true
-                    }
-                  )
-                );
-
-
-                close();
-
-              }
-            );
-
-
-            optionList.appendChild(
-              item
-            );
-
-
-            count++;
-
-          }
-        );
-
-
-      if (
-        count === 0
-      ) {
-
-        const empty =
-          document.createElement(
-            "div"
-          );
-
-
-        empty.className =
-          "shared-dropdown-empty";
-
-
-        empty.textContent =
-          config.emptyText;
-
-
-        optionList.appendChild(
-          empty
-        );
-
-      }
-
-    }
-
-
-    /* =====================================================
-       OPEN
-    ===================================================== */
-
-    function open() {
-
-      if (
-        select.disabled
-      ) {
-        return;
-      }
-
-
-document
-  .querySelectorAll(
-    "select[data-shared-dropdown]"
-  )
-  .forEach(
-    otherSelect => {
-
-      if (
-        otherSelect !== select &&
-        otherSelect._sharedDropdown
-      ) {
-
-        otherSelect
-          ._sharedDropdown
-          .close();
-
-      }
-
-    }
-  );
-
-
-wrapper.classList.add(
-  "open"
-);
-
-
-input.setAttribute(
-  "aria-expanded",
-  "true"
-);
-
-
-/*
-  Get current selected option.
-*/
-
-const selectedOption =
-  select.options[
-    select.selectedIndex
-  ];
-
-
-const selectedText =
-  selectedOption &&
-  selectedOption.value !== ""
-    ? (
-        selectedOption.textContent ||
-        ""
-      ).trim()
-    : "";
-
-
-/*
-  Selected value becomes temporary
-  placeholder while searching.
-*/
-
-input.placeholder =
-  selectedText ||
-  config.placeholder;
-
-
-/*
-  Actual input becomes empty.
-  This allows real blinking caret.
-*/
-
-input.value =
-  "";
-
-
-renderOptions(
-  ""
-);
-
-
-updateIcon();
-
-
-requestAnimationFrame(
-  () => {
-
-    input.focus();
-
-    input.setSelectionRange(
-      0,
-      0
-    );
-
-  }
-);
-
-    }
-
-    /* =====================================================
-       CLOSE
-    ===================================================== */
-
-    function close() {
-
-      wrapper.classList.remove(
-        "open"
-      );
-
-
-      input.setAttribute(
-        "aria-expanded",
-        "false"
-      );
-
-/*
-  Restore normal placeholder.
-*/
-
-input.placeholder =
-  config.placeholder;
-
-
-/*
-  Restore actual selected option.
-  Example:
-  Facebook returns if user cancels.
-*/
-
-updateValue();
-
-
-updateIcon();
-
-    }
-
-
-    /* =====================================================
-       INPUT CLICK
-    ===================================================== */
-
-    input.addEventListener(
-      "click",
-      event => {
-
-        event.stopPropagation();
-
-
-        if (
-          !wrapper
-            .classList
-            .contains("open")
-        ) {
-
-          open();
-
-        }
-
-      }
-    );
-
-
-    /* =====================================================
-       INPUT FOCUS
-    ===================================================== */
-
-    input.addEventListener(
-      "focus",
-      () => {
-
-        if (
-          !wrapper
-            .classList
-            .contains("open")
-        ) {
-
-          open();
-
-        }
-
-      }
-    );
-
-
-    /* =====================================================
-       SEARCH AS USER TYPES
-    ===================================================== */
-
-input.addEventListener(
-  "input",
-  () => {
-
-    if (
-      !wrapper
-        .classList
-        .contains("open")
-    ) {
-
-      open();
-
-    }
-
-
-    renderOptions(
-      input.value
-    );
-
-
-    updateIcon();
-
-  }
-);
-trigger.addEventListener(
-  "mouseenter",
-  () => {
-
-    isHovering =
-      true;
-
-    updateIcon();
-
-  }
-);
-
-
-trigger.addEventListener(
-  "mouseleave",
-  () => {
-
-    isHovering =
-      false;
-
-    updateIcon();
-
-  }
-);
-
-
-/*
-  Input already contains selected text.
-  Do not automatically open dropdown
-  just because hover state changed.
-*/
-
-input.addEventListener(
-  "mousemove",
-  () => {
-
-    if (
-      !wrapper.classList.contains("open") &&
-      select.value !== ""
-    ) {
-
-      isHovering =
-        true;
-
-      updateIcon();
-
-    }
-
-  }
-);
-
-    /* =====================================================
-       ICON CLICK
-    ===================================================== */
-
-icon.addEventListener(
-  "mousedown",
-  event => {
-
-    event.preventDefault();
-
-    event.stopPropagation();
-
-
-    const iconType =
-      icon.dataset.icon;
-
-
-    /* ==============================
-       CLEAR
-    ============================== */
-
-    if (
-      iconType === "clear"
-    ) {
-
-      /*
-        If dropdown is open,
-        clear only search text.
-      */
-
-if (
-  wrapper
-    .classList
-    .contains("open")
-) {
-
-  /*
-    Clear selected dropdown value.
-  */
-
-  select.value =
-    "";
-
-
-  select.dispatchEvent(
-    new Event(
-      "change",
-      {
-        bubbles:true
-      }
-    )
-  );
-
-
-  /*
-    Clear search text.
-  */
-
-  input.value =
-    "";
-
-
-  /*
-    Restore normal placeholder.
-  */
-
-  input.placeholder =
-    config.placeholder;
-
-
-  renderOptions(
-    ""
-  );
-
-
-  updateIcon();
-
-
-  input.focus();
-
-
-  input.setSelectionRange(
-    0,
-    0
-  );
-
-
-  return;
-}
-
-
-      /*
-        Dropdown closed:
-        clear selected value.
-      */
-
-      select.value =
-        "";
-
-
-      select.dispatchEvent(
-        new Event(
-          "change",
-          {
-            bubbles:true
-          }
-        )
-      );
-
-
-      input.value =
-        "";
-
-
-      updateIcon();
-
-
-      return;
-
-    }
-
-
-    /* ==============================
-       SEARCH ICON
-    ============================== */
-
-    if (
-      iconType === "search"
-    ) {
-
-      input.focus();
-
-      return;
-
-    }
-
-
-    /* ==============================
-       ARROW
-    ============================== */
-
-    if (
-      wrapper
-        .classList
-        .contains("open")
-    ) {
-
-      close();
-
-    } else {
-
-      open();
-
-    }
-
-  }
-);
-
-
-    /* =====================================================
-       SELECT CHANGE
-    ===================================================== */
-
-select.addEventListener(
-  "change",
-  () => {
-
-    updateValue();
-
-    renderOptions();
-
-    updateIcon();
-
-  }
-);
-
-    /* =====================================================
-       DISABLED
-    ===================================================== */
-
-    function updateDisabled() {
-
-      const disabled =
-        select.disabled;
-
-
-      input.disabled =
-        disabled;
-
-
-      wrapper
-        .classList
-        .toggle(
-          "disabled",
-          disabled
-        );
-
-
-      if (
-        disabled
-      ) {
-
-        close();
-
-      }
-
-    }
-
-
-    /* =====================================================
-       PUBLIC API
-    ===================================================== */
-
-    const api = {
-
-      open,
-
-      close,
-
-      refresh() {
-
-        updateValue();
-
-        updateDisabled();
-
-        renderOptions();
-
-      },
-
-
-      setValue(
-        value,
-        dispatchChange = true
-      ) {
-
-        select.value =
-          String(
-            value
-          );
-
-
-        updateValue();
-
-        renderOptions();
-
-
-        if (
-          dispatchChange
-        ) {
-
-          select.dispatchEvent(
-            new Event(
-              "change",
-              {
-                bubbles:true
-              }
-            )
-          );
-
-        }
-
-      },
-
-
-      getValue() {
-
-        return select.value;
-
-      }
-
-    };
-
-
-    select._sharedDropdown =
-      api;
-
-
-updateValue();
-
-updateDisabled();
-
-renderOptions();
-
-updateIcon();
-
-
-    return api;
-
-  }
-
-/* =======================================================
-   SHARED CHIP DROPDOWN
-   Reusable multi-select dropdown
-======================================================= */
-
-function createSharedChipDropdown(
-  target,
-  options = {}
-) {
-
-  const container =
-    typeof target === "string"
-      ? document.querySelector(
-          target
-        )
-      : target;
-
-
-  if (!container) {
-    return null;
-  }
-
-
-  /* PREVENT DOUBLE INIT */
-
-  if (
-    container._sharedChipDropdown
-  ) {
-
-    return (
-      container._sharedChipDropdown
-    );
-
-  }
-
-
-  const config = {
-
-    placeholder:
-      options.placeholder ||
-      "Select option",
-
-    options:
-      Array.isArray(
-        options.options
-      )
-        ? options.options
-        : [],
-
-    value:
-      Array.isArray(
-        options.value
-      )
-        ? options.value
-        : [],
-
-    onChange:
-      typeof options.onChange ===
-      "function"
-        ? options.onChange
-        : null
-
-  };
-
-
-  const selectedValues =
-    new Set(
-      config.value.map(
-        value =>
-          String(value)
-      )
-    );
-
-
-  /* =====================================================
-     ICONS
-  ===================================================== */
-
-  const arrowIcon = `
-    <svg
-      class="shared-chip-dropdown-icon shared-chip-dropdown-icon-arrow"
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
-      />
-    </svg>
-  `;
-
-
-  const searchIcon = `
-    <svg
-      class="shared-chip-dropdown-icon shared-chip-dropdown-icon-search"
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"
-      />
-    </svg>
-  `;
-
-
-  const clearIcon = `
-    <svg
-      class="shared-chip-dropdown-icon shared-chip-dropdown-icon-clear"
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        d="M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.05-.09l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 00-.07 0z"
-      />
-    </svg>
-  `;
-
-
-  const removeIcon = `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"
-      />
-    </svg>
-  `;
-
-
-  /* =====================================================
-     BUILD UI
-  ===================================================== */
-
-  container.classList.add(
-    "shared-chip-dropdown"
-  );
-
-
-  container.innerHTML = `
-    <div
-      class="shared-chip-dropdown-trigger"
-      tabindex="0"
-    >
-
-      <div
-        class="shared-chip-dropdown-values"
-      ></div>
-
-      <span
-        class="shared-chip-dropdown-placeholder"
-      >
-        ${escapeSharedText(
-          config.placeholder
-        )}
-      </span>
-
-      <button
-        class="shared-chip-dropdown-icon-btn"
-        type="button"
-        aria-label="Toggle options"
-      >
-        ${arrowIcon}
-        ${searchIcon}
-        ${clearIcon}
-      </button>
-
-    </div>
-
-    <div
-      class="shared-chip-dropdown-panel"
-    ></div>
-  `;
-
-
-  const trigger =
-    container.querySelector(
-      ".shared-chip-dropdown-trigger"
-    );
-
-
-  const valuesBox =
-    container.querySelector(
-      ".shared-chip-dropdown-values"
-    );
-
-
-  const panel =
-    container.querySelector(
-      ".shared-chip-dropdown-panel"
-    );
-const overflowPopup =
-  document.createElement("div");
-
-overflowPopup.className =
-  "shared-chip-dropdown-overflow-popup";
-
-overflowPopup.hidden = true;
-
-container.appendChild(
-  overflowPopup
-);
-
-  const iconButton =
-    container.querySelector(
-      ".shared-chip-dropdown-icon-btn"
-    );
-
-
-/* HEADER SITE - SEARCH DIRECTLY IN TRIGGER */
-
-const isHeaderSite =
-  container.id === "headerSiteCustom";
-
-let headerSiteSearch = null;
-
-if (isHeaderSite) {
-  headerSiteSearch = document.createElement("input");
-
-
-headerSiteSearch.type = "text";
-headerSiteSearch.className = "header-site-search-input";
-headerSiteSearch.placeholder = config.placeholder;
-
-// Kurangkan autofill dan suggestion browser.
-headerSiteSearch.name = "site_filter_" + Math.random().toString(36).slice(2);
-headerSiteSearch.autocomplete = "off";
-headerSiteSearch.setAttribute("autocorrect", "off");
-headerSiteSearch.setAttribute("autocapitalize", "off");
-headerSiteSearch.setAttribute("spellcheck", "false");
-headerSiteSearch.setAttribute("data-lpignore", "true");
-headerSiteSearch.setAttribute("data-1p-ignore", "true");
-headerSiteSearch.setAttribute("aria-label", "Search sites");
-
-// Jangan aktifkan input secara automatik.
-headerSiteSearch.readOnly = true;
-
-trigger.insertBefore(headerSiteSearch, iconButton);
-
-// Hanya aktif apabila pengguna mahu menaip.
-headerSiteSearch.addEventListener("pointerdown", () => {
-  headerSiteSearch.readOnly = false;
-});
-
-headerSiteSearch.addEventListener("keydown", () => {
-  headerSiteSearch.readOnly = false;
-});
-
-headerSiteSearch.addEventListener("blur", () => {
-  headerSiteSearch.readOnly = true;
-});
-
-  const filterHeaderSites = () => {
-    const keyword = headerSiteSearch.value
-      .trim()
-      .toLowerCase();
-
-    panel.querySelectorAll(
-      ".shared-chip-dropdown-option"
-    ).forEach(option => {
-      const label = option.textContent
-        .trim()
-        .toLowerCase();
-
-      option.hidden = !label.includes(keyword);
-    });
-  };
-
-
-headerSiteSearch.addEventListener("focus", () => {
-  // Focus sahaja, jangan buka dropdown automatik.
-});
-
-headerSiteSearch.addEventListener("click", event => {
-  event.stopPropagation();
-
-  // Klik pertama buka, klik kedua tutup.
-  toggle();
-
-  if (container.classList.contains("open")) {
-    filterHeaderSites();
-  }
-});
-
-headerSiteSearch.addEventListener("input", () => {
-  open();
-  filterHeaderSites();
-});
-
-
-  headerSiteSearch.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      close();
-      headerSiteSearch.blur();
-    }
-  });
-}
-
-  /* =====================================================
-     GET OPTION
-  ===================================================== */
-
-  function getOption(
-    value
-  ) {
-
-    return (
-      config.options.find(
-        option =>
-          String(option.value) ===
-          String(value)
-      ) ||
-      null
-    );
-
-  }
-
-
-  /* =====================================================
-     NOTIFY CHANGE
-  ===================================================== */
-
-  function notifyChange() {
-
-    if (
-      config.onChange
-    ) {
-
-      config.onChange(
-        Array.from(
-          selectedValues
-        )
-      );
-
-    }
-
-  }
-
-
-  /* =====================================================
-     RENDER
-  ===================================================== */
-
-function render() {
-
-  const selected =
-    Array.from(selectedValues)
-      .map(value => {
-
-        const option =
-          getOption(value);
-
-        if (!option) {
-          return null;
-        }
-
-        return {
-          value,
-          label:
-            String(
-              option.label || value
-            )
-        };
-
-      })
-      .filter(Boolean);
-
-
-const isAdminSiteSelector =
-  !!container.closest(
-    ".admin-site-selector"
-  );
-
-
-const visibleItems =
-  isAdminSiteSelector
-    ? selected.slice(0, 1)
-    : selected;
-
-
-const hiddenItems =
-  isAdminSiteSelector
-    ? selected.slice(1)
-    : [];
-
-
-  valuesBox.innerHTML =
-    visibleItems
-      .map(item => `
-        <span
-          class="shared-chip-dropdown-chip"
-          data-chip-value="${escapeSharedText(
-            item.value
-          )}"
-        >
-
-          <span
-            class="shared-chip-dropdown-chip-content"
-          >
-            ${escapeSharedText(
-              item.label
-            )}
-          </span>
-
-          <button
-            class="shared-chip-dropdown-chip-remove"
-            type="button"
-            data-remove-value="${escapeSharedText(
-              item.value
-            )}"
-            aria-label="Remove ${escapeSharedText(
-              item.label
-            )}"
-          >
-            ${removeIcon}
-          </button>
-
-        </span>
-      `)
-      .join("");
-
-
-  /*
-    +N CHIP
-  */
-
-if (
-  hiddenItems.length > 0
-) {
-
-  valuesBox.insertAdjacentHTML(
-    "beforeend",
-    `
-      <span
-        class="shared-chip-dropdown-overflow"
-        tabindex="0"
-      >
-
-        <span
-          class="shared-chip-dropdown-overflow-inner"
-        >
-          +${hiddenItems.length}
-        </span>
-
-      </span>
-    `
-  );
-
-}
-
-
-  /*
-    Popup untuk chip tersembunyi.
-  */
-
-  overflowPopup.innerHTML =
-    hiddenItems
-      .map(item => `
-        <div
-          class="shared-chip-dropdown-overflow-item"
-        >
-          ${escapeSharedText(
-            item.label
-          )}
-        </div>
-      `)
-      .join("");
-
-
-  overflowPopup.hidden =
-    hiddenItems.length === 0;
-
-
-  container.classList.toggle(
-    "has-value",
-    selectedValues.size > 0
-  );
-
-
-  /*
-    Dropdown options asal.
-  */
-
-  panel.innerHTML =
-    config.options
-      .map(option => {
-
-        const value =
-          String(
-            option.value
-          );
-
-
-        const active =
-          selectedValues.has(
-            value
-          );
-
-
-        return `
-          <button
-            class="shared-chip-dropdown-option ${
-              active
-                ? "active"
-                : ""
-            }"
-            type="button"
-            data-value="${escapeSharedText(
-              value
-            )}"
-            aria-selected="${
-              active
-                ? "true"
-                : "false"
-            }"
-          >
-
-            <span>
-              ${escapeSharedText(
-                option.label
-              )}
-            </span>
-
-            <span
-              class="shared-chip-dropdown-option-check"
-            >
-              ✓
-            </span>
-
-          </button>
-        `;
-
-      })
-      .join("");
-
-}
-
-
-  /* =====================================================
-     OPEN / CLOSE
-  ===================================================== */
-
-  function open() {
-
-    container.classList.add(
-      "open"
-    );
-
-  }
-
-
-  function close() {
-
-    container.classList.remove(
-      "open"
-    );
-
-  }
-
-
-  function toggle() {
-
-    if (
-      container.classList.contains(
-        "open"
-      )
-    ) {
-
-      close();
-
-    }
-    else {
-
-      open();
-
-    }
-
-  }
-
-
-  /* =====================================================
-     TRIGGER CLICK
-  ===================================================== */
-
-
-trigger.addEventListener("click", event => {
-  const target = event.target;
-
-  if (
-    target.closest(".shared-chip-dropdown-chip-remove") ||
-    target.closest(".shared-chip-dropdown-icon-btn") ||
-    target.closest(".shared-chip-dropdown-overflow")
-  ) {
-    return;
-  }
-
-  // Input search mempunyai handler toggle sendiri.
-  if (target.closest(".header-site-search-input")) {
-    return;
-  }
-
-  event.stopPropagation();
-
-
-if (isHeaderSite && headerSiteSearch) {
-  headerSiteSearch.readOnly = false;
-  headerSiteSearch.focus();
-}
-
-
-  toggle();
-
-  if (
-    isHeaderSite &&
-    container.classList.contains("open")
-  ) {
-    const keyword = headerSiteSearch.value
-      .trim()
-      .toLowerCase();
-
-    panel.querySelectorAll(
-      ".shared-chip-dropdown-option"
-    ).forEach(option => {
-      option.hidden = !option.textContent
-        .trim()
-        .toLowerCase()
-        .includes(keyword);
-    });
-  }
-});
-
-
-  /* =====================================================
-     OPTION CLICK
-  ===================================================== */
-
-  panel.addEventListener(
-    "click",
-    event => {
-
-      const optionButton =
-        event.target.closest(
-          "[data-value]"
-        );
-
-
-      if (!optionButton) {
-        return;
-      }
-
-
-      event.stopPropagation();
-
-
-      const value =
-        String(
-          optionButton.dataset.value ||
-          ""
-        );
-
-
-      if (!value) {
-        return;
-      }
-
-
-      if (
-        selectedValues.has(
-          value
-        )
-      ) {
-
-        selectedValues.delete(
-          value
-        );
-
-      }
-      else {
-
-        selectedValues.add(
-          value
-        );
-
-      }
-
-
-      render();
-
-      notifyChange();
-
-    }
-  );
-
-
-  /* =====================================================
-     REMOVE ONE CHIP
-  ===================================================== */
-
-  valuesBox.addEventListener(
-    "click",
-    event => {
-
-      const removeButton =
-        event.target.closest(
-          "[data-remove-value]"
-        );
-
-
-      if (!removeButton) {
-        return;
-      }
-
-
-      event.stopPropagation();
-
-
-      selectedValues.delete(
-        String(
-          removeButton.dataset
-            .removeValue
-        )
-      );
-
-
-      render();
-
-      notifyChange();
-
-    }
-  );
-
-/* =====================================================
-   OVERFLOW +N HOVER
-===================================================== */
-
-valuesBox.addEventListener(
-  "mouseover",
-  event => {
-
-    const moreChip =
-      event.target.closest(
-        ".shared-chip-dropdown-overflow"
-      );
-
-    if (!moreChip) {
-      return;
-    }
-
-    overflowPopup.classList.add(
-      "show"
-    );
-
-  }
-);
-
-
-valuesBox.addEventListener(
-  "mouseout",
-  event => {
-
-    const moreChip =
-      event.target.closest(
-        ".shared-chip-dropdown-overflow"
-      );
-
-    if (!moreChip) {
-      return;
-    }
-
-
-    const next =
-      event.relatedTarget;
-
-
-    if (
-      next &&
-      (
-        moreChip.contains(next) ||
-        overflowPopup.contains(next)
-      )
-    ) {
-      return;
-    }
-
-
-    overflowPopup.classList.remove(
-      "show"
-    );
-
-  }
-);
-
-
-overflowPopup.addEventListener(
-  "mouseenter",
-  () => {
-
-    overflowPopup.classList.add(
-      "show"
-    );
-
-  }
-);
-
-
-overflowPopup.addEventListener(
-  "mouseleave",
-  () => {
-
-    overflowPopup.classList.remove(
-      "show"
-    );
-
-  }
-);
-  /* =====================================================
-     RIGHT ICON
-  ===================================================== */
-
-
-
-iconButton.addEventListener("click", event => {
-  event.preventDefault();
-  event.stopPropagation();
-
-  const shouldClear =
-    selectedValues.size > 0 &&
-    container.matches(":hover");
-
-  if (shouldClear) {
-    selectedValues.clear();
-
-    if (headerSiteSearch) {
-      headerSiteSearch.value = "";
-    }
-
-    render();
-    notifyChange();
-    close();
-    return;
-  }
-
-  toggle();
-
-
-if (
-  headerSiteSearch &&
-  container.classList.contains("open")
-) {
-  headerSiteSearch.readOnly = false;
-  headerSiteSearch.focus();
-}
-
-});
-
-
-
-  /* =====================================================
-     OUTSIDE CLICK
-  ===================================================== */
-
-  document.addEventListener(
-    "click",
-    event => {
-
-      if (
-        container.contains(
-          event.target
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      close();
-
-    }
-  );
-
-
-  /* =====================================================
-     PUBLIC API
-  ===================================================== */
-
-  const api = {
-
-    open,
-
-    close,
-
-    getValue() {
-
-      return Array.from(
-        selectedValues
-      );
-
-    },
-
-    setValue(
-      values = [],
-      dispatchChange = true
-    ) {
-
-      selectedValues.clear();
-
-
-      (
-        Array.isArray(values)
-          ? values
-          : []
-      )
-        .forEach(
-          value => {
-
-            const stringValue =
-              String(value);
-
-
-            if (
-              getOption(
-                stringValue
-              )
-            ) {
-
-              selectedValues.add(
-                stringValue
-              );
-
-            }
-
-          }
-        );
-
-
-      render();
-
-
-      if (
-        dispatchChange
-      ) {
-
-        notifyChange();
-
-      }
-
-    },
-
-    clear(
-      dispatchChange = true
-    ) {
-
-      selectedValues.clear();
-
-      render();
-
-
-      if (
-        dispatchChange
-      ) {
-
-        notifyChange();
-
-      }
-
-    },
-
-setOptions(
-  newOptions = []
-) {
-
-  config.options =
-    Array.isArray(
-      newOptions
-    )
-      ? newOptions
-      : [];
-
-
-  Array
-    .from(
-      selectedValues
-    )
-    .forEach(
-      value => {
-
-        if (
-          !getOption(
-            value
-          )
-        ) {
-
-          selectedValues.delete(
-            value
-          );
-
-        }
-
-      }
-    );
-
-
-  render();
-
-},
-
-destroy() {
-
-  close();
-
-  if (
-    container._sharedChipDropdown ===
-    api
-  ) {
-
-    delete container._sharedChipDropdown;
-
-  }
-
-
-  /*
-    Buang UI dropdown lama.
-  */
-  container.innerHTML = "";
-
-  container.classList.remove(
-    "shared-chip-dropdown",
-    "has-value",
-    "open"
-  );
-
-}
-
-};
-
-
-  container._sharedChipDropdown =
-    api;
-
-
-  render();
-
-
-  return api;
-
-}
-  /* =======================================================
-     INIT ALL SHARED DROPDOWNS
-  ======================================================= */
-
-function initSharedDropdowns(
-  root = document
-) {
-
-  root
-    .querySelectorAll(
-      "select[data-shared-dropdown]"
-    )
-    .forEach(
-      select => {
-
-        createSharedDropdown(
-          select,
-          {
-            placeholder:
-              select.dataset.placeholder ||
-              "Select option"
-          }
-        );
-
-      }
-    );
-
-}
-
-
-    /* =======================================================
-     CLOSE WHEN CLICK OUTSIDE
-  ======================================================= */
-
-  document.addEventListener(
-    "click",
-    event => {
-
-      document
-        .querySelectorAll(
-          ".shared-dropdown.open"
-        )
-        .forEach(
-          dropdown => {
-
-            if (
-              dropdown.contains(
-                event.target
-              )
-            ) {
-              return;
-            }
-
-
-            const select =
-              dropdown.querySelector(
-                "select[data-shared-dropdown]"
-              );
-
-
-            select
-              ?._sharedDropdown
-              ?.close();
-
-          }
-        );
-
-    }
-  );
-
-
-  /* =======================================================
-     CLOSE WITH ESC
-  ======================================================= */
-
-  document.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key !== "Escape"
-      ) {
-        return;
-      }
-
-
-      document
-        .querySelectorAll(
-          ".shared-dropdown.open"
-        )
-        .forEach(
-          dropdown => {
-
-            const select =
-              dropdown.querySelector(
-                "select[data-shared-dropdown]"
-              );
-
-
-            select
-              ?._sharedDropdown
-              ?.close();
-
-          }
-        );
-
-    }
-  );
-
-
-/* Custom input: automatic search/clear icons and password eye toggles. */
-const NEW_UI_ICONS = {
-  search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
-  
-clear: '<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M512 64c247.4 0 448 200.6 448 448S759.4 960 512 960 64 759.4 64 512 264.6 64 512 64zm127.98 274.82h-.04l-.08.06L512 466.75 384.14 338.88c-.04-.05-.06-.06-.08-.06a.12.12 0 00-.07 0c-.03 0-.05.01-.09.05l-45.02 45.02a.2.2 0 00-.05.09.12.12 0 000 .07v.02a.27.27 0 00.06.06L466.75 512 338.88 639.86c-.05.04-.06.06-.06.08a.12.12 0 000 .07c0 .03.01.05.05.09l45.02 45.02a.2.2 0 00.09.05.12.12 0 00.07 0c.02 0 .04-.01.08-.05L512 557.25l127.86 127.87c.04.04.06.05.08.05a.12.12 0 00.07 0c.03 0 .05-.01.09-.05l45.02-45.02a.2.2 0 00.05-.09.12.12 0 000-.07v-.02a.27.27 0 00-.05-.06L557.25 512l127.87-127.86c.04-.04.05-.06.05-.08a.12.12 0 000-.07c0-.03-.01-.05-.09-.05l-45.02-45.02a.2.2 0 00-.09-.05.12.12 0 000-.07z"/></svg>',
-
-  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',
-  eyeOff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3 21 21M9.9 6.3A11.7 11.7 0 0 1 12 6c6.4 0 10 6 10 6a16 16 0 0 1-3 3.4M6.3 8C3.6 9.7 2 12 2 12s3.6 6 10 6c1.3 0 2.5-.2 3.5-.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>'
-};
-function createNewInput(target, options={}) {
-  const input = typeof target === 'string' ? document.querySelector(target) : target;
-  if (!input || input.tagName !== 'INPUT') return null;
-  if (input._newUIInput) return input._newUIInput;
-  const isPassword = input.type === 'password' || options.password === true;
-  const searchable = input.type === 'search' || options.search === true;
-  input.classList.add('shared-input','new-ui-input');
-  const parent = document.createElement('span'); parent.className='new-ui-input-wrap';
-  input.parentNode.insertBefore(parent,input); parent.append(input);
-  const icon = document.createElement('button'); icon.type='button'; icon.className='new-ui-input-icon';
-  icon.setAttribute('aria-label',isPassword?'Show password':'Clear input');
-  parent.append(icon);
-  let visible=false;
-  function refresh() {
-    const hasValue=!!input.value;
-    if(isPassword){icon.innerHTML=visible?NEW_UI_ICONS.eyeOff:NEW_UI_ICONS.eye; icon.style.display='flex';icon.setAttribute('aria-label',visible?'Hide password':'Show password');}
-   else if(hasValue){icon.innerHTML=NEW_UI_ICONS.clear;icon.style.display='flex';icon.setAttribute('aria-label','Clear input');}
-    else if(searchable){icon.innerHTML=NEW_UI_ICONS.search;icon.style.display='flex';icon.setAttribute('aria-label','Search');}
-    else icon.style.display='none';
-    icon.disabled=input.disabled;
-  }
-  icon.addEventListener('click',()=>{
-    if(isPassword){visible=!visible;input.type=visible?'text':'password';}
-    else if(input.value){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
-    input.focus();refresh();
-  });
-  input.addEventListener('input',refresh);input.addEventListener('change',refresh);
-  const observer=new MutationObserver(refresh);observer.observe(input,{attributes:true,attributeFilter:['disabled','type']});
-  const api={refresh,destroy(){observer.disconnect();icon.remove();parent.parentNode.insertBefore(input,parent);parent.remove();input.classList.remove('new-ui-input');delete input._newUIInput;}};
-  input._newUIInput=api;refresh();return api;
-}
-function initNewUI(root=document) {
-  initSharedDropdowns(root);
-  root.querySelectorAll('input[data-new-ui-input], input[data-ui="input"], input[data-ui="search"], input[data-ui="password"]').forEach(input=>createNewInput(input,{search:input.dataset.ui==='search',password:input.dataset.ui==='password'}));
-  root.querySelectorAll('[data-new-ui-chips]').forEach(el=>{
-    if(el._sharedChipDropdown)return;
-    let choices=[];try{choices=JSON.parse(el.dataset.options||'[]');}catch(_){choices=(el.dataset.options||'').split(',').filter(Boolean).map(x=>({value:x.trim(),label:x.trim()}));}
-    createSharedChipDropdown(el,{placeholder:el.dataset.placeholder||'Select options',options:choices});
-  });
-}
-
-/* Reusable Visitor-style search + rotating sync SVG. */
-function createSyncSearch(target, options = {}) {
-  const input = typeof target === 'string' ? document.querySelector(target) : target;
-  if (!input || input.tagName !== 'INPUT') return null;
-  if (input._syncSearch) return input._syncSearch;
-  // Avoid nesting the old search/clear wrapper if this input was auto-initialized.
-  input._newUIInput?.destroy?.();
-  const wrapper = document.createElement('div');
-  wrapper.className = 'shared-sync-search';
-  input.parentNode.insertBefore(wrapper, input);
-  wrapper.appendChild(input);
-  input.classList.add('shared-sync-search-input');
-  input.setAttribute('autocomplete', input.getAttribute('autocomplete') || 'off');
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'shared-sync-search-button';
-  button.setAttribute('aria-label', 'Search');
-  button.innerHTML = `
-    <svg class="shared-sync-search-icon" viewBox="64 64 896 896" aria-hidden="true"><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0011.6 0l43.6-43.5a8.2 8.2 0 000-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/></svg>
-    <svg class="shared-sync-spinner" viewBox="0 0 50 50" aria-hidden="true"><circle class="shared-sync-track" cx="25" cy="25" r="19"/><circle class="shared-sync-spinner-path" cx="25" cy="25" r="19"/></svg>`;
-  wrapper.appendChild(button);
-  let busy = false;
-  const setLoading = (value) => {
-    busy = !!value;
-    wrapper.classList.toggle('is-syncing', busy);
-    button.disabled = busy;
-    button.setAttribute('aria-label', busy ? 'Searching' : 'Search');
-    wrapper.setAttribute('aria-busy', String(busy));
-  };
-  const click = async () => {
-    if (busy) return;
-    if (typeof options.onSearch === 'function') {
-      try { setLoading(true); await options.onSearch(input.value.trim(), input); }
-      catch (error) { console.error('Shared search failed:', error); }
-      finally { setLoading(false); }
-    } else input.dispatchEvent(new Event('input', { bubbles: true }));
-  };
-  const enter = (event) => { if (event.key === 'Enter') { event.preventDefault(); click(); } };
-  button.addEventListener('click', click);
-  input.addEventListener('keydown', enter);
-  const api = { input, button, wrapper, setLoading, refresh: () => {}, destroy() {
-    input.removeEventListener('keydown', enter);
-    button.removeEventListener('click', click);
-    wrapper.parentNode.insertBefore(input, wrapper);
-    wrapper.remove(); input.classList.remove('shared-sync-search-input');
-    delete input._syncSearch;
-  }};
-  input._syncSearch = api;
-  return api;
-}
-
-
-/* =========================================================
-   SHARED MODAL — extracted from Admin Users popup
-   API: NewUI.modal.open({title,content,width,onClose})
-        NewUI.modal.close(), NewUI.modal.create(options)
-   ========================================================= */
-const sharedModalCloseSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"></path><path d="M18 6L6 18"></path></svg>';
-let sharedModalCounter = 0;
-function createSharedModal(options = {}) {
-  const backdrop = document.createElement('div');
-  backdrop.className = 'shared-modal-backdrop';
-  backdrop.setAttribute('aria-hidden','true');
-  const dialog = document.createElement('div');
-  dialog.className = 'shared-modal';
-  dialog.setAttribute('role','dialog');
-  dialog.setAttribute('aria-modal','true');
-  const titleId = 'shared-modal-title-' + (++sharedModalCounter);
-  dialog.setAttribute('aria-labelledby',titleId);
-  if (options.width) dialog.style.maxWidth = typeof options.width === 'number' ? options.width + 'px' : options.width;
-  const closeButton = document.createElement('button');
-  closeButton.type='button'; closeButton.className='shared-modal-close';
-  closeButton.setAttribute('aria-label','Close');
-  closeButton.innerHTML = sharedModalCloseSVG;
-  const heading = document.createElement('h2');
-  heading.id=titleId; heading.className='shared-modal-title';
-  heading.textContent=options.title || '';
-  const body = document.createElement('div');body.className='shared-modal-body';
-  const footer = document.createElement('div');footer.className='shared-modal-actions';
-  dialog.append(closeButton,heading,body,footer);
-  backdrop.append(dialog);
-  document.body.append(backdrop);
-  let previousFocus=null, destroyed=false;
-  function setContent(value,target) {
-    target.replaceChildren();
-    if (value instanceof Node) target.append(value);
-    else if (typeof value === 'string') target.innerHTML=value; // Trusted HTML only
-  }
-  if(options.content!=null)setContent(options.content,body);
-  if(options.footer!=null)setContent(options.footer,footer);
-  if(options.footer==null)footer.hidden=true;
-  function keydown(event) {
-    if(event.key==='Escape' && options.closeOnEscape!==false){event.preventDefault();close();}
-    if(event.key==='Tab') {
-      const focusables=Array.from(dialog.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')).filter(e=>e.getClientRects().length);
-      if(!focusables.length){event.preventDefault();dialog.focus();return;}
-      const first=focusables[0],last=focusables[focusables.length-1];
-      if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
-      else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
-    }
-  }
-  function open() {
-    if(destroyed)return;
-    document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>{if(e!==backdrop)e._sharedModalAPI?.close();});
-    previousFocus=document.activeElement;
-    backdrop.classList.add('open');backdrop.setAttribute('aria-hidden','false');
-    document.documentElement.classList.add('new-ui-modal-open');
-    document.addEventListener('keydown',keydown);
-    closeButton.focus();
-    options.onOpen?.(api);
-    return api;
-  }
-  function close() {
-    if(!backdrop.classList.contains('open'))return;
-    backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');
-    document.documentElement.classList.remove('new-ui-modal-open');
-    document.removeEventListener('keydown',keydown);
-    if(previousFocus?.isConnected)previousFocus.focus();
-    options.onClose?.(api);
-    if(options.destroyOnClose!==false)destroy();
-  }
-  function destroy() {
-    if(destroyed)return;
-    destroyed=true;
-    document.removeEventListener('keydown',keydown);
-    backdrop.remove();
-  }
-
-closeButton.addEventListener('click', close);
-
-/* ==========================================
-   MODAL - PREVENT SCROLLBAR AUTO CLOSE
-   ========================================== */
-
-
-/* ==========================================
-   MODAL - OUTSIDE CLICK & SCROLLBAR FIX
-   ========================================== */
-
-let backdropPress = null;
-
-function isBackdropScrollbar(event) {
-  const rect = backdrop.getBoundingClientRect();
-
-  // Lebar scrollbar sebenar, jika ada.
-  const scrollbarWidth =
-    backdrop.offsetWidth - backdrop.clientWidth;
-
-  if (scrollbarWidth <= 0) return false;
-
-  return event.clientX >=
-    rect.right - scrollbarWidth;
-}
-
-backdrop.addEventListener('pointerdown', event => {
-  backdropPress = null;
-
-  if (event.target !== backdrop) return;
-  if (event.button !== 0) return;
-  if (options.closeOnBackdrop === false) return;
-
-  // Klik scrollbar bukan klik luar modal.
-  if (isBackdropScrollbar(event)) return;
-
-  backdropPress = {
-    pointerId: event.pointerId,
-    x: event.clientX,
-    y: event.clientY
-  };
-});
-
-backdrop.addEventListener('pointerup', event => {
-  const press = backdropPress;
-  backdropPress = null;
-
-  if (!press) return;
-  if (event.pointerId !== press.pointerId) return;
-  if (event.target !== backdrop) return;
-  if (options.closeOnBackdrop === false) return;
-  if (isBackdropScrollbar(event)) return;
-
-  // Jangan tutup modal selepas drag.
-  const moved =
-    Math.abs(event.clientX - press.x) > 5 ||
-    Math.abs(event.clientY - press.y) > 5;
-
-  if (moved) return;
-
-  close();
-});
-
-backdrop.addEventListener('pointercancel', () => {
-  backdropPress = null;
-});
-
-
-  const api={element:backdrop,dialog,body,footer,open,close,destroy,
-    setTitle(value){heading.textContent=String(value);},
-    setContent(value){setContent(value,body);},
-    setFooter(value){footer.hidden=value==null;if(value!=null)setContent(value,footer);}
-  };
-  backdrop._sharedModalAPI=api;
-  if(options.autoOpen!==false)open();
-  return api;
-}
-const sharedModalAPI = {
-  create:createSharedModal,
-  open(options={}){return createSharedModal({...options,autoOpen:true});},
-  close(){document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>e._sharedModalAPI?.close());}
-};
-
-window.NewUI={syncSearch:createSyncSearch,init:initNewUI,input:createNewInput,dropdown:createSharedDropdown,chips:createSharedChipDropdown,icon:name=>NEW_UI_ICONS[name]||'',getValues:el=>{const e=typeof el==='string'?document.querySelector(el):el;return e?._sharedChipDropdown?.getValue?.()??e?.value??null;}};
-window.NewUI.modal=sharedModalAPI;
-
-/* =========================================================
-   SHARED IMAGE UPLOAD + PREVIEW
-   UI only; uploading to Cloudinary remains caller's responsibility.
-========================================================= */
-function createSharedImageUpload(target, options = {}) {
-  const host = typeof target === 'string' ? document.querySelector(target) : target;
-  if (!host) return null;
-  if (host._sharedImageUpload) return host._sharedImageUpload;
-  const accept = options.accept || 'image/png,image/jpeg,image/webp,image/gif';
-  const maxSizeMB = Number(options.maxSizeMB || 10);
-  const uploadSVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  
-const deleteSVG = `
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 1024 1024"
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"/>
-  </svg>
-`;
-
-  const section = document.createElement('div'); section.className = 'shared-image-upload';
-  const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept=accept; fileInput.hidden=true;
-  const pick = document.createElement('button'); pick.type='button'; pick.className='shared-image-upload-btn';
-  pick.innerHTML=uploadSVG; pick.append(document.createTextNode(' '+(options.buttonText || 'Upload Image')));
-  const preview=document.createElement('div'); preview.className='shared-image-upload-preview'; preview.hidden=true;
-  
-const imageWrap = document.createElement("div");
-imageWrap.className = "shared-image-upload-thumb";
-
-const img = document.createElement("img");
-img.alt = "Image preview";
-
-const hoverText = document.createElement("span");
-hoverText.className = "shared-image-upload-hover-text";
-hoverText.textContent = "Preview";
-hoverText.setAttribute("aria-hidden", "true");
-
-imageWrap.append(img, hoverText);
-
-  const info=document.createElement('div'); info.className='shared-image-upload-file-info';
-  const filename=document.createElement('strong'); const status=document.createElement('span'); status.textContent='Ready'; info.append(filename,status);
-  const remove=document.createElement('button');remove.type='button';remove.className='shared-image-upload-remove';remove.setAttribute('aria-label','Remove image');remove.innerHTML=deleteSVG;
-  preview.append(imageWrap,info,remove);section.append(fileInput,pick,preview);host.append(section);
-  let file=null, url='', objectURL='', destroyed=false;
-  function revoke(){if(objectURL){URL.revokeObjectURL(objectURL);objectURL='';}}
-  function clear(notify=true){revoke();file=null;url='';fileInput.value='';img.removeAttribute('src');filename.textContent='';preview.hidden=true;status.textContent='Ready';if(notify)options.onChange?.({file:null,url:''});}
-  function setUrl(nextUrl, name='Existing image'){
-    clear(false);if(!nextUrl){options.onChange?.({file:null,url:''});return;}
-    const parsed=new URL(nextUrl,location.href);
-    if(!['https:','http:'].includes(parsed.protocol))throw new Error('Invalid image URL');
-    url=parsed.href;img.src=url;filename.textContent=name;preview.hidden=false;options.onChange?.({file:null,url});
-  }
-  function showFile(nextFile){
-    if(!nextFile)return;
-    const allowed=['image/png','image/jpeg','image/webp','image/gif'];
-    if(!allowed.includes(nextFile.type)){const e=new Error('Please select PNG, JPG, WEBP or GIF.');options.onError?.(e);fileInput.value='';return;}
-    if(nextFile.size>maxSizeMB*1024*1024){const e=new Error('Image exceeds '+maxSizeMB+' MB.');options.onError?.(e);fileInput.value='';return;}
-    clear(false);file=nextFile;objectURL=URL.createObjectURL(file);img.src=objectURL;filename.textContent=file.name;preview.hidden=false;options.onChange?.({file,url:''});
-  }
-
-/* ==========================================
-   SHARED UPLOAD - CLICK IMAGE TO PREVIEW
-   ========================================== */
-
-function openUploadImagePreview() {
-  if (destroyed || preview.hidden) return;
-
-  const src = img.currentSrc || img.src;
-
-  if (!src) return;
-
-  if (typeof window.NewUI?.imagePreview !== "function") {
-    console.warn("NewUI.imagePreview belum tersedia.");
-    return;
-  }
-
-  window.NewUI.imagePreview({
-    src,
-    title: filename.textContent || "Image Preview",
-    alt: filename.textContent || "Uploaded Image"
-  });
-}
-
-img.setAttribute("tabindex", "0");
-img.setAttribute("role", "button");
-img.setAttribute("aria-label", "Preview uploaded image");
-
-img.addEventListener("click", openUploadImagePreview);
-
-img.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    openUploadImagePreview();
-  }
-});
-
-  pick.addEventListener('click',()=>fileInput.click());
-  fileInput.addEventListener('change',()=>showFile(fileInput.files?.[0]));
-  remove.addEventListener('click',()=>clear());
-  const api={element:section,input:fileInput,preview,image:img,button:pick,
-    getFile:()=>file,getUrl:()=>url,clear,setUrl,setStatus(value){status.textContent=String(value);},
-    setDisabled(value){pick.disabled=!!value;remove.disabled=!!value;fileInput.disabled=!!value;},
-    destroy(){if(destroyed)return;destroyed=true;clear(false);section.remove();delete host._sharedImageUpload;}
-  };
-  host._sharedImageUpload=api;
-  if(options.initialUrl)setUrl(options.initialUrl,options.initialName||'Existing image');
-  return api;
-}
-
-/* =========================================================
-   GLOBAL CUSTOM TOAST
-========================================================= */
-
-function getToastContainer() {
-
-  let container =
-    document.getElementById(
-      "globalToastContainer"
-    );
-
-
-  if (!container) {
-
-    container =
-      document.createElement(
-        "div"
-      );
-
-
-    container.id =
-      "globalToastContainer";
-
-
-    document.body.appendChild(
-      container
-    );
-
-  }
-
-
-  return container;
-
-}
-
-
-/* =========================================================
-   TOAST ICONS
-========================================================= */
-
-const toastIcons = {
-
-  success: `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm193.5 301.7l-210.6 292a31.8 31.8 0 01-51.7 0L318.5 484.9c-3.8-5.3 0-12.7 6.5-12.7h46.9c10.2 0 19.9 4.9 25.9 13.3l71.2 98.8 157.2-218c6-8.3 15.6-13.3 25.9-13.3H699c6.5 0 10.3 7.4 6.5 12.7z"
-      />
-    </svg>
-  `,
-
-  error: `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm127 576.8L576.8 703 512 638.2 447.2 703 385 640.8l64.8-64.8-64.8-64.8 62.2-62.2 64.8 64.8 64.8-64.8 62.2 62.2-64.8 64.8 64.8 64.8z"
-      />
-    </svg>
-  `,
-
-  warning: `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm-40 240h80v288h-80V304zm40 432a48 48 0 110-96 48 48 0 010 96z"
-      />
-    </svg>
-  `,
-
-  info: `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm40 672h-80V448h80v288zm-40-368a48 48 0 110-96 48 48 0 010 96z"
-      />
-    </svg>
-  `
-
-};
-
-
-
-/* MAXIMUM 3 STACKED TOAST */
-
-/* =========================================================
-   NEW UI - SMART TOAST STACK
-   Normal: max 5 rows
-   Rapid clicks: temporary stacked effect
-========================================================= */
-
-const TOAST_MAX_VISIBLE = 5;
-const TOAST_STACK_TRIGGER = 4;
-const TOAST_STACK_DELAY = 800;
-const TOAST_GAP = 10;
-
-let toastBurstCount = 0;
-let toastStackTimer = null;
-let toastStackActive = false;
-
-function updateToastStack() {
-  const container = document.getElementById(
-    "globalToastContainer"
-  );
-
-  if (!container) return;
-
-  let toasts = Array.from(
-    container.querySelectorAll(
-      ".custom-toast:not(.hide)"
-    )
-  );
-
-  // Keep only 5 newest toasts
-  while (toasts.length > TOAST_MAX_VISIBLE) {
-    const oldest = toasts.shift();
-
-    clearTimeout(oldest._toastTimer);
-    oldest.remove();
-  }
-
-  const total = toasts.length;
-
-  // Stack only during a rapid-click burst
-  const stacked =
-    toastStackActive &&
-    total >= TOAST_STACK_TRIGGER;
-
-  container.classList.toggle(
-    "toast-stacked",
-    stacked
-  );
-
-  let normalOffset = 0;
-
-  // Calculate from newest to oldest
-  [...toasts].reverse().forEach((toast, depth) => {
-    toast.style.setProperty(
-      "--toast-depth",
-      depth
-    );
-
-    toast.style.setProperty(
-      "--toast-offset",
-      `${normalOffset}px`
-    );
-
-    // Newest toast always in front
-    toast.style.zIndex = String(total - depth);
-
-    toast.style.pointerEvents =
-      stacked && depth > 0
-        ? "none"
-        : "auto";
-
-    // Measure each toast to avoid overlapping
-    // messages with different heights
-    normalOffset +=
-      toast.offsetHeight + TOAST_GAP;
-  });
-}
-
-function registerToastBurst() {
-  toastBurstCount++;
-
-  clearTimeout(toastStackTimer);
-
-  if (toastBurstCount >= TOAST_STACK_TRIGGER) {
-    toastStackActive = true;
-  }
-
-  updateToastStack();
-
-  // When user stops clicking, expand to normal rows
-  toastStackTimer = setTimeout(() => {
-    toastBurstCount = 0;
-    toastStackActive = false;
-
-    updateToastStack();
-  }, TOAST_STACK_DELAY);
-}
-
-function removeToast(toast) {
-  if (!toast || toast.dataset.removing === "true") {
-    return;
-  }
-
-  toast.dataset.removing = "true";
-
-  clearTimeout(toast._toastTimer);
-
-  toast.classList.remove("show");
-  toast.classList.add("hide");
-
-  toast.style.pointerEvents = "none";
-
-  updateToastStack();
-
-  setTimeout(() => {
-    toast.remove();
-    updateToastStack();
-  }, 300);
-}
-
-// Recalculate positions when viewport changes
-window.addEventListener("resize", updateToastStack);
-
-
-/* =========================================================
-   SHOW TOAST
-========================================================= */
-
-function showToast(
-  message,
-  type = "success",
-  duration = 3500
-) {
-
-  const allowedTypes = [
-    "success",
-    "error",
-    "warning",
-    "info"
-  ];
-
-
-  if (
-    !allowedTypes.includes(
-      type
-    )
-  ) {
-
-    type =
-      "success";
-
-  }
-
-
-  const container =
-    getToastContainer();
-
-
-  const toast =
-    document.createElement(
-      "div"
-    );
-
-
-  toast.className =
-    `custom-toast ${type}`;
-
-
-  /* ICON */
-
-  const icon =
-    document.createElement(
-      "span"
-    );
-
-  icon.className =
-    "custom-toast-icon";
-
-  icon.innerHTML =
-    toastIcons[type];
-
-  const messageElement =
-    document.createElement(
-      "div"
-    );
-
-  messageElement.className =
-    "custom-toast-message";
-
-  messageElement.textContent =
-    String(message ?? "");
-
-  const closeButton =
-    document.createElement(
-      "button"
-    );
-
-
-  closeButton.type =
-    "button";
-
-
-  closeButton.className =
-    "custom-toast-close";
-
-
-  closeButton.setAttribute(
-    "aria-label",
-    "Close notification"
-  );
-
-
-  closeButton.innerHTML = `
-    <svg
-      viewBox="0 0 1024 1024"
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"
-      />
-    </svg>
-  `;
-
-
-  closeButton.addEventListener(
-    "click",
-    () => {
-
-      removeToast(
-        toast
-      );
-
-    }
-  );
-
-
-  toast.appendChild(
-    icon
-  );
-
-
-  toast.appendChild(
-    messageElement
-  );
-
-
-  toast.appendChild(
-    closeButton
-  );
-
-
-container.appendChild(
-  toast
-);
-
-// Detect rapid consecutive toast calls
-registerToastBurst();
-  /*
-    Trigger enter animation.
-  */
-
-  requestAnimationFrame(
-    () => {
-
-      requestAnimationFrame(
-        () => {
-
-if (toast.isConnected && toast.dataset.removing !== "true") {
-  toast.classList.add("show");
-}
-
-        }
-      );
-
-    }
-  );
-
-
-  /*
-    AUTO CLOSE
-  */
-
-if (duration > 0) {
-  toast._toastTimer = setTimeout(() => {
-    removeToast(toast);
-  }, duration);
-}
-
-
-  return toast;
-
-}
-
-
-/* =========================================================
-   GLOBAL ACCESS
-========================================================= */
-
-window.showToast =
-  showToast;
-window.NewUI.showToast=showToast;
-window.NewUI.removeToast=removeToast;
-
-/* ==========================================
-   NEW UI - SHARED BUTTON LOADING
-   ========================================== */
-
-
-/* SHARED BUTTON LOADING - SMOOTH */
-
-const sharedButtonStates = new WeakMap();
-
-async function setButtonLoading(target, loading, options = {}) {
-  const btn = typeof target === 'string'
-    ? document.querySelector(target)
-    : target;
-
-  if (!(btn instanceof HTMLButtonElement)) return;
-
-  if (loading) {
-    if (sharedButtonStates.has(btn)) return;
-
-    const state = {
-      html: btn.innerHTML,
-      disabled: btn.disabled,
-      ariaBusy: btn.getAttribute('aria-busy'),
-      startedAt: performance.now(),
-      stopping: null
-    };
-
-    sharedButtonStates.set(btn, state);
-
-    const spinner = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'svg'
-    );
-
-    spinner.setAttribute('class', 'shared-btn-spinner');
-    spinner.setAttribute('viewBox', '0 0 24 24');
-    spinner.setAttribute('fill', 'none');
-    spinner.setAttribute('aria-hidden', 'true');
-
-    spinner.innerHTML = `
-      <circle cx="12" cy="12" r="9"
-        stroke="currentColor"
-        stroke-width="3"
-        opacity=".25"/>
-      <path d="M21 12a9 9 0 0 0-9-9"
-        stroke="currentColor"
-        stroke-width="3"
-        stroke-linecap="round"/>
-    `;
-
-    const label = document.createElement('span');
-    label.textContent = options.text || 'Saving...';
-
-    btn.replaceChildren(spinner, label);
-    btn.classList.add('shared-btn-loading');
-    btn.disabled = true;
-    btn.setAttribute('aria-busy', 'true');
-
-    return;
-  }
-
-  const state = sharedButtonStates.get(btn);
-  if (!state) return;
-
-  // Elakkan dua panggilan stop berjalan serentak.
-  if (state.stopping) return state.stopping;
-
-  state.stopping = (async () => {
-    const minDuration = Math.max(
-      0,
-      Number(options.minDuration ?? 700) || 0
-    );
-
-    const elapsed = performance.now() - state.startedAt;
-    const remaining = Math.max(0, minDuration - elapsed);
-
-    if (remaining > 0) {
-      await new Promise(resolve => setTimeout(resolve, remaining));
-    }
-
-    if (sharedButtonStates.get(btn) !== state) return;
-
-    btn.innerHTML = state.html;
-    btn.disabled = state.disabled;
-    btn.classList.remove('shared-btn-loading');
-
-    if (state.ariaBusy === null) {
-      btn.removeAttribute('aria-busy');
-    } else {
-      btn.setAttribute('aria-busy', state.ariaBusy);
-    }
-
-    sharedButtonStates.delete(btn);
   })();
 
-  return state.stopping;
+  return FP_PROMISE;
 }
 
-window.NewUI.setButtonLoading = setButtonLoading;
-
-
-/* ==========================================
-   NEW UI - SHARED REFRESH BUTTON
-   ========================================== */
-
-(function () {
-  const refreshStates = new WeakMap();
-
-  const refreshIcon = `
-    <svg class="newui-refresh-btn-icon"
-      viewBox="0 0 1024 1024"
-      aria-hidden="true">
-      <path fill="currentColor"
-        d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 00-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 01655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 01279 755.2a342.16 342.16 0 01-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 01109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 003 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z"/>
-    </svg>
-  `;
-
-  function getButton(target) {
-    const btn = typeof target === "string"
-      ? document.querySelector(target)
-      : target;
-
-    if (!(btn instanceof HTMLButtonElement)) {
-      throw new Error("Refresh button not found");
-    }
-
-    return btn;
+async function getVisitorId(){
+  const savedId = localStorage.getItem("deviceId");
+  if (savedId && !/^fb_/i.test(savedId)) {
+    return savedId;
   }
 
-  function init(target, text = "Refresh") {
-    const btn = getButton(target);
-
-    if (refreshStates.has(btn)) return btn;
-
-    const state = {
-      text,
-      busy: false,
-      originalDisabled: btn.disabled
-    };
-
-    refreshStates.set(btn, state);
-
-    btn.classList.add("newui-refresh-btn");
-    btn.replaceChildren();
-
-    const template = document.createElement("template");
-    template.innerHTML = refreshIcon.trim();
-
-    btn.appendChild(template.content.cloneNode(true));
-    btn.appendChild(document.createTextNode(text));
-
-    return btn;
+  const fpId = await initFingerprint();
+  if (fpId) {
+    localStorage.setItem("deviceId", fpId);
+    return fpId;
   }
 
-  async function run(target, task, options = {}) {
-    const btn = init(target, options.text || "Refresh");
-    const state = refreshStates.get(btn);
+  const fallbackId = getFallbackDeviceId();
+  localStorage.setItem("deviceId", fallbackId);
+  return fallbackId;
+}
+function sanitizeEmail(email){
+  return String(email || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\./g, "_")
+    .replace(/[#$\[\]/]/g,"_");
+}
+function getChatPath(){ return currentActiveId ? 'chats/' + currentActiveId : null; }
+function getUserPath(){ return currentActiveId ? 'users/' + currentActiveId : null; }
+function getNotifPath(){ return currentActiveId ? 'notifications/' + currentActiveId : null; }
+function getUserTypingPath(){
+  return currentActiveId ? 'users/' + currentActiveId + '/typing' : null;
+}
 
-    if (state.busy || btn.disabled) return;
+let userTypingTimer = null;
+let userPresenceHeartbeat = null;
+let userConnectedRef = null;
+let userRefForPresence = null;
 
-    if (typeof task !== "function") {
-      throw new TypeError("Refresh task must be a function");
+function stopUserPresence(forceOffline = true){
+  try {
+    clearInterval(userPresenceHeartbeat);
+    userPresenceHeartbeat = null;
+  } catch {}
+
+  try {
+    clearTimeout(userTypingTimer);
+    userTypingTimer = null;
+  } catch {}
+
+  try {
+    if (userConnectedRef) {
+      userConnectedRef.off();
+      userConnectedRef = null;
     }
+  } catch {}
 
-    state.busy = true;
-    state.originalDisabled = btn.disabled;
-
-    btn.classList.add("is-refreshing");
-
-    try {
-      // Guna spinner yang sama dengan tombol Save.
-      await window.NewUI.setButtonLoading(btn, true, {
-        text: options.loadingText || "Refreshing..."
-      });
-
-      return await task();
-    } finally {
-      await window.NewUI.setButtonLoading(btn, false, {
-        minDuration: options.minDuration ?? 450
-      });
-
-      btn.classList.remove("is-refreshing");
-      btn.disabled = state.originalDisabled;
-      state.busy = false;
+  try {
+    if (userRefForPresence) {
+      userRefForPresence.onDisconnect().cancel();
+      userRefForPresence = null;
     }
+  } catch {}
+
+  const userPath = getUserPath();
+  const typingPath = getUserTypingPath();
+
+  if (typingPath) {
+    db.ref(typingPath).set(false).catch(()=>{});
   }
 
-  window.NewUI = window.NewUI || {};
-
-  window.NewUI.refreshButton = {
-    init,
-    run
-  };
-})();
-
-/* ================================================
-   NEW UI - SHARED CONFIRM POPOVER
-   ================================================ */
-
-let activeSharedConfirm = null;
-
-function sharedConfirm(options = {}) {
-  // Hanya satu confirm box boleh dibuka pada satu masa.
-  activeSharedConfirm?.close();
-
-  const anchor = typeof options.target === 'string'
-    ? document.querySelector(options.target)
-    : options.target;
-
-  if (!(anchor instanceof Element)) {
-    return Promise.resolve(false);
+  if (forceOffline && userPath) {
+    db.ref(userPath).update({
+      online: false,
+      typing: false,
+      lastLoginTime: Date.now()
+    }).catch(()=>{});
   }
 
-  return new Promise(resolve => {
-    let finished = false;
-    let busy = false;
+  presenceBoundFor = null;
+}
+function touchUserPresence(extra = {}) {
+  const userPath = getUserPath();
+  if (!userPath) return;
 
-    const previousFocus = document.activeElement;
+  db.ref(userPath).update({
+    online: true,
+    typing: false,
+    lastLoginTime: Date.now(),
+    ...extra
+  }).catch(()=>{});
+}
+function bindUserTyping(){
+  const msgInput = document.getElementById("msg");
+  const typingPath = getUserTypingPath();
+  if (!msgInput || !typingPath) return;
 
-    const pop = document.createElement('div');
-    pop.className = 'shared-confirm-popover';
-    pop.setAttribute('role', 'dialog');
-    pop.setAttribute('aria-modal', 'true');
-    pop.setAttribute('aria-label', options.title || 'Confirm action');
-    pop.tabIndex = -1;
+  const typingRef = db.ref(typingPath);
 
-    pop.innerHTML = `
-      <div class="shared-confirm-header">
-        <span class="shared-confirm-icon">
-          <svg viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 7v5"/>
-            <path d="M12 16h.01"/>
-          </svg>
-        </span>
+  msgInput.addEventListener("input", () => {
+    const hasText = !!msgInput.value.trim();
 
-        <strong class="shared-confirm-title"></strong>
+    typingRef.set(hasText).catch(()=>{});
+    touchUserPresence({ typing: hasText });
 
-        <button type="button"
-                class="shared-confirm-close"
-                aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <path d="M18 6 6 18M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
+    clearTimeout(userTypingTimer);
 
-      <div class="shared-confirm-message"></div>
-
-      <div class="shared-confirm-actions">
-        <button type="button"
-                class="shared-confirm-cancel">
-          Cancel
-        </button>
-
-        <button type="button"
-                class="shared-confirm-accept">
-          Delete
-        </button>
-      </div>
-    `;
-
-    pop.querySelector('.shared-confirm-title').textContent =
-      options.title || 'Are you sure?';
-
-    pop.querySelector('.shared-confirm-message').textContent =
-      options.message || 'This action cannot be undone.';
-
-    const cancel = pop.querySelector('.shared-confirm-cancel');
-    const accept = pop.querySelector('.shared-confirm-accept');
-    const closeBtn = pop.querySelector('.shared-confirm-close');
-
-    cancel.textContent = options.cancelText || 'Cancel';
-    accept.textContent = options.confirmText || 'Delete';
-
-    if (options.danger === false) {
-      accept.classList.add('is-primary');
+    if (!hasText) {
+      typingRef.set(false).catch(()=>{});
+      touchUserPresence({ typing: false });
+      return;
     }
 
-    function position() {
-      const rect = anchor.getBoundingClientRect();
-      const width = pop.offsetWidth;
-      const height = pop.offsetHeight;
-      const gap = 10;
-      const margin = 10;
+    userTypingTimer = setTimeout(() => {
+      typingRef.set(false).catch(()=>{});
+      touchUserPresence({ typing: false });
+    }, 1500);
+  });
 
-      // Default: sebelah kiri tombol.
-      let left = rect.left - width - gap;
-      let side = 'left';
+  msgInput.addEventListener("blur", () => {
+    typingRef.set(false).catch(()=>{});
+    touchUserPresence({ typing: false });
+  });
 
-      // Jika kiri tidak cukup, cuba kanan.
-      if (left < margin) {
-        left = rect.right + gap;
-        side = 'right';
-      }
-
-      // Jika kanan pun tidak cukup, letak di atas.
-      if (left + width > window.innerWidth - margin) {
-        left = rect.right - width;
-        side = 'top';
-      }
-
-      left = Math.max(
-        margin,
-        Math.min(left, window.innerWidth - width - margin)
-      );
-
-      let top;
-
-      if (side === 'top') {
-        top = rect.top - height - gap;
-
-        if (top < margin) {
-          top = rect.bottom + gap;
-        }
-      } else {
-        top = rect.top + rect.height / 2 - height / 2;
-      }
-
-      top = Math.max(
-        margin,
-        Math.min(top, window.innerHeight - height - margin)
-      );
-
-      pop.style.left = `${Math.round(left)}px`;
-      pop.style.top = `${Math.round(top)}px`;
-    }
-
-    function cleanup(result) {
-      if (finished) return;
-      finished = true;
-
-      document.removeEventListener('pointerdown', onOutside, true);
-      document.removeEventListener('keydown', onKeydown, true);
-      window.removeEventListener('resize', position);
-      window.removeEventListener('scroll', position, true);
-
-      pop.remove();
-
-      if (activeSharedConfirm?.element === pop) {
-        activeSharedConfirm = null;
-      }
-
-      if (previousFocus?.isConnected) {
-        previousFocus.focus({ preventScroll: true });
-      }
-
-      resolve(result);
-    }
-
-    function onOutside(e) {
-      if (busy) return;
-
-      if (!pop.contains(e.target)) {
-        cleanup(false);
-      }
-    }
-
-    function onKeydown(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!busy) cleanup(false);
-        return;
-      }
-
-      // Kekalkan keyboard focus di dalam confirm box.
-      if (e.key === 'Tab') {
-        const buttons = [closeBtn, cancel, accept];
-        const index = buttons.indexOf(document.activeElement);
-
-        if (e.shiftKey && index <= 0) {
-          e.preventDefault();
-          accept.focus();
-        } else if (!e.shiftKey && index === buttons.length - 1) {
-          e.preventDefault();
-          closeBtn.focus();
-        }
-      }
-    }
-
-    cancel.addEventListener('click', () => cleanup(false));
-    closeBtn.addEventListener('click', () => cleanup(false));
-
-    accept.addEventListener('click', async () => {
-      if (busy) return;
-
-      // Mode callback: boleh tunggu Firebase delete selesai.
-      if (typeof options.onConfirm === 'function') {
-        busy = true;
-        cancel.disabled = true;
-        closeBtn.disabled = true;
-
-        try {
-          if (window.NewUI?.setButtonLoading) {
-            NewUI.setButtonLoading(accept, true, {
-              text: options.loadingText || 'Deleting...'
-            });
-          } else {
-            accept.disabled = true;
-          }
-
-          await options.onConfirm();
-
-          if (window.NewUI?.setButtonLoading) {
-            await NewUI.setButtonLoading(accept, false);
-          }
-
-          cleanup(true);
-        } catch (err) {
-          console.error('Confirm action failed:', err);
-
-          if (window.NewUI?.setButtonLoading) {
-            await NewUI.setButtonLoading(accept, false);
-          }
-
-          accept.disabled = false;
-          cancel.disabled = false;
-          closeBtn.disabled = false;
-          busy = false;
-
-          window.NewUI?.showToast?.(
-            err.message || 'Action failed',
-            'error'
-          );
-        }
-
-        return;
-      }
-
-      cleanup(true);
-    });
-
-    document.body.appendChild(pop);
-    position();
-
-    activeSharedConfirm = {
-      element: pop,
-      close: () => {
-        if (!busy) cleanup(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', onOutside, true);
-    document.addEventListener('keydown', onKeydown, true);
-    window.addEventListener('resize', position);
-    window.addEventListener('scroll', position, true);
-
-    requestAnimationFrame(() => {
-      if (!finished) {
-        pop.classList.add('is-visible');
-        cancel.focus({ preventScroll: true });
-      }
-    });
+  window.addEventListener("beforeunload", () => {
+    typingRef.set(false).catch(()=>{});
   });
 }
 
-window.NewUI.confirm = sharedConfirm;
+const CLOUDINARY_CLOUD_NAME = "dqctvbenv";
+const CLOUDINARY_UPLOAD_PRESET = "chat_upload";
+const ADMIN_PRESENCE_PATH = "adminPresence/main";
+let adminPresenceBound = false;
 
-window.NewUI.imageUpload=createSharedImageUpload;
-window.createSharedDropdown=createSharedDropdown;
-window.createSharedChipDropdown=createSharedChipDropdown;
-window.initSharedDropdowns=initSharedDropdowns;
-window.createEmptyState=createEmptyState;
-window.createLoadingState=createLoadingState;
-window.showEmptyState=showEmptyState;
-window.showLoadingState=showLoadingState;
-window.clearSharedState=clearSharedState;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>initNewUI(),{once:true});
-else initNewUI();
-
-/* =========================================================
-   SHARED ACTIVE / INACTIVE SWITCH
-   Reusable across all admin tabs. No Firebase dependency.
-   HTML: <label class="shared-active-switch"><input type="checkbox"
-         data-active-label="Active Notice" data-inactive-label="Inactive Notice" checked>
-         <span class="shared-active-track"><span class="shared-active-text"></span>
-         <span class="shared-active-knob" aria-hidden="true"></span></span></label>
-   Read .checked and listen for "change" to persist using each page's logic.
-   ========================================================= */
-function syncSharedActiveSwitch(input) {
-  if (!input || !input.matches('.shared-active-switch input[type="checkbox"]')) return;
-  const label = input.nextElementSibling?.querySelector('.shared-active-text');
-  const activeText = input.dataset.activeLabel || 'Active';
-  const inactiveText = input.dataset.inactiveLabel || 'Inactive';
-  const text = input.checked ? activeText : inactiveText;
-  if (label) label.textContent = text;
-  input.setAttribute('aria-label', text);
-}
-function initSharedActiveSwitches(root = document) {
-  if (root.matches?.('.shared-active-switch input[type="checkbox"]')) syncSharedActiveSwitch(root);
-  root.querySelectorAll?.('.shared-active-switch input[type="checkbox"]').forEach(syncSharedActiveSwitch);
-}
-document.addEventListener('change', event => {
-  if (event.target.matches?.('.shared-active-switch input[type="checkbox"]')) {
-    syncSharedActiveSwitch(event.target);
+function getOrCreateLocalGuestId(){
+  let id = localStorage.getItem('guest.uid');
+  if (!id){
+    id = 'g_' + Array.from(crypto.getRandomValues(new Uint32Array(4))).join('');
+    localStorage.setItem('guest.uid', id);
   }
-});
-window.SharedActiveSwitch = { init: initSharedActiveSwitches, sync: syncSharedActiveSwitch };
-window.NewUI.activeSwitch = window.SharedActiveSwitch;
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initSharedActiveSwitches(), { once: true });
-} else {
-  initSharedActiveSwitches();
+  return id;
 }
-})();
-/* 5G88 reusable pagination. Load after new-ui.js */
-(() => {
-  'use strict';
-  window.NewUI = window.NewUI || {};
-  const SVG = {
-    prev: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z"/></svg>',
-    next: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z"/></svg>',
-    back5: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M272.9 512l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L186.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H532c6.7 0 10.4-7.7 6.3-12.9L272.9 512zm304 0l265.4-339.1c4.1-5.2.4-12.9-6.3-12.9h-77.3c-4.9 0-9.6 2.3-12.6 6.1L490.8 492.3a31.99 31.99 0 000 39.5l255.3 326.1c3 3.9 7.7 6.1 12.6 6.1H836c6.7 0 10.4-7.7 6.3-12.9L576.9 512z"/></svg>',
-    forward5: '<svg viewBox="64 64 896 896" aria-hidden="true"><path d="M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z"/></svg>'
-  };
-  const down = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>';
-  const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+function getFallbackDeviceId(){
+  let id = localStorage.getItem("fallbackDeviceId");
+  if (!id){
+    id = "fb_" + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+    localStorage.setItem("fallbackDeviceId", id);
+  }
+  return id;
+}
 
-  window.NewUI.pagination = function(target, config = {}) {
-    const root = typeof target === 'string' ? document.querySelector(target) : target;
-    if (!(root instanceof HTMLElement)) throw new Error('NewUI.pagination: target not found');
-    if (root.__newUIPagination) return root.__newUIPagination;
-    let total = Math.max(0, Number(config.total) || 0);
-    let pageSize = Math.max(1, Number(config.pageSize) || 10);
-    let page = Math.max(1, Number(config.page) || 1);
-    const sizes = Array.isArray(config.pageSizes) && config.pageSizes.length ? config.pageSizes.filter(n => Number.isInteger(n) && n > 0) : [10,20,50,100];
-    const onChange = typeof config.onChange === 'function' ? config.onChange : () => {};
-    root.classList.add('new-ui-pagination');
-    root.innerHTML = '<span class="new-ui-pagination-info"></span><div class="new-ui-pagination-numbers"></div><div class="new-ui-pagination-size"><button class="new-ui-pagination-size-trigger" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>'+down+'</button><div class="new-ui-pagination-size-panel" role="listbox" hidden></div></div><div class="new-ui-pagination-goto"><span>Go to</span><input class="new-ui-pagination-jump" type="number" min="1" aria-label="Go to page"><span>Page</span></div>';
-    const info = root.querySelector('.new-ui-pagination-info');
-    const nums = root.querySelector('.new-ui-pagination-numbers');
-    const trigger = root.querySelector('.new-ui-pagination-size-trigger');
-    const sizeText = trigger.querySelector('span');
-    const panel = root.querySelector('.new-ui-pagination-size-panel');
-    const jump = root.querySelector('.new-ui-pagination-jump');
-    const pages = () => Math.max(1, Math.ceil(total / pageSize));
-    function closeMenu(){panel.hidden = true; trigger.setAttribute('aria-expanded','false');}
-    function notify(){onChange({page,pageSize,total,totalPages:pages(),start:total?(page-1)*pageSize:0,end:Math.min(total,page*pageSize)});}
-    function go(p){const next=clamp(Math.floor(Number(p)||1),1,pages()); if(next===page)return;page=next;render();notify();}
-    function btn(label,p,disabled=false,active=false,kind=''){
-      const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-btn'+(kind?' '+kind:'')+(active?' active':'');b.disabled=disabled;
-      if(kind==='new-ui-pagination-arrow'){b.innerHTML=SVG[label];b.setAttribute('aria-label',label==='prev'?'Previous page':'Next page');}
-      else b.textContent=String(label);
-      if(active)b.setAttribute('aria-current','page');b.addEventListener('click',()=>go(p));nums.append(b);
-    }
-    function dots(dir){const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-dots';b.title=dir==='prev'?'Jump back 5 pages':'Jump forward 5 pages';b.setAttribute('aria-label',b.title);b.innerHTML='<span class="new-ui-pagination-dots-text" aria-hidden="true">•••</span><span class="new-ui-pagination-dots-icon" aria-hidden="true">'+SVG[dir==='prev'?'back5':'forward5']+'</span>';b.addEventListener('click',()=>go(page+(dir==='prev'?-5:5)));nums.append(b);}
-    function render(){
-      page=clamp(page,1,pages());root.hidden=total===0;if(!total){closeMenu();return;}
-      info.textContent=`${(page-1)*pageSize+1}-${Math.min(total,page*pageSize)} of ${total} items`;
-      sizeText.textContent=pageSize+' / page';jump.max=String(pages());jump.value='';nums.replaceChildren();
-      btn('prev',page-1,page===1,false,'new-ui-pagination-arrow');
-      const visible=new Set([1,pages()]);for(let p=Math.max(1,page-2);p<=Math.min(pages(),page+2);p++)visible.add(p);
-      let previous=0;[...visible].sort((a,b)=>a-b).forEach(p=>{if(p-previous>1)dots(p<=page?'prev':'next');btn(p,p,false,p===page);previous=p;});
-      btn('next',page+1,page===pages(),false,'new-ui-pagination-arrow');
-      panel.replaceChildren();sizes.forEach(n=>{const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-size-option'+(n===pageSize?' active':'');b.textContent=n+' / page';b.setAttribute('role','option');b.setAttribute('aria-selected',String(n===pageSize));b.addEventListener('click',()=>{closeMenu();if(n===pageSize)return;pageSize=n;page=1;render();notify();});panel.append(b);});
-    }
-    trigger.addEventListener('click',()=>{const open=panel.hidden;panel.hidden=!open;trigger.setAttribute('aria-expanded',String(open));});
-    function outside(e){if(!root.contains(e.target))closeMenu();}
-    function escape(e){if(e.key==='Escape')closeMenu();}
-    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
-    function jumpNow(){if(jump.value.trim()==='')return;go(jump.value);jump.value='';}
-    jump.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();jumpNow();}});
-    jump.addEventListener('change',jumpNow);
-    const api={setTotal(n){total=Math.max(0,Number(n)||0);render();},setPage(p){go(p);},setPageSize(n){const v=Math.floor(Number(n));if(v<1||!Number.isFinite(v))return;pageSize=v;page=1;render();notify();},update(opts={}){if(opts.total!==undefined)total=Math.max(0,Number(opts.total)||0);if(opts.pageSize!==undefined)pageSize=Math.max(1,Number(opts.pageSize)||10);if(opts.page!==undefined)page=Math.max(1,Number(opts.page)||1);render();},getState(){return{page,pageSize,total,totalPages:pages()};},destroy(){document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);root.replaceChildren();root.classList.remove('new-ui-pagination');delete root.__newUIPagination;}};
-    root.__newUIPagination=api;render();return api;
-  };
-})();
+function getBrowserName(){
+  const ua = navigator.userAgent || "";
+  if (/Edg\//i.test(ua)) return "Edge";
+  if (/Firefox\//i.test(ua)) return "Firefox";
+  if (/Chrome\//i.test(ua)) return "Chrome";
+  if (/Safari\//i.test(ua)) return "Safari";
+  return "Unknown";
+}
+
+function getDeviceType(){
+  const ua = navigator.userAgent || "";
+
+  if (/Android/i.test(ua)) return "Android";
+  if (/iPhone/i.test(ua)) return "iPhone";
+  if (/iPad/i.test(ua)) return "iPad";
+  if (/iPod/i.test(ua)) return "iPod";
+  if (/Windows NT/i.test(ua)) return "Windows";
+  if (/Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua)) return "Mac";
+  if (/Linux/i.test(ua) && !/Android/i.test(ua)) return "Linux";
+
+  return "Unknown";
+}
+function getOrCreateLocalGuestName(id){
+  let name = (localStorage.getItem('guest.name') || '').trim();
+  if (!name) {
+    name = makeGuestDisplayNameFromId(id);
+    localStorage.setItem('guest.name', name);
+  }
+  return name;
+}
+function makeGuestDisplayNameFromId(id) {
+  const raw = String(id || "").trim();
+  if (!raw) return "Guest-User";
+
+  const clean = raw.replace(/^g_/i, "").replace(/[^a-zA-Z0-9]/g, "");
+  const shortCode = (clean.slice(-5) || "USER").toUpperCase();
+
+  return "Guest-" + shortCode;
+}
+
+function ensureGuestDisplayName() {
+  if (!currentIsGuest) return localStorage.getItem("username") || "User";
+
+  const guestId = currentActiveId || getOrCreateLocalGuestId();
+  let guestName = (localStorage.getItem("guest.name") || "").trim();
+
+  if (!guestName || !/^Guest-/i.test(guestName)) {
+    guestName = makeGuestDisplayNameFromId(guestId);
+    localStorage.setItem("guest.name", guestName);
+  }
+
+  localStorage.setItem("username", guestName);
+
+  if (!localStorage.getItem("userphoto")) {
+    localStorage.setItem("userphoto", "");
+  }
+
+  return guestName;
+}
 
 /* ==========================================
-   NEW UI - REUSABLE REFRESH LOADING
-   ========================================== */
+   LIVECHAT USER - MARK SUPPORT MESSAGES READ
+========================================== */
 
-(function () {
-  "use strict";
+let isMarkingUserRead = false;
 
-  const loaders = new WeakMap();
 
-  function getTarget(target) {
-    if (!target) return document.body;
 
-    if (typeof target === "string") {
-      const element = document.querySelector(target);
 
-      if (!element) {
-        throw new Error(
-          "NewUI.refreshLoading: Target not found: " + target
-        );
-      }
-
-      return element;
-    }
-
-    if (!(target instanceof HTMLElement)) {
-      throw new Error("NewUI.refreshLoading: Invalid target");
-    }
-
-    return target;
+function isLivechatVisible() {
+  // Jangan mark read jika browser tab tersembunyi.
+  if (document.visibilityState !== "visible") {
+    return false;
   }
 
-  function show(options = {}) {
-    const target = getTarget(options.target);
-    const message =
-      options.message ?? "Please wait while fetching...";
+  // Floating LiveChat dianggap aktif apabila iframe kelihatan.
+  const isFloating =
+    new URLSearchParams(window.location.search)
+      .get("floating") === "1";
 
-    let state = loaders.get(target);
+  if (isFloating) {
+    return true;
+  }
 
-    if (state) {
-      state.count++;
+  const currentFile = window.location.pathname
+    .split("/")
+    .pop()
+    .toLowerCase();
 
-const label = state.overlay.querySelector(
-  ".smart-loading-text"
-);
+  // LiveChat dibuka secara langsung.
+  if (window.parent === window) {
+    return currentFile === "livechat.html";
+  }
 
-      if (label) label.textContent = String(message);
+  // LiveChat dibuka dalam tab dashboard.
+  try {
+    if (
+      typeof window.parent.isLivechatTabActive === "function"
+    ) {
+      return window.parent.isLivechatTabActive();
+    }
+  } catch (error) {
+    console.warn("LiveChat tab check failed:", error);
+  }
 
-      return target;
+  return false;
+}
+
+
+
+
+async function markAdminSeenInDB() {
+  if (!currentActiveId) return;
+    console.log("[LiveChat Read Check]", {
+  chatId: currentActiveId,
+  visible: isLivechatVisible(),
+  parentActive: window.parent !== window
+    ? window.parent.isLivechatTabActive?.()
+    : true
+});
+  if (!isLivechatVisible()) return;
+  if (isMarkingUserRead) return;
+
+  const chatPath = getChatPath();
+  if (!chatPath) return;
+
+  isMarkingUserRead = true;
+
+  try {
+    const chatRef = db.ref(chatPath);
+    const snapshot = await chatRef.once("value");
+
+    if (!isLivechatVisible()) return;
+
+    const updates = {};
+    const now = Date.now();
+
+    snapshot.forEach(child => {
+      const message = child.val();
+
+      if (
+        message?.from === "admin" &&
+        message.readByUser !== true
+      ) {
+        updates[`${child.key}/readByUser`] = true;
+        updates[`${child.key}/seenByUser`] = true;
+        updates[`${child.key}/readAt`] = now;
+      }
+    });
+
+    if (Object.keys(updates).length) {
+      await chatRef.update(updates);
+    }
+console.log("[LiveChat Read Saved]", {
+  chatPath,
+  updatedFields: Object.keys(updates).length
+});
+  } catch (error) {
+    console.error(
+      "LiveChat mark read failed:",
+      error
+    );
+  } finally {
+    isMarkingUserRead = false;
+  }
+}
+
+/* ==========================================
+   LIVECHAT - ADMIN IDENTITY FROM FIREBASE
+   ========================================== */
+
+function waitForLivechatAuth() {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(
+      user => {
+        unsubscribe();
+        resolve(user);
+      },
+      reject
+    );
+  });
+}
+
+async function restoreAdminLivechatIdentity() {
+  const user = await waitForLivechatAuth();
+
+  if (!user || user.isAnonymous) return false;
+
+  const token = await user.getIdTokenResult();
+
+  if (
+    token.claims.secondVerified !== true ||
+    !Number.isSafeInteger(token.claims.pinVersion)
+  ) {
+    return false;
+  }
+
+  const snapshot = await db
+    .ref("adminUsers/" + user.uid)
+    .once("value");
+
+  const profile = snapshot.val();
+
+  if (
+    !profile ||
+    profile.active !== true ||
+    profile.secondPasswordEnabled !== true ||
+    !["superadmin", "siteadmin"].includes(profile.role) ||
+    token.claims.pinVersion !== profile.pinVersion
+  ) {
+    return false;
+  }
+
+  const username = String(profile.username || "").trim();
+
+  if (!username) {
+    console.warn("Admin profile has no username.");
+    return false;
+  }
+
+  currentActiveId = "admin_" + user.uid;
+  currentAdminUsername = username;
+  currentUserEmail = user.email || null;
+  currentIsGuest = false;
+
+  localStorage.setItem("username", username);
+  localStorage.setItem("adminName", username);
+  localStorage.setItem("livechat.adminRole", profile.role);
+
+  await writeUserProfile();
+  bindPresenceAndNotif();
+  initChatWithUserData();
+  notifyRead();
+  // Pastikan identiti chat sudah tersedia sebelum mark read.
+  markAdminSeenInDB().catch(error => {
+    console.error("[LiveChat] Read after login failed:", error);
+  });
+  console.log("LiveChat admin identity restored:", {
+    uid: user.uid,
+    username,
+    role: profile.role
+  });
+
+  return true;
+}
+
+async function ensureGuestLocalIdentity(){
+  const localGuestId = getOrCreateLocalGuestId();
+  const localGuestName = getOrCreateLocalGuestName(localGuestId);
+
+  try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
     }
 
-    const overlay = document.createElement("div");
-    overlay.className = "newui-refresh-overlay";
+    // ✅ Walaupun auth anonymous berjaya, tetap guna guest lokal
+    currentIsGuest = true;
+    currentUserEmail = null;
+    currentActiveId = localGuestId;
 
-    overlay.setAttribute("role", "status");
-    overlay.setAttribute("aria-live", "polite");
-    overlay.setAttribute("aria-label", "Loading");
+    localStorage.setItem("guest.uid", localGuestId);
+    localStorage.setItem("guest.name", localGuestName);
+    localStorage.setItem("username", localGuestName);
+
+  }catch(e){
+    if (e?.code === 'auth/admin-restricted-operation' || e?.code === 'auth/operation-not-allowed'){
+      console.warn('Anonymous disabled — using local guest id');
+      currentIsGuest   = true;
+      currentUserEmail = null;
+      currentActiveId  = localGuestId;
+
+      localStorage.setItem("guest.uid", localGuestId);
+      localStorage.setItem("guest.name", localGuestName);
+      localStorage.setItem("username", localGuestName);
+    } else {
+      throw e;
+    }
+  }
+
+  ensureGuestDisplayName();
+  await writeUserProfile();
+  bindPresenceAndNotif();
+  initChatWithUserData();
+  notifyRead();
+}
+  
+function bindPresenceAndNotif(){
+  if (!currentActiveId) return;
+  if (presenceBoundFor === currentActiveId) return;
+
+  const userPath  = getUserPath();
+  const notifPath = getNotifPath();
+  if (!userPath) return;
+
+  // stop listener/heartbeat lama dulu
+  stopUserPresence(false);
+
+  presenceBoundFor = currentActiveId;
+
+  userConnectedRef = db.ref(".info/connected");
+  userRefForPresence = db.ref(userPath);
+
+  userConnectedRef.on("value", (snap) => {
+    if (snap.val() === true) {
+      touchUserPresence({ typing: false });
+
+      userRefForPresence.onDisconnect().update({
+        online: false,
+        typing: false,
+        lastLoginTime: Date.now()
+      });
+
+      clearInterval(userPresenceHeartbeat);
+      userPresenceHeartbeat = setInterval(() => {
+        touchUserPresence();
+      }, 10000);
+    }
+  });
+
+  // notifikasi admin -> user
+  if (notifPath){
+    const nr = db.ref(notifPath);
+    nr.off();
+    nr.on("value", (snapshot) => {
+      const notif = snapshot.val();
+      if (notif && notif.unread) {
+if (shouldPlayNotificationSound()) {
+  playNotificationSound();
+}
+        notifyUnread();
+        setTimeout(() => { nr.child("unread").set(false); }, 2000);
+      } else {
+        notifyRead();
+      }
+    });
+  }
+}
+async function writeUserProfile(){
+  const upath = getUserPath();
+  if (!upath) return;
+
+const finalName = currentIsGuest
+  ? ensureGuestDisplayName()
+  : currentAdminUsername;
+
+if (!currentIsGuest && !currentAdminUsername) return;
+
+  const now = Date.now();
+  const browser = getBrowserName();
+  const deviceType = getDeviceType();
+  const deviceId = await getVisitorId();
+
+  const data = {
+    name: finalName,
+    displayName: finalName,
+    email: currentUserEmail || null,
+    photoURL: localStorage.getItem("userphoto") || null,
+    isGuest: !!currentIsGuest,
+    online: true,
+
+    browser,
+    deviceType,
+    deviceId,
+    ua: navigator.userAgent || "",
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+
+    lastLoginTime: now,
+    pageLoginTime: now,
+    lastLoginAt: now
+  };
+
+  db.ref(upath).update(data).catch((err) => {
+    console.warn("writeUserProfile failed:", err?.message || err);
+  });
+}
 
 
-overlay.innerHTML = `
-  <div class="smart-loading-box">
-    <div class="smart-loading-dots" aria-hidden="true">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+let userHasInteracted = false;
+
+function shouldPlayNotificationSound() {
+  return document.visibilityState === "visible";
+}
+function cleanDuplicateName(name) {
+  const parts = name.trim().split(/\s+/);
+  const half = parts.length / 2;
+  if (parts.length % 2 === 0) {
+    const firstHalf = parts.slice(0, half).join(' ');
+    const secondHalf = parts.slice(half).join(' ');
+    if (firstHalf === secondHalf) return firstHalf;
+  }
+  return name;
+}
+function nameOnly(s){
+  if (!s) return 'User';
+  s = String(s).trim();
+  const at = s.indexOf('@');
+  if (at > -1) s = s.slice(0, at);
+  return s.replace(/\./g, ' ');
+}
+function updateUserHeader() {
+  let userName = localStorage.getItem("username") || "User";  // GANTI const → let
+  const userPhoto = localStorage.getItem("userphoto") || "https://i.pravatar.cc/40";
+  const nameEl = document.getElementById("headerUserName");
+  const photoEl = document.getElementById("headerUserPhoto");
+
+  userName = cleanDuplicateName(userName);  // ✅ Tidak error lagi
+  if (nameEl) nameEl.textContent = userName;
+  if (photoEl) photoEl.src = userPhoto;
+}
+function updateAdminHeader(name, photo) {
+  const nameEl = document.getElementById("headerUserName");
+  const photoEl = document.getElementById("headerUserPhoto");
+
+  const finalName = "Admin Support";
+  const finalPhoto = "https://i.imgur.com/qiZFOs9.png";
+
+  if (nameEl) nameEl.textContent = finalName;
+  if (photoEl) photoEl.src = finalPhoto;
+}
+function formatLastSeenText(ts) {
+  if (!ts) return "Offline";
+
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return "Offline";
+
+  const now = new Date();
+
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const msgDay = new Date(d);
+  msgDay.setHours(0, 0, 0, 0);
+
+  const timeText = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  if (msgDay.getTime() === today.getTime()) {
+    return `Last seen today at ${timeText}`;
+  }
+
+  if (msgDay.getTime() === yesterday.getTime()) {
+    return `Last seen yesterday at ${timeText}`;
+  }
+
+  const sameYear = d.getFullYear() === now.getFullYear();
+
+  const dateText = d.toLocaleDateString('en-GB', sameYear
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' }
+  );
+
+  return `Last seen ${dateText} at ${timeText}`;
+}
+function bindAdminHeaderPresence(){
+  if (adminPresenceBound) return;
+  adminPresenceBound = true;
+
+  const ref = db.ref(ADMIN_PRESENCE_PATH);
+  const typingEl = document.getElementById("typingStatus");
+
+  ref.on("value", snap => {
+    const data = snap.val() || {};
+
+    updateAdminHeader(
+      "Admin Support",
+      data.photoURL || "./logo.svg"
+    );
+    // Nama operator hanya daripada rekod presence admin, bukan identiti pelanggan.
+    const agentEl = document.getElementById("supportAgentName");
+    if (agentEl) {
+      const agent = typeof data.username === "string" ? data.username.trim() : "";
+      agentEl.textContent = agent || "Support team";
+    }
+
+    if (!typingEl) return;
+
+    if (data.typing === true) {
+      typingEl.textContent = "Typing...";
+    } else if (data.online === true) {
+      typingEl.textContent = "Online";
+    } else if (data.lastSeen) {
+      typingEl.textContent = formatLastSeenText(data.lastSeen);
+    } else {
+      typingEl.textContent = "Offline";
+    }
+  });
+}
+function forceEmojiSearchInputWhite() {
+  const picker = document.getElementById("emojiPicker");
+  if (!picker) return;
+
+  const applyStyles = () => {
+    const root = picker.shadowRoot;
+    if (!root) return;
+
+    const searchInput = root.querySelector('input.search');
+    if (!searchInput) return;
+
+    searchInput.style.color = "#ffffff";
+    searchInput.style.webkitTextFillColor = "#ffffff";
+    searchInput.style.caretColor = "#ffffff";
+    searchInput.style.background = "#0b0b0b";
+    searchInput.style.opacity = "1";
+    searchInput.style.textShadow = "0 0 0 #ffffff";
+  };
+
+  // cuba terus
+  applyStyles();
+
+  // kalau component belum siap render, tunggu sekejap
+  setTimeout(applyStyles, 100);
+  setTimeout(applyStyles, 300);
+  setTimeout(applyStyles, 700);
+
+  // bila picker dibuka lagi, paksa lagi
+  picker.addEventListener("click", applyStyles);
+  picker.addEventListener("emoji-click", applyStyles);
+}
+// PATCH START: initChatWithUserData universal
+function initChatWithUserData() {
+  if (chatInitialized) return;
+
+  // wajib ada activeId (uid guest atau email_sanitized)
+  if (!currentActiveId) return;
+
+  msgInputEl = document.getElementById('msg');
+function autoResizeMsgBox() {
+  if (!msgInputEl) return;
+  msgInputEl.style.height = "24px";
+  msgInputEl.style.height = Math.min(msgInputEl.scrollHeight, 120) + "px";
+}
+sendBtnEl = document.getElementById('sendBtn');
+fileInputEl = document.getElementById('fileInput');
+imagePreviewWrapEl = document.getElementById('imagePreviewWrap');
+imagePreviewListEl = document.getElementById('imagePreviewList');
+imageUploadStatusEl = document.getElementById('imageUploadStatus');
+imageUploadTextEl = document.getElementById('imageUploadText');
+  
+  const emojiBtn = document.getElementById("emojiBtn");
+  const emojiPickerWrap = document.getElementById("emojiPickerWrap");
+  const emojiPicker = document.getElementById("emojiPicker");
+  const searchInput = document.getElementById('searchChat');
+  const chatBox     = document.getElementById('chatBox');
+  const typingEl    = document.getElementById('typingStatus');
+
+ if (!msgInputEl || !sendBtnEl || !fileInputEl || !searchInput || !chatBox) return;
+  const toBottomBtn = document.getElementById("toBottomBtn");
+
+chatBox.addEventListener("scroll", () => {
+  handleChatScrollAutoButton(chatBox);
+});
+
+if (toBottomBtn) {
+  toBottomBtn.addEventListener("click", () => {
+    chatBox.scrollTo({
+      top: chatBox.scrollHeight,
+      behavior: "smooth"
+    });
+
+    toBottomBtn.classList.remove("show");
+    clearTimeout(hideBottomBtnTimer);
+  });
+}
+
+chatInitialized = true;
+updateAdminHeader("Admin Support", "./logo.svg");
+if (typingEl) typingEl.textContent = "Offline";
+bindAdminHeaderPresence();
+bindUserTyping();
+  
+refreshSend();
+if (emojiBtn && emojiPickerWrap && emojiPicker && msgInputEl) {
+emojiBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  emojiPickerWrap.hidden = !emojiPickerWrap.hidden;
+
+  if (!emojiPickerWrap.hidden) {
+    forceEmojiSearchInputWhite();
+  }
+  forceEmojiSearchInputWhite();
+});
+
+  emojiPicker.addEventListener("emoji-click", (event) => {
+    const emoji = event.detail?.unicode || "";
+    if (!emoji) return;
+
+    const start = msgInputEl.selectionStart ?? msgInputEl.value.length;
+const end = msgInputEl.selectionEnd ?? msgInputEl.value.length;
+const value = msgInputEl.value;
+
+msgInputEl.value = value.slice(0, start) + emoji + value.slice(end);
+msgInputEl.focus();
+
+const pos = start + emoji.length;
+msgInputEl.setSelectionRange(pos, pos);
+
+    emojiPickerWrap.hidden = true;
+    refreshSend();
+    autoResizeMsgBox();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!emojiPickerWrap.contains(e.target) && e.target !== emojiBtn) {
+      emojiPickerWrap.hidden = true;
+    }
+  });
+}
+msgInputEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+
+  if (e.ctrlKey) {
+    e.preventDefault();
+
+    const start = msgInputEl.selectionStart;
+    const end = msgInputEl.selectionEnd;
+    const value = msgInputEl.value;
+
+    msgInputEl.value =
+      value.slice(0, start) + "\n" + value.slice(end);
+
+    msgInputEl.setSelectionRange(start + 1, start + 1);
+    autoResizeMsgBox();
+    return;
+  }
+
+  if (e.shiftKey) return;
+
+  e.preventDefault();
+
+  const hasReadyImages = pendingImages.some(item => !!item.uploadedUrl);
+
+  if (isUploadingImage) return;
+  if (!msgInputEl.value.trim() && !hasReadyImages) return;
+
+  sendMessage();
+});
+
+msgInputEl.addEventListener("input", () => {
+  autoResizeMsgBox();
+  refreshSend();
+});
+msgInputEl.addEventListener("paste", async (e) => {
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  if (!items) return;
+
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf("image") !== -1) {
+      const file = items[i].getAsFile();
+      if (!file) return;
+
+      if (file.size > 25 * 1024 * 1024) {
+      alert("❌ Image too large (max 25MB)");
+      e.preventDefault();
+      return;
+     }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInputEl.files = dt.files;
+
+      e.preventDefault();
+
+      await handleSelectedImageFile(file);
+      break;
+    }
+  }
+});
+autoResizeMsgBox();
+
+fileInputEl.addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+
+  for (const file of files) {
+    await handleSelectedImageFile(file);
+  }
+
+  fileInputEl.value = "";
+});
+
+sendBtnEl.addEventListener('click', () => sendMessage());
+sendBtnEl.disabled = true;
+forceOpenBottom = true;
+listenToChat();
+}
+function showBottomBtnWhileScrolling(chatBox){
+  const toBottomBtn = document.getElementById("toBottomBtn");
+  if (!chatBox || !toBottomBtn) return;
+
+  if (isAtBottom(chatBox)) {
+    toBottomBtn.classList.remove("show");
+    clearTimeout(hideBottomBtnTimer);
+    return;
+  }
+
+  toBottomBtn.classList.add("show");
+
+  clearTimeout(hideBottomBtnTimer);
+  hideBottomBtnTimer = setTimeout(() => {
+    if (!isAtBottom(chatBox)) {
+      toBottomBtn.classList.remove("show");
+    }
+  }, 1200);
+}
+
+function handleChatScrollAutoButton(chatBox){
+  const toBottomBtn = document.getElementById("toBottomBtn");
+  if (!chatBox || !toBottomBtn) return;
+
+  if (isAtBottom(chatBox)) {
+    toBottomBtn.classList.remove("show");
+    clearTimeout(hideBottomBtnTimer);
+    return;
+  }
+
+  showBottomBtnWhileScrolling(chatBox);
+}
+function refreshSend(){
+  const text = (msgInputEl?.value || "").trim();
+  const hasUploadingImage = pendingImages.some(item => item.uploading);
+  const hasReadyImages = pendingImages.some(item => !!item.uploadedUrl);
+  const hasAnything = !!text || hasReadyImages || pendingImages.length > 0;
+
+  if (!sendBtnEl) return;
+  sendBtnEl.disabled = !hasAnything || hasUploadingImage;
+}
+
+function setImageUploadLoading(isLoading, text = "Uploading image..."){
+  isUploadingImage = !!isLoading;
+
+  if (imageUploadStatusEl) {
+    imageUploadStatusEl.hidden = !isLoading;
+    imageUploadStatusEl.style.display = isLoading ? "flex" : "none";
+  }
+
+  if (imageUploadTextEl) {
+    imageUploadTextEl.textContent = text;
+  }
+
+  refreshSend();
+}
+function renderSelectedImages(){
+  if (!imagePreviewWrapEl || !imagePreviewListEl) return;
+
+  imagePreviewListEl.innerHTML = "";
+
+  if (!pendingImages.length){
+    imagePreviewWrapEl.hidden = true;
+    refreshSend();
+    return;
+  }
+
+  imagePreviewWrapEl.hidden = false;
+
+  pendingImages.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "image-preview-card";
+
+    card.innerHTML = `
+      <img src="${item.preview}" class="image-preview" alt="Preview" title="Click to preview">
+      <button type="button" class="remove-image-btn" title="Remove image">×</button>
+    `;
+
+    const previewImg = card.querySelector(".image-preview");
+    const removeBtn = card.querySelector(".remove-image-btn");
+
+    // ✅ klik thumbnail di input untuk preview besar
+    previewImg.addEventListener("click", () => {
+      openImageLightbox(item.preview || item.uploadedUrl || "");
+    });
+
+    // ✅ buang gambar
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeSelectedImage(item.id);
+    });
+
+    imagePreviewListEl.appendChild(card);
+  });
+
+  refreshSend();
+}
+
+function removeSelectedImage(id){
+  pendingImages = pendingImages.filter(item => item.id !== id);
+
+  if (fileInputEl && !pendingImages.length) {
+    fileInputEl.value = "";
+  }
+
+  renderSelectedImages();
+}
+function clearSelectedImage(resetInput = true){
+  currentImageUploadToken++;
+
+  pendingImages = [];
+  isUploadingImage = false;
+
+  if (resetInput && fileInputEl) fileInputEl.value = "";
+
+  if (imagePreviewListEl) imagePreviewListEl.innerHTML = "";
+  if (imagePreviewWrapEl) imagePreviewWrapEl.hidden = true;
+
+  if (imageUploadStatusEl) {
+    imageUploadStatusEl.hidden = true;
+    imageUploadStatusEl.style.display = "none";
+  }
+
+  if (imageUploadTextEl) {
+    imageUploadTextEl.textContent = "Uploading image...";
+  }
+
+  refreshSend();
+}
+
+async function uploadImageToCloudinary(file, uploadToken){
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.secure_url) {
+    throw new Error(data?.error?.message || "Upload failed");
+  }
+
+  return data.secure_url;
+}
+
+async function handleSelectedImageFile(file){
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("❌ Only image allowed");
+    return;
+  }
+
+  if (file.size > 25 * 1024 * 1024) {
+    alert("❌ Image too large (max 25MB)");
+    return;
+  }
+
+  const localId = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  const uploadToken = currentImageUploadToken;
+
+  const preview = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error("Preview failed"));
+    reader.readAsDataURL(file);
+  });
+
+  const item = {
+    id: localId,
+    file,
+    preview,
+    uploadedUrl: "",
+    uploading: true
+  };
+
+  pendingImages.push(item);
+  renderSelectedImages();
+
+  if (msgInputEl) {
+    msgInputEl.focus({ preventScroll: true });
+  }
+
+  let compressedFile = file;
+  try {
+    compressedFile = await compressImage(file, 1280, 0.72);
+  } catch (err) {
+    console.warn("Compress failed, fallback original file:", err);
+  }
+
+  isUploadingImage = true;
+  setImageUploadLoading(true, "Uploading image...");
+  refreshSend();
+
+  try {
+    const secureUrl = await uploadImageToCloudinary(compressedFile, uploadToken);
+
+    const target = pendingImages.find(x => x.id === localId);
+    if (!target) return;
+
+    target.file = compressedFile;
+    target.uploadedUrl = secureUrl || "";
+    target.uploading = false;
+  } catch (err) {
+    console.error("Image pre-upload failed:", err);
+    pendingImages = pendingImages.filter(x => x.id !== localId);
+    alert("❌ Upload image gagal. Sila cuba lagi.");
+  } finally {
+    isUploadingImage = pendingImages.some(x => x.uploading);
+
+    if (!isUploadingImage) {
+      setImageUploadLoading(false);
+    }
+
+    renderSelectedImages();
+
+    if (msgInputEl) {
+      msgInputEl.focus({ preventScroll: true });
+    }
+  }
+}
+async function compressImage(file, maxWidth = 1280, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    const img = new Image();
+
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
+    reader.onerror = () => reject(new Error("Failed to read image"));
+
+    img.onload = () => {
+      let { width, height } = img;
+
+      if (width > maxWidth) {
+        height = Math.round(height * (maxWidth / width));
+        width = maxWidth;
+      }
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Compression failed"));
+            return;
+          }
+
+          const compressedFile = new File(
+            [blob],
+            (file.name || "image").replace(/\.\w+$/, "") + ".jpg",
+            { type: "image/jpeg" }
+          );
+
+          resolve(compressedFile);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => reject(new Error("Invalid image file"));
+    reader.readAsDataURL(file);
+  });
+}
+async function sendMessage() {
+  if (!currentActiveId) return;
+
+  const msg = (msgInputEl?.value || '').trim();
+
+  const stillUploading = pendingImages.some(item => item.uploading);
+  if (stillUploading) {
+    alert("⏳ Please wait, image still uploading...");
+    return;
+  }
+
+  const readyImages = pendingImages
+    .map(item => item.uploadedUrl)
+    .filter(Boolean);
+
+  if (!msg && !readyImages.length) return;
+
+ const userName = currentIsGuest
+  ? (localStorage.getItem("guest.name") || "Guest")
+  : currentAdminUsername;
+
+if (!currentIsGuest) {
+  const activeAuthUser = auth.currentUser;
+
+  if (
+    !activeAuthUser ||
+    currentActiveId !== "admin_" + activeAuthUser.uid ||
+    !currentAdminUsername
+  ) {
+    console.warn("LiveChat identity changed. Please reload.");
+    alert("Login session changed. Please reload LiveChat.");
+    return;
+  }
+}
+  const userPhoto = localStorage.getItem("userphoto") || "";
+  const time = Date.now();
+
+  const chatPath = getChatPath();
+  if (!chatPath) return;
+  const chatRef = db.ref(chatPath);
+
+  try {
+    await chatRef.push({
+      from: 'user',
+      name: userName,
+      email: currentUserEmail || null,
+      photoURL: userPhoto || null,
+      text: msg || null,
+      image: readyImages[0] || null,
+      images: readyImages,
+      time,
+      readByAdmin: false
+    });
+
+    // ==========================================
+    // LIVECHAT - REALTIME UNREAD FOR ADMIN
+    // ==========================================
+    try {
+      const sid = currentActiveId;
+
+      if (sid) {
+        const userRef = db.ref(`users/${sid}`);
+        const unreadRef = userRef.child('unreadCountForAdmin');
+
+        await unreadRef.transaction(current => {
+          const count = Number(current) || 0;
+          return Math.max(0, count) + 1;
+        });
+
+        await userRef.update({
+          unreadForAdmin: true,
+          lastChatTime: time
+        });
+      }
+    } catch (unreadError) {
+      console.error(
+        '[LiveChat] Unread update failed:',
+        unreadError
+      );
+    }
+
+    setTimeout(() => onNewMessageRendered({ forceToBottom: true, instant: false }), 0);
+
+    if (msgInputEl) {
+      msgInputEl.value = '';
+      msgInputEl.style.height = "24px";
+    }
+
+    clearSelectedImage(true);
+
+    const typingPath = getUserTypingPath();
+    if (typingPath) db.ref(typingPath).set(false).catch(()=>{});
+    touchUserPresence({ typing: false });
+
+    refreshSend();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    refreshSend();
+    alert("❌ Gagal mengirim pesan.");
+  }
+}
+// Simpan listener milik halaman LiveChat sahaja.
+let userChatListenerRef = null;
+let userChatListenerHandler = null;
+// PATCH START: listenToChat universal
+function listenToChat() {
+  if (!currentActiveId) return;
+
+  const chatBox = document.getElementById('chatBox');
+  const chatPath = getChatPath();
+  if (!chatBox || !chatPath) return;
+
+// Hentikan hanya listener LiveChat lama milik halaman ini.
+if (userChatListenerRef && userChatListenerHandler) {
+  userChatListenerRef.off("value", userChatListenerHandler);
+}
+
+const chatRef = db.ref(chatPath);
+userChatListenerRef = chatRef;
+
+  const startMsg = document.getElementById("startMessage");
+
+  userChatListenerHandler = snapshot => {
+    const firstPaint = forceOpenBottom;
+    const wasAtBottom = firstPaint ? true : isAtBottom(chatBox);
+    const chats = snapshot.val();
+
+    if (firstPaint) {
+      chatBox.style.visibility = "hidden";
+    }
+
+    const oldMessages = chatBox.querySelectorAll(".message, .date-label");
+    oldMessages.forEach(el => el.remove());
+
+    if (!chats || Object.keys(chats).length === 0) {
+      if (startMsg) startMsg.style.display = "block";
+      notifyRead();
+
+      if (firstPaint) {
+        requestAnimationFrame(() => {
+          chatBox.style.visibility = "visible";
+          forceOpenBottom = false;
+        });
+      }
+      return;
+    }
+
+    if (startMsg) startMsg.style.display = "none";
+
+    let hasUnreadSupportMessage = false;
+
+    const chatArray = Object.values(chats).sort((a, b) => (a.time || 0) - (b.time || 0));
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const pastChats = [];
+    const todayChats = [];
+
+    chatArray.forEach(c => {
+      const t = Number(c.time) || 0;
+      const msgDateOnly = new Date(t);
+      msgDateOnly.setHours(0,0,0,0);
+
+      (msgDateOnly.getTime() === today.getTime() ? todayChats : pastChats).push(c);
+
+if (
+  c.from === "admin" &&
+  c.readByUser !== true
+) {
+  hasUnreadSupportMessage = true;
+}
+    });
+
+
+if (hasUnreadSupportMessage) {
+  notifyUnread();
+} else {
+  notifyRead();
+}
+
+
+    renderChats(pastChats, today);
+    renderChats(todayChats, today);
+    markAdminSeenInDB();
+
+    const lastMsg = chatArray[chatArray.length - 1] || {};
+    const mustForce = firstPaint || wasAtBottom || lastMsg.from === 'user';
+
+    requestAnimationFrame(() => {
+      onNewMessageRendered({
+        forceToBottom: mustForce,
+        instant: firstPaint
+      });
+
+      if (!mustForce && !isAtBottom(chatBox)) {
+      showBottomBtnWhileScrolling(chatBox);
+     }
+      if (firstPaint) {
+        requestAnimationFrame(() => {
+          chatBox.style.visibility = "visible";
+          forceOpenBottom = false;
+        });
+      }
+    });
+  };
+
+  chatRef.on("value", userChatListenerHandler);
+}
+// ====== SEARCH ======
+const chatBody   = document.getElementById('chatBox');
+const searchBox  = document.getElementById('searchChat');
+let lastQuery    = '';
+let searchHits   = [];
+let hitIndex     = 0;
+
+function clearSearchMarks(){
+  chatBody.querySelectorAll('mark.__hit').forEach(m=>{
+    const p = m.parentNode; m.replaceWith(document.createTextNode(m.textContent)); p.normalize();
+  });
+}
+function doSearch(q){
+  q = (q||'').trim();
+  const noResults = document.getElementById('noResults');
+  if (noResults) noResults.style.display = 'none';
+
+  // reset highlight dulu
+  clearSearchMarks();
+  searchHits = []; hitIndex = 0;
+
+  // jika kosong → tampilkan semua bubble
+  if (!q){
+    chatBody.querySelectorAll('.message').forEach(b => b.style.display = '');
+    return;
+  }
+
+  lastQuery = q.toLowerCase();
+  let matches = 0;
+
+  chatBody.querySelectorAll('.message').forEach(bubble=>{
+    const nameEl = bubble.querySelector('.msg-info');
+    const textEl = bubble.querySelector('.msg-text');
+    const nameTxt = (nameEl?.textContent || '');
+    const msgTxt  = (textEl?.textContent || '');
+    const isMatch = (nameTxt + ' ' + msgTxt).toLowerCase().includes(lastQuery);
+
+    // filter tampilan
+    bubble.style.display = isMatch ? '' : 'none';
+    if (!isMatch) return;
+    matches++;
+
+    // highlight di elemen nama & teks
+    [nameEl, textEl].forEach(el=>{
+      if (!el) return;
+      const raw = el.textContent;
+      const low = raw.toLowerCase();
+      const frag = document.createDocumentFragment();
+      let i=0, m;
+      while ((m = low.indexOf(lastQuery, i)) !== -1){
+        if (m>i) frag.appendChild(document.createTextNode(raw.slice(i,m)));
+        const mark = document.createElement('mark');
+        mark.className='__hit';
+        mark.textContent = raw.slice(m, m+q.length);
+        frag.appendChild(mark); searchHits.push(mark);
+        i = m + q.length;
+      }
+      if (i < raw.length) frag.appendChild(document.createTextNode(raw.slice(i)));
+      el.replaceChildren(frag);
+    });
+  });
+
+  if (matches){
+    (searchHits[0] || chatBody.firstElementChild)?.scrollIntoView({behavior:'smooth', block:'center'});
+  }else{
+    if (noResults) noResults.style.display = 'block';
+  }
+}
+let searchTimer;
+searchBox.addEventListener('input', e=>{
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=> doSearch(e.target.value), 120);
+});
+searchBox.addEventListener('keydown', e=>{
+  if (e.key === 'Enter' && searchHits.length){
+    e.preventDefault();
+    hitIndex = (hitIndex + 1) % searchHits.length;
+    searchHits[hitIndex].scrollIntoView({behavior:'smooth', block:'center'});
+  }
+});
+function formatDateTime(ts){
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2,'0');
+
+  return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ` +
+         `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+// refresh highlight bila DOM pesan berubah
+function renderChats(chatGroup, today) {
+  const chatBox = document.getElementById('chatBox');
+  if (!chatBox) return;
+
+  let lastDateKey = '';
+  const list = Array.isArray(chatGroup) ? chatGroup : [];
+
+  list.forEach((c) => {
+    if (!c || !c.time || isNaN(new Date(c.time).getTime())) return;
+
+    const msgDate = new Date(c.time);
+    const timeFormatted = formatDateTime(c.time);
+    const dateKey = msgDate.toDateString();
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const dayLabel = (dateKey === today.toDateString())
+      ? 'Today'
+      : (dateKey === yesterday.toDateString())
+        ? 'Yesterday'
+        : msgDate.toLocaleDateString('en-GB', { weekday: 'long' });
+
+    const fullDateLabel = msgDate.toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    });
+
+    // ——— header tanggal (jika ganti hari) ———
+    if (dateKey !== lastDateKey) {
+      const dateLabelDiv = document.createElement('div');
+      dateLabelDiv.className = 'date-label';
+      dateLabelDiv.innerHTML = `
+        <div class="date-label-inner">
+          <div class="day-label">${escapeHTML(dayLabel)}</div>
+          <div class="full-date-label">${escapeHTML(fullDateLabel)}</div>
+        </div>
+      `;
+      chatBox.appendChild(dateLabelDiv);
+      lastDateKey = dateKey;
+    }
+
+    // ——— bubble pesan ———
+    const div = document.createElement('div');
+    div.className = 'message ' + (c.from === 'user' ? 'mine' : 'theirs');
+
+    const rawName = (c.from === 'user') ? (c.name || 'You') : 'Admin';
+
+     const senderLabel = (c.from === 'user')
+     ? nameOnly(cleanDuplicateName(rawName))
+     : 'Admin Support';
+
+const senderPhoto = (c.from === 'user')
+  ? 'https://i.imgur.com/MyKVioD.png'
+  : 'https://i.imgur.com/qiZFOs9.png';
+
+    // header bubble tanpa src (src diset via property biar aman)
+let bubbleHtml = `
+  <div class="msg-info">${escapeHTML(senderLabel)}</div>
+`;
+
+if (typeof c.text === 'string' && c.text.trim() !== '') {
+  bubbleHtml += `
+    <p class="msg-text">${escapeHTML(c.text).replace(/\n/g, '<br>')}</p>
+  `;
+}
+
+const imageList = Array.isArray(c.images) && c.images.length
+  ? c.images
+  : (c.image ? [c.image] : []);
+
+if (imageList.length) {
+  bubbleHtml += `<div class="chat-image-group">`;
+
+  imageList.forEach(imgUrl => {
+    bubbleHtml += `
+      <div class="chat-image-wrap" data-image="${escapeHTML(imgUrl)}" title="Preview">
+        <img src="${escapeHTML(imgUrl)}" class="chat-image-thumb" alt="Preview">
+        <div class="chat-image-overlay">◉ Preview</div>
+      </div>
+    `;
+  });
+
+  bubbleHtml += `</div>`;
+}
+
+bubbleHtml += `
+  <div class="msg-time">${timeFormatted}</div>
+`;
+
+div.innerHTML = `
+  <div class="msg-row ${c.from === 'user' ? 'mine-row' : 'their-row'}">
+    ${c.from !== 'user' ? `<img class="msg-avatar-outside" alt="user" src="${escapeHTML(senderPhoto)}">` : ''}
+    
+    <div class="msg-bubble-wrap">
+      ${bubbleHtml}
     </div>
-    <div class="smart-loading-text"></div>
+
+    ${c.from === 'user' ? `<img class="msg-avatar-outside" alt="user" src="${escapeHTML(senderPhoto)}">` : ''}
   </div>
 `;
 
+div.querySelectorAll(".chat-image-wrap").forEach(thumb => {
+  thumb.addEventListener("click", () => {
+    openImageLightbox(thumb.dataset.image);
+  });
+});
 
-overlay.querySelector(
-  ".smart-loading-text"
-).textContent = String(message);
+    chatBox.appendChild(div);
+  });
+}
+['click','keydown','scroll','touchstart'].forEach(event =>
+  document.addEventListener(event, () => userHasInteracted = true, { once: true })
+);
+const toBottomBtn = document.getElementById('toBottomBtn'); // chatBody sudah ada dari bagian SEARCH
 
-    let previousPosition = null;
+function isAtBottom(el, pad = 10){
+  return el && (el.scrollTop + el.clientHeight >= el.scrollHeight - pad);
+}
 
-    if (target !== document.body) {
-      overlay.classList.add("is-container");
+function scrollToBottom(smooth = true){
+  if (!chatBody) return;
+  chatBody.scrollTo({
+    top: chatBody.scrollHeight,
+    behavior: smooth ? "smooth" : "auto"
+  });
+}
 
-      if (getComputedStyle(target).position === "static") {
-        previousPosition = target.style.position;
-        target.style.position = "relative";
-      }
-    }
+function updateFab(){
+  if (!toBottomBtn || !chatBody) return;
+  toBottomBtn.classList.toggle('show', !isAtBottom(chatBody, 80));
+}
 
-    target.appendChild(overlay);
+if (toBottomBtn){
+  toBottomBtn.addEventListener('click', ()=>{
+    scrollToBottom(true);
+    toBottomBtn.classList.remove('show');
+  });
+}
 
-    loaders.set(target, {
-      overlay,
-      count: 1,
-      previousPosition
-    });
+if (chatBody){
+  chatBody.addEventListener('scroll', updateFab);
+  updateFab();
+}
 
-    return target;
+// dipanggil tiap selesai render
+function onNewMessageRendered({ forceToBottom = false, instant = false } = {}){
+  if (forceToBottom || isAtBottom(chatBody, 80)) {
+    scrollToBottom(!instant);
+  }
+  updateFab();
+  if (lastQuery) doSearch(lastQuery);
+}
+
+/* ==========================================
+   LIVECHAT - READ ON RETURN
+========================================== */
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    markAdminSeenInDB();
+  }
+});
+
+window.addEventListener("focus", () => {
+  markAdminSeenInDB();
+});
+
+window.addEventListener("pageshow", () => {
+  markAdminSeenInDB();
+});
+
+window.addEventListener("message", event => {
+  if (event.origin !== window.location.origin) return;
+  if (event.source !== window.parent) return;
+
+  if (event.data?.type === "5G88_LIVECHAT_TAB_ACTIVE") {
+    markAdminSeenInDB();
+  }
+});
+function notifyUnread(){
+  localStorage.setItem("livechatUnread", "1");
+}
+function notifyRead(){
+  localStorage.removeItem("livechatUnread");
+}
+function playNotificationSound() {
+  const audio = document.getElementById("notifSound");
+  if (audio && userHasInteracted) {
+    audio.currentTime = 0;
+    audio.play().catch(e => console.warn("🔇 Audio autoplay blocked:", e));
+  }
+}
+window.addEventListener("beforeunload", () => {
+  stopUserPresence(true);
+});
+window.addEventListener("DOMContentLoaded", async () => {
+  initFingerprint();
+
+  const sendBoxEl = document.querySelector(".send-box");
+
+  function setFabOffset() {
+    if (!sendBoxEl) return;
+
+    document.documentElement.style.setProperty(
+      "--composer-h",
+      sendBoxEl.offsetHeight + "px"
+    );
   }
 
-  function hide(target = document.body) {
-    const element = getTarget(target);
-    const state = loaders.get(element);
+  setFabOffset();
 
-    if (!state) return;
-
-    state.count--;
-
-    if (state.count > 0) return;
-
-    state.overlay.remove();
-
-    if (state.previousPosition !== null) {
-      element.style.position = state.previousPosition;
-    }
-
-    loaders.delete(element);
+  if (window.ResizeObserver && sendBoxEl) {
+    new ResizeObserver(() => {
+      setFabOffset();
+    }).observe(sendBoxEl);
+  } else {
+    window.addEventListener("resize", setFabOffset);
   }
 
-  async function run(task, options = {}) {
-    if (typeof task !== "function") {
-      throw new TypeError(
-        "NewUI.refreshLoading.run requires a function"
-      );
-    }
 
-    const target = show(options);
+let adminRestored = false;
 
-    try {
-      return await task();
-    } finally {
-      hide(target);
-    }
+try {
+  adminRestored = await restoreAdminLivechatIdentity();
+} catch (error) {
+  console.error("LiveChat admin identity error:", error);
+}
+
+if (!adminRestored) {
+  const currentAuthUser = await waitForLivechatAuth();
+
+  // Jangan jatuhkan admin yang sudah login kepada Guest
+  // jika profile gagal dibaca atau token belum sah.
+  if (currentAuthUser && !currentAuthUser.isAnonymous) {
+    console.warn(
+      "Authenticated user identity could not be verified."
+    );
+    return;
   }
 
-  window.NewUI = window.NewUI || {};
+  const email = localStorage.getItem("useremail");
 
-  window.NewUI.refreshLoading = {
-    show,
-    hide,
-    run
-  };
-
-})();
-
-/* =========================================================
-   NEW UI - SHARED IMAGE PREVIEW
-   ========================================================= */
-(function () {
-  "use strict";
-
-  const UI = window.NewUI = window.NewUI || {};
-  if (UI.imagePreview) return;
-
-  const icons = {
-    close: '<path d="M18 6 6 18M6 6l12 12"/>',
-    left: '<path d="M3 11a9 9 0 1 1 2.7 6.4M3 4v7h7"/>',
-    right: '<path d="M21 11a9 9 0 1 0-2.7 6.4M21 4v7h-7"/>',
-    flipH: '<path d="M12 3v18" stroke-dasharray="2 3"/><path d="m9 7-5 5 5 5V7Zm6 0 5 5-5 5V7Z"/>',
-    flipV: '<path d="M3 12h18" stroke-dasharray="2 3"/><path d="m7 9 5-5 5 5H7Zm0 6 5 5 5-5H7Z"/>'
-  };
-
-  const svg = name =>
-    `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
-
-  let active = null;
-
-  function open(opts) {
-    if (typeof opts === "string") opts = { src: opts };
-    opts = opts || {};
-    if (!opts.src) return null;
-
-    if (active) active.close();
-
-    const priorFocus = document.activeElement;
-    const previousOverflow = document.body.style.overflow;
-    const root = document.createElement("div");
-
-    root.className = "newui-image-preview is-open";
-    root.setAttribute("role", "dialog");
-    root.setAttribute("aria-modal", "true");
-    root.setAttribute("aria-label", opts.title || "Image preview");
-
-    root.innerHTML = `
-      <div class="newui-image-preview-stage">
-        <img class="newui-image-preview-image"
-             draggable="false" alt="">
-      </div>
-
-      <button type="button" class="newui-image-preview-close"
-              data-action="close" aria-label="Close preview"
-              title="Close">
-        ${svg("close")}
-      </button>
-
-      <div class="newui-image-preview-toolbar"
-           role="toolbar" aria-label="Image controls">
-
-        <button type="button" data-action="out"
-                aria-label="Zoom out" title="Zoom Out">−</button>
-
-        <span class="newui-image-preview-value">100%</span>
-
-        <button type="button" data-action="in"
-                aria-label="Zoom in" title="Zoom In">+</button>
-
-        <span class="newui-image-preview-divider"></span>
-
-        <button type="button" data-action="left"
-                aria-label="Rotate left" title="Rotate Left">
-          ${svg("left")}
-        </button>
-
-        <button type="button" data-action="right"
-                aria-label="Rotate right" title="Rotate Right">
-          ${svg("right")}
-        </button>
-
-        <span class="newui-image-preview-divider"></span>
-
-        <button type="button" data-action="flipH"
-                aria-label="Flip horizontal" title="Flip Horizontal">
-          ${svg("flipH")}
-        </button>
-
-        <button type="button" data-action="flipV"
-                aria-label="Flip vertical" title="Flip Vertical">
-          ${svg("flipV")}
-        </button>
-
-        <span class="newui-image-preview-divider"></span>
-
-        <button type="button" class="newui-image-preview-reset"
-                data-action="reset" title="Reset image">
-          Reset
-        </button>
-      </div>
-    `;
-
-    const stage = root.querySelector(".newui-image-preview-stage");
-    const img = root.querySelector("img");
-    const value = root.querySelector(".newui-image-preview-value");
-
-    img.src = opts.src;
-    img.alt = opts.alt || opts.title || "Preview image";
-
-    let zoom = 1;
-    let x = 0;
-    let y = 0;
-    let rotation = 0;
-    let flipX = 1;
-    let flipY = 1;
-    let drag = null;
-    let moved = false;
-
-    function update() {
-      zoom = Math.max(1, Math.min(5, zoom));
-
-      if (zoom === 1) {
-        x = 0;
-        y = 0;
-      }
-
-      img.style.transform =
-        `translate(${x}px,${y}px) rotate(${rotation}deg) ` +
-        `scale(${zoom * flipX},${zoom * flipY})`;
-
-      value.textContent = Math.round(zoom * 100) + "%";
-      stage.classList.toggle("is-zoomed", zoom > 1);
-    }
-
-    function reset() {
-      zoom = 1;
-      x = 0;
-      y = 0;
-      rotation = 0;
-      flipX = 1;
-      flipY = 1;
-      update();
-    }
-
-    function close() {
-      if (active !== api) return;
-
-      active = null;
-      document.removeEventListener("keydown", onKey, true);
-      root.remove();
-      document.body.style.overflow = previousOverflow;
-
-      if (priorFocus && priorFocus.isConnected && priorFocus.focus) {
-        priorFocus.focus();
-      }
-
-      if (typeof opts.onClose === "function") opts.onClose();
-    }
-
-    const api = { close, reset, element: root };
-
-    function onKey(e) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close();
-        return;
-      }
-
-      if (e.key !== "Tab") return;
-
-      const buttons = Array.from(root.querySelectorAll("button"));
-      const first = buttons[0];
-      const last = buttons[buttons.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-
-    root.addEventListener("click", e => {
-      const button = e.target.closest("button[data-action]");
-
-      if (!button) {
-        if ((e.target === stage || e.target === root) && !moved) {
-          close();
-        }
-        moved = false;
-        return;
-      }
-
-      switch (button.dataset.action) {
-        case "close":
-          close();
-          return;
-        case "in":
-          zoom += 0.25;
-          break;
-        case "out":
-          zoom -= 0.25;
-          break;
-        case "left":
-          rotation -= 90;
-          break;
-        case "right":
-          rotation += 90;
-          break;
-        case "flipH":
-          flipX *= -1;
-          break;
-        case "flipV":
-          flipY *= -1;
-          break;
-        case "reset":
-          reset();
-          return;
-      }
-
-      update();
-    });
-
-    stage.addEventListener("wheel", e => {
-      e.preventDefault();
-      zoom += e.deltaY < 0 ? 0.2 : -0.2;
-      update();
-    }, { passive: false });
-
-    stage.addEventListener("pointerdown", e => {
-      if (zoom <= 1 || (e.pointerType === "mouse" && e.button !== 0)) {
-        return;
-      }
-
-      e.preventDefault();
-      moved = false;
-
-      drag = {
-        id: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        offsetX: e.clientX - x,
-        offsetY: e.clientY - y
-      };
-
-      stage.classList.add("is-dragging");
-      stage.setPointerCapture(e.pointerId);
-    });
-
-    stage.addEventListener("pointermove", e => {
-      if (!drag || e.pointerId !== drag.id) return;
-
-      if (
-        Math.abs(e.clientX - drag.startX) > 3 ||
-        Math.abs(e.clientY - drag.startY) > 3
-      ) {
-        moved = true;
-      }
-
-      x = e.clientX - drag.offsetX;
-      y = e.clientY - drag.offsetY;
-      update();
-    });
-
-    function stop(e) {
-      if (!drag || e.pointerId !== drag.id) return;
-
-      drag = null;
-      stage.classList.remove("is-dragging");
-
-      if (stage.hasPointerCapture(e.pointerId)) {
-        stage.releasePointerCapture(e.pointerId);
-      }
-    }
-
-    stage.addEventListener("pointerup", stop);
-    stage.addEventListener("pointercancel", stop);
-
-    stage.addEventListener("lostpointercapture", () => {
-      drag = null;
-      stage.classList.remove("is-dragging");
-    });
-
-    document.body.appendChild(root);
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", onKey, true);
-
-    active = api;
-    root.querySelector('[data-action="close"]').focus();
-
-    return api;
+  if (!currentActiveId && email) {
+    currentIsGuest = false;
+    currentUserEmail = email;
+    currentActiveId = sanitizeEmail(email);
   }
 
-  UI.imagePreview = function (opts) {
-    return open(opts);
-  };
+  if (!currentActiveId) {
+    await ensureGuestLocalIdentity();
+  } else {
+    await writeUserProfile();
+    bindPresenceAndNotif();
+    initChatWithUserData();
+    notifyRead();
+  }
+}
 
-  UI.imagePreview.bind = function (selector) {
-    const handler = e => {
-      const trigger = e.target.closest(selector);
-      if (!trigger) return;
+});
+/* Custom image preview uses existing NewUI component. */
+function openImageLightbox(src) {
+  if (!src) return;
+  if (typeof window.NewUI?.imagePreview !== 'function') {
+    console.error('[LiveChat] Custom NewUI image preview unavailable.');
+    return;
+  }
+  window.NewUI.imagePreview({
+    src,
+    title: 'Image Preview',
+    alt: 'LiveChat Image'
+  });
+}
 
-      if (
-        e.type === "keydown" &&
-        e.key !== "Enter" &&
-        e.key !== " "
-      ) return;
+window.HISTORY_TAB_NAME = "LIVE CHAT";
 
-      if (e.type === "keydown") e.preventDefault();
+function sendUserAction(actionName, extra = {}) {
+  if (!actionName) return;
 
-      const image = trigger.matches("img")
-        ? trigger
-        : trigger.querySelector("img");
-
-      const src =
-        trigger.dataset.previewSrc ||
-        image?.currentSrc ||
-        image?.src;
-
-      if (src) {
-        open({
-          src,
-          title:
-            trigger.dataset.previewTitle ||
-            image?.alt ||
-            "Image Preview"
-        });
+  window.dispatchEvent(
+    new CustomEvent("user-tab-action", {
+      detail: {
+        tab: window.HISTORY_TAB_NAME,
+        action: actionName,
+        extra,
+        time: Date.now()
       }
-    };
+    })
+  );
+}
+/* =========================
+   AUTO TRACK CLICK - COUNT SEMUA CLICK
+========================= */
+document.addEventListener("click", function(e) {
+  const el = e.target.closest("button, [onclick], a, .btn, [data-action]");
+  if (!el) return;
 
-    document.addEventListener("click", handler);
-    document.addEventListener("keydown", handler);
+  if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
 
-    return () => {
-      document.removeEventListener("click", handler);
-      document.removeEventListener("keydown", handler);
-    };
-  };
-})();
+  let name =
+    el.getAttribute("data-action") ||
+    el.getAttribute("title") ||
+    el.getAttribute("aria-label") ||
+    el.innerText ||
+    el.textContent ||
+    el.id ||
+    "";
+
+  name = String(name)
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!name || name.length < 2) return;
+
+  name = name.slice(0, 40);
+
+  sendUserAction(name);
+}, true);
+/* =========================
+   AUTO TRACK CTRL + C / COPY IMAGE
+========================= */
+document.addEventListener("keydown", function(e) {
+  const key = String(e.key || "").toLowerCase();
+
+  if ((e.ctrlKey || e.metaKey) && key === "c") {
+    sendUserAction("COPY IMAGE", {
+      method: "keyboard",
+      shortcut: "Ctrl+C"
+    });
+  }
+}, true);
+/* =========================
+   AUTO TRACK BROWSER COPY EVENT
+========================= */
+document.addEventListener("copy", function() {
+  sendUserAction("COPY IMAGE", {
+    method: "copy-event"
+  });
+}, true);
+/* =========================
+   AUTO TRACK ENTER SEND MESSAGE
+========================= */
+document.addEventListener("keydown", function(e) {
+  const key = String(e.key || "").toLowerCase();
+
+  if (key !== "enter") return;
+  if (e.shiftKey) return; // Shift+Enter untuk new line, jangan kira
+
+  const el = e.target;
+  if (!el) return;
+
+  const isMessageInput =
+    el.matches("textarea, input[type='text'], [contenteditable='true']") ||
+    el.closest("[contenteditable='true']");
+
+  if (!isMessageInput) return;
+
+  const value = (el.value || el.innerText || el.textContent || "").trim();
+  if (!value) return;
+
+  sendUserAction("Send Message", {
+    method: "enter-key"
+  });
+}, true);
+</script>
+</body>
+</html>
