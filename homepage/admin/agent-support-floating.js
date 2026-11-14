@@ -170,9 +170,11 @@ const iframe = panel.querySelector('iframe');
 
 const targetUrl = new URL(url);
 
-if (inst.type === 'site') {
+
+if (inst.type === 'agent' || inst.type === 'site') {
   targetUrl.searchParams.set('floating', '1');
 }
+
 
 iframe.src = targetUrl.href;
 panel.querySelector('.asf-close').onclick=()=>closePanel(inst);panel.querySelector('.asf-external').onclick=()=>{window.dispatchEvent(new CustomEvent('5g88:open-admin-tab',{detail:{file:inst.type==='site'?'livechat.html':'livechat-support.html',name:d.label}}));closePanel(inst);};if(d.side==='left'){panel.style.left='12px';panel.style.right='auto';}else{panel.style.right='12px';panel.style.left='auto';}document.body.appendChild(panel);inst.button.hidden=true;inst.button.setAttribute('aria-expanded','true');updateBadge(inst.type);}
