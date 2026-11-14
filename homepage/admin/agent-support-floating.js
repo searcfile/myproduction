@@ -170,7 +170,8 @@ const iframe = panel.querySelector('iframe');
 
 const targetUrl = new URL(url);
 
-if (inst.type === 'site') {
+// Aktifkan floating mode untuk kedua-dua jenis
+if (inst.type === 'agent' || inst.type === 'site') {
   targetUrl.searchParams.set('floating', '1');
 }
 
@@ -431,7 +432,22 @@ right: 3px;
 }
 .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:#fff;border:0;cursor:pointer;font-size:22px;padding:3px 8px}
-    .asf-panel iframe{flex:1;width:100%;border:0;background:red}
+
+.asf-panel iframe {
+  display: block;
+  flex: 1 1 0%;
+  width: 100%;
+  height: 0;
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: red; /* Testing sementara */
+  box-sizing: border-box;
+}
+
 @media (max-width: 600px) {
   .asf-panel {
     top: 50%;
