@@ -698,16 +698,6 @@ function getUserTabsDbPath() {
   return `adminWorkspaceTabs/${uid}`;
 }
 
-/* ==========================================
-   SITE ADMIN - ACTIVITY TRACKER V3
-   EXIT OLD PAGE + ENTER NEW PAGE
-   ========================================== */
-
-
-/* ==========================================
-   SITE ADMIN ACTIVITY TRACKER V4
-   EXIT + ENTER, WITH STATE CHECK
-========================================== */
 
 let siteAdminActivityTracking = false;
 
@@ -736,97 +726,80 @@ async function trackSiteAdminTab() {
     const database = getSharedDb();
     if (!database) return;
 
-    const uid = user.uid;
-
     const activityRef = database.ref(
-      `adminActivity/${uid}`
+      `adminActivity/${user.uid}`
     );
 
     const historyRef = database.ref(
-      `adminActivityHistory/${uid}`
+      `adminActivityHistory/${user.uid}`
     );
 
-    // Cuba semula jika state berubah
-    // ketika transaction sedang berjalan.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const oldSnap = await activityRef.once("value");
-      const previous = oldSnap.val();
+    const now = Date.now();
+    let previous = null;
 
-      if (previous?.pageUrl === file) {
-        return;
-      }
+    const result = await activityRef.transaction(
+      current => {
+        previous = current
+          ? {
+              page: String(current.page || ""),
+              pageUrl: String(current.pageUrl || "")
+            }
+          : null;
 
-      const now = Date.now();
+        if (previous?.pageUrl === file) {
+          return;
+        }
 
-      const result = await activityRef.transaction(
-        current => {
-          // Pastikan state masih sama seperti
-          // yang dibaca sebelum transaction.
-          if (
-            String(current?.pageUrl || "") !==
-              String(previous?.pageUrl || "") ||
-            Number(current?.enteredAt || 0) !==
-              Number(previous?.enteredAt || 0)
-          ) {
-            return;
-          }
-
-          return {
-            page: page.name,
-            pageUrl: file,
-            enteredAt: now
-          };
-        },
-        undefined,
-        false
-      );
-
-      if (!result.committed) {
-        continue;
-      }
-
-      const updates = {};
-
-      // EXIT halaman sebelumnya.
-      if (
-        previous?.pageUrl &&
-        previous.pageUrl !== file
-      ) {
-        const exitKey = historyRef.push().key;
-
-        updates[exitKey] = {
-          type: "exit",
-          page: previous.page || "Unknown",
-          pageUrl: previous.pageUrl,
-          timestamp: now
+        return {
+          page: page.name,
+          pageUrl: file,
+          enteredAt: now
         };
-      }
+      },
+      undefined,
+      false
+    );
 
-      // ENTER halaman baharu.
-      const enterKey = historyRef.push().key;
-
-      updates[enterKey] = {
-        type: "enter",
-        page: page.name,
-        pageUrl: file,
-        timestamp: now + 1
-      };
-
-      await historyRef.update(updates);
-
+    if (!result.committed) {
       console.log(
-        "[Site Admin Activity]",
-        previous?.page || "Start",
-        "=>",
-        page.name
+        "[Site Admin Activity] Same page or transaction cancelled:",
+        file
       );
-
       return;
     }
 
-    console.warn(
-      "[Site Admin Activity] State changed repeatedly:",
-      file
+    const updates = {};
+
+    if (
+      previous?.pageUrl &&
+      previous.pageUrl !== file
+    ) {
+      const exitKey = historyRef.push().key;
+
+      updates[exitKey] = {
+        type: "exit",
+        page: previous.page || "Unknown",
+        pageUrl: previous.pageUrl,
+        timestamp: now
+      };
+    }
+
+    const enterKey = historyRef.push().key;
+
+    updates[enterKey] = {
+      type: "enter",
+      page: page.name,
+      pageUrl: file,
+      timestamp: now + 1
+    };
+
+    await historyRef.update(updates);
+
+    console.log(
+      "[Site Admin Activity] History saved:",
+      previous?.page || "Start",
+      "=>",
+      page.name
     );
 
   } catch (error) {
@@ -838,7 +811,6 @@ async function trackSiteAdminTab() {
     siteAdminActivityTracking = false;
   }
 }
-
 
 
 function syncTabsToFirebase(tabs) {
