@@ -213,16 +213,19 @@ function animate(inst, now) {
   inst.raf = requestAnimationFrame(time => animate(inst, time));
 }
 
+
 function startAnimation(inst) {
   stopAnimation(inst);
 
   if (
     !inst.root ||
+    inst.root.hidden ||
     !animationEnabled(inst) ||
     inst.paused ||
     inst.dragging ||
     inst.panel
   ) return;
+
 
   inst.animationStart = performance.now();
 
@@ -243,7 +246,24 @@ function updateBadge(type) {
 
   badge.hidden = count === 0 || !!inst.panel;
 }
-function closePanel(inst){if(!inst)return;inst.panel?.remove();inst.panel=null;if(inst.button){inst.button.hidden=false;inst.button.setAttribute('aria-expanded','false');}updateBadge(inst.type);startAnimation(inst);}
+
+function closePanel(inst) {
+  if (!inst) return;
+
+  inst.panel?.remove();
+  inst.panel = null;
+
+  if (inst.button) {
+    inst.button.hidden = false;
+    inst.button.setAttribute('aria-expanded', 'false');
+  }
+
+  updateBadge(inst.type);
+
+  // Semak semula sama ada tab berkaitan masih terbuka.
+  updateFloatingVisibility(inst.type);
+}
+
 function openPanel(inst){if(inst.panel){closePanel(inst);return;}const d=inst.config,url=safeUrl(d.url);if(!url)return;if(d.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}stopAnimation(inst);const panel=document.createElement('section');inst.panel=panel;panel.className='asf-panel';panel.setAttribute('aria-label',d.label);panel.style.width=`min(${clamp(+d.width||400,280,900)}px, calc(100vw - 20px))`;panel.style.height=`min(${clamp(+d.height||600,280,1000)}px, calc(100dvh - 30px))`;panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open admin tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';panel.querySelector('strong').textContent=d.label;
 const iframe = panel.querySelector('iframe');
 
