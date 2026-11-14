@@ -329,6 +329,19 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
         <label class="cfg-field"><span>Open behavior</span><select id="openMode" data-shared-dropdown><option value="panel">Floating panel (iframe)</option><option value="tab">New browser tab</option></select></label>
         <label class="cfg-field"><span>Floating side</span><select id="side" data-shared-dropdown><option value="right">Right</option><option value="left">Left</option></select></label>
         <label class="cfg-field"><span>Button display</span><select id="showLabel" data-shared-dropdown><option value="false">Icon only</option><option value="true">Icon and label</option></select></label>
+     
+<label class="cfg-field">
+  <span>Floating button visibility</span>
+  <select id="buttonVisibility" data-shared-dropdown>
+    <option value="always">Always show</option>
+    <option value="auto">Auto hide when tab open</option>
+  </select>
+  <small class="muted cfg-hint">
+    Hide Agent Support floating button while
+    the Agent Support admin tab is open.
+  </small>
+</label>
+
         <label class="cfg-field"><span>Panel width (px)</span><input id="width" type="number" min="280" max="900" step="10"></label>
         <label class="cfg-field"><span>Panel height (px)</span><input id="height" type="number" min="280" max="1000" step="10"></label>
         <label class="cfg-field cfg-wide"><span>Button movement animation</span><select id="animationMode" data-shared-dropdown><option value="off">Off (Static)</option><option value="float">Smooth Up &amp; Down</option></select></label>
@@ -343,6 +356,19 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
         <label class="cfg-field"><span>Open behavior</span><select id="siteOpenMode" data-shared-dropdown><option value="panel">Floating panel (iframe)</option><option value="tab">New browser tab</option></select></label>
         <label class="cfg-field"><span>Floating side</span><select id="siteSide" data-shared-dropdown><option value="right">Right</option><option value="left">Left</option></select></label>
         <label class="cfg-field"><span>Button display</span><select id="siteShowLabel" data-shared-dropdown><option value="false">Icon only</option><option value="true">Icon and label</option></select></label>
+        
+<label class="cfg-field">
+  <span>Floating button visibility</span>
+  <select id="siteButtonVisibility" data-shared-dropdown>
+    <option value="always">Always show</option>
+    <option value="auto">Auto hide when tab open</option>
+  </select>
+  <small class="muted cfg-hint">
+    Hide LiveChat floating button while
+    the Live Chat admin tab is open.
+  </small>
+</label>
+
         <label class="cfg-field"><span>Panel width (px)</span><input id="siteWidth" type="number" min="280" max="900" step="10"></label>
         <label class="cfg-field"><span>Panel height (px)</span><input id="siteHeight" type="number" min="280" max="1000" step="10"></label>
         <label class="cfg-field cfg-wide"><span>Button movement animation</span><select id="siteAnimationMode" data-shared-dropdown><option value="off">Off (Static)</option><option value="float">Smooth Up &amp; Down</option></select></label>
@@ -363,13 +389,42 @@ const AGENT_PATH='adminConfig/agentSupportFloating';
 const SITE_PATH='adminConfig/siteAdminFloating';
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
-const common={enabled:false,url:'',label:'Agent Support',side:'right',width:400,height:600,openMode:'panel',showLabel:false,animationMode:'off',animationSpeed:35,animationRange:90};
+
+const common = {
+  enabled: false,
+  url: '',
+  label: 'Agent Support',
+  side: 'right',
+  width: 400,
+  height: 600,
+  openMode: 'panel',
+  showLabel: false,
+  buttonVisibility: 'always',
+  animationMode: 'off',
+  animationSpeed: 35,
+  animationRange: 90
+};
 const agentDefaults={...common,accessMode:'super_only',allowedUids:{}};
 const siteDefaults={...common,label:'LiveChat',accessMode:'site_all',allowedUids:{}};
 const configs={agent:{...agentDefaults},site:{...siteDefaults}};
 let currentUser=null,siteUsers=[],busy=false,toastTimer;
 function toast(msg,ok=true){if(typeof window.NewUI?.showToast==='function'){window.NewUI.showToast(msg,ok?'success':'error',3000);return;}if(typeof window.showToast==='function'){window.showToast(msg,ok?'success':'error',3000);return;}document.querySelector('.cfg-toast')?.remove();const el=document.createElement('div');el.className='cfg-toast';el.textContent=msg;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),3000);}
-const ids=['enabled','accessMode','url','label','openMode','side','showLabel','width','height','animationMode','animationSpeed','animationRange'];
+
+const ids = [
+  'enabled',
+  'accessMode',
+  'url',
+  'label',
+  'openMode',
+  'side',
+  'showLabel',
+  'buttonVisibility',
+  'width',
+  'height',
+  'animationMode',
+  'animationSpeed',
+  'animationRange'
+];
 const field=(type,key)=>$(type==='site'?'site'+key[0].toUpperCase()+key.slice(1):key);
 function sync(){window.SharedActiveSwitch?.init?.(document);document.querySelectorAll('select[data-shared-dropdown]').forEach(el=>el._sharedDropdown?.refresh?.());}
 function fill(type,data){configs[type]={...(type==='agent'?agentDefaults:siteDefaults),...data};const d=configs[type];for(const key of ids){const el=field(type,key);if(!el)continue;if(key==='enabled')el.checked=!!d[key];else if(key==='showLabel')el.value=String(!!d[key]);else el.value=d[key]??'';}renderUsers(type);sync();}
