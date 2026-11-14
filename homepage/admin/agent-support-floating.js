@@ -168,16 +168,13 @@ function closePanel(inst){if(!inst)return;inst.panel?.remove();inst.panel=null;i
 function openPanel(inst){if(inst.panel){closePanel(inst);return;}const d=inst.config,url=safeUrl(d.url);if(!url)return;if(d.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}stopAnimation(inst);const panel=document.createElement('section');inst.panel=panel;panel.className='asf-panel';panel.setAttribute('aria-label',d.label);panel.style.width=`min(${clamp(+d.width||400,280,900)}px, calc(100vw - 20px))`;panel.style.height=`min(${clamp(+d.height||600,280,1000)}px, calc(100dvh - 30px))`;panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open admin tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';panel.querySelector('strong').textContent=d.label;
 const iframe = panel.querySelector('iframe');
 
-
 const targetUrl = new URL(url);
 
-// Aktifkan floating mode untuk kedua-dua panel
-if (inst.type === 'agent' || inst.type === 'site') {
+if (inst.type === 'site') {
   targetUrl.searchParams.set('floating', '1');
 }
 
 iframe.src = targetUrl.href;
-
 panel.querySelector('.asf-close').onclick=()=>closePanel(inst);panel.querySelector('.asf-external').onclick=()=>{window.dispatchEvent(new CustomEvent('5g88:open-admin-tab',{detail:{file:inst.type==='site'?'livechat.html':'livechat-support.html',name:d.label}}));closePanel(inst);};if(d.side==='left'){panel.style.left='12px';panel.style.right='auto';}else{panel.style.right='12px';panel.style.left='auto';}document.body.appendChild(panel);inst.button.hidden=true;inst.button.setAttribute('aria-expanded','true');updateBadge(inst.type);}
 const svg='<svg class="asf-icon" width="20" height="20" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M924.3 338.4a447.57 447.57 0 00-96.1-143.3 443.09 443.09 0 00-143-96.3A443.91 443.91 0 00512 64h-2c-60.5.3-119 12.3-174.1 35.9a444.08 444.08 0 00-141.7 96.5 445 445 0 00-95 142.8A449.89 449.89 0 0065 514.1c.3 69.4 16.9 138.3 47.9 199.9v152c0 25.4 20.6 46 45.9 46h151.8a447.72 447.72 0 00199.5 48h2.1c59.8 0 117.7-11.6 172.3-34.3A443.2 443.2 0 00827 830.5c41.2-40.9 73.6-88.7 96.3-142 23.5-55.2 35.5-113.9 35.8-174.5.2-60.9-11.6-120-34.8-175.6zM312.4 560c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.4 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48zm199.6 0c-26.4 0-47.9-21.5-47.9-48s21.5-48 47.9-48 47.9 21.5 47.9 48-21.5 48-47.9 48z"/></svg>';
 function destroy(type){const inst=instances[type];if(!inst)return;stopAnimation(inst);inst.panel?.remove();inst.root?.remove();instances[type]=null;}
@@ -418,8 +415,6 @@ right: 3px;
     .asf-button[hidden]{display:none!important}
 .asf-panel {
   position: fixed;
-  box-sizing: border-box;
-min-height: 0;
   top: 50%;
   right: 10px;
   left: auto;
@@ -436,23 +431,7 @@ min-height: 0;
 }
 .asf-head{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#001529;color:#fff;font:600 13px system-ui,sans-serif}
     .asf-head button{background:transparent;color:#fff;border:0;cursor:pointer;font-size:22px;padding:3px 8px}
-
-.asf-panel iframe {
-  display: block;
-  flex: 1 1 0%;
-  width: 100%;
-  height: 0;
-  min-height: 0;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  box-shadow: none;
-  background: #fff;
-  box-sizing: border-box;
-}
-
+    .asf-panel iframe{flex:1;width:100%;border:0;background:#fff}
 @media (max-width: 600px) {
   .asf-panel {
     top: 50%;
