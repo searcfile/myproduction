@@ -423,7 +423,7 @@ right: 3px;
   z-index: 50001 !important;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: red;
   border: 1px solid var(--tx-border);
   border-radius: 18px;
   overflow: hidden;
