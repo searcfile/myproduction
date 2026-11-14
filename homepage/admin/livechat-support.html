@@ -3131,13 +3131,7 @@ selectedChatMemberIds = [];
 selectedMergedEmail = "";
 updateSelectedUserActivity();
 
-const historyDropdown = document.getElementById(
-  "activityHistoryDropdown"
-);
-
-if (historyDropdown) {
-  historyDropdown.hidden = true;
-}
+closeActivityHistoryDropdown();
   selectedUserId = null;
   activeUserIdSanitized = "";
   const openUserMainBtn = document.getElementById("openUserMainBtn");
@@ -3391,7 +3385,37 @@ function updateSelectedUserActivity() {
   element.hidden = false;
 }
 
-async function openSelectedUserActivity() {
+
+/* ==========================================
+   ACTIVITY HISTORY REALTIME V2
+========================================== */
+
+let activityHistoryQuery = null;
+let activityHistoryCallback = null;
+
+function stopActivityHistoryListener() {
+  if (activityHistoryQuery && activityHistoryCallback) {
+    activityHistoryQuery.off(
+      "value",
+      activityHistoryCallback
+    );
+  }
+
+  activityHistoryQuery = null;
+  activityHistoryCallback = null;
+}
+
+function closeActivityHistoryDropdown() {
+  const dropdown = document.getElementById(
+    "activityHistoryDropdown"
+  );
+
+  if (dropdown) dropdown.hidden = true;
+
+  stopActivityHistoryListener();
+}
+
+function openSelectedUserActivity() {
   const dropdown = document.getElementById(
     "activityHistoryDropdown"
   );
@@ -3403,7 +3427,7 @@ async function openSelectedUserActivity() {
   if (!dropdown || !content) return;
 
   if (!dropdown.hidden) {
-    dropdown.hidden = true;
+    closeActivityHistoryDropdown();
     return;
   }
 
@@ -3415,28 +3439,87 @@ async function openSelectedUserActivity() {
 
   const uid = adminSid.slice(6);
 
+  stopActivityHistoryListener();
+
   dropdown.hidden = false;
   content.textContent = "Loading activity...";
 
-  try {
-    const snap = await db
-      .ref(`adminActivityHistory/${uid}`)
-      .orderByChild("timestamp")
-      .limitToLast(100)
-      .once("value");
+  const query = db
+    .ref(`adminActivityHistory/${uid}`)
+    .orderByChild("timestamp")
+    .limitToLast(100);
 
-    // Jangan paparkan data lama jika user sudah ditukar.
+  const callback = snapshot => {
     const currentSid = selectedChatMemberIds.find(id =>
       /^admin_[^/]+$/.test(String(id))
     );
 
-    if (dropdown.hidden || currentSid !== adminSid) return;
+    if (
+      dropdown.hidden ||
+      currentSid !== adminSid
+    ) return;
 
-    const records = Object.values(snap.val() || {})
-      .sort((a, b) =>
-        Number(b.timestamp || 0) -
-        Number(a.timestamp || 0)
+    const records = [];
+
+    snapshot.forEach(child => {
+      const value = child.val();
+
+      if (value && typeof value === "object") {
+        records.push({
+          ...value,
+          _key: child.key
+        });
+      }
+    });
+
+    // Event terkini di atas.
+    // Enter di atas Exit untuk pertukaran
+    // yang sama, apabila timestamp berbeza 1ms.
+    records.sort((a, b) =>
+      Number(b.timestamp || 0) -
+      Number(a.timestamp || 0) ||
+      String(b._key).localeCompare(String(a._key))
+    );
+
+    const scrollTop = content.scrollTop;
+    const fragment = document.createDocumentFragment();
+
+    records.forEach(record => {
+      const type = String(record.type || "enter");
+      const isExit = type === "exit";
+      const isOffline = type === "offline";
+
+      const item = document.createElement("div");
+      item.className = "activity-history-item";
+
+      if (isExit || isOffline) {
+        item.classList.add("activity-history-offline");
+      }
+
+      const name = document.createElement("strong");
+
+      name.textContent = isExit
+        ? `Offline - ${record.page || "Unknown"}`
+        : isOffline
+          ? "Offline"
+          : `Enter ${record.page || "Unknown"}`;
+
+      const tag = document.createElement("span");
+      tag.className = "activity-history-tag";
+
+      tag.textContent = isOffline
+        ? "Connection"
+        : "Route Change";
+
+      const time = document.createElement("small");
+
+      time.textContent = formatAdminActivityTime(
+        record.timestamp
       );
+
+      item.append(name, tag, time);
+      fragment.appendChild(item);
+    });
 
     content.replaceChildren();
 
@@ -3445,51 +3528,21 @@ async function openSelectedUserActivity() {
       return;
     }
 
+    content.appendChild(fragment);
+    content.scrollTop = scrollTop;
+  };
 
+  activityHistoryQuery = query;
+  activityHistoryCallback = callback;
 
-records.forEach(record => {
-  const item = document.createElement("div");
-  item.className = "activity-history-item";
+  query.on("value", callback, error => {
+    console.error(
+      "[Activity History Realtime]",
+      error
+    );
 
-  const type = String(record.type || "enter");
-  const isExit = type === "exit";
-  const isOffline = type === "offline";
-  const isLeaving = isExit || isOffline;
-
-  if (isLeaving) {
-    item.classList.add("activity-history-offline");
-  }
-
-  const name = document.createElement("strong");
-
-  name.textContent = isExit
-    ? `Offline - ${record.page || "Unknown"}`
-    : isOffline
-      ? "Offline"
-      : `Enter ${record.page || "Unknown"}`;
-
-  const tag = document.createElement("span");
-  tag.className = "activity-history-tag";
-
-  tag.textContent = isOffline
-    ? "Connection"
-    : "Route Change";
-
-  const time = document.createElement("small");
-  time.textContent = formatAdminActivityTime(
-    record.timestamp
-  );
-
-  item.append(name, tag, time);
-  content.appendChild(item);
-});
-
-
-
-  } catch (error) {
-    console.error("[Activity History]", error);
     content.textContent = "Failed to load activity history.";
-  }
+  });
 }
 
 
@@ -4609,13 +4662,7 @@ if (activityBtn) {
 updateUserPresenceById(sanitized);
 updateSelectedUserActivity();
 
-const historyDropdown = document.getElementById(
-  "activityHistoryDropdown"
-);
-
-if (historyDropdown) {
-  historyDropdown.hidden = true;
-}
+closeActivityHistoryDropdown();
 
 listenToChat();
 scheduleRender();
@@ -5383,7 +5430,7 @@ if (openUserActivityBtn) {
     button?.contains(event.target)
   ) return;
 
-  dropdown.hidden = true;
+  closeActivityHistoryDropdown();
 });
 imagePreviewWrap = document.getElementById("imagePreviewWrap");
 imagePreviewList = document.getElementById("imagePreviewList");
