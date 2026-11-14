@@ -969,18 +969,7 @@ emoji-picker::part(container) {
     max-width: min(85%, 252px);
   }
 }
-.image-lightbox{
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.image-lightbox[hidden]{
-  display: none !important;
-}
 
 .message{
   overflow: visible;
@@ -989,102 +978,6 @@ emoji-picker::part(container) {
 .message .chat-image-wrap{
   max-width: 100%;
 }
-.image-lightbox-backdrop{
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.88);
-}
-
-.image-lightbox-content{
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-}
-
-.image-lightbox-img{
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transform-origin: center center;
-  transition: transform 0.08s linear;
-  cursor: zoom-in;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.lightbox-close-btn{
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 5;
-  width: 38px;
-  height: 38px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.72);
-  color: #fff;
-  font-size: 26px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.lightbox-close-btn:hover{
-  background: rgba(255,0,0,0.9);
-}
-
-.lightbox-close-btn:active{
-  transform: scale(0.95);
-}
-
-.image-lightbox-content{
-  cursor: default;
-  overflow: hidden;
-}
-
-.image-lightbox-img.is-zoomed{
-  cursor: grab;
-}
-
-.image-lightbox-img.is-dragging{
-  cursor: grabbing;
-  transition: none;
-}
-  /* ================= SCROLLBAR GLOBAL ================= */
-
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 6px; /* nipis */
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 10px;
-  transition: all 0.25s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-
-/* Firefox */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #555 transparent;
-}
-
 
 /* === LIVECHAT MODERN UI — EMBEDDED === */
 /* 5G88 LiveChat — Modern UI skin. Load AFTER existing inline styles. */
@@ -1504,14 +1397,7 @@ html.asf-embed-mode body > main > .chat-wrapper {
   <emoji-picker id="emojiPicker"></emoji-picker>
 </div>
   </div>
-<div id="imageLightbox" class="image-lightbox" hidden>
-  <div class="image-lightbox-backdrop"></div>
- 
-  <div class="image-lightbox-content">
-    <button type="button" id="lightboxCloseBtn" class="lightbox-close-btn" title="Close">×</button>
-    <img id="lightboxImage" class="image-lightbox-img" alt="Preview">
-  </div>
-</div>
+
 </main>
 <audio id="notifSound" src="./audio.wav" preload="auto"></audio>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -3245,156 +3131,28 @@ if (!adminRestored) {
 }
 
 });
-const imageLightbox = document.getElementById('imageLightbox');
-const lightboxImage = document.getElementById('lightboxImage');
-let lightboxScale = 1;
-let panX = 0;
-let panY = 0;
-let isDraggingImage = false;
-let dragStartX = 0;
-let dragStartY = 0;
-  
-function openImageLightbox(src){
-  if (!imageLightbox || !lightboxImage) return;
 
-  lightboxScale = 1;
-  panX = 0;
-  panY = 0;
-  isDraggingImage = false;
+/* ==========================================
+   LIVECHAT - CUSTOM NEW UI IMAGE PREVIEW
+   ========================================== */
 
-  lightboxImage.src = src;
-  lightboxImage.style.transform = 'translate(0px, 0px) scale(1)';
-  lightboxImage.classList.remove('is-zoomed', 'is-dragging');
+function openImageLightbox(src) {
+  if (!src) return;
 
-  imageLightbox.hidden = false;
-  document.body.style.overflow = 'hidden';
-}
-
-function closeImageLightbox(){
-  if (!imageLightbox || !lightboxImage) return;
-
-  imageLightbox.hidden = true;
-  lightboxImage.src = '';
-  lightboxScale = 1;
-  panX = 0;
-  panY = 0;
-  isDraggingImage = false;
-
-  lightboxImage.style.transform = 'translate(0px, 0px) scale(1)';
-  lightboxImage.classList.remove('is-zoomed', 'is-dragging');
-
-  document.body.style.overflow = '';
-}
-if (imageLightbox) {
-  imageLightbox.addEventListener('click', (e) => {
-    const clickedImage = e.target === lightboxImage;
-    const clickedContent = e.target.closest('.image-lightbox-content');
-
-    if (!clickedImage && !clickedContent) {
-      closeImageLightbox();
-    }
-
-    if (e.target.classList.contains('image-lightbox-backdrop')) {
-      closeImageLightbox();
-    }
-  });
-}
-function updateLightboxTransform(){
-  if (!lightboxImage) return;
-  lightboxImage.style.transform = `translate(${panX}px, ${panY}px) scale(${lightboxScale})`;
-
-  if (lightboxScale > 1) {
-    lightboxImage.classList.add('is-zoomed');
-  } else {
-    lightboxImage.classList.remove('is-zoomed', 'is-dragging');
-    panX = 0;
-    panY = 0;
-    lightboxImage.style.transform = 'translate(0px, 0px) scale(1)';
+  if (typeof window.NewUI?.imagePreview !== "function") {
+    console.error(
+      "[LiveChat] NewUI.imagePreview belum tersedia."
+    );
+    return;
   }
-}
 
-if (lightboxCloseBtn) {
-  lightboxCloseBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeImageLightbox();
+  return window.NewUI.imagePreview({
+    src: src,
+    title: "Image Preview",
+    alt: "Chat Image"
   });
 }
 
-if (imageLightbox) {
-  imageLightbox.addEventListener('click', (e) => {
-    if (e.target.classList.contains('image-lightbox-backdrop')) {
-      closeImageLightbox();
-    }
-  });
-}
-
-if (lightboxImage) {
-  lightboxImage.addEventListener('wheel', (e) => {
-    e.preventDefault();
-
-    const delta = e.deltaY < 0 ? 0.2 : -0.2;
-    lightboxScale += delta;
-
-    if (lightboxScale < 1) lightboxScale = 1;
-    if (lightboxScale > 5) lightboxScale = 5;
-
-    updateLightboxTransform();
-  }, { passive: false });
-
-  lightboxImage.addEventListener('mousedown', (e) => {
-    if (lightboxScale <= 1) return;
-
-    isDraggingImage = true;
-    dragStartX = e.clientX - panX;
-    dragStartY = e.clientY - panY;
-    lightboxImage.classList.add('is-dragging');
-    e.preventDefault();
-  });
-}
-
-document.addEventListener('mousemove', (e) => {
-  if (!isDraggingImage || !lightboxImage) return;
-
-  panX = e.clientX - dragStartX;
-  panY = e.clientY - dragStartY;
-  updateLightboxTransform();
-});
-
-document.addEventListener('mouseup', () => {
-  if (!isDraggingImage || !lightboxImage) return;
-
-  isDraggingImage = false;
-  lightboxImage.classList.remove('is-dragging');
-});
-
-if (imageLightbox) {
-  imageLightbox.addEventListener('click', (e) => {
-    const clickedImage = e.target === lightboxImage;
-    const clickedContent = e.target.closest('.image-lightbox-content');
-
-    if (!clickedImage && !clickedContent) {
-      closeImageLightbox();
-    }
-
-    if (e.target.classList.contains('image-lightbox-backdrop')) {
-      closeImageLightbox();
-    }
-  });
-}
-
-if (lightboxImage) {
-  lightboxImage.addEventListener('wheel', (e) => {
-    e.preventDefault();
-
-    const delta = e.deltaY < 0 ? 0.15 : -0.15;
-    lightboxScale += delta;
-
-    if (lightboxScale < 0.4) lightboxScale = 0.4;
-    if (lightboxScale > 5) lightboxScale = 5;
-
-    lightboxImage.style.transform = `scale(${lightboxScale})`;
-  }, { passive: false });
-}
 
 window.HISTORY_TAB_NAME = "LIVE CHAT";
 
