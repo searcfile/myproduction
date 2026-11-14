@@ -2454,10 +2454,9 @@ html, body { height:100% !important; overflow:hidden !important; }
   padding: 14px 12px 8px !important;
 }
 
-
 /* ==========================================
    5G88 AGENT SUPPORT
-   FLOATING PANEL - ZOOM FIX
+   FLOATING FULL PANEL FIX
    ========================================== */
 
 html.asf-embed-mode,
@@ -2471,21 +2470,11 @@ html.asf-embed-mode body {
 
 html.asf-embed-mode .livechat-layout {
   display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-
   width: 100% !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  min-height: 0 !important;
-
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   margin: 0 !important;
   padding: 0 !important;
-
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-
   overflow: hidden !important;
   box-sizing: border-box !important;
 }
@@ -2496,16 +2485,13 @@ html.asf-embed-mode .livechat-layout > .chat-detail-panel {
   height: 100% !important;
   max-height: 100% !important;
   min-height: 0 !important;
-
   margin: 0 !important;
   padding: 0 !important;
-
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-
-  overflow: hidden !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 html.asf-embed-mode .chat-detail-wrap,
@@ -2514,15 +2500,16 @@ html.asf-embed-mode #containerChatBox {
   height: 100% !important;
   max-height: 100% !important;
   min-height: 0 !important;
-
   margin: 0 !important;
   padding: 0 !important;
-
   border-radius: 0 !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
-
+html.asf-embed-mode .livechat-layout > .user-list-panel {
+  border: none !important;
+  border-radius: 0 !important;
+}
 </style>
 </head>
 <body>
