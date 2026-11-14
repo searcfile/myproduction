@@ -910,6 +910,19 @@ function setActiveFile(file) {
     getActiveTabStorageKey(),
     url
   );
+  
+/* ==========================================
+   NOTIFY FLOATING - ACTIVE TAB CHANGED
+   ========================================== */
+
+window.dispatchEvent(
+  new CustomEvent('5g88:admin-active-tab-changed', {
+    detail: {
+      file: String(file || '').toLowerCase()
+    }
+  })
+);
+
   // Hentikan suara serta-merta apabila LiveChat dipilih.
   if (String(file).toLowerCase() === "livechat.html") {
     window.syncLivechatAlertState?.(0);
