@@ -168,6 +168,51 @@ function closePanel(inst){if(!inst)return;inst.panel?.remove();inst.panel=null;i
 function openPanel(inst){if(inst.panel){closePanel(inst);return;}const d=inst.config,url=safeUrl(d.url);if(!url)return;if(d.openMode==='tab'){window.open(url,'_blank','noopener,noreferrer');return;}stopAnimation(inst);const panel=document.createElement('section');inst.panel=panel;panel.className='asf-panel';panel.setAttribute('aria-label',d.label);panel.style.width=`min(${clamp(+d.width||400,280,900)}px, calc(100vw - 20px))`;panel.style.height=`min(${clamp(+d.height||600,280,1000)}px, calc(100dvh - 30px))`;panel.innerHTML='<div class="asf-head"><strong></strong><div><button type="button" class="asf-external" title="Open admin tab">↗</button><button type="button" class="asf-close" title="Close">×</button></div></div><iframe title="LiveChat" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>';panel.querySelector('strong').textContent=d.label;
 const iframe = panel.querySelector('iframe');
 
+/* ==========================================
+   FLOATING AGENT SUPPORT - THEME SYNC
+   ========================================== */
+
+if (inst.type === 'agent') {
+  const syncAgentTheme = () => {
+    if (!iframe.contentWindow) return;
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    const isLight =
+      root.classList.contains('light-theme') ||
+      body.classList.contains('light-theme') ||
+      (
+        !root.classList.contains('dark-theme') &&
+        !body.classList.contains('dark-theme') &&
+        getComputedStyle(body).colorScheme === 'light'
+      );
+
+    iframe.contentWindow.postMessage({
+      type: '5g88:agent-floating-theme',
+      theme: isLight ? 'light' : 'dark'
+    }, location.origin);
+  };
+
+  iframe.addEventListener('load', syncAgentTheme);
+
+  const themeObserver = new MutationObserver(syncAgentTheme);
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-theme', 'style']
+  });
+
+  themeObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class', 'data-theme', 'style']
+  });
+
+  panel.addEventListener('DOMNodeRemoved', () => {
+    themeObserver.disconnect();
+  }, { once: true });
+}
+
 const targetUrl = new URL(url);
 
 
