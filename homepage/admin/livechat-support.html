@@ -2739,14 +2739,7 @@ html, body { height:100% !important; overflow:hidden !important; }
         <div id="emojiPickerWrap" class="emoji-picker-wrap" hidden>
           <emoji-picker id="emojiPicker"></emoji-picker>
         </div>
-        <div id="imageLightbox" class="image-lightbox" hidden>
-  <div class="image-lightbox-backdrop"></div>
 
-  <div class="image-lightbox-content">
-    <button type="button" id="lightboxCloseBtn" class="lightbox-close-btn" title="Close">×</button>
-    <img id="lightboxImage" class="image-lightbox-img" alt="Preview">
-  </div>
-</div>
       </div>
     </div>
   </section>
@@ -2782,16 +2775,7 @@ let unreadCountCache = {};
 let msgInput = null;
 let sendBtn = null;
 let fileInput = null;
-const imageLightbox = document.getElementById("imageLightbox");
-const lightboxImage = document.getElementById("lightboxImage");
-const lightboxCloseBtn = document.getElementById("lightboxCloseBtn");
 
-let lightboxScale = 1;
-let panX = 0;
-let panY = 0;
-let isDraggingImage = false;
-let dragStartX = 0;
-let dragStartY = 0;
 let imagePreviewWrap = null;
 let imagePreviewList = null;
 let imageUploadStatus = null;
@@ -4064,52 +4048,24 @@ function formatDateLabel(dateInput){
     };
   }
 }
-function updateLightboxTransform(){
-  if (!lightboxImage) return;
 
-  if (lightboxScale <= 1) {
-    panX = 0;
-    panY = 0;
-    lightboxImage.classList.remove("is-zoomed", "is-dragging");
-    lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
+
+
+function openImageLightbox(src) {
+  if (!src) return;
+
+  if (typeof window.NewUI?.imagePreview !== "function") {
+    console.error("[Agent Support] NewUI.imagePreview belum tersedia.");
     return;
   }
 
-  lightboxImage.classList.add("is-zoomed");
-  lightboxImage.style.transform = `translate(${panX}px, ${panY}px) scale(${lightboxScale})`;
+  return window.NewUI.imagePreview({
+    src,
+    title: "Image Preview",
+    alt: "Chat Image"
+  });
 }
 
-function openImageLightbox(src){
-  if (!imageLightbox || !lightboxImage) return;
-
-  lightboxScale = 1;
-  panX = 0;
-  panY = 0;
-  isDraggingImage = false;
-
-  lightboxImage.src = src;
-  lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
-  lightboxImage.classList.remove("is-zoomed", "is-dragging");
-
-  imageLightbox.hidden = false;
-  document.body.style.overflow = "hidden";
-}
-
-function closeImageLightbox(){
-  if (!imageLightbox || !lightboxImage) return;
-
-  imageLightbox.hidden = true;
-  lightboxImage.src = "";
-  lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
-  lightboxImage.classList.remove("is-zoomed", "is-dragging");
-
-  lightboxScale = 1;
-  panX = 0;
-  panY = 0;
-  isDraggingImage = false;
-
-  document.body.style.overflow = "";
-}
 function renderChatMessages(messages){
   const chatBox = document.getElementById("chatBox");
   if (!chatBox) return;
@@ -5646,67 +5602,6 @@ db.ref("users").on("child_changed", snap=>{
   scheduleRender();
 });
 };
-if (lightboxCloseBtn) {
-  lightboxCloseBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    closeImageLightbox();
-  });
-}
-
-if (imageLightbox) {
-  imageLightbox.addEventListener("click", (e) => {
-    if (e.target.classList.contains("image-lightbox-backdrop")) {
-      closeImageLightbox();
-    }
-  });
-}
-
-if (lightboxImage) {
-  lightboxImage.addEventListener("wheel", (e) => {
-    e.preventDefault();
-
-    const delta = e.deltaY < 0 ? 0.2 : -0.2;
-    lightboxScale += delta;
-
-    if (lightboxScale < 1) lightboxScale = 1;
-    if (lightboxScale > 5) lightboxScale = 5;
-
-    updateLightboxTransform();
-  }, { passive: false });
-
-  lightboxImage.addEventListener("mousedown", (e) => {
-    if (lightboxScale <= 1) return;
-
-    isDraggingImage = true;
-    dragStartX = e.clientX - panX;
-    dragStartY = e.clientY - panY;
-    lightboxImage.classList.add("is-dragging");
-    e.preventDefault();
-  });
-}
-
-document.addEventListener("mousemove", (e) => {
-  if (!isDraggingImage || !lightboxImage) return;
-
-  panX = e.clientX - dragStartX;
-  panY = e.clientY - dragStartY;
-  updateLightboxTransform();
-});
-
-document.addEventListener("mouseup", () => {
-  if (!isDraggingImage || !lightboxImage) return;
-
-  isDraggingImage = false;
-  lightboxImage.classList.remove("is-dragging");
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && imageLightbox && !imageLightbox.hidden) {
-    closeImageLightbox();
-  }
-});
-
-
 </script>
 
 <script>
