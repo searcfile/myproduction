@@ -179,15 +179,18 @@
    AUTH USERS - FULL TABLE CELL BORDER
    ========================================== */
 
-/* Border menegak hanya untuk row data */
+
+/* Border menegak untuk semua row */
 .auth-list .auth-table tbody td {
   border-right: 1px solid var(--tx-border, #344963);
 }
 
-/* Border terakhir pada row tidak perlu */
+/* Firebase UID dan Action tanpa border kanan */
+.auth-list .auth-table tbody td:nth-child(2),
 .auth-list .auth-table tbody td:last-child {
-  border-right: none;
+  border-right: none !important;
 }
+
 
 /* Border melintang antara setiap row */
 .auth-list .auth-table tbody td {
@@ -198,15 +201,18 @@
    AUTH USERS - FULL HEADER CELL BORDER
    ========================================== */
 
+
 .auth-list .auth-table thead th {
   border-bottom: 1px solid var(--tx-border, #344963);
   border-right: 1px solid var(--tx-border, #344963);
 }
 
-/* Column terakhir tidak perlu border kanan */
+/* Firebase UID dan Action tanpa border kanan */
+.auth-list .auth-table thead th:nth-child(2),
 .auth-list .auth-table thead th:last-child {
-  border-right: none;
+  border-right: none !important;
 }
+
 /* ==========================================
    AUTH USERS - TABLE HEADER RADIUS
    ========================================== */
