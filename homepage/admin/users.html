@@ -295,18 +295,6 @@
    AUTH USERS - FORCE LOGOUT BUTTON
    ========================================== */
 
-.auth-mini-btn.auth-kick {
-  background: rgba(22, 104, 220, .12);
-  color: #69a7ff;
-  border-color: rgba(22, 104, 220, .35);
-}
-
-.auth-mini-btn.auth-kick:hover {
-  background: rgba(22, 104, 220, .22);
-  color: #a0c8ff;
-  border-color: #428fff;
-}
-
 .auth-mini-btn.auth-kick:disabled {
   opacity: .45;
   cursor: not-allowed;
@@ -2297,7 +2285,13 @@ function authIconButton(type, cls, fn, title) {
   const button = document.createElement('button');
 
   button.type = 'button';
-  button.className = 'auth-mini-btn auth-icon-btn ' + cls;
+  button.className =
+  'auth-mini-btn auth-icon-btn ' + cls + ' ' +
+  ({
+    'auth-support': 'btn-cancel-new',
+    'auth-kick': 'btn-edit-new',
+    'auth-delete': 'btn-delete-new'
+  }[cls] || '');
   button.innerHTML = AUTH_ACTION_ICONS[type];
 
   button.title = title;
