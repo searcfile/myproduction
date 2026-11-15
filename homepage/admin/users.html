@@ -263,6 +263,26 @@
 }
 
 
+/* AUTH USERS - ACTION COLUMN FIX */
+.auth-list .auth-table th:last-child,
+.auth-list .auth-table td:last-child {
+  width: 150px !important;
+  min-width: 150px !important;
+  white-space: nowrap !important;
+}
+
+.auth-list .auth-table td:last-child .actions-cell {
+  width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap !important;
+}
+
+.auth-list .auth-table td:last-child .auth-icon-btn {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
 /* ==========================================
    AUTH USERS - STICKY ACTION COLUMN
    ========================================== */
