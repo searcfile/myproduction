@@ -5553,6 +5553,38 @@ btnOnline?.addEventListener("click", ()=>{
   document.getElementById("searchUser")?.addEventListener("input", ()=> scheduleRender());
   document.getElementById("searchMessage")?.addEventListener("input", () => renderMessageSearchPanel());
 
+/* ==========================================
+   AGENT SUPPORT - SEARCH FROM AUTH USERS
+   ========================================== */
+
+(function receiveAuthUserSearch() {
+  const KEY = '5g88.agentSupport.searchUser';
+
+  const username = String(
+    sessionStorage.getItem(KEY) || ''
+  ).trim();
+
+  if (!username) return;
+
+  // Buang pending search supaya tidak berulang
+  // apabila halaman dibuka semula.
+  sessionStorage.removeItem(KEY);
+
+  const input = document.getElementById('searchUser');
+  if (!input) return;
+
+  // Paparkan username pada input Search.
+  input.value = username;
+
+  // Jalankan fungsi carian asal Agent Support.
+  input.dispatchEvent(
+    new Event('input', { bubbles: true })
+  );
+
+  // Pastikan senarai dikemas kini.
+  scheduleRender();
+})();
+
 db.ref("users").on("child_added", snap=>{
   const sanitized = snap.key;
   const data = snap.val() || {};
