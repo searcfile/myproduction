@@ -2755,6 +2755,34 @@ $('copyUid').addEventListener('click',()=>copy($('uid').value));
 if(window.NewUI?.syncSearch){
   NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
 }
+
+/* ==========================================
+   AUTH USERS - AUTO SYNC LOGIN TIMESTAMPS
+   ========================================== */
+
+const loginTimeAutoSync = setInterval(() => {
+  if (
+    ready &&
+    !loading &&
+    !document.hidden &&
+    !document.getElementById('manageUsersPane')?.hidden
+  ) {
+    load();
+  }
+}, 10000);
+
+/* Refresh apabila kembali melihat halaman */
+document.addEventListener('visibilitychange', () => {
+  if (ready && !document.hidden && !loading) {
+    load();
+  }
+});
+
+/* Bersihkan interval apabila halaman ditutup */
+window.addEventListener('pagehide', () => {
+  clearInterval(loginTimeAutoSync);
+});
+
 (async () => {
   try {
     if (await check()) {
