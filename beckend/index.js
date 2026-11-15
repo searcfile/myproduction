@@ -68,9 +68,7 @@ async function requireAdmin(req,res,next){
 /* FORCE LOGOUT - reject old sessions */
 const sessionVersion = Number(p.forceLogoutVersion || 0);
 
-if (
-  token.forceLogoutVersion !== sessionVersion
-) {
+if (Number(token.forceLogoutVersion || 0) !== sessionVersion) {
   return fail(res, 401, 'Session revoked. Please login again.');
 }
 
