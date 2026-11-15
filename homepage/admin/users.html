@@ -230,12 +230,14 @@
   background: var(--tx-surface-soft) !important;
 }
 
-/* Hover seluruh row */
-.auth-list .auth-table tbody tr:hover > td {
-  filter: brightness(1.08);
+/* AUTH USERS - FULL ROW HOVER */
+.auth-list .auth-table tbody tr > td {
+  transition: background-color .2s ease;
 }
-.tbody tr:hover{
-    background: var(--tx-hover) !important; 
+
+/* Hover seluruh row termasuk Sticky Action */
+.auth-list .auth-table tbody tr:hover > td {
+  background: var(--tx-hover) !important;
 }
 .auth-user-cell{white-space:nowrap}
 .auth-avatar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(51,121,231,.18);color:#84b6ff;margin-right:9px;font-weight:750}
