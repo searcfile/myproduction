@@ -369,6 +369,37 @@
 }
 
 /* ==========================================
+   AUTH USERS - FIREBASE UID STICKY SHADOW
+   ========================================== */
+
+/* Shadow di sebelah kanan Firebase UID */
+.auth-list .auth-tablewrap .auth-table th:nth-child(2)::after,
+.auth-list .auth-tablewrap .auth-table td:nth-child(2)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  left: 100%;
+  width: 30px;
+
+  pointer-events: none;
+  z-index: 1;
+
+  box-shadow: none;
+  transition: box-shadow .3s ease;
+}
+
+/* Aktif hanya apabila Firebase UID sudah sticky */
+.auth-list .auth-tablewrap.has-uid-shadow
+.auth-table th:nth-child(2)::after,
+.auth-list .auth-tablewrap.has-uid-shadow
+.auth-table td:nth-child(2)::after {
+  box-shadow:
+    inset 10px 0 8px -8px
+    var(--ant-color-split, rgba(253,253,253,.12));
+}
+
+/* ==========================================
    AUTH USERS - STICKY ACTION COLUMN
    ========================================== */
 
