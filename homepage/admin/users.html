@@ -211,9 +211,9 @@
    AUTH USERS - TABLE HEADER RADIUS
    ========================================== */
 
-/* Username - sudut kiri atas */
+/* Username - jangan bawa radius ketika horizontal scroll */
 .auth-list .auth-table thead th:first-child {
-  border-top-left-radius: 13px !important;
+  border-top-left-radius: 0 !important;
 }
 
 /* Action - sudut kanan atas */
@@ -371,6 +371,7 @@
   position: sticky !important;
   right: 0 !important;
   box-shadow: none !important;
+    clip-path: inset(0 round 13px 13px 0 0);
 }
 
 /* Pseudo-element shadow di sebelah kiri Action */
@@ -382,6 +383,7 @@
   bottom: -1px;
   right: 100%;
   width: 30px;
+    clip-path: inset(0 round 13px 13px 0 0);
 
   pointer-events: none;
   z-index: 1;
