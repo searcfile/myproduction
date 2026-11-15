@@ -9150,6 +9150,129 @@ window.addEventListener('5g88:open-admin-tab', (event) => {
 
 });
 
+/* ==========================================
+   5G88 - REALTIME FORCE LOGOUT LISTENER
+   ========================================== */
+
+(function installForceLogoutListener() {
+  if (window.__g88ForceLogoutListener) return;
+  window.__g88ForceLogoutListener = true;
+
+  if (!window.firebase || !firebase.apps.length) {
+    console.warn('[Force Logout] Firebase not ready');
+    return;
+  }
+
+  const auth = firebase.auth();
+  const database = firebase.database();
+
+  let activeRef = null;
+  let activeCallback = null;
+  let listenerGeneration = 0;
+  let kicking = false;
+
+  function detach() {
+    if (activeRef && activeCallback) {
+      activeRef.off('value', activeCallback);
+    }
+
+    activeRef = null;
+    activeCallback = null;
+  }
+
+  async function kickCurrentUser(uid) {
+    if (kicking) return;
+    if (auth.currentUser?.uid !== uid) return;
+
+    kicking = true;
+
+    try {
+      sessionStorage.removeItem('5g88.adminSession');
+      sessionStorage.removeItem('autoLogout.expireAt');
+      sessionStorage.removeItem('justLoggedIn');
+      sessionStorage.removeItem('forceLogout');
+      sessionStorage.removeItem('autoOpenTab');
+
+      localStorage.removeItem(
+        `5g88.sessionExpire.${uid}`
+      );
+
+      // Beritahu tab browser lain.
+      try {
+        const channel = new BroadcastChannel(
+          'autoLogout-5g88:' + uid
+        );
+
+        channel.postMessage({
+          t: 'logout',
+          uid,
+          reason: 'force-logout'
+        });
+
+        channel.close();
+      } catch (_) {}
+
+      await auth.signOut();
+
+    } catch (error) {
+      console.warn('[Force Logout] Sign out:', error);
+
+    } finally {
+      // Jika berada dalam iframe, keluarkan dashboard utama.
+      try {
+        window.top.location.replace('./login.html');
+      } catch (_) {
+        window.location.replace('./login.html');
+      }
+    }
+  }
+
+  auth.onAuthStateChanged(async user => {
+    const generation = ++listenerGeneration;
+
+    detach();
+
+    if (!user || user.isAnonymous || kicking) return;
+
+    try {
+      const tokenResult = await user.getIdTokenResult();
+
+      if (generation !== listenerGeneration) return;
+      if (auth.currentUser?.uid !== user.uid) return;
+
+      const tokenVersion = Number(
+        tokenResult.claims.forceLogoutVersion || 0
+      );
+
+      const ref = database.ref(
+        `adminUsers/${user.uid}/forceLogoutVersion`
+      );
+
+      const callback = snapshot => {
+        if (generation !== listenerGeneration) return;
+
+        const currentVersion = Number(
+          snapshot.val() || 0
+        );
+
+        if (currentVersion > tokenVersion) {
+          kickCurrentUser(user.uid);
+        }
+      };
+
+      activeRef = ref;
+      activeCallback = callback;
+
+      ref.on('value', callback, error => {
+        console.error('[Force Logout] Listener:', error);
+      });
+
+    } catch (error) {
+      console.error('[Force Logout] Setup:', error);
+    }
+  });
+})();
+
   /* ==========================================================
      START
      ========================================================== */
