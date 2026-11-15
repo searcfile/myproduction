@@ -129,8 +129,11 @@ function publicUser(u, p) {
   ])
 ),
     enabled: p.active === true && !u.disabled,
+
     createdAt: p.createdAt || null,
-    updatedAt: p.updatedAt || null
+    updatedAt: p.updatedAt || null,
+    firstLoginAt: p.firstLoginAt || null,
+    lastLoginAt: p.lastLoginAt || null
   };
 }
 
@@ -285,6 +288,37 @@ const used = await challengeRef.transaction(v => {
   return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
 });
+
+/* ==========================================
+   5G88 - FIRST LOGIN / LAST LOGIN
+   ========================================== */
+
+app.post('/api/account/session-event', requireAdmin, async (req, res) => {
+  try {
+    if (req.body?.event !== 'login') {
+      return fail(res, 400, 'Invalid login event');
+    }
+
+    const uid = req.admin.uid;
+    const userRef = db.ref(`adminUsers/${uid}`);
+    const timestamp = now();
+
+    // FIRST LOGIN - hanya simpan sekali.
+    await userRef.child('firstLoginAt').transaction(current => {
+      return current == null ? timestamp : undefined;
+    });
+
+    // LAST LOGIN - kemas kini setiap login.
+    await userRef.child('lastLoginAt').set(timestamp);
+
+    return res.json({ ok: true });
+
+  } catch (error) {
+    console.error('Login tracking error:', error);
+    return fail(res, 500, 'Cannot save login time');
+  }
+});
+
 /* =====================================================
    CHANGE OWN PASSWORD / 2ND PASSWORD
    ===================================================== */
