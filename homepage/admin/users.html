@@ -567,6 +567,72 @@
 }
 
 
+/* ==========================================
+   AUTH USERS - LOGOUT ALL + CREATE BUTTONS
+   ========================================== */
+
+.auth-toolbar-card .auth-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.auth-toolbar-card .auth-toolbar-actions .auth-create {
+  margin: 0 !important;
+  height: 32px !important;
+}
+
+.auth-toolbar-card .auth-logout-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+
+  height: 32px;
+  padding: 0 15px;
+
+  border: 1px solid rgba(215,56,75,.35);
+  border-radius: 7px;
+
+  background: rgba(215,56,75,.12);
+  color: #ff8597;
+
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.auth-toolbar-card .auth-logout-all:hover:not(:disabled) {
+  background: rgba(215,56,75,.22);
+  border-color: #ff8597;
+}
+
+.auth-toolbar-card .auth-logout-all:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .auth-toolbar-card .auth-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-toolbar-card .auth-toolbar-actions > button {
+    flex: 1 1 auto !important;
+  }
+}
+
 
 /* USERS + PERMISSIONS — scoped responsive layout */
 .auth-table tbody tr.auth-clickable{cursor:pointer}
@@ -1543,18 +1609,35 @@
         aria-label="Search admin users"
       >
     </div>
+
 <!-- AUTH USERS - CUSTOM STATUS FILTER -->
 <div class="auth-status-filter">
   <div id="statusFilterChips"></div>
-</div>   
-    <button
-      class="btn-primary-new auth-create"
-      id="create"
-      type="button"
-      disabled
-    >
-      + Create Username
-    </button>
+</div>
+
+<!-- AUTH USERS - ACTION BUTTONS -->
+<div class="auth-toolbar-actions">
+
+  <button
+    id="logoutAllUsers"
+    class="auth-logout-all"
+    type="button"
+    disabled
+  >
+    Logout All
+  </button>
+
+  <button
+    class="btn-primary-new auth-create"
+    id="create"
+    type="button"
+    disabled
+  >
+    + Create Username
+  </button>
+
+</div>
+
 
   </div>
 
