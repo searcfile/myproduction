@@ -2985,6 +2985,53 @@ async function forceLogoutUser(u, target) {
   });
 }
 
+/* ==========================================
+   AUTH USERS - FORCE LOGOUT ALL
+   ========================================== */
+
+async function forceLogoutAllUsers(target) {
+  if (!ready) return;
+
+  if (!window.NewUI?.confirm) {
+    toast('Confirmation component unavailable', 'error');
+    return;
+  }
+
+  await NewUI.confirm({
+    target,
+    title: 'Logout All Users',
+    message:
+      'Are you sure you want to logout all Site Admin accounts? ' +
+      'All existing sessions will be revoked.',
+    confirmText: 'Logout All',
+    cancelText: 'Cancel',
+    loadingText: 'Logging out...',
+
+    onConfirm: async () => {
+      const result = await api(
+        '/api/admin-users/force-logout-all',
+        {
+          method: 'POST'
+        }
+      );
+
+      if (result.failed > 0) {
+        toast(
+          result.count + ' accounts revoked, ' +
+          result.failed + ' failed.',
+          'error'
+        );
+      } else {
+        toast(
+          result.count + ' Site Admin accounts logged out.'
+        );
+      }
+
+      await load();
+    }
+  });
+}
+
 async function removeUser(u,target){
   if(u.role!=='siteadmin')return;
   if(!window.NewUI?.confirm){toast('Custom confirm component unavailable. Check new-ui.js','error');return}
@@ -3053,6 +3100,11 @@ searchInput.addEventListener('input', () => {
   render();
 });
 $('create').addEventListener('click',create);
+/* LOGOUT ALL BUTTON */
+
+$('logoutAllUsers').addEventListener('click', e => {
+  forceLogoutAllUsers(e.currentTarget);
+});
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
 if(window.NewUI?.syncSearch){
@@ -3090,6 +3142,8 @@ window.addEventListener('pagehide', () => {
   try {
     if (await check()) {
       $('create').disabled = false;
+      $('logoutAllUsers').disabled = false;
+
       ready = true;
       await load();
     } else {
