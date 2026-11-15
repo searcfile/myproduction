@@ -94,6 +94,52 @@
 }
 
 .auth-list{padding:0!important;overflow:hidden;border-radius:14px!important;border:1px solid var(--tx-border,#2b3e5b)!important;background:var(--tx-surface,#152237)}
+
+/* ==========================================
+   AUTH USERS - TABLE AUTO SYNC TOP LINE
+   ========================================== */
+
+.auth-list {
+  position: relative;
+}
+
+.auth-table-sync-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.auth-table-sync-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -35%;
+  width: 35%;
+  height: 100%;
+  border-radius: 999px;
+  background: #1677ff;
+}
+
+.auth-table-sync-line.is-syncing {
+  opacity: 1;
+}
+
+.auth-table-sync-line.is-syncing::before {
+  animation: authTableSyncMove .9s ease-in-out forwards;
+}
+
+@keyframes authTableSyncMove {
+  from { left: -35%; }
+  to { left: 100%; }
+}
+
 .auth-section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px}
 .auth-section-heading h2{font-size:16px;font-weight:700;}
 .auth-section-heading p{font-size:12px;color:var(--muted);margin:0}
@@ -1513,12 +1559,22 @@
   </div>
 
 </div>
-  <section class="card auth-list">
-<div class="auth-section-heading">
-  <div>
-    <h2>Site accounts</h2>
+
+<section class="card auth-list">
+
+  <!-- AUTO SYNC BLUE LINE -->
+  <div
+    id="authTableSyncLine"
+    class="auth-table-sync-line"
+    aria-hidden="true"
+  ></div>
+
+  <div class="auth-section-heading">
+    <div>
+      <h2>Site accounts</h2>
+    </div>
   </div>
-</div>
+
     <div class="tablewrap auth-tablewrap">
       <table class="auth-table">
 <thead>
@@ -2217,10 +2273,59 @@ if (u.role === 'siteadmin') {
   }
 }
 async function copy(v){try{await navigator.clipboard.writeText(v);toast('UID copied successfully.')}catch{toast('Copy failed; select the UID manually.','error')}}
+
+/* ==========================================
+   AUTH USERS - TABLE SYNC ANIMATION
+   ========================================== */
+
+let authTableSyncTimer = null;
+let authTableSyncStartedAt = 0;
+
+const AUTH_TABLE_SYNC_DURATION = 900;
+
+function startAuthTableSync() {
+  const line = document.getElementById('authTableSyncLine');
+  if (!line) return;
+
+  clearTimeout(authTableSyncTimer);
+
+  authTableSyncStartedAt = Date.now();
+
+  // Reset animation
+  line.classList.remove('is-syncing');
+
+  // Force reflow supaya animation bermula semula
+  void line.offsetWidth;
+
+  line.classList.add('is-syncing');
+}
+
+function stopAuthTableSync() {
+  const line = document.getElementById('authTableSyncLine');
+  if (!line) return;
+
+  clearTimeout(authTableSyncTimer);
+
+  const elapsed = Date.now() - authTableSyncStartedAt;
+
+  const remaining = Math.max(
+    0,
+    AUTH_TABLE_SYNC_DURATION - elapsed
+  );
+
+  authTableSyncTimer = setTimeout(() => {
+    line.classList.remove('is-syncing');
+  }, remaining);
+}
+
+
 async function load() {
   if (loading) return;
 
   loading = true;
+
+  // Mula animasi garis biru
+  startAuthTableSync();
 
   try {
     const d = await api('/api/admin-users');
@@ -2228,7 +2333,6 @@ async function load() {
     users = d.users || [];
 
     render();
-
 
   } catch (e) {
 
@@ -2245,8 +2349,12 @@ async function load() {
 
   } finally {
     loading = false;
+
+    // Hentikan animasi selepas request selesai
+    stopAuthTableSync();
   }
 }
+
 
 /* ==========================================================
    UNIFIED SITE ADMIN — ACCOUNT ACTIONS + PERMISSIONS
