@@ -545,6 +545,92 @@ app.post(
   }
 );
 
+/* ==========================================
+   SUPER ADMIN - FORCE LOGOUT ALL SITE ADMINS
+   ========================================== */
+
+app.post(
+  '/api/admin-users/force-logout-all',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const snapshot = await db.ref('adminUsers').once('value');
+      const profiles = snapshot.val() || {};
+
+      const targets = Object.entries(profiles)
+        .filter(([uid, profile]) =>
+          uid !== req.admin.uid &&
+          profile?.role === 'siteadmin'
+        )
+        .map(([uid]) => uid);
+
+      if (!targets.length) {
+        return res.json({
+          ok: true,
+          count: 0,
+          failed: 0
+        });
+      }
+
+      const results = await Promise.allSettled(
+        targets.map(async uid => {
+          const ref = db.ref(
+            `adminUsers/${uid}/forceLogoutVersion`
+          );
+
+          const transaction = await ref.transaction(
+            current => Number(current || 0) + 1
+          );
+
+          if (!transaction.committed) {
+            throw new Error(
+              'Cannot revoke session for ' + uid
+            );
+          }
+
+          await auth.revokeRefreshTokens(uid);
+
+          return uid;
+        })
+      );
+
+      const count = results.filter(
+        result => result.status === 'fulfilled'
+      ).length;
+
+      const failed = results.length - count;
+
+      if (failed) {
+        console.error(
+          '[Force Logout All] Failed:',
+          results
+            .filter(result => result.status === 'rejected')
+            .map(result => result.reason?.message)
+        );
+      }
+
+      return res.json({
+        ok: true,
+        count,
+        failed,
+        message: failed
+          ? 'Some accounts could not be logged out'
+          : 'All Site Admin sessions revoked'
+      });
+
+    } catch (error) {
+      console.error('Force Logout All:', error);
+
+      return fail(
+        res,
+        500,
+        'Cannot force logout all users'
+      );
+    }
+  }
+);
+
 app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(),password=req.body?.password,pin=String(req.body?.secondPassword||''),enabled=req.body?.enabled!==false;
  const email=`${username}@accounts.myproduction-v2.example`;
