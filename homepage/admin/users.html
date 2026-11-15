@@ -159,6 +159,31 @@
 
 .auth-table thead{background:rgba(113,158,229,.055)}
 .auth-table th{text-align:left;padding:15px 16px;font-size:10px;letter-spacing:.65px;font-weight:750;color:var(--tx-ink);border-bottom:1px solid var(--tx-border);white-space:nowrap;background:var(--tx-surface-soft);}
+
+/* ==========================================
+   AUTH USERS - TABLE HEADER SEPARATOR
+   SAME STYLE AS VISITOR HTML
+   ========================================== */
+
+.auth-table thead th {
+  position: relative;
+}
+
+/* Garis pemisah antara column */
+.auth-table thead th:not(:last-child)::after {
+  content: "";
+  position: absolute;
+
+  top: 25%;
+  right: 0;
+
+  width: 2px;
+  height: 50%;
+
+  background: var(--tx-border);
+  pointer-events: none;
+}
+
 .auth-table td{padding:15px 16px;border-bottom:1px solid var(--tx-border);vertical-align:middle}
 .auth-table tbody tr:last-child td{border-bottom:0}
 .auth-table tbody tr:hover{background:rgba(104,154,232,.045)}
