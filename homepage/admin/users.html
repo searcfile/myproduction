@@ -257,6 +257,42 @@
   white-space: nowrap;
 }
 
+/* ==========================================
+   AUTH USERS - STICKY ACTION COLUMN
+   ========================================== */
+
+/* Header Action */
+.auth-list thead th:last-child {
+  position: sticky !important;
+  right: 0 !important;
+  z-index: 12 !important;
+  background: var(--tx-surface, #1d2b42) !important;
+  box-shadow: -1px 0 0 var(--tx-border, #344963);
+}
+
+/* Action untuk setiap row */
+.auth-list tbody td:last-child {
+  position: sticky !important;
+  right: 0 !important;
+  z-index: 5 !important;
+  background: var(--tx-surface, #1d2b42) !important;
+  box-shadow: -1px 0 0 var(--tx-border, #344963);
+}
+
+/* Pastikan ikon Action sentiasa di tengah */
+.auth-list tbody td:last-child .actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+/* Kekalkan background ketika hover row */
+.auth-list tbody tr:hover td:last-child {
+  background: var(--tx-surface, #1d2b42) !important;
+}
+
 .auth-mini-btn.auth-delete{background:rgba(215,56,75,.12);color:#ff8597;border-color:rgba(215,56,75,.32)}
 .auth-mini-btn.auth-delete:hover{background:rgba(215,56,75,.2);color:#ffacb8}
 
