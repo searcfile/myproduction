@@ -280,6 +280,41 @@
   box-shadow: -1px 0 0 var(--tx-border);
 }
 
+/* ==========================================
+   AUTH USERS - ANT DESIGN STICKY SHADOW
+   ========================================== */
+
+/* Shadow hanya muncul ketika scroll */
+.auth-list .auth-table th:last-child::before,
+.auth-list .auth-table td:last-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 10px;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset -10px 0 8px -8px
+    rgba(253, 253, 253, 0.12);
+  transition: opacity .2s ease;
+}
+
+/* Aktif selepas horizontal scroll */
+.auth-list .auth-tablewrap.has-scroll-left
+.auth-table th:last-child::before,
+.auth-list .auth-tablewrap.has-scroll-left
+.auth-table td:last-child::before {
+  opacity: 1;
+}
+
+/* Pastikan sticky Action boleh tunjuk shadow */
+.auth-list .auth-table th:last-child,
+.auth-list .auth-table td:last-child {
+  position: sticky !important;
+  right: 0 !important;
+}
+
 /* Pastikan ikon Action sentiasa di tengah */
 .auth-list tbody td:last-child .actions-cell {
   display: flex;
@@ -3457,4 +3492,59 @@ if (window.NewUI?.syncSearch) {
 search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onclick=()=>openEditor();el('smPageSize').addEventListener('change',e=>{pageSize=Number(e.target.value)||10;currentPage=1;render()});el('smPageJump').addEventListener('keydown',e=>{if(e.key==='Enter'){const n=Number(e.target.value);const total=records.filter(x=>(String(x.id||'').toLowerCase().includes(search.value.trim().toLowerCase())||String(x.name||'').toLowerCase().includes(search.value.trim().toLowerCase()))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive'))).length;currentPage=Math.min(Math.max(1,Math.ceil(total/pageSize)),Math.max(1,Math.floor(n)||1));render();e.target.value=''}});
 })();
 </script>
+
+<script>
+/* ==========================================
+   AUTH USERS - STICKY ACTION SCROLL SHADOW
+   ========================================== */
+(function () {
+  function initAuthStickyShadow() {
+    const wrappers = document.querySelectorAll(
+      ".auth-list .auth-tablewrap"
+    );
+
+    wrappers.forEach(wrap => {
+      if (wrap.dataset.stickyShadowReady === "1") return;
+      wrap.dataset.stickyShadowReady = "1";
+
+      const updateShadow = () => {
+        const hasOverflow =
+          wrap.scrollWidth > wrap.clientWidth + 1;
+
+        const hasScrolled =
+          wrap.scrollLeft > 1;
+
+        wrap.classList.toggle(
+          "has-scroll-left",
+          hasOverflow && hasScrolled
+        );
+      };
+
+      wrap.addEventListener(
+        "scroll",
+        updateShadow,
+        { passive: true }
+      );
+
+      const observer = new ResizeObserver(updateShadow);
+      observer.observe(wrap);
+
+      const table = wrap.querySelector(".auth-table");
+      if (table) observer.observe(table);
+
+      updateShadow();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initAuthStickyShadow
+    );
+  } else {
+    initAuthStickyShadow();
+  }
+})();
+</script>
+
 </body></html>
