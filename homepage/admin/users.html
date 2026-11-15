@@ -183,9 +183,18 @@
   border-bottom: 1px solid var(--tx-border, #344963);
 }
 
-/* Border header */
+/* ==========================================
+   AUTH USERS - FULL HEADER CELL BORDER
+   ========================================== */
+
 .auth-list .auth-table thead th {
   border-bottom: 1px solid var(--tx-border, #344963);
+  border-right: 1px solid var(--tx-border, #344963);
+}
+
+/* Column terakhir tidak perlu border kanan */
+.auth-list .auth-table thead th:last-child {
+  border-right: none;
 }
 
 .auth-table tbody tr:last-child td{border-bottom:0}
