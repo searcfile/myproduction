@@ -308,11 +308,12 @@
 
 
 
+
 /* ==========================================
-   AUTH USERS - STICKY ACTION SMART SHADOW
+   AUTH USERS - ANT DESIGN ACTION SHADOW
    ========================================== */
 
-/* Default: shadow tidak kelihatan */
+/* Sticky Action - kekalkan background asal */
 .auth-list .auth-tablewrap .auth-table th:last-child,
 .auth-list .auth-tablewrap .auth-table td:last-child {
   position: sticky !important;
@@ -321,14 +322,31 @@
   border-left: 1px solid var(--tx-border, #344963);
 }
 
-/* Shadow aktif jika masih ada ruang scroll ke kanan */
+/* Pseudo-element shadow di sebelah kiri Action */
+.auth-list .auth-tablewrap .auth-table th:last-child::after,
+.auth-list .auth-tablewrap .auth-table td:last-child::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  right: 100%;
+  width: 30px;
+
+  pointer-events: none;
+  z-index: 1;
+
+  box-shadow: none;
+  transition: box-shadow .3s ease;
+}
+
+/* Shadow aktif ketika masih ada column tersembunyi */
 .auth-list .auth-tablewrap.has-action-shadow
-.auth-table th:last-child,
+.auth-table th:last-child::after,
 .auth-list .auth-tablewrap.has-action-shadow
-.auth-table td:last-child {
+.auth-table td:last-child::after {
   box-shadow:
-    -8px 0 14px -5px rgba(0, 0, 0, .65),
-    -3px 0 7px -2px rgba(0, 0, 0, .35) !important;
+    inset -10px 0 8px -8px
+    var(--ant-color-split, rgba(253, 253, 253, .20));
 }
 
 
