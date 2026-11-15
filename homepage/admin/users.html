@@ -2237,7 +2237,7 @@ async function check(){
   try{await api('/api/admin-users');return true}
   catch(error){status('Superadmin verification failed: '+error.message,true);return false;}
 }
-function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'—');if(cls)td.className=cls;tr.append(td);return td;}
+function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'-');if(cls)td.className=cls;tr.append(td);return td;}
 function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
     
 /* ==========================================
@@ -3565,7 +3565,7 @@ function switchTab(which){const showSites=which==='sites';paneSites.hidden=!show
 tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
 const filter=window.NewUI?.chips?.('#smStatusChips',{placeholder:'All Status',options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],value:[],onChange(values){selectedStatuses=Array.isArray(values)?values:filter.getValue();currentPage=1;render()}});
 function normalize(data){const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}))}
-function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td);return td}
+function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'-');row.append(td);return td}
 
 function loadingRow(message = 'Please wait while fetching...') {
   const tbody = el('smRows');
