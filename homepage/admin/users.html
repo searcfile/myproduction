@@ -3633,23 +3633,48 @@ search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onc
 
       wrap.dataset.stickyShadowReady = "1";
 
-      function updateShadow() {
-        const maxScroll = Math.max(
-          0,
-          wrap.scrollWidth - wrap.clientWidth
-        );
 
-        const remainingScroll =
-          maxScroll - Math.abs(wrap.scrollLeft);
+function updateShadow() {
+  const maxScroll = Math.max(
+    0,
+    wrap.scrollWidth - wrap.clientWidth
+  );
 
-        const showShadow =
-          maxScroll > 1 && remainingScroll > 2;
+  const scrollLeft = Math.max(0, wrap.scrollLeft);
+  const remainingScroll = maxScroll - scrollLeft;
 
-        wrap.classList.toggle(
-          "has-action-shadow",
-          showShadow
-        );
-      }
+  // ACTION - shadow kiri
+  const showActionShadow =
+    maxScroll > 1 && remainingScroll > 2;
+
+  wrap.classList.toggle(
+    "has-action-shadow",
+    showActionShadow
+  );
+
+  // FIREBASE UID - shadow kanan
+  const usernameHeader = wrap.querySelector(
+    ".auth-table thead th:first-child"
+  );
+
+  const uidHeader = wrap.querySelector(
+    ".auth-table thead th:nth-child(2)"
+  );
+
+  const usernameWidth = usernameHeader
+    ? usernameHeader.getBoundingClientRect().width
+    : 0;
+
+  const showUidShadow =
+    !!uidHeader &&
+    maxScroll > 1 &&
+    scrollLeft >= usernameWidth - 1;
+
+  wrap.classList.toggle(
+    "has-uid-shadow",
+    showUidShadow
+  );
+}
 
       wrap.addEventListener(
         "scroll",
