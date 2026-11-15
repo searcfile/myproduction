@@ -202,6 +202,36 @@
 .auth-mini-btn{border:1px solid var(--tx-border,#344963);background:rgba(115,150,201,.10);color:var(--text,#eaf0fb);padding:0 11px;border-radius:7px;height:30px;font-size:11px;cursor:pointer;transition:.2s}
 .auth-mini-btn:hover{border-color:#428fff;color:#7eb4ff}
 .auth-mini-btn.auth-copy{width:30px;min-width:30px;padding:0;font-size:16px}
+
+/* ==========================================
+   AUTH USERS - FORCE LOGOUT BUTTON
+   ========================================== */
+
+.auth-mini-btn.auth-kick {
+  background: rgba(22, 104, 220, .12);
+  color: #69a7ff;
+  border-color: rgba(22, 104, 220, .35);
+}
+
+.auth-mini-btn.auth-kick:hover {
+  background: rgba(22, 104, 220, .22);
+  color: #a0c8ff;
+  border-color: #428fff;
+}
+
+.auth-mini-btn.auth-kick:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.auth-list .actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
 .auth-mini-btn.auth-delete{background:rgba(215,56,75,.12);color:#ff8597;border-color:rgba(215,56,75,.32)}
 .auth-mini-btn.auth-delete:hover{background:rgba(215,56,75,.2);color:#ffacb8}
 .auth-protected{color:var(--muted,#9aaac0);font-size:11px}
@@ -2280,18 +2310,33 @@ if (u.role === 'siteadmin') {
     }
   });
 
-  // Delete berada di column ACTION sahaja
-  wrap.append(
-    btn(
-      'Delete',
-      'auth-delete',
-      e => {
-        e.stopPropagation();
-        removeUser(u, e.currentTarget);
-      },
-      'Delete ' + u.username
-    )
-  );
+
+/* ==========================================
+   ACTION - LOGOUT + DELETE
+   ========================================== */
+
+wrap.append(
+  btn(
+    'Logout',
+    'auth-kick',
+    e => {
+      e.stopPropagation();
+      forceLogoutUser(u, e.currentTarget);
+    },
+    'Force logout ' + u.username
+  ),
+
+  btn(
+    'Delete',
+    'auth-delete',
+    e => {
+      e.stopPropagation();
+      removeUser(u, e.currentTarget);
+    },
+    'Delete ' + u.username
+  )
+);
+
 }
     else{const protectedLabel=document.createElement('span');protectedLabel.className='auth-protected';protectedLabel.textContent='Protected';wrap.append(protectedLabel)}
     td.append(wrap);tr.append(td);rows.append(tr);
@@ -2815,6 +2860,48 @@ function manage(u){
   $('pinHint').textContent='Leave blank to keep current PIN';
   $('save').textContent='Save Changes';syncSwitch();showModal();
 }
+    
+/* ==========================================
+   AUTH USERS - FORCE LOGOUT ACCOUNT
+   ========================================== */
+
+async function forceLogoutUser(u, target) {
+  if (!ready || u.role !== 'siteadmin') return;
+
+  if (!window.NewUI?.confirm) {
+    toast('Confirmation component unavailable', 'error');
+    return;
+  }
+
+  await NewUI.confirm({
+    target,
+    title: 'Force Logout',
+    message:
+      'Logout username ' + u.username +
+      ' from all active sessions?',
+    confirmText: 'Logout',
+    cancelText: 'Cancel',
+    loadingText: 'Logging out...',
+
+    onConfirm: async () => {
+      await api(
+        '/api/admin-users/' +
+        encodeURIComponent(u.uid) +
+        '/force-logout',
+        {
+          method: 'POST'
+        }
+      );
+
+      toast(
+        u.username + ' session revoked successfully.'
+      );
+
+      await load();
+    }
+  });
+}
+
 async function removeUser(u,target){
   if(u.role!=='siteadmin')return;
   if(!window.NewUI?.confirm){toast('Custom confirm component unavailable. Check new-ui.js','error');return}
