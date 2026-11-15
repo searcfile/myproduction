@@ -146,6 +146,7 @@
 
 
 
+
 /* AUTH USERS - TABLE HORIZONTAL SCROLL */
 .auth-list .auth-tablewrap {
   width: 100%;
@@ -155,6 +156,7 @@
   overflow-x: auto;
   overflow-y: hidden;
 
+  border-radius: 13px 13px 0 0;
   scrollbar-width: thin;
 }
 
@@ -227,18 +229,21 @@
   border-right: none !important;
 }
 
+
+
+
 /* ==========================================
-   AUTH USERS - TABLE HEADER RADIUS
+   AUTH USERS - TABLE HEADER RADIUS FIX
    ========================================== */
 
-/* Username - sudut kiri atas */
+/* Buang radius pada header yang bergerak */
 .auth-list .auth-table thead th:first-child {
-  border-top-left-radius: 13px !important;
+  border-top-left-radius: 0 !important;
 }
 
-/* Action - sudut kanan atas */
+/* Buang radius pada sticky Action */
 .auth-list .auth-table thead th:last-child {
-  border-top-right-radius: 13px !important;
+  border-top-right-radius: 0 !important;
 }
 
 /* AUTH USERS - ALTERNATE ROW COLORS */
