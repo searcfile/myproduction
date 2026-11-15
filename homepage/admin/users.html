@@ -2361,10 +2361,10 @@ function getCreatedTime(value) {
 function date(ts) {
   const time = getCreatedTime(ts);
 
-  if (!time) return '—';
+  if (!time) return '-';
 
   const d = new Date(time);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '-';
 
   const pad = n => String(n).padStart(2, '0');
 
