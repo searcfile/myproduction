@@ -336,6 +336,39 @@
 }
 
 /* ==========================================
+   AUTH USERS - STICKY FIREBASE UID
+   ========================================== */
+
+/* Firebase UID header - sticky kiri */
+.auth-list .auth-table thead th:nth-child(2) {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 11 !important;
+  background: var(--tx-surface-soft) !important;
+}
+
+/* Firebase UID row - sticky kiri */
+.auth-list .auth-table tbody td:nth-child(2) {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 4 !important;
+}
+
+/* Warna zebra row */
+.auth-list .auth-table tbody tr:nth-child(odd) > td:nth-child(2) {
+  background: var(--tx-surface) !important;
+}
+
+.auth-list .auth-table tbody tr:nth-child(even) > td:nth-child(2) {
+  background: var(--tx-surface-soft) !important;
+}
+
+/* Hover ikut seluruh row */
+.auth-list .auth-table tbody tr:hover > td:nth-child(2) {
+  background: var(--tx-hover) !important;
+}
+
+/* ==========================================
    AUTH USERS - STICKY ACTION COLUMN
    ========================================== */
 
