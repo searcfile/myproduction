@@ -64,6 +64,16 @@ async function requireAdmin(req,res,next){
   if(token.firebase?.sign_in_provider==='anonymous' || token.secondVerified!==true) return fail(res,403,'Second password verification required');
   const p=await adminProfile(token.uid);
   if(!p || p.active!==true || !['superadmin','siteadmin'].includes(p.role) || p.secondPasswordEnabled!==true || token.pinVersion!==p.pinVersion) return fail(res,403,'Admin access denied');
+
+/* FORCE LOGOUT - reject old sessions */
+const sessionVersion = Number(p.forceLogoutVersion || 0);
+
+if (
+  token.forceLogoutVersion !== sessionVersion
+) {
+  return fail(res, 401, 'Session revoked. Please login again.');
+}
+
   req.admin={uid:token.uid,profile:p};next();
  }catch(e){return fail(res,401,'Invalid or expired session');}
 }
@@ -284,7 +294,13 @@ const used = await challengeRef.transaction(v => {
    if(!used.committed)return fail(res,401,'Challenge already used');
    const current=await adminProfile(uid);
    if(!current||current.active!==true||current.pinVersion!==ch.pinVersion)return fail(res,403,'Access denied');
-   const customToken=await auth.createCustomToken(uid,{secondVerified:true,pinVersion:current.pinVersion});
+  
+const customToken = await auth.createCustomToken(uid, {
+  secondVerified: true,
+  pinVersion: current.pinVersion,
+  forceLogoutVersion: Number(current.forceLogoutVersion || 0)
+});
+
   return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
 });
@@ -480,6 +496,57 @@ app.get('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
   return res.json({ok:true,users});
  }catch(e){console.error(e.message);return fail(res,500,'Cannot list users');}
 });
+
+/* ==========================================
+   SUPER ADMIN - FORCE LOGOUT SITE ADMIN
+   ========================================== */
+
+app.post(
+  '/api/admin-users/:uid/force-logout',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const uid = String(req.params.uid || '');
+
+      if (!uid || uid === req.admin.uid) {
+        return fail(res, 400, 'Invalid target account');
+      }
+
+      const profile = await adminProfile(uid);
+
+      if (!profile || profile.role !== 'siteadmin') {
+        return fail(res, 403, 'Only Site Admin can be logged out');
+      }
+
+      // Naikkan versi sesi secara atomic.
+      const versionRef = db.ref(
+        `adminUsers/${uid}/forceLogoutVersion`
+      );
+
+      const result = await versionRef.transaction(current => {
+        return Number(current || 0) + 1;
+      });
+
+      if (!result.committed) {
+        return fail(res, 503, 'Cannot revoke session');
+      }
+
+      // Batalkan Firebase refresh tokens lama.
+      await auth.revokeRefreshTokens(uid);
+
+      return res.json({
+        ok: true,
+        message: 'User session revoked'
+      });
+
+    } catch (error) {
+      console.error('Force logout:', error);
+      return fail(res, 500, 'Force logout failed');
+    }
+  }
+);
+
 app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(),password=req.body?.password,pin=String(req.body?.secondPassword||''),enabled=req.body?.enabled!==false;
  const email=`${username}@accounts.myproduction-v2.example`;
