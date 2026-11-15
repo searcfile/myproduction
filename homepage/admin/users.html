@@ -306,40 +306,31 @@
   box-shadow: -1px 0 0 var(--tx-border);
 }
 
+
 /* ==========================================
-   AUTH USERS - ANT DESIGN STICKY SHADOW
+   AUTH USERS - STICKY ACTION SMART SHADOW
    ========================================== */
 
-/* Shadow hanya muncul ketika scroll */
-.auth-list .auth-table th:last-child::before,
-.auth-list .auth-table td:last-child::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -10px;
-  width: 10px;
-  pointer-events: none;
-  opacity: 0;
-  box-shadow: inset -10px 0 8px -8px
-    rgba(253, 253, 253, 0.12);
-  transition: opacity .2s ease;
-}
-
-/* Aktif selepas horizontal scroll */
-.auth-list .auth-tablewrap.has-scroll-left
-.auth-table th:last-child::before,
-.auth-list .auth-tablewrap.has-scroll-left
-.auth-table td:last-child::before {
-  opacity: 1;
-}
-
-/* Pastikan sticky Action boleh tunjuk shadow */
-.auth-list .auth-table th:last-child,
-.auth-list .auth-table td:last-child {
+/* Keadaan biasa: tiada shadow */
+.auth-list .auth-tablewrap .auth-table th:last-child,
+.auth-list .auth-tablewrap .auth-table td:last-child {
   position: sticky !important;
   right: 0 !important;
+  box-shadow: none !important;
+  border-left: 1px solid var(--tx-border);
+  transition: box-shadow .18s ease;
 }
+
+/* Shadow muncul jika masih ada column
+   tersembunyi di belakang Action */
+.auth-list .auth-tablewrap.has-action-shadow
+.auth-table th:last-child,
+.auth-list .auth-tablewrap.has-action-shadow
+.auth-table td:last-child {
+  box-shadow:
+    -10px 0 8px -8px rgba(253, 253, 253, .12) !important;
+}
+
 
 /* Pastikan ikon Action sentiasa di tengah */
 .auth-list tbody td:last-child .actions-cell {
@@ -3519,32 +3510,39 @@ search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onc
 })();
 </script>
 
+
 <script>
 /* ==========================================
-   AUTH USERS - STICKY ACTION SCROLL SHADOW
+   AUTH USERS - SMART STICKY ACTION SHADOW
    ========================================== */
 (function () {
   function initAuthStickyShadow() {
-    const wrappers = document.querySelectorAll(
+    const wraps = document.querySelectorAll(
       ".auth-list .auth-tablewrap"
     );
 
-    wrappers.forEach(wrap => {
+    wraps.forEach(wrap => {
       if (wrap.dataset.stickyShadowReady === "1") return;
+
       wrap.dataset.stickyShadowReady = "1";
 
-      const updateShadow = () => {
-        const hasOverflow =
-          wrap.scrollWidth > wrap.clientWidth + 1;
+      function updateShadow() {
+        const maxScroll = Math.max(
+          0,
+          wrap.scrollWidth - wrap.clientWidth
+        );
 
-        const hasScrolled =
-          wrap.scrollLeft > 1;
+        const remainingScroll =
+          maxScroll - Math.abs(wrap.scrollLeft);
+
+        const showShadow =
+          maxScroll > 1 && remainingScroll > 2;
 
         wrap.classList.toggle(
-          "has-scroll-left",
-          hasOverflow && hasScrolled
+          "has-action-shadow",
+          showShadow
         );
-      };
+      }
 
       wrap.addEventListener(
         "scroll",
@@ -3553,10 +3551,14 @@ search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onc
       );
 
       const observer = new ResizeObserver(updateShadow);
+
       observer.observe(wrap);
 
       const table = wrap.querySelector(".auth-table");
-      if (table) observer.observe(table);
+
+      if (table) {
+        observer.observe(table);
+      }
 
       updateShadow();
     });
@@ -3572,5 +3574,6 @@ search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onc
   }
 })();
 </script>
+
 
 </body></html>
