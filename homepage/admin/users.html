@@ -2720,7 +2720,7 @@ function render(){
     const name=document.createElement('strong');name.textContent=u.username;userTd.append(avatar,name);tr.append(userTd);
     const uidTd=document.createElement('td');const uidWrap=document.createElement('div');uidWrap.className='auth-uid-inline';
     const code=document.createElement('span');code.className='mono';code.textContent=u.uid;
-    uidWrap.append(code,btn('⧉','btn-edit-new',()=>copy(u.uid),'Copy UID'));uidTd.append(uidWrap);tr.append(uidTd);
+    uidWrap.append(code,btn('⧉','auth-copy',()=>copy(u.uid),'Copy UID'));uidTd.append(uidWrap);tr.append(uidTd);
     const roleTd=cell(tr,u.role);roleTd.className='auth-role-cell';
     const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
     cell(tr,date(u.createdAt),'auth-date');
