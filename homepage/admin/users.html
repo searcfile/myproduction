@@ -102,7 +102,15 @@
 .auth-search-holder .shared-sync-search{width:100%;height:32px}
 
 .auth-tablewrap{width:100%;overflow-x:auto;scrollbar-width:thin}
-.auth-table{width:100%;border-collapse:collapse;table-layout:auto;min-width:830px;font-size:12px}
+
+.auth-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  min-width: 1120px;
+  font-size: 12px;
+}
+
 .auth-table thead{background:rgba(113,158,229,.055)}
 .auth-table th{text-align:left;padding:15px 16px;font-size:10px;letter-spacing:.65px;font-weight:750;color:var(--tx-ink);border-bottom:1px solid var(--tx-border);white-space:nowrap;background:var(--tx-surface-soft);}
 .auth-table td{padding:15px 16px;border-bottom:1px solid var(--tx-border);vertical-align:middle}
@@ -1513,10 +1521,21 @@
 </div>
     <div class="tablewrap auth-tablewrap">
       <table class="auth-table">
-        <thead><tr><th>USERNAME</th><th>FIREBASE UID</th><th>ROLE</th><th>STATUS</th><th>CREATED</th><th>ACTION</th></tr></thead>
+<thead>
+  <tr>
+    <th>USERNAME</th>
+    <th>FIREBASE UID</th>
+    <th>ROLE</th>
+    <th>STATUS</th>
+    <th>CREATED</th>
+    <th>FIRST LOGIN</th>
+    <th>LAST LOGIN</th>
+    <th>ACTION</th>
+  </tr>
+</thead>
         <tbody id="rows">
   <tr>
-    <td colspan="6" class="auth-empty-cell">
+<td colspan="8" class="auth-empty-cell">
 <div class="auth-loading-center">
   <span class="auth-loading-dots" aria-hidden="true">
     <span></span>
@@ -1758,12 +1777,32 @@ function getCreatedTime(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+
+/* ==========================================
+   AUTH USERS - 24 HOUR DATE FORMAT
+   HH:mm:ss DD/MM/YYYY
+   ========================================== */
+
 function date(ts) {
   const time = getCreatedTime(ts);
-  return time
-    ? new Date(time).toLocaleString('en-MY')
-    : '—';
+
+  if (!time) return '—';
+
+  const d = new Date(time);
+  if (Number.isNaN(d.getTime())) return '—';
+
+  const pad = n => String(n).padStart(2, '0');
+
+  return (
+    `${pad(d.getHours())}:` +
+    `${pad(d.getMinutes())}:` +
+    `${pad(d.getSeconds())} ` +
+    `${pad(d.getDate())}/` +
+    `${pad(d.getMonth() + 1)}/` +
+    `${d.getFullYear()}`
+  );
 }
+
 
 function emptyRow(message, kind = 'empty') {
   const rows = $('rows');
@@ -1772,7 +1811,7 @@ function emptyRow(message, kind = 'empty') {
   const tr = document.createElement('tr');
   const td = document.createElement('td');
 
-  td.colSpan = 6;
+  td.colSpan = 8;
   td.className = 'auth-empty-cell';
 
   if (kind === 'loading') {
@@ -2118,6 +2157,21 @@ function render(){
     const roleTd=cell(tr,u.role);roleTd.className='auth-role-cell';
     const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
     cell(tr,date(u.createdAt),'auth-date');
+      
+/* FIRST LOGIN */
+cell(
+  tr,
+  date(u.firstLoginAt),
+  'auth-date'
+);
+
+/* LAST LOGIN */
+cell(
+  tr,
+  date(u.lastLoginAt),
+  'auth-date'
+);
+
     const td=document.createElement('td'),wrap=document.createElement('div');wrap.className='actions-cell';
 
 if (u.role === 'siteadmin') {
