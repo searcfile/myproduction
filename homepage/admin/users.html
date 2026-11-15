@@ -224,6 +224,26 @@
   cursor: not-allowed;
 }
 
+/* ==========================================
+   AUTH USERS - AGENT SUPPORT ICON
+   ========================================== */
+
+.auth-list .actions-cell .auth-support {
+  color: var(--text) !important;
+  background: transparent;
+  border: 1px solid var(--tx-border);
+}
+
+.auth-list .actions-cell .auth-support:hover {
+  color: var(--text) !important;
+  background: var(--tx-surface-soft);
+  border-color: var(--tx-border);
+}
+
+.auth-list .actions-cell .auth-support svg {
+  fill: currentColor;
+}
+
 .auth-list .actions-cell {
   display: flex;
   align-items: center;
@@ -2520,15 +2540,15 @@ if (u.role === 'siteadmin') {
 
 wrap.append(
     
-  authIconButton(
-    'support',
-    'auth-kick',
-    e => {
-      e.stopPropagation();
-      openAgentSupportUser(u.username);
-    },
-    'Agent Support - ' + u.username
-  ),
+authIconButton(
+  'support',
+  'auth-support',
+  e => {
+    e.stopPropagation();
+    openAgentSupportUser(u.username);
+  },
+  'Chat - ' + u.username
+),
 
   authIconButton(
     'logout',
@@ -2537,7 +2557,7 @@ wrap.append(
       e.stopPropagation();
       forceLogoutUser(u, e.currentTarget);
     },
-    'Force logout ' + u.username
+    'logout ' + u.username
   ),
 
   authIconButton(
