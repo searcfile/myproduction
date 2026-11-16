@@ -4627,7 +4627,12 @@ return (
   id,
   name: site.name || id,
   walletGroupId: site.walletGroupId || null,
-  active: site.active === true
+  active: site.active === true,
+
+  createdAt: site.createdAt ?? null,
+  updatedAt: site.updatedBy
+    ? (site.updatedAt ?? null)
+    : null
 }));
     return res.json({ ok: true, sites });
 
