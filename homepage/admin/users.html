@@ -3824,7 +3824,7 @@ if (!shown.length) {
 for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);const actions=makeCell(tr,'');actions.textContent='';const edit = document.createElement('button');
 
 edit.type = 'button';
-edit.className = 'site-edit-btn';
+edit.className = 'btn-edit-new';
 edit.title = 'Edit Site';
 edit.setAttribute('aria-label', 'Edit ' + site.name);
 
