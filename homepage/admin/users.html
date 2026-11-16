@@ -3898,7 +3898,7 @@ if (!shown.length) {
   tr.appendChild(td);
   tbody.appendChild(tr);
 }
-for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);
+for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'-');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);
 
 // ==========================================
 // SITE MANAGEMENT - CREATE & EDIT DATE
