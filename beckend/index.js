@@ -4588,10 +4588,11 @@ app.get("/api/sites", requireAdmin, async (req, res) => {
 
         if (profile.role === "superadmin") return true;
 
-        return (
-          profile.role === "siteadmin" &&
-          allowedIds.has(id)
-        );
+return (
+  profile.role === "siteadmin" &&
+  site.active === true &&
+  allowedIds.has(id)
+);
       })
 .map(([id, site]) => ({
   id,
