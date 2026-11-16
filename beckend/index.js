@@ -57,6 +57,26 @@ async function setPin(uid,pin){
  await db.ref(`adminUsers/${uid}`).update({secondPasswordEnabled:true,pinVersion:now()});
 }
 async function adminProfile(uid){const s=await db.ref(`adminUsers/${uid}`).once('value');return s.val();}
+/* ==========================================
+   SITE ADMIN - ACTIVE SITE ACCESS CHECK
+   ========================================== */
+
+async function hasActiveAssignedSite(profile) {
+  if (profile.role === "superadmin") return true;
+
+  if (profile.role !== "siteadmin") return false;
+
+  const siteIds = Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
+
+  if (!siteIds.length) return false;
+
+  const snapshot = await db.ref("sites").once("value");
+  const sites = snapshot.val() || {};
+
+  return siteIds.some(id => sites[id]?.active === true);
+}
 async function requireAdmin(req,res,next){
  try{
   const m=/^Bearer (\S+)$/.exec(req.headers.authorization||''); if(!m) return fail(res,401,'Authentication required');
@@ -64,6 +84,9 @@ async function requireAdmin(req,res,next){
   if(token.firebase?.sign_in_provider==='anonymous' || token.secondVerified!==true) return fail(res,403,'Second password verification required');
   const p=await adminProfile(token.uid);
   if(!p || p.active!==true || !['superadmin','siteadmin'].includes(p.role) || p.secondPasswordEnabled!==true || token.pinVersion!==p.pinVersion) return fail(res,403,'Admin access denied');
+if (!(await hasActiveAssignedSite(p))) {
+  return fail(res, 403, "SITE_INACTIVE");
+}
 
 /* FORCE LOGOUT - reject old sessions */
 const sessionVersion = Number(p.forceLogoutVersion || 0);
@@ -155,6 +178,9 @@ app.post('/api/login/start',rateLimit({windowMs:15*60_000,limit:12}),async(req,r
   if(!idx?.uid) return fail(res,401,'Invalid credentials');
   const profile=await adminProfile(idx.uid);
   if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||!['superadmin','siteadmin'].includes(profile.role))return fail(res,401,'Invalid credentials');
+  if (!(await hasActiveAssignedSite(profile))) {
+  return fail(res, 403, "SITE_INACTIVE");
+}
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(process.env.FIREBASE_WEB_API_KEY)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:profile.email,password,returnSecureToken:true})});
   const data=await r.json();
   if(!r.ok||data.localId!==idx.uid)return fail(res,401,'Invalid credentials');
@@ -292,6 +318,9 @@ const used = await challengeRef.transaction(v => {
    if(!used.committed)return fail(res,401,'Challenge already used');
    const current=await adminProfile(uid);
    if(!current||current.active!==true||current.pinVersion!==ch.pinVersion)return fail(res,403,'Access denied');
+if (!(await hasActiveAssignedSite(current))) {
+  return fail(res, 403, "SITE_INACTIVE");
+}
   
 const customToken = await auth.createCustomToken(uid, {
   secondVerified: true,
@@ -4689,7 +4718,31 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
       updatedAt: now(),
       updatedBy: req.admin.uid
     });
+// Revoke sesi Site Admin yang kehilangan semua site aktif.
+if (data.active === false) {
+  const profilesSnapshot = await db.ref("adminUsers").once("value");
+  const profiles = profilesSnapshot.val() || {};
 
+  const affected = Object.entries(profiles).filter(([uid, profile]) => {
+    return profile?.role === "siteadmin" &&
+      Array.isArray(profile.siteIds) &&
+      profile.siteIds.includes(id);
+  });
+
+  for (const [uid, profile] of affected) {
+    if (await hasActiveAssignedSite(profile)) continue;
+
+    try {
+      await db.ref(
+        `adminUsers/${uid}/forceLogoutVersion`
+      ).transaction(value => Number(value || 0) + 1);
+
+      await auth.revokeRefreshTokens(uid);
+    } catch (error) {
+      console.error("[SITE AUTO LOGOUT]", uid, error);
+    }
+  }
+}
     return res.json({
       ok: true,
       message: "Site updated successfully",
