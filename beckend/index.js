@@ -1123,24 +1123,56 @@ app.post(
 const ref = db.ref(TIPS_PATH).push();
 const timestamp = now();
 
-const result = await db.ref(TIPS_PATH).transaction(
+
+const tipsRootRef = db.ref(TIPS_PATH);
+const rootSnapshot = await tipsRootRef.once("value");
+const initialRecords = rootSnapshot.val() || {};
+const updatedAt = now();
+
+if (!initialRecords[id]) {
+  return fail(res, 404, "Platform not found");
+}
+
+let initialNullHandled = false;
+
+const result = await tipsRootRef.transaction(
   records => {
-    const current = records || {};
+    // Firebase boleh memberi null pada callback pertama.
+    // Gunakan snapshot yang baru dibaca untuk permulaan.
+    if (records === null && !initialNullHandled) {
+      initialNullHandled = true;
+      records = initialRecords;
+    }
+
+    // Jika rekod benar-benar sudah tiada, batalkan.
+    if (!records || !records[id]) {
+      return;
+    }
 
     return reorderTipsPlatforms(
-      current,
-      ref.key,
+      records,
+      id,
       {
         ...data,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        createdBy: req.admin.uid
+        updatedAt,
+        updatedBy: req.admin.uid
       }
     );
   },
   undefined,
   false
 );
+
+if (!result.committed) {
+  console.warn("[TIPS REORDER] Transaction aborted", {
+    id,
+    existsBefore: Boolean(initialRecords[id]),
+    existsAfter: Boolean(result.snapshot.val()?.[id])
+  });
+
+  return fail(res, 409, "Platform reorder conflict");
+}
+
 
 if (!result.committed) {
   return fail(res, 409, "Cannot reorder platforms");
