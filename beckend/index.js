@@ -952,6 +952,16 @@ function validateTipsPayload(body) {
   const name = String(body?.name || "").trim();
   const games = body?.games;
 
+const position = Number(body?.position);
+
+if (
+  !Number.isSafeInteger(position) ||
+  position < 1 ||
+  position > 100000
+) {
+  throw Error("Invalid platform position");
+}
+         
   if (!name || name.length > 100) {
     throw Error("Invalid platform name");
   }
@@ -996,7 +1006,8 @@ games.length > 3000 ||
     games: games.map(g => g.trim()),
     active: body.active,
     visibleToAllSites: body.visibleToAllSites,
-    siteVisibility
+    siteVisibility,
+    position
   };
 }
 
@@ -1007,6 +1018,37 @@ async function validateTipsSites(siteVisibility) {
 
   return Object.keys(siteVisibility).every(id =>
     sites[id]?.active === true
+  );
+}
+
+function reorderTipsPlatforms(records, id, data) {
+  const items = Object.entries(records || {})
+    .filter(([key]) => key !== id)
+    .sort((a, b) =>
+      (a[1].order ?? 9999) - (b[1].order ?? 9999) ||
+      String(a[1].name || "").localeCompare(
+        String(b[1].name || "")
+      )
+    );
+
+  const position = Math.max(
+    1,
+    Math.min(data.position, items.length + 1)
+  );
+
+  const { position: _position, ...fields } = data;
+
+  const existing = records?.[id] || {};
+  items.splice(position - 1, 0, [
+    id,
+    { ...existing, ...fields }
+  ]);
+
+  return Object.fromEntries(
+    items.map(([key, record], index) => [
+      key,
+      { ...record, order: index + 1 }
+    ])
   );
 }
 
