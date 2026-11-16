@@ -28,6 +28,8 @@ html[data-admin-theme="light"] {
     --empty-icon-border:#d9d9d9;
     --empty-icon-set:#fafafa;
     --ant-color-split:rgba(5, 5, 0, 0.06);
+    --player-list-border:#e2e7ee;
+    --player-list-surface:#f8fafc;
    
    --floating-border:#91caff;
    --loading-overlay-bg:rgba(255,255,255,.15);
@@ -90,7 +92,9 @@ html[data-admin-theme="light"] {
     --empty-icon-border:#3e3e3e;
     --empty-icon-set:#1d1d1d;
     --ant-color-split:rgba(253, 253, 253, .12);
-     
+    --player-list-border:#303640;
+    --player-list-surface:#1d2129;
+   
     --floating-border:#15325b;
    --loading-overlay-bg:rgba(0,0,0,.25);
   --panel2: #171e28;
