@@ -1106,7 +1106,8 @@ app.get(
   }
 );
 
-// Create platform
+
+ // Create platform
 app.post(
   "/api/tips-game/platforms",
   requireAdmin,
@@ -1119,65 +1120,30 @@ app.post(
         return fail(res, 400, "Invalid site selection");
       }
 
+      const ref = db.ref(TIPS_PATH).push();
+      const timestamp = now();
 
-const ref = db.ref(TIPS_PATH).push();
-const timestamp = now();
+      const rootRef = db.ref(TIPS_PATH);
+      const initial = (await rootRef.once("value")).val() || {};
 
+      const result = await rootRef.transaction(records => {
+        if (records === null) records = initial;
 
-const tipsRootRef = db.ref(TIPS_PATH);
-const rootSnapshot = await tipsRootRef.once("value");
-const initialRecords = rootSnapshot.val() || {};
-const updatedAt = now();
+        // Jangan cipta semula ID jika sudah wujud.
+        if (records[ref.key]) return;
 
-if (!initialRecords[id]) {
-  return fail(res, 404, "Platform not found");
-}
+        return reorderTipsPlatforms(records, ref.key, {
+          ...data,
+          createdAt: timestamp,
+          createdBy: req.admin.uid,
+          updatedAt: timestamp,
+          updatedBy: req.admin.uid
+        });
+      }, undefined, false);
 
-let initialNullHandled = false;
-
-const result = await tipsRootRef.transaction(
-  records => {
-    // Firebase boleh memberi null pada callback pertama.
-    // Gunakan snapshot yang baru dibaca untuk permulaan.
-    if (records === null && !initialNullHandled) {
-      initialNullHandled = true;
-      records = initialRecords;
-    }
-
-    // Jika rekod benar-benar sudah tiada, batalkan.
-    if (!records || !records[id]) {
-      return;
-    }
-
-    return reorderTipsPlatforms(
-      records,
-      id,
-      {
-        ...data,
-        updatedAt,
-        updatedBy: req.admin.uid
+      if (!result.committed) {
+        return fail(res, 409, "Cannot create platform");
       }
-    );
-  },
-  undefined,
-  false
-);
-
-if (!result.committed) {
-  console.warn("[TIPS REORDER] Transaction aborted", {
-    id,
-    existsBefore: Boolean(initialRecords[id]),
-    existsAfter: Boolean(result.snapshot.val()?.[id])
-  });
-
-  return fail(res, 409, "Platform reorder conflict");
-}
-
-
-if (!result.committed) {
-  return fail(res, 409, "Cannot reorder platforms");
-}
-
 
       return res.status(201).json({
         ok: true,
@@ -1190,7 +1156,9 @@ if (!result.committed) {
   }
 );
 
-// Edit platform
+
+
+ // Edit platform
 app.patch(
   "/api/tips-game/platforms/:id",
   requireAdmin,
@@ -1220,29 +1188,39 @@ app.patch(
         return fail(res, 400, "Invalid site selection");
       }
 
+      const rootRef = db.ref(TIPS_PATH);
+      const initial = (await rootRef.once("value")).val() || {};
+      const updatedAt = now();
 
-const result = await db.ref(TIPS_PATH).transaction(
-  records => {
-    if (!records || !records[id]) return;
-
-    return reorderTipsPlatforms(
-      records,
-      id,
-      {
-        ...data,
-        updatedAt: now(),
-        updatedBy: req.admin.uid
+      if (!initial[id]) {
+        return fail(res, 404, "Platform not found");
       }
-    );
-  },
-  undefined,
-  false
-);
 
-if (!result.committed) {
-  return fail(res, 409, "Platform changed or deleted");
-}
+      const result = await rootRef.transaction(records => {
+        if (records === null) records = initial;
 
+        if (!records || !records[id]) return;
+
+        // Pastikan platform masih boleh diakses.
+        if (!tipsVisible(records[id], req.admin.profile)) {
+          return;
+        }
+
+        return reorderTipsPlatforms(records, id, {
+          ...data,
+          updatedAt,
+          updatedBy: req.admin.uid
+        });
+      }, undefined, false);
+
+      if (!result.committed) {
+        console.warn("[TIPS EDIT CONFLICT]", {
+          id,
+          existedInitially: Boolean(initial[id])
+        });
+
+        return fail(res, 409, "Platform changed or deleted");
+      }
 
       return res.json({ ok: true });
     } catch (error) {
@@ -1251,6 +1229,7 @@ if (!result.committed) {
     }
   }
 );
+
 
 // Delete platform
 app.delete(
