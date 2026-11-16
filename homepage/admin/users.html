@@ -1995,7 +1995,19 @@
 .site-manager .site-table-card .auth-table tbody tr:nth-child(even) > td:last-child {
   background: var(--tx-surface-soft) !important;
 }
+/* ==========================================
+   SITE MANAGEMENT - FULL ROW HOVER FIX
+   ========================================== */
 
+/* Hover semua column termasuk SITE ID dan ACTION */
+.site-manager .site-table-card .auth-table
+tbody tr:hover > td,
+.site-manager .site-table-card .auth-table
+tbody tr:nth-child(odd):hover > td,
+.site-manager .site-table-card .auth-table
+tbody tr:nth-child(even):hover > td {
+  background: var(--tx-hover) !important;
+}
 /* ==========================================
    SITE MANAGEMENT - EDIT BUTTON 32X32
    ========================================== */
