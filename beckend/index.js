@@ -1119,14 +1119,33 @@ app.post(
         return fail(res, 400, "Invalid site selection");
       }
 
-      const ref = db.ref(TIPS_PATH).push();
 
-      await ref.set({
+const ref = db.ref(TIPS_PATH).push();
+const timestamp = now();
+
+const result = await db.ref(TIPS_PATH).transaction(
+  records => {
+    const current = records || {};
+
+    return reorderTipsPlatforms(
+      current,
+      ref.key,
+      {
         ...data,
-        createdAt: now(),
-        updatedAt: now(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
         createdBy: req.admin.uid
-      });
+      }
+    );
+  },
+  undefined,
+  false
+);
+
+if (!result.committed) {
+  return fail(res, 409, "Cannot reorder platforms");
+}
+
 
       return res.status(201).json({
         ok: true,
@@ -1169,11 +1188,29 @@ app.patch(
         return fail(res, 400, "Invalid site selection");
       }
 
-      await ref.update({
+
+const result = await db.ref(TIPS_PATH).transaction(
+  records => {
+    if (!records || !records[id]) return;
+
+    return reorderTipsPlatforms(
+      records,
+      id,
+      {
         ...data,
         updatedAt: now(),
         updatedBy: req.admin.uid
-      });
+      }
+    );
+  },
+  undefined,
+  false
+);
+
+if (!result.committed) {
+  return fail(res, 409, "Platform changed or deleted");
+}
+
 
       return res.json({ ok: true });
     } catch (error) {
