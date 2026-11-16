@@ -925,6 +925,67 @@ foot.append(radio, enabledLabel);
 // Sync label dengan keadaan switch
 window.SharedActiveSwitch?.init(enabledLabel);row.append(head,fields,foot);row._get=()=>({label:clean(label.input.value),url:clean(url.input.value),action:radio.querySelector('input:checked')?.value||'copy',enabled:enabled.checked});target.append(row);}
 async function uploadImage(file){if(!CLOUDINARY_CLOUD_NAME||!CLOUDINARY_UPLOAD_PRESET)throw Error('Cloudinary not configured. Use Image URL or set cloud name and unsigned upload preset in link-download.js.');const fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);const response=await fetch('https://api.cloudinary.com/v1_1/'+encodeURIComponent(CLOUDINARY_CLOUD_NAME)+'/image/upload',{method:'POST',body:fd});const result=await response.json();if(!response.ok||!safeUrl(result.secure_url))throw Error(result.error?.message||'Cloudinary upload failed');return result.secure_url;}
+/* LINK DOWNLOAD - AUTO REORDER CARD POSITION */
+async function saveCardWithPosition(id, record, position) {
+  const rootRef = db.ref(PATH);
+
+  // Muatkan data terkini sebelum transaction.
+  await rootRef.once('value');
+
+  const result = await rootRef.transaction(current => {
+    if (current === null) return;
+
+    const all = { ...current };
+
+    // Edit mesti merujuk kepada card yang masih wujud.
+    if (id && !all[id]) return;
+
+    const cardId = id || db.ref(PATH).push().key;
+
+    if (!cardId) return;
+
+    const previous = id ? all[id] : null;
+
+    const updated = {
+      ...previous,
+      ...record,
+      createdAt: previous?.createdAt ?? Date.now(),
+      updatedAt: Date.now()
+    };
+
+    delete all[cardId];
+
+    const items = Object.entries(all)
+      .filter(([, card]) => isCard(card))
+      .sort((a, b) =>
+        (Number(a[1].order) || 9999) -
+        (Number(b[1].order) || 9999) ||
+        a[0].localeCompare(b[0])
+      );
+
+    const target = Math.max(
+      0,
+      Math.min(position - 1, items.length)
+    );
+
+    items.splice(target, 0, [cardId, updated]);
+
+    items.forEach(([key, card], index) => {
+      all[key] = {
+        ...card,
+        order: index + 1
+      };
+    });
+
+    return all;
+  }, undefined, false);
+
+  if (!result.committed) {
+    throw new Error(
+      'Card position could not be saved. Please refresh and retry.'
+    );
+  }
+}
 function openEditor(id = null) {
   const action = id ? 'edit' : 'create';
 
@@ -932,7 +993,42 @@ function openEditor(id = null) {
     toast('Permission denied: ' + action, 'error');
     return;
   }
- editing=id;const old=id?records[id]:null;const form=el('form','ld-modal-form');const top=el('div','ld-form-grid');const name=field('Card Name',old?.name||'','Name Card'),platform=field('Platform / Collection',old?.platform||'','Platform Name');top.append(name.host,platform.host);form.append(top);
+ editing=id;const old=id?records[id]:null;const form=el('form','ld-modal-form');const top=el('div','ld-form-grid');const name=field('Card Name',old?.name||'','Name Card'),platform=field('Platform / Collection',old?.platform||'','Platform Name');
+top.append(name.host, platform.host);
+form.append(top);
+
+// LINK DOWNLOAD - CARD POSITION
+const currentPosition = id
+  ? Object.entries(records)
+      .filter(([, card]) => isCard(card))
+      .sort((a, b) =>
+        (Number(a[1].order) || 9999) -
+        (Number(b[1].order) || 9999) ||
+        a[0].localeCompare(b[0])
+      )
+      .findIndex(([key]) => key === id) + 1
+  : Object.values(records).filter(isCard).length + 1;
+
+const position = field(
+  'Card Position',
+  String(currentPosition || 1),
+  'Enter card position'
+);
+
+position.input.type = 'number';
+position.input.min = '1';
+position.input.step = '1';
+position.input.required = true;
+
+form.append(position.host);
+
+form.append(
+  el(
+    'div',
+    'ld-hint',
+    'Position 1 = card pertama. Card lain akan berganjak secara automatik.'
+  )
+);
  // Site Visibility: satu card, status berbeza mengikut Site.
  const sitePanel=el('div','ld-site-panel');
  sitePanel.append(el('strong','','Site Visibility'));
@@ -990,7 +1086,34 @@ for (const option of siteOptions) {
   siteVisibility[option.value] =
     selectedSiteIds.has(option.value);
 }
-const record={name:title,platform:group,image:image||'',active:globalInput.checked,siteVisibility,order:Number(old?.order)||Date.now(),links,updatedAt:firebase.database.ServerValue.TIMESTAMP};if(!id)record.createdAt=firebase.database.ServerValue.TIMESTAMP;await ref.update(record);toast(id?'Card updated':'Card created');modal.close();}catch(err){console.error(err);toast(err.message||'Save failed','error');}finally{await NewUI.setButtonLoading(save,false);save.disabled=false;}});// Initialize semua custom input dalam modal
+const newPosition = Number(position.input.value);
+
+if (
+  !Number.isSafeInteger(newPosition) ||
+  newPosition < 1
+) {
+  throw new Error('Card Position must be a positive whole number');
+}
+
+const record = {
+  name: title,
+  platform: group,
+  image: image || '',
+  active: globalInput.checked,
+  siteVisibility,
+  links
+};
+
+await saveCardWithPosition(
+  id,
+  record,
+  newPosition
+);
+
+toast(id ? 'Card updated' : 'Card created');
+modal.close();
+}catch(err){console.error(err);toast(err.message||'Save failed','error');}finally{await NewUI.setButtonLoading(save,false);save.disabled=false;}});
+  // Initialize semua custom input dalam modal
 form.querySelectorAll('input[data-new-ui-input]').forEach(input => {
   window.NewUI?.input?.(input);
 });
