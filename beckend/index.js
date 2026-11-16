@@ -4565,14 +4565,6 @@ if (
 );
 
 /* =====================================================
-   END CIMB CLICKS BANK API
-   ===================================================== */
-/* =====================================================
-   END SCR888H5 GAME CATALOG
-   ===================================================== */
-
-/* ===== END EVO888 BACKEND ===== */
-/* =====================================================
    END PUSSY888 GAME CATALOG
    ===================================================== */
 // GET — List all sites
@@ -4592,7 +4584,7 @@ app.get("/api/sites", requireAdmin, async (req, res) => {
 
     const sites = Object.entries(data)
       .filter(([id, site]) => {
-        if (!site || site.active !== true) return false;
+        if (!site) return false;
 
         if (profile.role === "superadmin") return true;
 
@@ -4601,12 +4593,12 @@ app.get("/api/sites", requireAdmin, async (req, res) => {
           allowedIds.has(id)
         );
       })
-      .map(([id, site]) => ({
-        id,
-        name: site.name || id,
-        active: true
-      }));
-
+.map(([id, site]) => ({
+  id,
+  name: site.name || id,
+  walletGroupId: site.walletGroupId || null,
+  active: site.active === true
+}));
     return res.json({ ok: true, sites });
 
   } catch (error) {
