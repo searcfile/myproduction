@@ -845,6 +845,95 @@ btnEl.onclick = function () {
     console.error("Version check failed:", err);
   }
 }
+/* ==========================================
+   SITE ADMIN - REALTIME SITE AUTO LOGOUT
+   ========================================== */
+
+function startSiteAdminAutoLogout(uid) {
+  if (!uid || !auth.currentUser ||
+      auth.currentUser.uid !== uid) return;
+
+  const profileRef = db.ref(`adminUsers/${uid}`);
+  const sitesRef = db.ref("sites");
+
+  let currentProfile = null;
+  let currentSites = null;
+  let profileReady = false;
+  let sitesReady = false;
+  let logoutStarted = false;
+
+  function checkAccess() {
+    if (!profileReady || !sitesReady || logoutStarted) return;
+
+    if (!auth.currentUser || auth.currentUser.uid !== uid) {
+      cleanup();
+      return;
+    }
+
+    const profile = currentProfile;
+
+    // Super Admin tidak terjejas oleh status site.
+    if (profile?.role === "superadmin") return;
+
+    const assignedIds = Array.isArray(profile?.siteIds)
+      ? profile.siteIds
+      : [];
+
+    const hasActiveSite =
+      profile?.role === "siteadmin" &&
+      profile?.active === true &&
+      assignedIds.some(id => currentSites?.[id]?.active === true);
+
+    if (hasActiveSite) return;
+
+    logoutStarted = true;
+    cleanup();
+
+    console.warn(
+      "[Site Admin] Account or assigned sites inactive. Logging out."
+    );
+
+    if (window.AutoLogout?.forceLogout) {
+      window.AutoLogout.forceLogout();
+    } else {
+      auth.signOut()
+        .catch(console.error)
+        .finally(() => {
+          window.location.replace("./login.html");
+        });
+    }
+  }
+
+  function onProfile(snapshot) {
+    currentProfile = snapshot.val();
+    profileReady = true;
+    checkAccess();
+  }
+
+  function onSites(snapshot) {
+    currentSites = snapshot.val() || {};
+    sitesReady = true;
+    checkAccess();
+  }
+
+  function onError(error) {
+    console.error("[Site Admin] Listener failed:", error);
+  }
+
+  function cleanup() {
+    profileRef.off("value", onProfile);
+    sitesRef.off("value", onSites);
+  }
+
+  profileRef.on("value", onProfile, onError);
+  sitesRef.on("value", onSites, onError);
+
+  auth.onAuthStateChanged(user => {
+    if (!user || user.uid !== uid) cleanup();
+  });
+
+  window.addEventListener("pagehide", cleanup, { once: true });
+}
 async function verifyAdminSession() {
 const user = await new Promise(resolve => {
   auth.onAuthStateChanged(
@@ -919,7 +1008,26 @@ window.currentAdmin = {
   name: profile.displayName || profile.username,
   role: profile.role
 };
+// Semak akses site sebelum membenarkan dashboard dibuka.
+if (profile.role === "siteadmin") {
+  const siteIds = Array.isArray(profile.siteIds)
+    ? profile.siteIds
+    : [];
 
+  if (!siteIds.length) return null;
+
+  const sitesSnapshot = await db.ref("sites").once("value");
+  const sites = sitesSnapshot.val() || {};
+
+  const hasActiveSite = siteIds.some(
+    id => sites[id]?.active === true
+  );
+
+  if (!hasActiveSite) {
+    console.warn("[Site Admin] No active assigned site");
+    return null;
+  }
+}
 // Selepas auth selesai, semak semula unread
 // dan cuba sambung bunyi jika Site Admin.
 if (window.currentAdmin.role === "siteadmin") {
@@ -973,7 +1081,10 @@ try {
 
   // ✅ 2) Auto-logout inactivity
   window.AutoLogout && window.AutoLogout.start();
-
+// Pantau status site secara realtime untuk Site Admin.
+if (adminSession.role === "siteadmin") {
+  startSiteAdminAutoLogout(adminSession.uid);
+}
   // ======= SEMUA YANG DI BAWAH INI BUTUH sessionData =======
   userId = (sessionData.email || '').toLowerCase().replace(/\./g, '_');
 
