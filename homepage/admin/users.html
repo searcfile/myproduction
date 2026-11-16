@@ -1996,20 +1996,58 @@
   background: var(--tx-surface-soft) !important;
 }
 
-/* Edit button seperti Admin Users */
-.site-manager .site-edit-btn {
+/* ==========================================
+   SITE MANAGEMENT - EDIT BUTTON 32X32
+   ========================================== */
+
+.site-manager .btn-edit-new {
   display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+
   padding: 0 !important;
-  border: 1px solid #1677ff;
-  border-radius: 8px;
-  background: #141414;
-  color: #4096ff;
+  margin: 0 !important;
+
+  border: 1px solid #1677ff !important;
+  border-radius: 8px !important;
+
+  background: #141414 !important;
+  color: #1677ff !important;
+
+  line-height: 1 !important;
+  box-sizing: border-box !important;
   cursor: pointer;
-  transition: .2s;
+
+  transition: all .2s ease;
+}
+
+/* HOVER */
+.site-manager .btn-edit-new:hover {
+  color: #4096ff !important;
+  border-color: #4096ff !important;
+  background: rgba(22, 119, 255, .10) !important;
+}
+
+/* SVG ICON */
+.site-manager .btn-edit-new svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+
+  flex-shrink: 0;
+  fill: none !important;
+  stroke: currentColor !important;
+
+  pointer-events: none;
 }
 
 .site-manager .site-edit-btn:hover {
