@@ -923,7 +923,190 @@ app.get(
     }
   }
 );
+/* =====================================================
+   LINK DOWNLOAD - SAVE CARD WITH POSITION
+   ===================================================== */
 
+app.post(
+  "/api/link-download/save-position",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const id = req.body?.id || null;
+      const record = req.body?.record;
+      const position = Number(req.body?.position);
+
+      if (req.admin.profile.role !== "superadmin") {
+        return fail(res, 403, "Super Admin only");
+      }
+
+      if (
+        !Number.isSafeInteger(position) ||
+        position < 1 ||
+        position > 100000
+      ) {
+        return fail(res, 400, "Invalid card position");
+      }
+
+      if (
+        id !== null &&
+        (typeof id !== "string" ||
+          !/^[A-Za-z0-9_-]{1,128}$/.test(id))
+      ) {
+        return fail(res, 400, "Invalid card ID");
+      }
+
+      if (
+        !record ||
+        typeof record !== "object" ||
+        Array.isArray(record)
+      ) {
+        return fail(res, 400, "Invalid card data");
+      }
+
+      const name = String(record.name || "").trim();
+      const platform = String(record.platform || "").trim();
+      const image = String(record.image || "").trim();
+
+      if (
+        !name ||
+        name.length > 120 ||
+        !platform ||
+        platform.length > 100 ||
+        (image && !/^https:\/\//i.test(image))
+      ) {
+        return fail(res, 400, "Invalid card information");
+      }
+
+      if (
+        typeof record.active !== "boolean" ||
+        !Array.isArray(record.links) ||
+        record.links.length < 1 ||
+        record.links.length > 100
+      ) {
+        return fail(res, 400, "Invalid card links");
+      }
+
+      const links = [];
+
+      for (const link of record.links) {
+        const label = String(link?.label || "").trim();
+        const url = String(link?.url || "").trim();
+        const action = link?.action;
+
+        if (
+          !label ||
+          label.length > 200 ||
+          typeof link?.enabled !== "boolean" ||
+          !["copy", "open"].includes(action) ||
+          (link.enabled && !/^https?:\/\//i.test(url))
+        ) {
+          return fail(res, 400, "Invalid link row");
+        }
+
+        links.push({
+          label,
+          url,
+          action,
+          enabled: link.enabled
+        });
+      }
+
+      const siteVisibility = {};
+
+      if (
+        record.siteVisibility &&
+        typeof record.siteVisibility === "object" &&
+        !Array.isArray(record.siteVisibility)
+      ) {
+        for (const [siteId, visible] of Object.entries(
+          record.siteVisibility
+        )) {
+          if (
+            !/^[A-Za-z0-9_-]{1,128}$/.test(siteId) ||
+            typeof visible !== "boolean"
+          ) {
+            return fail(res, 400, "Invalid site visibility");
+          }
+
+          siteVisibility[siteId] = visible;
+        }
+      }
+
+      const rootRef = db.ref("download_links/cards");
+      const cardId = id || rootRef.push().key;
+      const timestamp = Date.now();
+
+      const result = await rootRef.transaction(current => {
+        const all = current || {};
+
+        if (id && !all[id]) return;
+        if (!id && all[cardId]) return;
+
+        const previous = id ? all[id] : null;
+
+        const updated = {
+          name,
+          platform,
+          image,
+          active: record.active,
+          siteVisibility,
+          links,
+          createdAt: previous?.createdAt ?? timestamp,
+          updatedAt: timestamp
+        };
+
+        const items = Object.entries(all)
+          .filter(([key, card]) =>
+            key !== cardId &&
+            card &&
+            typeof card === "object"
+          )
+          .sort((a, b) =>
+            (Number(a[1].order) || 9999) -
+            (Number(b[1].order) || 9999) ||
+            a[0].localeCompare(b[0])
+          );
+
+        const target = Math.max(
+          0,
+          Math.min(position - 1, items.length)
+        );
+
+        items.splice(target, 0, [cardId, updated]);
+
+        const next = { ...all };
+
+        items.forEach(([key, card], index) => {
+          next[key] = {
+            ...card,
+            order: index + 1
+          };
+        });
+
+        return next;
+      }, undefined, false);
+
+      if (!result.committed) {
+        return fail(
+          res,
+          409,
+          "Card changed. Please refresh and retry."
+        );
+      }
+
+      return res.json({
+        ok: true,
+        id: cardId,
+        message: "Card position saved"
+      });
+
+    } catch (error) {
+      console.error("Link Download save position:", error);
+      return fail(res, 500, "Cannot save card position");
+    }
+  }
+);
 /* =====================================================
    TIPS GAME — SITE VISIBILITY + PERMISSIONS
    ===================================================== */
