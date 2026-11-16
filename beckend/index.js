@@ -1033,15 +1033,25 @@ app.post(
         }
       }
 
-      const rootRef = db.ref("download_links/cards");
-      const cardId = id || rootRef.push().key;
-      const timestamp = Date.now();
+const rootRef = db.ref("download_links/cards");
+const cardId = id || rootRef.push().key;
+const timestamp = Date.now();
 
-      const result = await rootRef.transaction(current => {
-        const all = current || {};
+// Baca data sebenar sebelum memulakan transaction.
+const initialSnapshot = await rootRef.once("value");
+const initialRecords = initialSnapshot.val() || {};
 
-        if (id && !all[id]) return;
-        if (!id && all[cardId]) return;
+if (id && !initialRecords[id]) {
+  return fail(res, 404, "Card not found. Please refresh.");
+}
+const result = await rootRef.transaction(current => {
+
+  const all = current === null
+    ? initialRecords
+    : current;
+
+  if (id && !all[id]) return;
+  if (!id && all[cardId]) return;
 
         const previous = id ? all[id] : null;
 
