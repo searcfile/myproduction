@@ -1579,7 +1579,24 @@ function openPlatformEditor(id=null) {
     Pilih Site Admin yang boleh melihat platform ini.
   </div>
 </div>
-<div class="tips-field"><label for="tipsGameNames">Game Names</label><textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false"></textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
+<div class="tips-field">
+  <label for="tipsPlatformPosition">Platform Position</label>
+  <input
+    id="tipsPlatformPosition"
+    class="shared-input"
+    type="number"
+    min="1"
+    step="1"
+    required
+  >
+  <div class="tips-help">
+    Position 1 = platform pertama.
+    Platform lain akan berganjak secara automatik.
+  </div>
+</div>
+<div class="tips-field"><label for="tipsGameNames">Game Names</label>
+<textarea id="tipsGameNames" class="shared-textarea" placeholder="One game name per line" spellcheck="false">
+</textarea><div class="tips-help">Enter one game per line. Duplicates are removed automatically. CHANGE, AUTO, COPY and Percentage will use this list.</div></div>
     <div class="tips-field">
   <label>Platform Status</label>
 
@@ -1600,6 +1617,29 @@ function openPlatformEditor(id=null) {
     <div class="tips-form-actions"><button type="button" class="btn-cancel-new" data-cancel>Cancel</button><button type="submit" class="btn-primary-new" data-save>${id?'Update':'Create'}</button></div>`;
   const nameInput=form.querySelector('#tipsPlatformName');
   const gamesInput=form.querySelector('#tipsGameNames');
+    
+const positionInput =
+  form.querySelector('#tipsPlatformPosition');
+
+const orderedPlatforms = Object.entries(tipsRecords)
+  .map(([key, value]) => ({ id: key, ...value }))
+  .sort((a, b) =>
+    (a.order ?? 9999) - (b.order ?? 9999) ||
+    a.name.localeCompare(b.name)
+  );
+
+const currentPosition = orderedPlatforms.findIndex(
+  item => item.id === id
+);
+
+positionInput.max = id
+  ? orderedPlatforms.length
+  : orderedPlatforms.length + 1;
+
+positionInput.value = id
+  ? currentPosition + 1
+  : orderedPlatforms.length + 1;
+
     const globalActiveInput =
   form.querySelector('#tipsGlobalActive');
 
@@ -1644,6 +1684,17 @@ const tipsSiteChips = NewUI.chips(
     let success=false;
     try {
       const name=safePlatformName(nameInput.value);
+        
+const position = Number(positionInput.value);
+
+if (
+  !Number.isSafeInteger(position) ||
+  position < 1 ||
+  position > Number(positionInput.max)
+) {
+  throw new Error('Invalid platform position.');
+}
+
       const games=normalizeGameNames(gamesInput.value);
       if(!games.length)throw new Error('Enter at least one game name.');
       if(games.length>3000)throw new Error('Maximum 3000 games per platform.');
@@ -1665,13 +1716,16 @@ const data = {
   visibleToAllSites: globalActiveInput.checked,
   updatedAt: firebase.database.ServerValue.TIMESTAMP
 };       if(!id) data.active = true;
+
 const payload = {
   name,
   games,
   active: platformActiveInput.checked,
   visibleToAllSites: globalActiveInput.checked,
-  siteVisibility
+  siteVisibility,
+  position
 };
+
 
 await tipsApi(
   id ? `/platforms/${encodeURIComponent(id)}` : '/platforms',
