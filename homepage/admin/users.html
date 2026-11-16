@@ -2009,6 +2009,36 @@ tbody tr:nth-child(even):hover > td {
   background: var(--tx-hover) !important;
 }
 /* ==========================================
+   SITE MANAGEMENT - CREATE & EDIT DATE
+   ========================================== */
+
+/* Lebar table selepas tambah 2 column */
+.site-manager .site-table-card .auth-table {
+  min-width: 1300px;
+}
+
+/* Column CREATE DATE dan EDIT DATE */
+.site-manager .site-table-card .auth-table
+th:nth-child(5),
+.site-manager .site-table-card .auth-table
+th:nth-child(6),
+.site-manager .site-table-card .auth-table
+td:nth-child(5),
+.site-manager .site-table-card .auth-table
+td:nth-child(6) {
+  min-width: 185px;
+  width: 185px;
+  white-space: nowrap;
+}
+
+/* Text tarikh */
+.site-manager .site-table-card .auth-table
+td.site-date-cell {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+/* ==========================================
    SITE MANAGEMENT - EDIT BUTTON 32X32
    ========================================== */
 
@@ -2333,8 +2363,19 @@ tbody tr:nth-child(even):hover > td {
 </strong><span class="stat-note">Currently disabled</span></div>
  </div>
  <section class="card auth-list site-table-card">
-  <div class="auth-tablewrap"><table class="auth-table"><thead><tr><th>SITE NAME</th><th>SITE ID</th><th>WALLET GROUP</th><th>STATUS</th><th>ACTION</th></tr></thead>
-  <tbody id="smRows"><tr><td colspan="5" class="auth-empty-cell"><div class="auth-loading-center"><span class="auth-loading-dots"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div></td></tr></tbody></table></div>
+  <div class="auth-tablewrap"><table class="auth-table">
+<thead>
+  <tr>
+<th>SITE NAME</th>
+<th>SITE ID</th>
+<th>WALLET GROUP</th>
+<th>STATUS</th>
+<th>CREATE DATE</th>
+<th>EDIT DATE</th>
+<th>ACTION</th>
+  </tr>
+  </thead>
+  <tbody id="smRows"><tr><td colspan="7" class="auth-empty-cell"><div class="auth-loading-center"><span class="auth-loading-dots"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div></td></tr></tbody></table></div>
   <div id="smPagination" class="sm-pagination" hidden><span id="smPageInfo" class="sm-page-info"></span><div id="smPageNumbers" class="sm-page-numbers"></div>
   <div class="sm-page-size"><select id="smPageSize" data-shared-dropdown data-placeholder="Rows per page" aria-label="Sites per page"><option value="10">10 / page</option><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select></div>
   <div class="sm-page-goto"><span>Go to</span><input id="smPageJump" type="number" min="1" aria-label="Go to site page"><span>Page</span></div></div>
@@ -3818,7 +3859,7 @@ function loadingRow(message = 'Please wait while fetching...') {
   const tr = document.createElement('tr');
   const td = document.createElement('td');
 
-  td.colSpan = 5;
+  td.colSpan = 7;
   td.className = 'auth-empty-cell';
 
   if (typeof window.createLoadingState === 'function') {
@@ -3837,7 +3878,7 @@ if (!shown.length) {
   const tr = document.createElement('tr');
   const td = document.createElement('td');
 
-  td.colSpan = 5;
+  td.colSpan = 7;
   td.className = 'auth-empty-cell';
 
   const message = records.length === 0 && !query && !selectedStatuses.length
@@ -3857,7 +3898,21 @@ if (!shown.length) {
   tr.appendChild(td);
   tbody.appendChild(tr);
 }
-for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);const actions=makeCell(tr,'');actions.textContent='';const edit = document.createElement('button');
+for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'—');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);
+
+// ==========================================
+// SITE MANAGEMENT - CREATE & EDIT DATE
+// ==========================================
+
+const createdCell = makeCell(tr, date(site.createdAt));
+createdCell.classList.add('site-date-cell');
+
+const editedCell = makeCell(tr, date(site.updatedAt));
+editedCell.classList.add('site-date-cell');
+
+// ACTION - kekal column terakhir
+const actions = makeCell(tr, '');
+actions.textContent = '';const edit = document.createElement('button');
 
 edit.type = 'button';
 edit.className = 'btn-edit-new';
