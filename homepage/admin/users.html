@@ -1877,11 +1877,23 @@
   background: var(--input, #141414);
 }
 
-.auth-risk-loading {
-  padding: 20px 12px;
-  color: var(--text);
+
+/* ==========================================
+   RISK ASSESSMENT - REUSE TABLE LOADING
+   ========================================== */
+
+.auth-risk-content .auth-loading-center {
+  width: 100%;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9bb5da;
   font-size: 12px;
 }
+
 
 .auth-risk-tablewrap {
   width: 100%;
@@ -3206,10 +3218,25 @@ function renderRiskAssessment(user, container) {
 
     content.replaceChildren();
 
-    const loading = document.createElement('div');
-    loading.className = 'auth-risk-loading';
-    loading.textContent = 'Loading Risk Assessment...';
-    content.appendChild(loading);
+
+const loading = document.createElement('div');
+
+loading.className = 'auth-loading-center';
+
+loading.innerHTML = `
+  <span class="auth-loading-dots" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </span>
+  <span>Please wait while fetching...</span>
+`;
+
+loading.setAttribute('role', 'status');
+
+content.appendChild(loading);
+
 
     try {
       const response = await api(
