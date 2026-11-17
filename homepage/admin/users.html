@@ -2209,6 +2209,69 @@ td:last-child .site-actions {
     text-align: center;
   }
 }
+    /* ==========================================
+   AUTH USERS - RESET PASSWORD BUTTON
+   ========================================== */
+
+.auth-reset-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--tx-border);
+}
+
+.auth-reset-toolbar button {
+  height: 34px !important;
+  padding: 0 16px !important;
+  white-space: nowrap;
+}
+
+.auth-reset-modal {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-reset-modal .auth-formgrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.auth-reset-modal .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.auth-reset-modal .field label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-reset-modal input {
+  width: 100%;
+  height: 34px;
+}
+
+.auth-reset-actions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--tx-border);
+}
+
+@media (max-width: 550px) {
+  .auth-reset-toolbar button {
+    width: 100%;
+  }
+
+  .auth-reset-actions {
+    flex-wrap: wrap;
+  }
+}
 </style>
 </head>
 <body>
@@ -2447,10 +2510,66 @@ td:last-child .site-actions {
   <form id="userForm">
     <div id="modalFields" class="auth-modal-fields">
       <div class="formgrid auth-formgrid">
+          <!-- RESET PASSWORD - EDIT USER ONLY -->
+<div class="field full" id="resetPasswordWrap" hidden>
+  <div class="auth-reset-toolbar">
+    <button
+      type="button"
+      id="openResetPassword"
+      class="btn-primary-new"
+    >
+      Reset Password
+    </button>
+  </div>
+</div>
         <div class="field full" id="uidWrap" hidden><label for="uid">Firebase UID</label><div class="auth-uid-field"><input id="uid" readonly data-new-ui-input><button type="button" class="btn-cancel-new" id="copyUid">Copy</button></div></div>
-        <div class="field full"><label for="username">Username</label><input id="username" data-new-ui-input required minlength="3" maxlength="40" pattern="[a-z0-9._\-]{3,40}" placeholder="e.g. admin_5g88" autocomplete="off"></div>
-        <div class="field"><label for="password">Password</label><input id="password" data-new-ui-input type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters"><div class="hint" id="passwordHint">Required for new accounts</div></div>
-        <div class="field"><label for="secondPassword">2nd Password · 6-digit PIN</label><input id="secondPassword" data-new-ui-input type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="new-password" placeholder="6 digits"><div class="hint" id="pinHint">Required for new accounts</div></div>
+<div class="field full" id="usernameWrap">
+  <label for="username">Username</label>
+  <input
+    id="username"
+    data-new-ui-input
+    required
+    minlength="3"
+    maxlength="40"
+    placeholder="e.g. admin_5g88"
+    autocomplete="off"
+  >
+</div>
+<div class="field" id="passwordWrap">
+  <label for="password">Password</label>
+  <input
+    id="password"
+    data-new-ui-input
+    type="password"
+    minlength="6"
+    maxlength="128"
+    autocomplete="new-password"
+    placeholder="At least 6 characters"
+  >
+  <div class="hint" id="passwordHint">
+    Required for new accounts
+  </div>
+</div>
+
+<div class="field" id="secondPasswordWrap">
+  <label for="secondPassword">
+    2nd Password · 6-digit PIN
+  </label>
+  <input
+    id="secondPassword"
+    data-new-ui-input
+    type="password"
+    inputmode="numeric"
+    pattern="[0-9]{6}"
+    minlength="6"
+    maxlength="6"
+    autocomplete="new-password"
+    placeholder="6 digits"
+  >
+  <div class="hint" id="pinHint">
+    Required for new accounts
+  </div>
+</div>
         <div class="field full"><label class="auth-switch-row"><span><strong>Active account</strong><small>Allow this account to sign in</small></span><span class="shared-active-switch"><input id="enabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div>
         <div class="field full"><div class="notice auth-notice" id="accountNote">A Site Admin login will be created. Open its account to manage sites and permissions.</div></div>
       </div>
@@ -2552,6 +2671,177 @@ function showModal(){
   NewUI.activeSwitch?.init?.(form);
 }
 function closeModal(){if(formModal)formModal.close();}
+    
+/* ==========================================
+   AUTH USERS - RESET PASSWORD MODAL
+   ========================================== */
+
+let resetPasswordModal = null;
+
+function openUserResetPassword() {
+  if (!editing?.uid) {
+    toast('Please select a user first.', 'error');
+    return;
+  }
+
+  if (resetPasswordModal) return;
+
+  if (!window.NewUI?.modal?.open) {
+    toast('Custom modal unavailable.', 'error');
+    return;
+  }
+
+  // Simpan UID yang tepat semasa modal dibuka.
+  const targetUid = editing.uid;
+  const targetUsername = editing.username;
+
+  const root = document.createElement('div');
+  root.className = 'auth-reset-modal';
+
+  root.innerHTML = `
+    <form id="authResetForm" autocomplete="off">
+      <div class="auth-formgrid">
+
+        <div class="field full">
+          <div class="auth-notice">
+            Reset password for:
+            <strong></strong>
+            <div class="hint">
+              Leave a field blank to keep its current value.
+            </div>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label for="authResetPassword">New Password</label>
+          <input
+            id="authResetPassword"
+            data-new-ui-input
+            type="password"
+            minlength="6"
+            maxlength="128"
+            autocomplete="new-password"
+            placeholder="At least 6 characters"
+          >
+        </div>
+
+        <div class="field full">
+          <label for="authResetPin">
+            New 2nd Password · 6-digit PIN
+          </label>
+          <input
+            id="authResetPin"
+            data-new-ui-input
+            type="password"
+            inputmode="numeric"
+            minlength="6"
+            maxlength="6"
+            autocomplete="new-password"
+            placeholder="6 digits"
+          >
+        </div>
+
+      </div>
+
+      <div class="auth-modal-actions auth-reset-actions">
+        <button
+          type="button"
+          id="authResetCancel"
+          class="btn-cancel-new"
+        >Cancel</button>
+
+        <button
+          type="submit"
+          id="authResetSave"
+          class="btn-primary-new"
+        >Save Password</button>
+      </div>
+    </form>
+  `;
+
+  root.querySelector('.auth-notice strong').textContent =
+    targetUsername;
+
+  resetPasswordModal = NewUI.modal.open({
+    title: 'Reset Password · ' + targetUsername,
+    width: '600px',
+    content: root,
+    onClose() {
+      root.querySelector('#authResetPassword').value = '';
+      root.querySelector('#authResetPin').value = '';
+      resetPasswordModal = null;
+    }
+  });
+
+  NewUI.init?.(root);
+
+  root.querySelector('#authResetCancel').onclick = () => {
+    resetPasswordModal?.close();
+  };
+
+  root.querySelector('#authResetForm').onsubmit = async event => {
+    event.preventDefault();
+
+    const password = root
+      .querySelector('#authResetPassword').value;
+
+    const pin = root
+      .querySelector('#authResetPin').value;
+
+    if (!password && !pin) {
+      toast('Enter a new Password or 2nd Password.', 'error');
+      return;
+    }
+
+    if (password && (password.length < 6 || password.length > 128)) {
+      toast('Password must contain 6 to 128 characters.', 'error');
+      return;
+    }
+
+    if (pin && !/^[0-9]{6}$/.test(pin)) {
+      toast('2nd Password must contain exactly 6 digits.', 'error');
+      return;
+    }
+
+    const save = root.querySelector('#authResetSave');
+    if (save.disabled) return;
+
+    save.disabled = true;
+
+    try {
+      const body = {};
+
+      if (password) body.password = password;
+      if (pin) body.secondPassword = pin;
+
+      await api(
+        '/api/admin-users/' + encodeURIComponent(targetUid),
+        {
+          method: 'PATCH',
+          body: JSON.stringify(body)
+        }
+      );
+
+      // Jangan simpan password atau PIN dalam input.
+      root.querySelector('#authResetPassword').value = '';
+      root.querySelector('#authResetPin').value = '';
+
+      toast(
+        'Password updated successfully for ' + targetUsername
+      );
+
+      resetPasswordModal?.close();
+
+      await load();
+
+    } catch (error) {
+      toast('Reset failed: ' + error.message, 'error');
+    } finally {
+      save.disabled = false;
+    }
+  };
+}
+
 async function api(path,opts={}){
   if(!auth.currentUser)throw Error('Session expired');
   const token=await auth.currentUser.getIdToken();
@@ -3664,19 +3954,64 @@ async function openPermissionEditor(u,container){
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
  });
 }
-function create(){
-  editing=null;$('userForm').reset();$('uidWrap').hidden=true;$('username').disabled=false;
-  $('password').required=true;$('secondPassword').required=true;
-  $('passwordHint').textContent='At least 6 characters';$('pinHint').textContent='Exactly 6 digits';
-  $('save').textContent='Create Username';syncSwitch();showModal();
+function create() {
+  editing = null;
+
+  $('userForm').reset();
+
+  $('resetPasswordWrap').hidden = true;
+  $('uidWrap').hidden = true;
+
+  $('usernameWrap').hidden = false;
+  $('passwordWrap').hidden = false;
+  $('secondPasswordWrap').hidden = false;
+
+  $('username').disabled = false;
+  $('username').required = true;
+
+  $('password').required = true;
+  $('secondPassword').required = true;
+
+  $('passwordHint').textContent = 'At least 6 characters';
+  $('pinHint').textContent = 'Exactly 6 digits';
+
+  $('save').textContent = 'Create Username';
+
+  syncSwitch();
+  showModal();
 }
-function manage(u){
-  editing=u;$('userForm').reset();$('uidWrap').hidden=false;$('uid').value=u.uid;
-  $('username').value=u.username;$('username').disabled=true;$('enabled').checked=!!u.enabled;
-  $('password').required=false;$('secondPassword').required=false;
-  $('passwordHint').textContent='Leave blank to keep current password';
-  $('pinHint').textContent='Leave blank to keep current PIN';
-  $('save').textContent='Save Changes';syncSwitch();showModal();
+
+function manage(u) {
+  editing = u;
+
+  $('userForm').reset();
+
+  $('resetPasswordWrap').hidden = false;
+  $('uidWrap').hidden = false;
+
+  $('usernameWrap').hidden = true;
+  $('passwordWrap').hidden = true;
+  $('secondPasswordWrap').hidden = true;
+
+  $('uid').value = u.uid;
+  $('username').value = u.username;
+  $('username').disabled = true;
+
+  // Username tidak perlu diisi semasa Edit Profile.
+  $('username').required = false;
+
+  $('enabled').checked = !!u.enabled;
+
+  $('password').required = false;
+  $('secondPassword').required = false;
+
+  $('password').value = '';
+  $('secondPassword').value = '';
+
+  $('save').textContent = 'Save Changes';
+
+  syncSwitch();
+  showModal();
 }
     
 /* ==========================================
@@ -3842,6 +4177,11 @@ $('logoutAllUsers').addEventListener('click', e => {
 });
 $('cancel').addEventListener('click',closeModal);
 $('copyUid').addEventListener('click',()=>copy($('uid').value));
+    // OPEN CUSTOM RESET PASSWORD MODAL
+$('openResetPassword').addEventListener(
+  'click',
+  openUserResetPassword
+);
 if(window.NewUI?.syncSearch){
   NewUI.syncSearch(searchInput,{onSearch:async()=>{if(ready)await load()}});
 }
