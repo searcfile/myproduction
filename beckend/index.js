@@ -15,7 +15,7 @@ if (Buffer.byteLength(process.env.PIN_PEPPER) < 32) throw Error('PIN_PEPPER must
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 if (sa.project_id !== 'myproduction-v2') throw Error('Service account must belong to myproduction-v2');  
 initializeApp({credential:cert(sa), databaseURL:process.env.FIREBASE_DATABASE_URL});
-const auth = getAuth(), db = getDatabase();
+const auth = getAuth(), db = getDatabase(); 
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
