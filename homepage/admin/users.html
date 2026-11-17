@@ -1851,7 +1851,41 @@
 .auth-risk-tabs::-webkit-scrollbar {
   display: none;
 }
+/* RISK ASSESSMENT - CUSTOM SEARCH */
 
+.auth-risk-searchbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.auth-risk-search-holder {
+  width: 300px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.auth-risk-search-holder .shared-sync-search {
+  width: 100%;
+  height: 32px;
+}
+
+/* RESPONSIVE PHONE */
+
+@media (max-width: 600px) {
+  .auth-risk-searchbar {
+    padding: 12px;
+  }
+
+  .auth-risk-search-holder {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
 .auth-risk-tab {
   flex: 0 0 auto;
   padding: 0 12px;
@@ -3125,7 +3159,71 @@ function renderRiskAssessment(user, container) {
 
   const content = document.createElement('div');
   content.className = 'auth-risk-content';
+/* RISK ASSESSMENT - SEARCH BAR */
 
+const searchbar = document.createElement('div');
+searchbar.className = 'auth-risk-searchbar';
+
+const searchHolder = document.createElement('div');
+searchHolder.className = 'auth-risk-search-holder';
+
+const searchInput = document.createElement('input');
+searchInput.type = 'search';
+searchInput.placeholder = 'Search';
+searchInput.setAttribute('aria-label', 'Search risk assessment');
+searchInput.autocomplete = 'off';
+
+searchHolder.appendChild(searchInput);
+searchbar.appendChild(searchHolder);
+
+let riskSearchText = '';
+let riskRows = [];
+let riskMode = 'ip';
+
+function filterRiskRows() {
+  const keyword = riskSearchText.trim().toLowerCase();
+
+  const filtered = !keyword
+    ? riskRows
+    : riskRows.filter(record => {
+        const history = Array.isArray(record.ipHistory)
+          ? record.ipHistory.map(item => item?.ip || '').join(' ')
+          : '';
+
+        const matched = record.matchedIp?.ip || '';
+
+        return [
+          ...(Array.isArray(record.siteIds) ? record.siteIds : []),
+          record.username,
+          record.uid,
+          record.lastDevice?.ip,
+          record.lastDevice?.fingerprint,
+          record.lastDevice?.id,
+          record.lastDevice?.browser,
+          record.lastDevice?.os,
+          matched,
+          history
+        ].some(value =>
+          String(value ?? '').toLowerCase().includes(keyword)
+        );
+      });
+
+  renderTable(filtered, riskMode);
+}
+
+searchInput.addEventListener('input', () => {
+  riskSearchText = searchInput.value;
+  filterRiskRows();
+});
+
+if (window.NewUI?.syncSearch) {
+  NewUI.syncSearch(searchInput, {
+    onSearch: async value => {
+      riskSearchText = value;
+      filterRiskRows();
+    }
+  });
+}
 const modes = [
   ['ip', 'Same IP Address'],
   ['password', 'Same Password'],
@@ -3335,8 +3433,13 @@ span.title = key === 'latestDevice'
     content.appendChild(wrap);
   }
 
-  async function selectMode(mode) {
-    const requestId = ++requestNumber;
+async function selectMode(mode) {
+  const requestId = ++requestNumber;
+
+  riskMode = mode;
+  riskRows = [];
+  riskSearchText = '';
+  searchInput.value = '';
 
     tabs.querySelectorAll('.auth-risk-tab').forEach(btn => {
       const active = btn.dataset.mode === mode;
@@ -3376,17 +3479,20 @@ content.appendChild(loading);
 
       if (requestId !== requestNumber) return;
 
-      const rows = Array.isArray(response.users)
-        ? response.users
-        : [];
+const rows = Array.isArray(response.users)
+  ? response.users
+  : [];
 
-     renderTable(rows.length ? rows : [user], mode);
+riskRows = rows.length ? rows : [user];
+
+filterRiskRows();
 
     } catch (error) {
       if (requestId !== requestNumber) return;
 
       console.error('Risk Assessment:', error);
-      renderTable([user], mode);
+     riskRows = [user];
+filterRiskRows();
       toast('Unable to load matching users', 'error');
     }
   }
@@ -3402,9 +3508,13 @@ content.appendChild(loading);
     tabs.appendChild(button);
   });
 
-  container.append(tabs, content);
+container.append(
+  tabs,
+  searchbar,
+  content
+);
 
-  selectMode('ip');
+selectMode('ip');
 }
 
 
