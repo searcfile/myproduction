@@ -4142,7 +4142,27 @@ siteNameInput.addEventListener('input', () => {
       .trim()
       .toLowerCase();
   }
-});root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}const payload={name:root.querySelector('#smName').value.trim(),walletGroupId:root.querySelector('#smWallet').value.trim()||null,active:root.querySelector('#smEnabled').checked};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();
+});root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}// ==========================================
+// SITE NAME - VALIDATION BEFORE SAVE
+// ==========================================
+
+const siteName = root.querySelector('#smName')
+  .value.trim().toUpperCase();
+
+if (!editingId && siteName.toLowerCase() !== id) {
+  notify(
+    'Site Name must match Site ID / Username',
+    'error'
+  );
+  return;
+}
+
+const payload = {
+  name: siteName,
+  walletGroupId:
+    root.querySelector('#smWallet').value.trim() || null,
+  active: root.querySelector('#smEnabled').checked
+};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();
 
 notify('Site saved successfully.');
 
