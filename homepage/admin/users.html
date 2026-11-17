@@ -2214,15 +2214,46 @@ td:last-child .site-actions {
    AUTH USERS - PLAYER DETAIL + PLAYER INFO
    ========================================== */
 
-.auth-player-grid {
-  display: grid;
+
+/* ==========================================
+   PLAYER DETAIL + PLAYER INFO
+   RESPONSIVE 2 GRID / 1 GRID
+   ========================================== */
+
+/* Desktop - 2 columns */
+.auth-formgrid > .auth-player-grid.field.full {
+  display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-column: 1 / -1;
   gap: 12px;
   width: 100%;
   min-width: 0;
   align-items: stretch;
-  container-type: normal;
 }
+
+/* Kedua-dua card */
+.auth-player-grid > .auth-player-card {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tablet / phone / modal sempit */
+@container (max-width: 680px) {
+  .auth-formgrid > .auth-player-grid.field.full {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Fallback untuk browser tanpa container queries */
+@supports not (container-type: inline-size) {
+  @media (max-width: 768px) {
+    .auth-formgrid > .auth-player-grid.field.full {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
 
 .auth-player-card {
   min-width: 0;
