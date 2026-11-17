@@ -2091,7 +2091,64 @@ td.site-date-cell {
   stroke: currentColor;
   fill: none;
 }
+/* ==========================================
+   SITE MANAGEMENT - EDIT + DELETE ACTION
+   ========================================== */
 
+.site-manager .site-table-card .auth-table
+td:last-child .site-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  width: 100%;
+}
+
+/* Delete button 32x32 */
+.site-manager .site-delete-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid #ff4d4f;
+  border-radius: 8px !important;
+
+  background: transparent;
+  color: #ff4d4f;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all .2s ease;
+}
+
+.site-manager .site-delete-btn:hover {
+  color: #ff7875;
+  border-color: #ff7875;
+  background: rgba(255,77,79,.10);
+}
+
+.site-manager .site-delete-btn svg {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.site-manager .site-delete-btn:focus-visible {
+  outline: 2px solid #ff7875;
+  outline-offset: 2px;
+}
 /* Pagination sama ukuran dengan Admin Users */
 .site-manager .sm-pagination {
   display: flex !important;
@@ -3969,7 +4026,61 @@ edit.innerHTML = `
 `;
 
 edit.onclick = () => openEditor(site);
-actions.append(edit);tbody.append(tr)}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
+
+// ==========================================
+// SITE MANAGEMENT - ACTION BUTTONS
+// ==========================================
+
+// Container Edit + Delete
+const actionWrap = document.createElement('div');
+actionWrap.className = 'site-actions';
+
+// Button Edit asal
+actionWrap.appendChild(edit);
+
+// Button Delete
+const deleteBtn = document.createElement('button');
+
+deleteBtn.type = 'button';
+deleteBtn.className = 'btn-delete-new site-delete-btn';
+deleteBtn.title = 'Delete Site';
+deleteBtn.setAttribute(
+  'aria-label',
+  'Delete ' + site.name
+);
+
+deleteBtn.innerHTML = `
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 6h18"/>
+    <path d="M8 6V4h8v2"/>
+    <path d="M19 6l-1 14H6L5 6"/>
+    <path d="M10 10v7"/>
+    <path d="M14 10v7"/>
+  </svg>
+`;
+
+deleteBtn.onclick = () => deleteSite(site, deleteBtn);
+
+// Susunan: Edit kiri, Delete kanan
+actionWrap.appendChild(deleteBtn);
+
+// Masukkan ke column ACTION
+actions.appendChild(actionWrap);
+
+// Masukkan row ke table
+tbody.appendChild(tr);
+}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
 async function loadSites(){if(busy)return;busy=true;el('smCreate').disabled=true;el('smTotal').innerHTML=el('smActive').innerHTML=el('smInactive').innerHTML='<span class="auth-loading-dots auth-stat-dots"><span></span><span></span><span></span><span></span></span>';loadingRow();el('smPagination').hidden=true;setStatus('');const loadingStarted = performance.now();try{records=normalize(await api('/api/sites'));const remaining = 700 - (performance.now() - loadingStarted);
 if (remaining > 0) {
   await new Promise(resolve => setTimeout(resolve, remaining));
@@ -3979,6 +4090,42 @@ el('smTotal').textContent = '!';
 el('smActive').textContent = '!';
 el('smInactive').textContent = '!';
 loadingRow('<span>Cannot load sites. Please try again.</span>');setStatus('Cannot load sites: '+error.message,true);notify('Cannot load sites: '+error.message,'error')}finally{busy=false}}
+// ==========================================
+// SITE MANAGEMENT - DELETE SITE
+// ==========================================
+
+async function deleteSite(site, target) {
+  if (!window.NewUI?.confirm) {
+    notify("Confirmation component unavailable", "error");
+    return;
+  }
+
+  await NewUI.confirm({
+    target,
+    title: "Delete Site",
+    message:
+      'Delete site "' + site.name +
+      '" (' + site.id + ') permanently? ' +
+      "This action cannot be undone.",
+
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    loadingText: "Deleting...",
+
+    onConfirm: async () => {
+      await api(
+        "/api/sites/" + encodeURIComponent(site.id),
+        { method: "DELETE" }
+      );
+
+      // Kembali ke page pertama selepas delete
+      currentPage = 1;
+
+      await loadSites();
+      notify("Site deleted successfully.");
+    }
+  });
+}
 function openEditor(site=null){if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return}const editingId=site?.id||null;const root=document.createElement('div');root.className='site-form-modal';root.innerHTML=`<form id="smForm" class="site-form"><div class="site-field"><label for="smName">Site Name</label><input id="smName" data-new-ui-input required maxlength="100" placeholder="e.g. 5G88"></div><div class="site-field"><label for="smId">Site ID</label><input id="smId" data-new-ui-input required maxlength="48" pattern="[a-z0-9_\-]+" placeholder="e.g. 5g88"><div class="site-hint">Site ID cannot be changed later.</div></div><div class="site-field full"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" data-new-ui-input maxlength="60" placeholder="e.g. group-a"></div><div class="site-field full"><label class="site-switch-row"><span><strong>Active site</strong><small>Allow this site to remain enabled</small></span><span class="shared-active-switch"><input id="smEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div><div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div></form>`;root.querySelector('#smName').value=site?.name||'';root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}const payload={name:root.querySelector('#smName').value.trim(),walletGroupId:root.querySelector('#smWallet').value.trim()||null,active:root.querySelector('#smEnabled').checked};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();
 
 notify('Site saved successfully.');
