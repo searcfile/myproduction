@@ -4644,23 +4644,35 @@ return (
 
 
 
- // ==========================================
- // POST - CREATE OR COMPLETE SITE ASSIGNMENT
- // ==========================================
+ 
+/* ==========================================
+   CREATE SITE + ASSIGN USERNAME TOGETHER
+   ========================================== */
 
 app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
-    const id = String(req.body?.id || "").trim().toLowerCase();
-    const enteredName = String(req.body?.name || "").trim().toLowerCase();
+    const id = String(req.body?.id || "")
+      .trim()
+      .toLowerCase();
+
+    const name = String(req.body?.name || "")
+      .trim()
+      .toLowerCase();
 
     if (!siteIdOK(id) || !usernameOK(id)) {
       return fail(res, 400, "Invalid Site ID or username");
     }
 
-    if (enteredName !== id) {
+    if (name !== id) {
       return fail(res, 400, "Site Name must match username");
     }
 
+    const data = validateSite({
+      ...req.body,
+      name: id.toUpperCase()
+    });
+
+    // 1. Cari username yang sudah dicipta.
     const index = (
       await db.ref(`adminUsernameIndex/${id}`).once("value")
     ).val();
@@ -4670,8 +4682,9 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
     }
 
     const uid = index.uid;
-    const profileRef = db.ref(`adminUsers/${uid}`);
-    const profile = (await profileRef.once("value")).val();
+
+    // 2. Semak profil Site Admin.
+    const profile = await adminProfile(uid);
 
     if (
       !profile ||
@@ -4685,24 +4698,35 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
       ? profile.siteIds
       : [];
 
-    if (assigned.length && (
-      assigned.length !== 1 || assigned[0] !== id
-    )) {
-      return fail(res, 409, "Username already has another site assignment");
+    if (
+      assigned.length > 0 &&
+      !(assigned.length === 1 && assigned[0] === id)
+    ) {
+      return fail(
+        res,
+        409,
+        "Username already has another site assignment"
+      );
     }
 
+    // 3. Semak site sedia ada.
     const siteRef = db.ref(`sites/${id}`);
     const existingSite = (await siteRef.once("value")).val();
 
-    // Jangan ambil alih site lama yang tidak sepadan.
-    if (existingSite && (
-      String(existingSite.name || "").toLowerCase() !== id ||
-      existingSite.createdBy !== req.admin.uid
-    )) {
-      return fail(res, 409, "Existing site requires manual review");
+    if (existingSite) {
+      if (
+        String(existingSite.name || "").toLowerCase() !== id ||
+        existingSite.createdBy !== req.admin.uid
+      ) {
+        return fail(
+          res,
+          409,
+          "Existing site requires manual review"
+        );
+      }
     }
 
-    // Pastikan site ini tidak di-assign kepada admin lain.
+    // 4. Jangan assign site kepada akaun lain.
     const allProfiles = (
       await db.ref("adminUsers").once("value")
     ).val() || {};
@@ -4715,101 +4739,93 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
     );
 
     if (usedByOther) {
-      return fail(res, 409, "Site is assigned to another admin");
-    }
-
-    if (!existingSite) {
-      const data = validateSite({
-        ...req.body,
-        name: id.toUpperCase()
-      });
-
-      const timestamp = now();
-
-      const created = await siteRef.transaction(
-        current => current === null
-          ? {
-              ...data,
-              name: id.toUpperCase(),
-              createdAt: timestamp,
-              createdBy: req.admin.uid,
-              updatedAt: timestamp
-            }
-          : undefined,
-        undefined,
-        false
-      );
-
-      if (!created.committed) {
-        return fail(res, 409, "Site changed during creation. Please retry.");
-      }
-    }
-
-    // Semak semula pemilik site sebelum assignment.
-    const latestSite = (await siteRef.once("value")).val();
-
-    if (
-      !latestSite ||
-      String(latestSite.name || "").toLowerCase() !== id ||
-      latestSite.createdBy !== req.admin.uid
-    ) {
-      return fail(res, 409, "Site ownership verification failed");
-    }
-
-    // Sambung assignment jika belum selesai.
-    const assignment = await profileRef.transaction(
-      current => {
-        if (
-          !current ||
-          current.role !== "siteadmin" ||
-          String(current.username || "").toLowerCase() !== id
-        ) return;
-
-        const ids = Array.isArray(current.siteIds)
-          ? current.siteIds
-          : [];
-
-        if (ids.length === 1 && ids[0] === id) {
-          return current;
-        }
-
-        if (ids.length !== 0) return;
-
-        return {
-          ...current,
-          siteIds: [id],
-          updatedAt: now()
-        };
-      },
-      undefined,
-      false
-    );
-
-    if (!assignment.committed) {
       return fail(
         res,
         409,
-        "Site exists but assignment is incomplete. Please retry."
+        "Site is assigned to another admin"
+      );
+    }
+
+    // 5. Jika sudah lengkap, pulangkan success.
+    if (
+      existingSite &&
+      assigned.length === 1 &&
+      assigned[0] === id
+    ) {
+      return res.json({
+        ok: true,
+        id,
+        name: existingSite.name,
+        message: "Site already created and assigned"
+      });
+    }
+
+    const timestamp = now();
+
+    // 6. Sediakan semua perubahan dahulu.
+    const updates = {};
+
+    if (!existingSite) {
+      updates[`sites/${id}`] = {
+        ...data,
+        name: id.toUpperCase(),
+        createdAt: timestamp,
+        createdBy: req.admin.uid,
+        updatedAt: timestamp
+      };
+    }
+
+    updates[`adminUsers/${uid}/siteIds`] = [id];
+    updates[`adminUsers/${uid}/updatedAt`] = timestamp;
+
+    // 7. Satu atomic multi-location update.
+    // Jika operasi ini gagal, tiada perubahan separa
+    // daripada update ini yang disimpan.
+    await db.ref().update(updates);
+
+    // 8. Sahkan rekod selepas update.
+    const [siteSnap, userSnap] = await Promise.all([
+      siteRef.once("value"),
+      db.ref(`adminUsers/${uid}`).once("value")
+    ]);
+
+    const savedSite = siteSnap.val();
+    const savedUser = userSnap.val();
+
+    if (
+      !savedSite ||
+      !savedUser ||
+      !Array.isArray(savedUser.siteIds) ||
+      !savedUser.siteIds.includes(id)
+    ) {
+      console.error("[SITE VERIFY FAILED]", { id, uid });
+
+      return fail(
+        res,
+        503,
+        "Site save verification failed. Check Firebase."
       );
     }
 
     return res.status(existingSite ? 200 : 201).json({
       ok: true,
       id,
-      name: id.toUpperCase(),
+      name: savedSite.name,
       message: existingSite
         ? "Existing site assignment completed"
-        : "Site created and username assigned"
+        : "Site created and assigned successfully"
     });
 
   } catch (error) {
-    console.error("Create/complete site:", error);
+    console.error("[CREATE SITE ERROR]", error);
 
-    return fail(
-      res,
-      500,
-      "Cannot complete site creation"
-    );
+    if (
+      /Site name|wallet group|Site status/i.test(error.message)
+    ) {
+      return fail(res, 400, error.message);
+    }
+
+    return fail(res, 500, "Cannot save site");
   }
 });
 
