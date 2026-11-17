@@ -2654,6 +2654,20 @@ td:last-child .site-actions {
 .auth-risk-tablewrap {
   overflow-x: auto;
 }
+
+/* RISK ASSESSMENT - SITE COLUMN */
+.auth-risk-table th:first-child,
+.auth-risk-table td:first-child {
+  min-width: 150px;
+  width: 150px;
+  white-space: nowrap;
+}
+
+.auth-risk-table td:first-child .auth-risk-value {
+  font-weight: 500;
+  color: var(--text);
+}
+
 </style>
 </head>
 <body>
@@ -3126,8 +3140,12 @@ const modes = [
 
 
 
+
+const siteField = [['Site', 'site']];
+
 const fields = mode === 'ip'
   ? [
+      ...siteField,
       ['Username', 'username'],
       ['Password', 'password'],
       ['Matched IP', 'matchedIp'],
@@ -3139,12 +3157,14 @@ const fields = mode === 'ip'
     ]
   : mode === 'player-ip'
   ? [
+      ...siteField,
       ['Username', 'username'],
       ['Password', 'password'],
       ['Matched IP Address', 'matchedIp']
     ]
   : mode === 'fingerprint'
   ? [
+      ...siteField,
       ['Username', 'username'],
       ['Password', 'password'],
       ['Browser Fingerprint', 'fingerprint'],
@@ -3154,6 +3174,7 @@ const fields = mode === 'ip'
       ['Latest Device', 'latestDevice']
     ]
   : [
+      ...siteField,
       ['Username', 'username'],
       ['Firebase UID', 'uid'],
       ['Password', 'password'],
@@ -3165,6 +3186,7 @@ const fields = mode === 'ip'
       ['IP Address', 'ip'],
       ['Browser ID', 'browserId']
     ];
+
 
 
 
@@ -3190,8 +3212,11 @@ const fields = mode === 'ip'
     rows.forEach(record => {
       const tr = document.createElement('tr');
 
-      const values = {
-        username: record.username || '—',
+const values = {
+  site: Array.isArray(record.siteIds) && record.siteIds.length
+    ? record.siteIds.join(', ')
+    : '—',
+  username: record.username || '—',
         uid: record.uid || '—',
         password: record.passwordTracked
   ? (
