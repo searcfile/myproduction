@@ -3138,7 +3138,13 @@ function renderRiskAssessment(user, container) {
       const values = {
         username: record.username || '—',
         uid: record.uid || '—',
-        password: 'Reset required',
+        password: record.passwordTracked
+  ? (
+      record.passwordUpdatedAt
+        ? 'Updated · ' + formatRiskDate(record.passwordUpdatedAt)
+        : 'Password tracked'
+    )
+  : 'Password not tracked',
         secondPassword: 'Reset required',
         firstLoginAt: formatRiskDate(record.firstLoginAt),
         lastLoginAt: formatRiskDate(record.lastLoginAt),
