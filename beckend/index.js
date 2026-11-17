@@ -488,6 +488,36 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
 
     const loginIp = req.ip || null;
     await recordLoginIp(uid, loginIp, timestamp);
+    
+const device = req.body?.device;
+
+if (device && typeof device === 'object') {
+  const id = typeof device.id === 'string'
+    ? device.id.trim()
+    : '';
+
+  const browser = typeof device.browser === 'string'
+    ? device.browser.slice(0, 80)
+    : '';
+
+  const os = typeof device.os === 'string'
+    ? device.os.slice(0, 80)
+    : '';
+
+  const ua = typeof device.ua === 'string'
+    ? device.ua.slice(0, 512)
+    : '';
+
+  if (id && id.length <= 256) {
+    await userRef.child('lastDevice').update({
+      id,
+      browser,
+      os,
+      ua,
+      recordedAt: timestamp
+    });
+  }
+}
 
 
     return res.json({ ok: true });
