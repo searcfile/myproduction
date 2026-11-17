@@ -442,8 +442,19 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
     // LAST LOGIN - kemas kini setiap login.
     await userRef.child('lastLoginAt').set(timestamp);
 
-    // Simpan Public IP yang telah disahkan.
+
+    // DEBUG sementara - semak sumber IP dari Render.
+    console.log('[LOGIN IP DEBUG]', {
+      expressIp: req.ip,
+      expressIps: req.ips,
+      socketIp: req.socket?.remoteAddress,
+      forwardedFor: req.get('x-forwarded-for') || null
+    });
+
     const loginIp = req.ip || null;
+
+    await recordLoginIp(uid, loginIp, timestamp);
+
 
     await recordLoginIp(uid, loginIp, timestamp);
 
@@ -674,16 +685,6 @@ app.get(
           );
 
           if (hasMatch) {
-            matchedIds.add(otherUid);
-          }
-        }
-
-
-          if (
-            selectedIp &&
-            otherIp &&
-            selectedIp === otherIp
-          ) {
             matchedIds.add(otherUid);
           }
         }
