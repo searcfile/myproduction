@@ -3587,7 +3587,7 @@ async function openPermissionEditor(u,container){
  <div><label for="permissionUid">Firebase UID</label><input id="permissionUid" data-new-ui-input readonly></div>
  <div><label for="permissionDisplayName">Display Name</label><input id="permissionDisplayName" data-new-ui-input maxlength="80" required></div>
  <div><label for="permissionRole">Role</label><input id="permissionRole" data-new-ui-input readonly value="Site Admin"></div></div>
- <div class="auth-permission-section">Allowed Sites</div><div id="permissionSiteChoices"></div>
+ <div class="auth-permission-section">Site Assignment</div><div id="permissionSiteChoices"></div>
  <p class="auth-permission-note">Assign active sites before saving permissions.</p>
  <div class="auth-permission-section">Module Permissions</div>
  
@@ -3637,7 +3637,7 @@ async function openPermissionEditor(u,container){
   sites=response.sites||[];
   const visible=sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id));
   siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
-   placeholder:visible.length?'Select Allowed Sites':'No sites available',
+   placeholder:visible.length?'Select Site Assignment':'No sites available',
    options:visible.map(s=>({value:s.id,label:s.name+' ('+s.id+')'+(s.active?'':' · inactive')})),
    value:(u.siteIds||[]).filter(id=>visible.some(s=>s.id===id))
   });
