@@ -173,7 +173,9 @@ function publicUser(u, p) {
     createdAt: p.createdAt || null,
     updatedAt: p.updatedAt || null,
     firstLoginAt: p.firstLoginAt || null,
-    lastLoginAt: p.lastLoginAt || null
+    lastLoginAt: p.lastLoginAt || null,
+passwordUpdatedAt: p.passwordUpdatedAt || null,
+passwordTracked: Boolean(p.passwordMatchTag)
   };
 }
 
@@ -414,6 +416,7 @@ app.post('/api/account/change-password', requireAdmin, async (req, res) => {
     });
 await db.ref(`adminUsers/${req.admin.uid}`).update({
   passwordMatchTag: passwordMatchTag(newPassword),
+  passwordUpdatedAt: now(),
   updatedAt: now()
 });
     await auth.revokeRefreshTokens(req.admin.uid);
@@ -864,6 +867,7 @@ if (!passwordOK(req.body.password)) {
    authUpdates.password=req.body.password;
    updates.passwordMatchTag =
   passwordMatchTag(req.body.password);
+ updates.passwordUpdatedAt = now();
   }
   if(Object.hasOwn(req.body,'secondPassword')){
    if(!pinOK(String(req.body.secondPassword)))return fail(res,400,'PIN must be exactly 6 digits');
