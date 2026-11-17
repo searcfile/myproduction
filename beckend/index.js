@@ -669,7 +669,7 @@ app.get(
       const uid = String(req.params.uid || '');
       const type = String(req.query.type || '');
 
-      if (!['ip', 'password'].includes(type)) {
+      if (!['ip', 'password', 'fingerprint'].includes(type)) {
         return fail(res, 400, 'Invalid risk type');
       }
 
@@ -734,7 +734,10 @@ const getIpHistory = profile => {
 
       const selectedTag =
         String(selected.passwordMatchTag || '');
+const getFingerprint = profile =>
+  String(profile?.lastDevice?.id || '').trim();
 
+const selectedFingerprint = getFingerprint(selected);
       const matchedIds = new Set([uid]);
 
       for (const [otherUid, profile] of Object.entries(profiles)) {
@@ -765,6 +768,17 @@ const getIpHistory = profile => {
             matchedIds.add(otherUid);
           }
         }
+if (type === 'fingerprint') {
+  const otherFingerprint = getFingerprint(profile);
+
+  if (
+    selectedFingerprint &&
+    otherFingerprint &&
+    selectedFingerprint === otherFingerprint
+  ) {
+    matchedIds.add(otherUid);
+  }
+}
       }
 
       const users = [];
