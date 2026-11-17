@@ -2209,6 +2209,112 @@ td:last-child .site-actions {
     text-align: center;
   }
 }
+    
+/* ==========================================
+   AUTH USERS - PLAYER DETAIL + PLAYER INFO
+   ========================================== */
+
+.auth-player-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+  container-type: normal;
+}
+
+.auth-player-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--input-line);
+  border-radius: 10px;
+  background: var(--input);
+}
+
+.auth-player-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--input-line);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-player-card-title svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  stroke: var(--blue);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-player-card .field {
+  min-width: 0;
+  width: 100%;
+}
+
+.auth-player-card .auth-uid-field {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-player-card .auth-reset-toolbar {
+  padding: 0;
+  margin: 0 0 18px;
+  border: 0;
+}
+
+.auth-player-card .auth-reset-toolbar button {
+  width: 100%;
+}
+
+.auth-player-card .auth-switch-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.auth-player-card .auth-switch-row > span:first-child {
+  gap: 5px;
+}
+
+/* Responsive mengikut lebar modal, bukan hanya skrin */
+.auth-modal-fields {
+  container-type: inline-size;
+}
+
+@container (max-width: 680px) {
+  .auth-player-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-player-card {
+    padding: 10px;
+  }
+
+  .auth-player-card .auth-uid-field {
+    flex-wrap: wrap;
+  }
+}
+
+/* Sembunyikan layout Player ketika Create Username */
+.auth-modal-fields:not(.is-editing) .auth-player-grid {
+  display: none !important;
+}
+
     /* ==========================================
    AUTH USERS - RESET PASSWORD BUTTON
    ========================================== */
@@ -2562,19 +2668,105 @@ td:last-child .site-actions {
   <form id="userForm">
     <div id="modalFields" class="auth-modal-fields">
       <div class="formgrid auth-formgrid">
-          <!-- RESET PASSWORD - EDIT USER ONLY -->
-<div class="field full" id="resetPasswordWrap" hidden>
-  <div class="auth-reset-toolbar">
-    <button
-      type="button"
-      id="openResetPassword"
-      class="btn-primary-new"
-    >
-      Reset Password
-    </button>
-  </div>
+
+<!-- ==========================================
+     PLAYER DETAIL + PLAYER INFO
+     ========================================== -->
+
+<div class="auth-player-grid field full">
+
+  <!-- LEFT: PLAYER DETAIL -->
+  <section class="auth-player-card">
+
+    <div class="auth-player-card-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 21v-2a8 8 0 0 1 16 0v2"></path>
+      </svg>
+      <span>Player Detail</span>
+    </div>
+
+    <div class="field full" id="uidWrap" hidden>
+      <label for="uid">Firebase UID</label>
+
+      <div class="auth-uid-field">
+        <input
+          id="uid"
+          readonly
+          data-new-ui-input
+        >
+
+        <button
+          type="button"
+          class="btn-cancel-new"
+          id="copyUid"
+        >
+          Copy
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RIGHT: PLAYER INFO -->
+  <section class="auth-player-card">
+
+    <div class="auth-player-card-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+      <span>Player Info</span>
+    </div>
+
+    <div class="field full" id="resetPasswordWrap" hidden>
+      <div class="auth-reset-toolbar">
+        <button
+          type="button"
+          id="openResetPassword"
+          class="btn-primary-new"
+        >
+          Reset Password
+        </button>
+      </div>
+    </div>
+
+    <div class="field full">
+      <label class="auth-switch-row">
+
+        <span>
+          <strong>Active account</strong>
+          <small>Allow this account to sign in</small>
+        </span>
+
+        <span class="shared-active-switch">
+          <input
+            id="enabled"
+            type="checkbox"
+            data-active-label="Active"
+            data-inactive-label="Inactive"
+            checked
+          >
+
+          <span class="shared-active-track">
+            <span class="shared-active-text">
+              Active
+            </span>
+
+            <span
+              class="shared-active-knob"
+              aria-hidden="true"
+            ></span>
+          </span>
+        </span>
+
+      </label>
+    </div>
+
+  </section>
+
 </div>
-        <div class="field full" id="uidWrap" hidden><label for="uid">Firebase UID</label><div class="auth-uid-field"><input id="uid" readonly data-new-ui-input><button type="button" class="btn-cancel-new" id="copyUid">Copy</button></div></div>
+
 <div class="field full" id="usernameWrap">
   <label for="username">Username</label>
   <input
@@ -2622,7 +2814,7 @@ td:last-child .site-actions {
     Required for new accounts
   </div>
 </div>
-        <div class="field full"><label class="auth-switch-row"><span><strong>Active account</strong><small>Allow this account to sign in</small></span><span class="shared-active-switch"><input id="enabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div>
+
         <div class="field full"><div class="notice auth-notice" id="accountNote">A Site Admin login will be created. Open its account to manage sites and permissions.</div></div>
       </div>
     </div>
@@ -4135,7 +4327,7 @@ async function openPermissionEditor(u,container){
 }
 function create() {
   editing = null;
-
+  $('modalFields').classList.remove('is-editing');
   $('userForm').reset();
 
   $('resetPasswordWrap').hidden = true;
@@ -4162,7 +4354,7 @@ function create() {
 
 function manage(u) {
   editing = u;
-
+  $('modalFields').classList.add('is-editing');
   $('userForm').reset();
 
   $('resetPasswordWrap').hidden = false;
