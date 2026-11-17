@@ -98,14 +98,46 @@ function normalizePublicIp(value) {
   return ip;
 }
 
+
+function normalizeRecordedIp(value) {
+  if (typeof value !== 'string') return null;
+
+  let ip = value.trim();
+
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.slice(7);
+  }
+
+  return require('node:net').isIP(ip) ? ip : null;
+}
+
+function getIpType(ip) {
+  if (
+    /^10\./.test(ip) ||
+    /^192\.168\./.test(ip) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+    /^127\./.test(ip) ||
+    /^169\.254\./.test(ip) ||
+    /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(ip) ||
+    ip === '::1' ||
+    ip.toLowerCase().startsWith('fe80:') ||
+    /^[fc-fd][0-9a-f]{2}:/i.test(ip)
+  ) {
+    return 'private';
+  }
+
+  return 'public';
+}
+
 async function recordLoginIp(uid, ip, timestamp) {
-  const normalized = normalizePublicIp(ip);
+  const normalized = normalizeRecordedIp(ip);
 
   if (!normalized) {
-    console.warn('[LOGIN IP] No verified public IP', uid);
+    console.warn('[LOGIN IP] Invalid or missing IP');
     return;
   }
 
+  const ipType = getIpType(normalized);
   const userRef = db.ref(`adminUsers/${uid}`);
 
   await userRef.child('ipHistory').transaction(current => {
@@ -114,6 +146,8 @@ async function recordLoginIp(uid, ip, timestamp) {
     return [
       {
         ip: normalized,
+        type: ipType,
+        source: 'server-request',
         lastSeenAt: timestamp
       },
       ...history.filter(item => item?.ip !== normalized)
@@ -125,6 +159,7 @@ async function recordLoginIp(uid, ip, timestamp) {
     'lastDevice/ip': normalized
   });
 }
+
 
 function passwordMatchTag(password) {
   return crypto
@@ -649,15 +684,48 @@ app.get(
       }
 
 
-      const getIpHistory = profile => {
-        const history = Array.isArray(profile?.ipHistory)
-          ? profile.ipHistory
-          : [];
 
-        return history
-          .filter(item => normalizePublicIp(item?.ip))
-          .slice(0, 5);
-      };
+const getIpHistory = profile => {
+  const history = Array.isArray(profile?.ipHistory)
+    ? profile.ipHistory
+    : [];
+
+  const combined = [];
+
+  const addIp = (value, metadata = {}) => {
+    const ip = normalizeRecordedIp(value);
+    if (!ip) return;
+
+    if (combined.some(item => item.ip === ip)) return;
+
+    combined.push({
+      ip,
+      type: metadata.type || getIpType(ip),
+      source: metadata.source || 'legacy',
+      lastSeenAt: metadata.lastSeenAt || null
+    });
+  };
+
+  // Sejarah IP yang sudah direkodkan
+  for (const item of history) {
+    addIp(item?.ip, item);
+  }
+
+  // Fallback daripada Same Password
+  addIp(profile?.lastDevice?.ip, {
+    source: 'legacy-lastDevice',
+    lastSeenAt: profile?.lastLoginAt || null
+  });
+
+  // Fallback tambahan
+  addIp(profile?.lastLoginIp, {
+    source: 'legacy-lastLogin',
+    lastSeenAt: profile?.lastLoginAt || null
+  });
+
+  return combined.slice(0, 5);
+};
+
 
       const selectedIps = new Set(
         getIpHistory(selected).map(item => item.ip)
