@@ -3141,7 +3141,7 @@ function renderRiskAssessment(user, container) {
         password: record.passwordTracked
   ? (
       record.passwordUpdatedAt
-        ? 'Updated · ' + formatRiskDate(record.passwordUpdatedAt)
+        ? formatRiskDate(record.passwordUpdatedAt)
         : 'Password tracked'
     )
   : 'Password not tracked',
@@ -3252,18 +3252,33 @@ function renderRiskAssessment(user, container) {
   selectMode('ip');
 }
 
+
+/* ==========================================
+   AUTH USERS - RISK ASSESSMENT DATE FORMAT
+   HH:mm:ss DD/MM/YYYY
+   ========================================== */
+
 function formatRiskDate(value) {
   if (!value) return 'Not recorded';
 
-  const date = new Date(Number(value));
+  const timestamp = getCreatedTime(value);
+  if (!timestamp) return 'Not recorded';
 
-  return Number.isNaN(date.getTime())
-    ? 'Not recorded'
-    : date.toLocaleString('en-MY', {
-        dateStyle: 'medium',
-        timeStyle: 'medium'
-      });
+  const d = new Date(timestamp);
+  if (Number.isNaN(d.getTime())) return 'Not recorded';
+
+  const pad = n => String(n).padStart(2, '0');
+
+  return (
+    `${pad(d.getHours())}:` +
+    `${pad(d.getMinutes())}:` +
+    `${pad(d.getSeconds())} ` +
+    `${pad(d.getDate())}/` +
+    `${pad(d.getMonth() + 1)}/` +
+    `${d.getFullYear()}`
+  );
 }
+
 
 function showModal(){
   if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
