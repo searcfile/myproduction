@@ -3796,13 +3796,19 @@ closeButton.focus();
     }
 
 const save = root.querySelector('#authResetSave');
-if (save.disabled) return;
+if (!save || save.disabled) return;
 
-await NewUI.setButtonLoading(save, true, {
-  text: 'Saving...'
-});
+const hasLoading =
+  typeof window.NewUI?.setButtonLoading === 'function';
+
+save.disabled = true;
 
 try {
+  if (hasLoading) {
+    await NewUI.setButtonLoading(save, true, {
+      text: 'Saving...'
+    });
+  }
       const body = {};
 
       if (password) body.password = password;
@@ -3829,11 +3835,20 @@ try {
       await load();
 
 } catch (error) {
+  console.error('Reset Password Error:', error);
   toast('Reset failed: ' + error.message, 'error');
 } finally {
-  await NewUI.setButtonLoading(save, false, {
-    minDuration: 700
-  });
+  try {
+    if (hasLoading) {
+      await NewUI.setButtonLoading(save, false, {
+        minDuration: 700
+      });
+    }
+  } catch (loadingError) {
+    console.error('Button Loading Error:', loadingError);
+  } finally {
+    save.disabled = false;
+  }
 }
   };
 }
