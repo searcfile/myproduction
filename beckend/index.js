@@ -4768,7 +4768,71 @@ if (data.active === false) {
   }
 });
 
+/* =====================================================
+   DELETE SITE - SUPER ADMIN ONLY
+   ===================================================== */
 
+app.delete(
+  "/api/sites/:id",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const id = String(req.params.id || "")
+        .trim()
+        .toLowerCase();
+
+      if (!siteIdOK(id)) {
+        return fail(res, 400, "Invalid Site ID");
+      }
+
+      const siteRef = db.ref(`sites/${id}`);
+      const siteSnap = await siteRef.once("value");
+
+      if (!siteSnap.exists()) {
+        return fail(res, 404, "Site not found");
+      }
+
+      // Jangan padam jika masih digunakan Site Admin
+      const usersSnap = await db.ref("adminUsers").once("value");
+      const users = usersSnap.val() || {};
+
+      const assignedUsers = Object.values(users).filter(user =>
+        user?.role === "siteadmin" &&
+        Array.isArray(user.siteIds) &&
+        user.siteIds.includes(id)
+      );
+
+      if (assignedUsers.length > 0) {
+        return fail(
+          res,
+          409,
+          "This site is still assigned to " +
+          assignedUsers.length +
+          " Site Admin account(s). Remove their site assignments first."
+        );
+      }
+
+      // Padam rekod site
+      await siteRef.remove();
+
+      return res.json({
+        ok: true,
+        message: "Site deleted successfully",
+        id
+      });
+
+    } catch (error) {
+      console.error("DELETE SITE:", error);
+
+      return fail(
+        res,
+        500,
+        "Cannot delete site"
+      );
+    }
+  }
+);
 /* =====================================================
    MAYBANK2U - BANK CATALOG API
    SITE VISIBILITY + PERMISSIONS
