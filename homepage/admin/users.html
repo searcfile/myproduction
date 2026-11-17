@@ -3200,7 +3200,10 @@ const fields = mode === 'ip'
         browser: record.lastDevice?.browser || 'Not recorded',
         ip: record.lastDevice?.ip || 'Not recorded',
         browserId: record.lastDevice?.id || 'Not recorded',
-fingerprint: record.lastDevice?.id || 'Not recorded',
+fingerprint:
+  record.lastDevice?.fingerprint ||
+  record.lastDevice?.id ||
+  'Not recorded',
 isActive: record.enabled === true ? 'Active' : 'Inactive',
 latestDevice: [
   record.lastDevice?.browser,
