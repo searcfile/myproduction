@@ -2941,13 +2941,17 @@ const result = await loginAuth.signInWithCustomToken(
 try {
   const idToken = await result.user.getIdToken();
   const browserFingerprint = await getVisitorId();
+const storedDeviceId = localStorage.getItem('deviceId');
 
 const loginDevice = {
-  id: browserFingerprint,
+  id: browserFingerprint, // kekalkan untuk data lama
+  fingerprint: browserFingerprint,
+  deviceId: storedDeviceId || null,
   browser: getBrowserName(),
   os: getDeviceType(),
   ua: navigator.userAgent || ''
 };
+
 
   const trackingResponse = await fetch(
     `${ADMIN_API}/api/account/session-event`,
