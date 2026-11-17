@@ -3107,21 +3107,34 @@ function renderRiskAssessment(user, container) {
 
   let requestNumber = 0;
 
-  function renderTable(rows) {
+  function renderTable(rows, mode) {
     content.replaceChildren();
 
-    const fields = [
-      ['Username', 'username'],
-      ['Firebase UID', 'uid'],
-      ['Password', 'password'],
-      ['2nd Password', 'secondPassword'],
-      ['First Login', 'firstLoginAt'],
-      ['Last Login', 'lastLoginAt'],
-      ['Device', 'device'],
-      ['Browser', 'browser'],
-      ['IP Address', 'ip'],
-      ['Browser ID', 'browserId']
-    ];
+
+    const fields = mode === 'ip'
+      ? [
+          ['Username', 'username'],
+          ['Password', 'password'],
+          ['Matched IP', 'matchedIp'],
+          ['IP Address 1', 'ip1'],
+          ['IP Address 2', 'ip2'],
+          ['IP Address 3', 'ip3'],
+          ['IP Address 4', 'ip4'],
+          ['IP Address 5', 'ip5']
+        ]
+      : [
+          ['Username', 'username'],
+          ['Firebase UID', 'uid'],
+          ['Password', 'password'],
+          ['2nd Password', 'secondPassword'],
+          ['First Login', 'firstLoginAt'],
+          ['Last Login', 'lastLoginAt'],
+          ['Device', 'device'],
+          ['Browser', 'browser'],
+          ['IP Address', 'ip'],
+          ['Browser ID', 'browserId']
+        ];
+
 
     const wrap = document.createElement('div');
     wrap.className = 'auth-risk-tablewrap';
@@ -3163,6 +3176,30 @@ function renderRiskAssessment(user, container) {
         ip: record.lastDevice?.ip || 'Not recorded',
         browserId: record.lastDevice?.id || 'Not recorded'
       };
+
+      if (mode === 'ip') {
+        const history = Array.isArray(record.ipHistory)
+          ? record.ipHistory.slice(0, 5)
+          : [];
+
+        const matched = record.matchedIp;
+
+        values.matchedIp = matched?.ip
+          ? matched.ip + (
+              matched.lastSeenAt
+                ? ' - ' + formatRiskDate(matched.lastSeenAt)
+                : ''
+            )
+          : '—';
+
+        for (let i = 0; i < 5; i++) {
+          const item = history[i];
+
+          values['ip' + (i + 1)] = item?.ip
+            ? item.ip
+            : 'No IP recorded';
+        }
+      }
 
       fields.forEach(([label, key]) => {
         const td = document.createElement('td');
@@ -3250,13 +3287,13 @@ content.appendChild(loading);
         ? response.users
         : [];
 
-      renderTable(rows.length ? rows : [user]);
+     renderTable(rows.length ? rows : [user], mode);
 
     } catch (error) {
       if (requestId !== requestNumber) return;
 
       console.error('Risk Assessment:', error);
-      renderTable([user]);
+      renderTable([user], mode);
       toast('Unable to load matching users', 'error');
     }
   }
