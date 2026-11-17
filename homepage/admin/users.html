@@ -2642,6 +2642,18 @@ td:last-child .site-actions {
     max-width: 100% !important;
   }
 }
+    /* SAME BROWSER FINGERPRINT */
+.auth-risk-table td .auth-risk-value {
+  max-width: 260px;
+}
+
+.auth-risk-tab {
+  white-space: nowrap;
+}
+
+.auth-risk-tablewrap {
+  overflow-x: auto;
+}
 </style>
 </head>
 <body>
@@ -3227,7 +3239,13 @@ latestDevice: [
         const span = document.createElement('span');
         span.className = 'auth-risk-value';
         span.textContent = value;
-        span.title = value;
+        span.title = key === 'latestDevice'
+  ? [
+      'Browser: ' + (record.lastDevice?.browser || 'Not recorded'),
+      'Device: ' + (record.lastDevice?.os || 'Not recorded'),
+      'User Agent: ' + (record.lastDevice?.ua || 'Not recorded')
+    ].join('\n')
+  : value;
         td.appendChild(span);
 
         if (key === 'username' || key === 'uid') {
