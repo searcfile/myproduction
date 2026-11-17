@@ -1833,42 +1833,122 @@
   to { opacity: 0; }
 }
 
-/* AUTH USERS - RISK ASSESSMENT */
 
-.auth-risk-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+/* ==========================================
+   AUTH USERS - RISK ASSESSMENT TABLE
+   ========================================== */
+
+#authRiskPane {
   width: 100%;
-}
-
-.auth-risk-field {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
   min-width: 0;
-  padding: 14px;
-  background: var(--input, #141414);
-  border: 1px solid var(--input-line, #424242);
+  padding: 0 !important;
+  overflow: hidden !important;
   border-radius: 8px;
 }
 
-.auth-risk-field strong {
+/* Horizontal scroll */
+.auth-risk-tablewrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* Main table */
+.auth-risk-table {
+  width: 100%;
+  min-width: 1450px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
   font-size: 12px;
+}
+
+/* Table header */
+.auth-risk-table thead th {
+  padding: 13px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--tx-surface-soft, #202329);
+  border-bottom: 1px solid var(--input-line, #424242);
+  border-right: 1px solid var(--input-line, #424242);
+}
+
+/* Table body */
+.auth-risk-table tbody td {
+  padding: 13px 12px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  vertical-align: middle;
+  background: var(--input, #141414);
+  border-bottom: 1px solid var(--input-line, #424242);
+  border-right: 1px solid var(--input-line, #424242);
+}
+
+/* Remove last column border */
+.auth-risk-table th:last-child,
+.auth-risk-table td:last-child {
+  border-right: none;
+}
+
+/* Hover */
+.auth-risk-table tbody tr:hover td {
+  background: var(--tx-hover, #242b36);
+  transition: background-color .2s;
+}
+
+/* Value */
+.auth-risk-value {
+  display: inline-block;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* Username */
+.auth-risk-table td:first-child {
+  color: #4096ff;
   font-weight: 600;
 }
 
-.auth-risk-field span {
+/* Copy button */
+.auth-risk-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 3px 5px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #4096ff;
+  cursor: pointer;
   font-size: 12px;
-  overflow-wrap: anywhere;
-  color: var(--text);
 }
 
+.auth-risk-copy:hover {
+  background: rgba(22, 104, 220, .12);
+  color: #69b1ff;
+}
+
+/* Mobile */
 @media (max-width: 700px) {
-  .auth-risk-grid {
-    grid-template-columns: minmax(0, 1fr);
+  .auth-risk-table {
+    min-width: 1450px;
+  }
+
+  .auth-risk-table thead th,
+  .auth-risk-table tbody td {
+    padding: 11px 10px;
   }
 }
+
 
 </style>
 
@@ -2942,19 +3022,17 @@ function status(msg, error = false) {
 function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else status(message,type==='error');}
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
     
+
 function renderRiskAssessment(user, container) {
   if (!container) return;
 
   container.replaceChildren();
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'auth-risk-grid';
-
   const fields = [
     ['Username', user.username || '—'],
     ['Firebase UID', user.uid || '—'],
-    ['Password', 'Not retrievable — use Reset Password'],
-    ['2nd Password', 'Not retrievable — use Reset 2nd Password'],
+    ['Password', 'Reset required'],
+    ['2nd Password', 'Reset required'],
     ['First Login', formatRiskDate(user.firstLoginAt)],
     ['Last Login', formatRiskDate(user.lastLoginAt)],
     ['Device', user.lastDevice?.os || 'Not recorded'],
@@ -2963,21 +3041,86 @@ function renderRiskAssessment(user, container) {
     ['Browser ID', user.lastDevice?.id || 'Not recorded']
   ];
 
+  // TABLE WRAPPER
+  const wrap = document.createElement('div');
+  wrap.className = 'auth-risk-tablewrap';
+
+  // TABLE
+  const table = document.createElement('table');
+  table.className = 'auth-risk-table';
+
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+
+  const headerRow = document.createElement('tr');
+  const dataRow = document.createElement('tr');
+
   fields.forEach(([label, value]) => {
-    const card = document.createElement('div');
-    card.className = 'auth-risk-field';
 
-    const heading = document.createElement('strong');
-    heading.textContent = label;
+    // HEADER
+    const th = document.createElement('th');
+    th.scope = 'col';
+    th.textContent = label;
+    headerRow.appendChild(th);
 
-    const content = document.createElement('span');
-    content.textContent = String(value);
+    // DATA CELL
+    const td = document.createElement('td');
 
-    card.append(heading, content);
-    wrapper.append(card);
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'auth-risk-value';
+    valueSpan.textContent = String(value);
+    valueSpan.title = String(value);
+
+    td.appendChild(valueSpan);
+
+    // COPY BUTTON - USERNAME & UID
+    if (
+      label === 'Username' ||
+      label === 'Firebase UID'
+    ) {
+      const copyBtn = document.createElement('button');
+
+      copyBtn.type = 'button';
+      copyBtn.className = 'auth-risk-copy';
+      copyBtn.textContent = '⧉';
+      copyBtn.title = 'Copy ' + label;
+      copyBtn.setAttribute(
+        'aria-label',
+        'Copy ' + label
+      );
+
+      copyBtn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(String(value));
+
+          if (window.NewUI?.showToast) {
+            NewUI.showToast(
+              label + ' copied successfully',
+              'success'
+            );
+          }
+        } catch (error) {
+          console.error('Copy failed:', error);
+
+          if (window.NewUI?.showToast) {
+            NewUI.showToast('Unable to copy', 'error');
+          }
+        }
+      };
+
+      td.appendChild(copyBtn);
+    }
+
+    dataRow.appendChild(td);
   });
 
-  container.append(wrapper);
+  thead.appendChild(headerRow);
+  tbody.appendChild(dataRow);
+
+  table.append(thead, tbody);
+  wrap.appendChild(table);
+
+  container.appendChild(wrap);
 }
 
 function formatRiskDate(value) {
