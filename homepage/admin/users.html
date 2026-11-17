@@ -2276,71 +2276,53 @@ td:last-child .site-actions {
    AUTH USERS - RESET PASSWORD OVERLAY
    ========================================== */
 
-.auth-reset-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
+/* ==========================================
+   RESET PASSWORD - ORIGINAL NEWUI CUSTOM MODAL
+   ========================================== */
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 16px;
-  background: rgba(0, 0, 0, .55);
-  box-sizing: border-box;
+.shared-modal-backdrop.auth-reset-overlay {
+  z-index: 2147483000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 15px !important;
+  background: rgba(0, 0, 0, .45) !important;
 }
 
-.auth-reset-dialog {
+.auth-reset-overlay > .shared-modal {
+  width: 100% !important;
+  max-width: 600px !important;
+  max-height: calc(100dvh - 30px);
+  overflow-y: auto !important;
+  margin: auto;
+}
+
+/* Gunakan spacing modal asal */
+.auth-reset-overlay .shared-modal-title {
+  margin: 0 42px 20px 0;
+}
+
+/* Reset form ikut padding modal asal */
+.auth-reset-overlay .shared-modal-body {
+  padding: 0;
+  overflow: visible;
+}
+
+.auth-reset-overlay .auth-reset-modal {
   width: 100%;
-  max-width: 600px;
-  max-height: calc(100dvh - 32px);
-
-  overflow-y: auto;
-
-  background: var(--tx-surface, #141414);
-  border: 1px solid var(--tx-border, #424242);
-  border-radius: 10px;
-
-  color: var(--text, #ffffff);
-  box-shadow: 0 18px 55px rgba(0, 0, 0, .4);
+  padding: 0;
 }
 
-.auth-reset-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 12px;
-  padding: 14px 18px;
-
-  border-bottom: 1px solid var(--tx-border, #424242);
-  font-size: 14px;
+.auth-reset-overlay .auth-reset-actions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--input-line);
 }
 
-.auth-reset-close {
-  display: grid;
-  place-items: center;
-
-  width: 28px;
-  height: 28px;
-
-  border: none;
-  border-radius: 6px;
-
-  background: transparent;
-  color: inherit;
-
-  font-size: 23px;
-  cursor: pointer;
-}
-
-.auth-reset-close:hover {
-  background: rgba(150, 150, 150, .12);
-  color: #4096ff;
-}
-
-.auth-reset-dialog .auth-reset-modal {
-  padding: 18px;
+@media (max-width: 650px) {
+  .auth-reset-overlay > .shared-modal {
+    max-width: 100% !important;
+  }
 }
 </style>
 </head>
@@ -2833,36 +2815,72 @@ function openUserResetPassword() {
   root.querySelector('.auth-notice strong').textContent =
     targetUsername;
 
-// Modal Reset Password berasingan,
-// tanpa menutup modal Player yang sedang terbuka.
+/* ==========================================
+   RESET PASSWORD - USE ORIGINAL NEWUI DESIGN
+   ========================================== */
 
 const overlay = document.createElement('div');
-overlay.className = 'auth-reset-overlay';
+
+overlay.className =
+  'shared-modal-backdrop auth-reset-overlay open';
+
+overlay.setAttribute('aria-hidden', 'false');
 
 const dialog = document.createElement('div');
-dialog.className = 'auth-reset-dialog';
+
+dialog.className = 'shared-modal';
+dialog.style.maxWidth = '600px';
+
 dialog.setAttribute('role', 'dialog');
 dialog.setAttribute('aria-modal', 'true');
-dialog.setAttribute(
-  'aria-label',
-  'Reset Password · ' + targetUsername
-);
 
-const header = document.createElement('div');
-header.className = 'auth-reset-header';
+const titleId = 'auth-reset-modal-title';
 
-const title = document.createElement('span');
-title.textContent = 'Reset Password · ' + targetUsername;
+dialog.setAttribute('aria-labelledby', titleId);
+
+/* ORIGINAL NEWUI TITLE */
+
+const title = document.createElement('h2');
+
+title.id = titleId;
+title.className = 'shared-modal-title';
+
+title.textContent =
+  'Reset Password · ' + targetUsername;
+
+/* ORIGINAL NEWUI CLOSE BUTTON */
 
 const closeButton = document.createElement('button');
-closeButton.type = 'button';
-closeButton.className = 'auth-reset-close';
-closeButton.setAttribute('aria-label', 'Close');
-closeButton.textContent = '×';
 
-header.append(title, closeButton);
-dialog.append(header, root);
-overlay.append(dialog);
+closeButton.type = 'button';
+closeButton.className = 'shared-modal-close';
+
+closeButton.setAttribute('aria-label', 'Close');
+
+closeButton.innerHTML = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 6L18 18"></path>
+    <path d="M18 6L6 18"></path>
+  </svg>
+`;
+
+/* ORIGINAL NEWUI BODY */
+
+const body = document.createElement('div');
+
+body.className = 'shared-modal-body';
+
+body.appendChild(root);
+
+/* SUSUNAN SAMA SEPERTI NEWUI */
+
+dialog.append(
+  closeButton,
+  title,
+  body
+);
+
+overlay.appendChild(dialog);
 
 const previousFocus = document.activeElement;
 
