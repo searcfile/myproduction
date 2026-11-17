@@ -2519,7 +2519,7 @@ function showModal(){
     const u=editing;
     const shell=document.createElement('div');shell.className='auth-unified-shell';
     shell.innerHTML=`<div class="auth-unified-tabs" role="tablist" aria-label="Site Admin settings">
-      <button type="button" class="auth-unified-tab active" role="tab" aria-selected="true" data-view="manage">Manage Account</button>
+      <button type="button" class="auth-unified-tab active" role="tab" aria-selected="true" data-view="manage">Profile</button>
       <button type="button" class="auth-unified-tab" role="tab" aria-selected="false" data-view="permissions">Edit Permissions</button>
     </div><div class="auth-unified-pane" id="authManagePane"></div><div class="auth-unified-pane" id="authPermissionPane" hidden></div>`;
     shell.querySelector('#authManagePane').append(form);
