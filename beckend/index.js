@@ -362,8 +362,25 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
       return current == null ? timestamp : undefined;
     });
 
+
     // LAST LOGIN - kemas kini setiap login.
     await userRef.child('lastLoginAt').set(timestamp);
+
+    // LOGIN IP - ambil daripada request backend.
+    const loginIp = req.ip || req.socket?.remoteAddress || null;
+
+    if (loginIp) {
+      const normalizedIp = loginIp.startsWith('::ffff:')
+        ? loginIp.slice(7)
+        : loginIp;
+
+      // Simpan IP login terakhir.
+      await userRef.child('lastLoginIp').set(normalizedIp);
+
+      // Risk Assessment membaca IP dari lastDevice.ip.
+      await userRef.child('lastDevice/ip').set(normalizedIp);
+    }
+
 
     return res.json({ ok: true });
 
