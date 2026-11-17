@@ -489,28 +489,30 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
     const loginIp = req.ip || null;
     await recordLoginIp(uid, loginIp, timestamp);
     
+
 const device = req.body?.device;
 
 if (device && typeof device === 'object') {
-  const id = typeof device.id === 'string'
-    ? device.id.trim()
-    : '';
+  const clean = (value, max = 256) =>
+    typeof value === 'string'
+      ? value.trim().slice(0, max)
+      : '';
 
-  const browser = typeof device.browser === 'string'
-    ? device.browser.slice(0, 80)
-    : '';
+  const fingerprint = clean(
+    device.fingerprint || device.id
+  );
 
-  const os = typeof device.os === 'string'
-    ? device.os.slice(0, 80)
-    : '';
+  const deviceId = clean(device.deviceId);
 
-  const ua = typeof device.ua === 'string'
-    ? device.ua.slice(0, 512)
-    : '';
+  const browser = clean(device.browser, 80);
+  const os = clean(device.os, 80);
+  const ua = clean(device.ua, 512);
 
-  if (id && id.length <= 256) {
+  if (fingerprint || deviceId) {
     await userRef.child('lastDevice').update({
-      id,
+      id: fingerprint || null,
+      fingerprint: fingerprint || null,
+      deviceId: deviceId || null,
       browser,
       os,
       ua,
@@ -764,8 +766,14 @@ const getIpHistory = profile => {
 
       const selectedTag =
         String(selected.passwordMatchTag || '');
+
 const getFingerprint = profile =>
-  String(profile?.lastDevice?.id || '').trim();
+  String(
+    profile?.lastDevice?.fingerprint ||
+    profile?.lastDevice?.id ||
+    ''
+  ).trim();
+
 
 const selectedFingerprint = getFingerprint(selected);
       const matchedIds = new Set([uid]);
@@ -822,12 +830,21 @@ if (type === 'fingerprint') {
 
           users.push({
             ...publicUser(authUser, profile),
-            lastDevice: {
-              os: profile.lastDevice?.os || null,
-              browser: profile.lastDevice?.browser || null,
-              ip: profile.lastDevice?.ip || null,
-              id: profile.lastDevice?.id || null
-            },
+
+lastDevice: {
+  os: profile.lastDevice?.os || null,
+  browser: profile.lastDevice?.browser || null,
+  ip: profile.lastDevice?.ip || null,
+  id: profile.lastDevice?.id || null,
+  fingerprint:
+    profile.lastDevice?.fingerprint ||
+    profile.lastDevice?.id ||
+    null,
+  deviceId: profile.lastDevice?.deviceId || null,
+  ua: profile.lastDevice?.ua || null,
+  recordedAt: profile.lastDevice?.recordedAt || null
+},
+
   ipHistory: type === 'ip'
     ? getIpHistory(profile)
     : [],
