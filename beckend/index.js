@@ -452,10 +452,6 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
     });
 
     const loginIp = req.ip || null;
-
-    await recordLoginIp(uid, loginIp, timestamp);
-
-
     await recordLoginIp(uid, loginIp, timestamp);
 
 
