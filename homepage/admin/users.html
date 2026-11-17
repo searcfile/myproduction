@@ -1835,6 +1835,60 @@
 
 
 /* ==========================================
+   RISK ASSESSMENT - SUB TABS
+   ========================================== */
+
+.auth-risk-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--input-line, #424242);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.auth-risk-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.auth-risk-tab {
+  flex: 0 0 auto;
+  height: 36px;
+  padding: 0 15px;
+  border: 1px solid var(--input-line, #424242);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+}
+
+.auth-risk-tab:hover {
+  color: #3c89e8;
+}
+
+.auth-risk-tab.active {
+  color: #1668dc;
+  background: var(--input, #141414);
+}
+
+.auth-risk-loading {
+  padding: 20px 12px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.auth-risk-tablewrap {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ==========================================
    AUTH USERS - RISK ASSESSMENT TABLE
    ========================================== */
 
@@ -3023,104 +3077,173 @@ function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToas
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
     
 
+
 function renderRiskAssessment(user, container) {
   if (!container) return;
 
   container.replaceChildren();
 
-  const fields = [
-    ['Username', user.username || '—'],
-    ['Firebase UID', user.uid || '—'],
-    ['Password', 'Reset required'],
-    ['2nd Password', 'Reset required'],
-    ['First Login', formatRiskDate(user.firstLoginAt)],
-    ['Last Login', formatRiskDate(user.lastLoginAt)],
-    ['Device', user.lastDevice?.os || 'Not recorded'],
-    ['Browser', user.lastDevice?.browser || 'Not recorded'],
-    ['IP Address', user.lastDevice?.ip || 'Not recorded'],
-    ['Browser ID', user.lastDevice?.id || 'Not recorded']
+  const tabs = document.createElement('div');
+  tabs.className = 'auth-risk-tabs';
+  tabs.setAttribute('role', 'tablist');
+
+  const content = document.createElement('div');
+  content.className = 'auth-risk-content';
+
+  const modes = [
+    ['ip', 'Same IP Address'],
+    ['password', 'Same Password']
   ];
 
-  // TABLE WRAPPER
-  const wrap = document.createElement('div');
-  wrap.className = 'auth-risk-tablewrap';
+  let requestNumber = 0;
 
-  // TABLE
-  const table = document.createElement('table');
-  table.className = 'auth-risk-table';
+  function renderTable(rows) {
+    content.replaceChildren();
 
-  const thead = document.createElement('thead');
-  const tbody = document.createElement('tbody');
+    const fields = [
+      ['Username', 'username'],
+      ['Firebase UID', 'uid'],
+      ['Password', 'password'],
+      ['2nd Password', 'secondPassword'],
+      ['First Login', 'firstLoginAt'],
+      ['Last Login', 'lastLoginAt'],
+      ['Device', 'device'],
+      ['Browser', 'browser'],
+      ['IP Address', 'ip'],
+      ['Browser ID', 'browserId']
+    ];
 
-  const headerRow = document.createElement('tr');
-  const dataRow = document.createElement('tr');
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-risk-tablewrap';
 
-  fields.forEach(([label, value]) => {
+    const table = document.createElement('table');
+    table.className = 'auth-risk-table';
 
-    // HEADER
-    const th = document.createElement('th');
-    th.scope = 'col';
-    th.textContent = label;
-    headerRow.appendChild(th);
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+    const headRow = document.createElement('tr');
 
-    // DATA CELL
-    const td = document.createElement('td');
+    fields.forEach(([label]) => {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
 
-    const valueSpan = document.createElement('span');
-    valueSpan.className = 'auth-risk-value';
-    valueSpan.textContent = String(value);
-    valueSpan.title = String(value);
+    thead.appendChild(headRow);
 
-    td.appendChild(valueSpan);
+    rows.forEach(record => {
+      const tr = document.createElement('tr');
 
-    // COPY BUTTON - USERNAME & UID
-    if (
-      label === 'Username' ||
-      label === 'Firebase UID'
-    ) {
-      const copyBtn = document.createElement('button');
-
-      copyBtn.type = 'button';
-      copyBtn.className = 'auth-risk-copy';
-      copyBtn.textContent = '⧉';
-      copyBtn.title = 'Copy ' + label;
-      copyBtn.setAttribute(
-        'aria-label',
-        'Copy ' + label
-      );
-
-      copyBtn.onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(String(value));
-
-          if (window.NewUI?.showToast) {
-            NewUI.showToast(
-              label + ' copied successfully',
-              'success'
-            );
-          }
-        } catch (error) {
-          console.error('Copy failed:', error);
-
-          if (window.NewUI?.showToast) {
-            NewUI.showToast('Unable to copy', 'error');
-          }
-        }
+      const values = {
+        username: record.username || '—',
+        uid: record.uid || '—',
+        password: 'Reset required',
+        secondPassword: 'Reset required',
+        firstLoginAt: formatRiskDate(record.firstLoginAt),
+        lastLoginAt: formatRiskDate(record.lastLoginAt),
+        device: record.lastDevice?.os || 'Not recorded',
+        browser: record.lastDevice?.browser || 'Not recorded',
+        ip: record.lastDevice?.ip || 'Not recorded',
+        browserId: record.lastDevice?.id || 'Not recorded'
       };
 
-      td.appendChild(copyBtn);
-    }
+      fields.forEach(([label, key]) => {
+        const td = document.createElement('td');
+        const value = String(values[key]);
 
-    dataRow.appendChild(td);
+        const span = document.createElement('span');
+        span.className = 'auth-risk-value';
+        span.textContent = value;
+        span.title = value;
+        td.appendChild(span);
+
+        if (key === 'username' || key === 'uid') {
+          const copy = document.createElement('button');
+          copy.type = 'button';
+          copy.className = 'auth-risk-copy';
+          copy.textContent = '⧉';
+          copy.title = 'Copy ' + label;
+          copy.setAttribute('aria-label', 'Copy ' + label);
+
+          copy.onclick = async () => {
+            try {
+              await navigator.clipboard.writeText(value);
+              toast(label + ' copied successfully');
+            } catch (error) {
+              toast('Unable to copy', 'error');
+            }
+          };
+
+          td.appendChild(copy);
+        }
+
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    table.append(thead, tbody);
+    wrap.appendChild(table);
+    content.appendChild(wrap);
+  }
+
+  async function selectMode(mode) {
+    const requestId = ++requestNumber;
+
+    tabs.querySelectorAll('.auth-risk-tab').forEach(btn => {
+      const active = btn.dataset.mode === mode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+
+    content.replaceChildren();
+
+    const loading = document.createElement('div');
+    loading.className = 'auth-risk-loading';
+    loading.textContent = 'Loading Risk Assessment...';
+    content.appendChild(loading);
+
+    try {
+      const response = await api(
+        '/api/admin-users/' +
+        encodeURIComponent(user.uid) +
+        '/risk-matches?type=' +
+        encodeURIComponent(mode)
+      );
+
+      if (requestId !== requestNumber) return;
+
+      const rows = Array.isArray(response.users)
+        ? response.users
+        : [];
+
+      renderTable(rows.length ? rows : [user]);
+
+    } catch (error) {
+      if (requestId !== requestNumber) return;
+
+      console.error('Risk Assessment:', error);
+      renderTable([user]);
+      toast('Unable to load matching users', 'error');
+    }
+  }
+
+  modes.forEach(([mode, label]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'auth-risk-tab';
+    button.dataset.mode = mode;
+    button.setAttribute('role', 'tab');
+    button.textContent = label;
+    button.onclick = () => selectMode(mode);
+    tabs.appendChild(button);
   });
 
-  thead.appendChild(headerRow);
-  tbody.appendChild(dataRow);
+  container.append(tabs, content);
 
-  table.append(thead, tbody);
-  wrap.appendChild(table);
-
-  container.appendChild(wrap);
+  selectMode('ip');
 }
 
 function formatRiskDate(value) {
