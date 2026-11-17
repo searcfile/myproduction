@@ -3240,14 +3240,30 @@ latestDevice: [
         span.className = 'auth-risk-value';
         span.textContent = value;
 
+
 span.title = key === 'latestDevice'
   ? [
-      'Browser: ' + (record.lastDevice?.browser || 'Not recorded'),
-      'Device: ' + (record.lastDevice?.os || 'Not recorded'),
-      'Device ID: ' + (record.lastDevice?.id || 'Not recorded'),
-      'User Agent: ' + (record.lastDevice?.ua || 'Not recorded')
+      'Browser: ' +
+        (record.lastDevice?.browser || 'Not recorded'),
+
+      'Device: ' +
+        (record.lastDevice?.os || 'Not recorded'),
+
+      'Device ID: ' +
+        (record.lastDevice?.deviceId || 'Not recorded'),
+
+      'Browser Fingerprint: ' +
+        (
+          record.lastDevice?.fingerprint ||
+          record.lastDevice?.id ||
+          'Not recorded'
+        ),
+
+      'User Agent: ' +
+        (record.lastDevice?.ua || 'Not recorded')
     ].join('\n')
   : value;
+
     
         td.appendChild(span);
 
