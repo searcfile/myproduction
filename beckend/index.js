@@ -49,6 +49,15 @@ const passwordOK = s =>
   s.length >= 6 &&
   s.length <= 128;
 const now = () => Date.now();
+
+function passwordMatchTag(password) {
+  return crypto
+    .createHmac('sha256', process.env.PIN_PEPPER)
+    .update('5g88-password-match-v1:')
+    .update(password, 'utf8')
+    .digest('hex');
+}
+
 const fail=(res,code,message)=>res.status(code).json({ok:false,message});
 function pinHash(uid,pin,salt){return crypto.scryptSync(`${uid}:${pin}:${process.env.PIN_PEPPER}`,Buffer.from(salt,'hex'),64).toString('hex');}
 async function setPin(uid,pin){
@@ -403,7 +412,10 @@ app.post('/api/account/change-password', requireAdmin, async (req, res) => {
     await auth.updateUser(req.admin.uid, {
       password: newPassword
     });
-
+await db.ref(`adminUsers/${req.admin.uid}`).update({
+  passwordMatchTag: passwordMatchTag(newPassword),
+  updatedAt: now()
+});
     await auth.revokeRefreshTokens(req.admin.uid);
 
     return res.json({
@@ -515,6 +527,119 @@ return {
     return fail(res, 500, 'Failed to change 2nd password');
   }
 });
+
+/* ==========================================
+   RISK ASSESSMENT - MATCHED USERS
+   ========================================== */
+
+app.get(
+  '/api/admin-users/:uid/risk-matches',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    try {
+      const uid = String(req.params.uid || '');
+      const type = String(req.query.type || '');
+
+      if (!['ip', 'password'].includes(type)) {
+        return fail(res, 400, 'Invalid risk type');
+      }
+
+      const profiles = (
+        await db.ref('adminUsers').once('value')
+      ).val() || {};
+
+      const selected = profiles[uid];
+
+      if (!selected) {
+        return fail(res, 404, 'User not found');
+      }
+
+      const selectedIp =
+        String(selected.lastDevice?.ip || '').trim();
+
+      const selectedTag =
+        String(selected.passwordMatchTag || '');
+
+      const matchedIds = new Set([uid]);
+
+      for (const [otherUid, profile] of Object.entries(profiles)) {
+        if (otherUid === uid) continue;
+
+        if (type === 'ip') {
+          const otherIp =
+            String(profile.lastDevice?.ip || '').trim();
+
+          if (
+            selectedIp &&
+            otherIp &&
+            selectedIp === otherIp
+          ) {
+            matchedIds.add(otherUid);
+          }
+        }
+
+        if (type === 'password') {
+          const otherTag =
+            String(profile.passwordMatchTag || '');
+
+          if (
+            selectedTag &&
+            otherTag &&
+            selectedTag === otherTag
+          ) {
+            matchedIds.add(otherUid);
+          }
+        }
+      }
+
+      const users = [];
+
+      for (const matchedUid of matchedIds) {
+        try {
+          const authUser = await auth.getUser(matchedUid);
+          const profile = profiles[matchedUid];
+
+          if (!profile) continue;
+
+          users.push({
+            ...publicUser(authUser, profile),
+            lastDevice: {
+              os: profile.lastDevice?.os || null,
+              browser: profile.lastDevice?.browser || null,
+              ip: profile.lastDevice?.ip || null,
+              id: profile.lastDevice?.id || null
+            }
+          });
+        } catch (error) {
+          console.warn(
+            'Risk match user unavailable:',
+            matchedUid
+          );
+        }
+      }
+
+      users.sort((a, b) => {
+        if (a.uid === uid) return -1;
+        if (b.uid === uid) return 1;
+
+        return String(a.username || '')
+          .localeCompare(String(b.username || ''));
+      });
+
+      return res.json({
+        ok: true,
+        type,
+        users
+      });
+
+    } catch (error) {
+      console.error('Risk matches:', error);
+      return fail(res, 500, 'Cannot load risk matches');
+    }
+  }
+);
+
 app.get('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  try{
   const profiles=(await db.ref('adminUsers').once('value')).val()||{};
@@ -706,6 +831,7 @@ if (!usernameOK(username) || !passwordOK(password) || !pinOK(pin)) {
  await db.ref(`adminUsers/${created.uid}`).set({
   username,
   email,
+  passwordMatchTag: passwordMatchTag(password),
   displayName: username,
   role: "siteadmin",
   siteIds,
@@ -736,6 +862,8 @@ if (!passwordOK(req.body.password)) {
   return fail(res, 400, "Password must have at least 6 characters");
 }
    authUpdates.password=req.body.password;
+   updates.passwordMatchTag =
+  passwordMatchTag(req.body.password);
   }
   if(Object.hasOwn(req.body,'secondPassword')){
    if(!pinOK(String(req.body.secondPassword)))return fail(res,400,'PIN must be exactly 6 digits');
