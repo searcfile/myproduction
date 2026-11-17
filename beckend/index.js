@@ -4643,25 +4643,93 @@ return (
 });
 
 
-// POST — Create site
+// ==========================================
+// POST - CREATE SITE FROM EXISTING USERNAME
+// ==========================================
+
 app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
   try {
-    const id = String(req.body?.id || "").trim().toLowerCase();
+    const id = String(req.body?.id || "")
+      .trim()
+      .toLowerCase();
 
-    if (!siteIdOK(id)) {
-      return fail(res, 400, "Invalid Site ID");
+    const enteredName = String(req.body?.name || "")
+      .trim()
+      .toLowerCase();
+
+    if (!siteIdOK(id) || !usernameOK(id)) {
+      return fail(res, 400, "Invalid Site ID or username");
     }
 
-    const data = validateSite(req.body);
-    const siteRef = db.ref(`sites/${id}`);
+    // Site Name mesti sama dengan Site ID / Username
+    if (enteredName !== id) {
+      return fail(
+        res,
+        400,
+        "Site Name must match the existing username"
+      );
+    }
 
+    // Semak username dalam index Firebase
+    const indexSnap = await db.ref(
+      `adminUsernameIndex/${id}`
+    ).once("value");
+
+    const uid = indexSnap.val()?.uid;
+
+    if (!uid) {
+      return fail(res, 400, "Username not valid or not found");
+    }
+
+    // Semak akaun sebenar
+    const profileRef = db.ref(`adminUsers/${uid}`);
+    const profileSnap = await profileRef.once("value");
+    const profile = profileSnap.val();
+
+    if (
+      !profile ||
+      profile.role !== "siteadmin" ||
+      String(profile.username || "").toLowerCase() !== id
+    ) {
+      return fail(
+        res,
+        400,
+        "Username is not a valid Site Admin"
+      );
+    }
+
+    // Username yang sudah ada site lain tidak boleh
+    // digunakan untuk membuat site baharu melalui aliran ini.
+    const assigned = Array.isArray(profile.siteIds)
+      ? profile.siteIds
+      : [];
+
+    if (assigned.length > 0) {
+      return fail(
+        res,
+        409,
+        "Username already has a site assignment"
+      );
+    }
+
+    // Validasi Wallet Group dan Active
+    const data = validateSite({
+      ...req.body,
+      name: id.toUpperCase()
+    });
+
+    const siteRef = db.ref(`sites/${id}`);
+    const timestamp = now();
+
+    // Cipta site hanya jika belum wujud
     const result = await siteRef.transaction(
       current => current === null
         ? {
             ...data,
-            createdAt: now(),
+            name: id.toUpperCase(),
+            createdAt: timestamp,
             createdBy: req.admin.uid,
-            updatedAt: now()
+            updatedAt: timestamp
           }
         : undefined,
       undefined,
@@ -4672,11 +4740,58 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
       return fail(res, 409, "Site ID already exists");
     }
 
+    // Assign site kepada username yang sudah dicipta.
+    // Transaction mengelakkan kita overwrite siteIds
+    // jika assignment berubah serentak.
+    const assignment = await profileRef.transaction(
+      current => {
+        if (
+          !current ||
+          current.role !== "siteadmin" ||
+          String(current.username || "").toLowerCase() !== id
+        ) {
+          return;
+        }
+
+        const existing = Array.isArray(current.siteIds)
+          ? current.siteIds
+          : [];
+
+        if (existing.length > 0) return;
+
+        return {
+          ...current,
+          siteIds: [id],
+          updatedAt: now()
+        };
+      },
+      undefined,
+      false
+    );
+
+    if (!assignment.committed) {
+      // Jangan padam site secara automatik kerana
+      // mungkin ada perubahan serentak.
+      console.error(
+        "[CREATE SITE] Assignment not completed:",
+        id,
+        uid
+      );
+
+      return fail(
+        res,
+        409,
+        "Site created, but username assignment failed. Check Firebase before retrying."
+      );
+    }
+
     return res.status(201).json({
       ok: true,
       id,
-      message: "Site created"
+      name: id.toUpperCase(),
+      message: "Site created and username assigned"
     });
+
   } catch (error) {
     if (
       error.message.startsWith("Site name") ||
@@ -4686,7 +4801,7 @@ app.post("/api/sites", requireAdmin, superOnly, async (req, res) => {
       return fail(res, 400, error.message);
     }
 
-    console.error("Create site:", error.message);
+    console.error("Create site:", error);
     return fail(res, 500, "Cannot create site");
   }
 });
