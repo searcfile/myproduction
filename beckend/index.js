@@ -4820,8 +4820,28 @@ app.patch("/api/sites/:id", requireAdmin, superOnly, async (req, res) => {
       return fail(res, 400, "Invalid Site ID");
     }
 
-    const data = validateSite(req.body);
-    const siteRef = db.ref(`sites/${id}`);
+const data = validateSite(req.body);
+
+// Untuk site yang mempunyai username sepadan,
+// kekalkan Site Name mengikut username.
+const usernameSnap = await db.ref(
+  `adminUsernameIndex/${id}`
+).once("value");
+
+if (usernameSnap.val()?.uid) {
+  const linkedProfile = await adminProfile(
+    usernameSnap.val().uid
+  );
+
+  if (
+    linkedProfile?.role === "siteadmin" &&
+    linkedProfile.username === id
+  ) {
+    data.name = id.toUpperCase();
+  }
+}
+
+const siteRef = db.ref(`sites/${id}`);
 
     // Semak site wujud sebelum update
     const snapshot = await siteRef.once("value");
