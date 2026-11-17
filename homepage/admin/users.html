@@ -2272,6 +2272,76 @@ td:last-child .site-actions {
     flex-wrap: wrap;
   }
 }
+    /* ==========================================
+   AUTH USERS - RESET PASSWORD OVERLAY
+   ========================================== */
+
+.auth-reset-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+  background: rgba(0, 0, 0, .55);
+  box-sizing: border-box;
+}
+
+.auth-reset-dialog {
+  width: 100%;
+  max-width: 600px;
+  max-height: calc(100dvh - 32px);
+
+  overflow-y: auto;
+
+  background: var(--tx-surface, #141414);
+  border: 1px solid var(--tx-border, #424242);
+  border-radius: 10px;
+
+  color: var(--text, #ffffff);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .4);
+}
+
+.auth-reset-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+  padding: 14px 18px;
+
+  border-bottom: 1px solid var(--tx-border, #424242);
+  font-size: 14px;
+}
+
+.auth-reset-close {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+  color: inherit;
+
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.auth-reset-close:hover {
+  background: rgba(150, 150, 150, .12);
+  color: #4096ff;
+}
+
+.auth-reset-dialog .auth-reset-modal {
+  padding: 18px;
+}
 </style>
 </head>
 <body>
@@ -2655,6 +2725,7 @@ function showModal(){
   width:'1800px',
   content:shell,
   onClose(){
+      resetPasswordModal?.close();
       destroyPermissionChips();permissionUser=null;
       home.append(form);home.hidden=true;formModal=null;editing=null;
     }});
@@ -2762,16 +2833,106 @@ function openUserResetPassword() {
   root.querySelector('.auth-notice strong').textContent =
     targetUsername;
 
-  resetPasswordModal = NewUI.modal.open({
-    title: 'Reset Password · ' + targetUsername,
-    width: '600px',
-    content: root,
-    onClose() {
-      root.querySelector('#authResetPassword').value = '';
-      root.querySelector('#authResetPin').value = '';
-      resetPasswordModal = null;
+// Modal Reset Password berasingan,
+// tanpa menutup modal Player yang sedang terbuka.
+
+const overlay = document.createElement('div');
+overlay.className = 'auth-reset-overlay';
+
+const dialog = document.createElement('div');
+dialog.className = 'auth-reset-dialog';
+dialog.setAttribute('role', 'dialog');
+dialog.setAttribute('aria-modal', 'true');
+dialog.setAttribute(
+  'aria-label',
+  'Reset Password · ' + targetUsername
+);
+
+const header = document.createElement('div');
+header.className = 'auth-reset-header';
+
+const title = document.createElement('span');
+title.textContent = 'Reset Password · ' + targetUsername;
+
+const closeButton = document.createElement('button');
+closeButton.type = 'button';
+closeButton.className = 'auth-reset-close';
+closeButton.setAttribute('aria-label', 'Close');
+closeButton.textContent = '×';
+
+header.append(title, closeButton);
+dialog.append(header, root);
+overlay.append(dialog);
+
+const previousFocus = document.activeElement;
+
+let closed = false;
+
+function closeResetModal() {
+  if (closed) return;
+  closed = true;
+
+  root.querySelector('#authResetPassword').value = '';
+  root.querySelector('#authResetPin').value = '';
+
+  overlay.removeEventListener('keydown', handleResetKeydown);
+  overlay.remove();
+
+  resetPasswordModal = null;
+
+  if (previousFocus?.isConnected) {
+    previousFocus.focus();
+  }
+}
+
+function handleResetKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    closeResetModal();
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    const focusable = [...dialog.querySelectorAll(
+      'button:not(:disabled), input:not(:disabled)'
+    )].filter(el => el.getClientRects().length);
+
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      document.activeElement === last
+    ) {
+      event.preventDefault();
+      first.focus();
     }
-  });
+  }
+}
+
+overlay.addEventListener('keydown', handleResetKeydown, true);
+
+overlay.addEventListener('click', event => {
+  if (event.target === overlay) {
+    closeResetModal();
+  }
+});
+
+closeButton.onclick = closeResetModal;
+
+document.body.appendChild(overlay);
+
+resetPasswordModal = {
+  close: closeResetModal
+};
+
+closeButton.focus();
 
   NewUI.init?.(root);
 
