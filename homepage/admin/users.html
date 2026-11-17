@@ -1833,6 +1833,43 @@
   to { opacity: 0; }
 }
 
+/* AUTH USERS - RISK ASSESSMENT */
+
+.auth-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.auth-risk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--input, #141414);
+  border: 1px solid var(--input-line, #424242);
+  border-radius: 8px;
+}
+
+.auth-risk-field strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-risk-field span {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
+@media (max-width: 700px) {
+  .auth-risk-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 </style>
 
 <style>
@@ -2904,6 +2941,58 @@ function status(msg, error = false) {
 }
 function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else status(message,type==='error');}
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
+    
+function renderRiskAssessment(user, container) {
+  if (!container) return;
+
+  container.replaceChildren();
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'auth-risk-grid';
+
+  const fields = [
+    ['Username', user.username || '—'],
+    ['Firebase UID', user.uid || '—'],
+    ['Password', 'Not retrievable — use Reset Password'],
+    ['2nd Password', 'Not retrievable — use Reset 2nd Password'],
+    ['First Login', formatRiskDate(user.firstLoginAt)],
+    ['Last Login', formatRiskDate(user.lastLoginAt)],
+    ['Device', user.lastDevice?.os || 'Not recorded'],
+    ['Browser', user.lastDevice?.browser || 'Not recorded'],
+    ['IP Address', user.lastDevice?.ip || 'Not recorded'],
+    ['Browser ID', user.lastDevice?.id || 'Not recorded']
+  ];
+
+  fields.forEach(([label, value]) => {
+    const card = document.createElement('div');
+    card.className = 'auth-risk-field';
+
+    const heading = document.createElement('strong');
+    heading.textContent = label;
+
+    const content = document.createElement('span');
+    content.textContent = String(value);
+
+    card.append(heading, content);
+    wrapper.append(card);
+  });
+
+  container.append(wrapper);
+}
+
+function formatRiskDate(value) {
+  if (!value) return 'Not recorded';
+
+  const date = new Date(Number(value));
+
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : date.toLocaleString('en-MY', {
+        dateStyle: 'medium',
+        timeStyle: 'medium'
+      });
+}
+
 function showModal(){
   if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
   const form=$('userForm'),home=$('formSource');
