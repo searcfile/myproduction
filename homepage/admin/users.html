@@ -3115,7 +3115,8 @@ function renderRiskAssessment(user, container) {
 const modes = [
   ['ip', 'Same IP Address'],
   ['password', 'Same Password'],
-  ['fingerprint', 'Same Browser Fingerprint']
+  ['fingerprint', 'Same Browser Fingerprint'],
+  ['player-ip', 'Player IP']
 ];
 
   let requestNumber = 0;
@@ -3135,6 +3136,12 @@ const fields = mode === 'ip'
       ['IP Address 3', 'ip3'],
       ['IP Address 4', 'ip4'],
       ['IP Address 5', 'ip5']
+    ]
+  : mode === 'player-ip'
+  ? [
+      ['Username', 'username'],
+      ['Password', 'password'],
+      ['Matched IP Address', 'matchedIp']
     ]
   : mode === 'fingerprint'
   ? [
@@ -3211,7 +3218,7 @@ latestDevice: [
 ].filter(Boolean).join(' · ') || 'Not recorded'
       };
 
-      if (mode === 'ip') {
+if (mode === 'ip' || mode === 'player-ip') {
         const history = Array.isArray(record.ipHistory)
           ? record.ipHistory.slice(0, 5)
           : [];
@@ -3226,14 +3233,15 @@ latestDevice: [
             )
           : '—';
 
-        for (let i = 0; i < 5; i++) {
-          const item = history[i];
+if (mode === 'ip') {
+  for (let i = 0; i < 5; i++) {
+    const item = history[i];
 
-          values['ip' + (i + 1)] = item?.ip
-            ? item.ip
-            : 'No IP recorded';
-        }
-      }
+    values['ip' + (i + 1)] = item?.ip
+      ? item.ip
+      : 'No IP recorded';
+  }
+}
 
       fields.forEach(([label, key]) => {
         const td = document.createElement('td');
@@ -3337,7 +3345,7 @@ content.appendChild(loading);
         '/api/admin-users/' +
         encodeURIComponent(user.uid) +
         '/risk-matches?type=' +
-        encodeURIComponent(mode)
+        encodeURIComponent(mode === 'player-ip' ? 'ip' : mode)
       );
 
       if (requestId !== requestNumber) return;
