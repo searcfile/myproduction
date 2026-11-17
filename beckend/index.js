@@ -50,6 +50,82 @@ const passwordOK = s =>
   s.length <= 128;
 const now = () => Date.now();
 
+/* ==========================================
+   RISK ASSESSMENT - PUBLIC IP HISTORY
+   ========================================== */
+
+function normalizePublicIp(value) {
+  if (typeof value !== 'string') return null;
+
+  let ip = value.trim();
+
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.slice(7);
+  }
+
+  if (require('node:net').isIP(ip) === 0) {
+    return null;
+  }
+
+  // Jangan rekod IP private, loopback atau link-local
+  const blockedV4 = [
+    /^10\./,
+    /^127\./,
+    /^192\.168\./,
+    /^169\.254\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /^0\./,
+    /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./
+  ];
+
+  if (blockedV4.some(pattern => pattern.test(ip))) {
+    return null;
+  }
+
+  if (ip.includes(':')) {
+    const lower = ip.toLowerCase();
+
+    if (
+      lower === '::1' ||
+      lower === '::' ||
+      lower.startsWith('fe80:') ||
+      /^[fc-fd][0-9a-f]{2}:/i.test(lower)
+    ) {
+      return null;
+    }
+  }
+
+  return ip;
+}
+
+async function recordLoginIp(uid, ip, timestamp) {
+  const normalized = normalizePublicIp(ip);
+
+  if (!normalized) {
+    console.warn('[LOGIN IP] No verified public IP', uid);
+    return;
+  }
+
+  const userRef = db.ref(`adminUsers/${uid}`);
+
+  await userRef.child('ipHistory').transaction(current => {
+    const history = Array.isArray(current) ? current : [];
+
+    return [
+      {
+        ip: normalized,
+        lastSeenAt: timestamp
+      },
+      ...history.filter(item => item?.ip !== normalized)
+    ].slice(0, 5);
+  });
+
+  await userRef.update({
+    lastLoginIp: normalized,
+    'lastDevice/ip': normalized
+  });
+}
+
 function passwordMatchTag(password) {
   return crypto
     .createHmac('sha256', process.env.PIN_PEPPER)
@@ -366,20 +442,10 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
     // LAST LOGIN - kemas kini setiap login.
     await userRef.child('lastLoginAt').set(timestamp);
 
-    // LOGIN IP - ambil daripada request backend.
-    const loginIp = req.ip || req.socket?.remoteAddress || null;
+    // Simpan Public IP yang telah disahkan.
+    const loginIp = req.ip || null;
 
-    if (loginIp) {
-      const normalizedIp = loginIp.startsWith('::ffff:')
-        ? loginIp.slice(7)
-        : loginIp;
-
-      // Simpan IP login terakhir.
-      await userRef.child('lastLoginIp').set(normalizedIp);
-
-      // Risk Assessment membaca IP dari lastDevice.ip.
-      await userRef.child('lastDevice/ip').set(normalizedIp);
-    }
+    await recordLoginIp(uid, loginIp, timestamp);
 
 
     return res.json({ ok: true });
@@ -575,8 +641,21 @@ app.get(
         return fail(res, 404, 'User not found');
       }
 
-      const selectedIp =
-        String(selected.lastDevice?.ip || '').trim();
+
+      const getIpHistory = profile => {
+        const history = Array.isArray(profile?.ipHistory)
+          ? profile.ipHistory
+          : [];
+
+        return history
+          .filter(item => normalizePublicIp(item?.ip))
+          .slice(0, 5);
+      };
+
+      const selectedIps = new Set(
+        getIpHistory(selected).map(item => item.ip)
+      );
+
 
       const selectedTag =
         String(selected.passwordMatchTag || '');
@@ -586,9 +665,19 @@ app.get(
       for (const [otherUid, profile] of Object.entries(profiles)) {
         if (otherUid === uid) continue;
 
+
         if (type === 'ip') {
-          const otherIp =
-            String(profile.lastDevice?.ip || '').trim();
+          const otherIps = getIpHistory(profile);
+
+          const hasMatch = otherIps.some(item =>
+            selectedIps.has(item.ip)
+          );
+
+          if (hasMatch) {
+            matchedIds.add(otherUid);
+          }
+        }
+
 
           if (
             selectedIp &&
@@ -629,7 +718,20 @@ app.get(
               browser: profile.lastDevice?.browser || null,
               ip: profile.lastDevice?.ip || null,
               id: profile.lastDevice?.id || null
-            }
+            },
+  ipHistory: type === 'ip'
+    ? getIpHistory(profile)
+    : [],
+
+  matchedIp: type === 'ip'
+    ? (
+        matchedUid === uid
+          ? null
+          : getIpHistory(profile).find(item =>
+              selectedIps.has(item.ip)
+            ) || null
+      )
+    : null
           });
         } catch (error) {
           console.warn(
