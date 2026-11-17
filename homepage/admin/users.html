@@ -3100,10 +3100,11 @@ function renderRiskAssessment(user, container) {
   const content = document.createElement('div');
   content.className = 'auth-risk-content';
 
-  const modes = [
-    ['ip', 'Same IP Address'],
-    ['password', 'Same Password']
-  ];
+const modes = [
+  ['ip', 'Same IP Address'],
+  ['password', 'Same Password'],
+  ['fingerprint', 'Same Browser Fingerprint']
+];
 
   let requestNumber = 0;
 
@@ -3111,29 +3112,41 @@ function renderRiskAssessment(user, container) {
     content.replaceChildren();
 
 
-    const fields = mode === 'ip'
-      ? [
-          ['Username', 'username'],
-          ['Password', 'password'],
-          ['Matched IP', 'matchedIp'],
-          ['IP Address 1', 'ip1'],
-          ['IP Address 2', 'ip2'],
-          ['IP Address 3', 'ip3'],
-          ['IP Address 4', 'ip4'],
-          ['IP Address 5', 'ip5']
-        ]
-      : [
-          ['Username', 'username'],
-          ['Firebase UID', 'uid'],
-          ['Password', 'password'],
-          ['2nd Password', 'secondPassword'],
-          ['First Login', 'firstLoginAt'],
-          ['Last Login', 'lastLoginAt'],
-          ['Device', 'device'],
-          ['Browser', 'browser'],
-          ['IP Address', 'ip'],
-          ['Browser ID', 'browserId']
-        ];
+
+const fields = mode === 'ip'
+  ? [
+      ['Username', 'username'],
+      ['Password', 'password'],
+      ['Matched IP', 'matchedIp'],
+      ['IP Address 1', 'ip1'],
+      ['IP Address 2', 'ip2'],
+      ['IP Address 3', 'ip3'],
+      ['IP Address 4', 'ip4'],
+      ['IP Address 5', 'ip5']
+    ]
+  : mode === 'fingerprint'
+  ? [
+      ['Username', 'username'],
+      ['Password', 'password'],
+      ['Browser Fingerprint', 'fingerprint'],
+      ['First Login', 'firstLoginAt'],
+      ['Last Login', 'lastLoginAt'],
+      ['Is Active', 'isActive'],
+      ['Latest Device', 'latestDevice']
+    ]
+  : [
+      ['Username', 'username'],
+      ['Firebase UID', 'uid'],
+      ['Password', 'password'],
+      ['2nd Password', 'secondPassword'],
+      ['First Login', 'firstLoginAt'],
+      ['Last Login', 'lastLoginAt'],
+      ['Device', 'device'],
+      ['Browser', 'browser'],
+      ['IP Address', 'ip'],
+      ['Browser ID', 'browserId']
+    ];
+
 
 
     const wrap = document.createElement('div');
@@ -3174,7 +3187,13 @@ function renderRiskAssessment(user, container) {
         device: record.lastDevice?.os || 'Not recorded',
         browser: record.lastDevice?.browser || 'Not recorded',
         ip: record.lastDevice?.ip || 'Not recorded',
-        browserId: record.lastDevice?.id || 'Not recorded'
+        browserId: record.lastDevice?.id || 'Not recorded',
+fingerprint: record.lastDevice?.id || 'Not recorded',
+isActive: record.enabled === true ? 'Active' : 'Inactive',
+latestDevice: [
+  record.lastDevice?.browser,
+  record.lastDevice?.os
+].filter(Boolean).join(' · ') || 'Not recorded'
       };
 
       if (mode === 'ip') {
