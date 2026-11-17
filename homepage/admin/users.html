@@ -3651,7 +3651,6 @@ async function openPermissionEditor(u,container){
   await NewUI.setButtonLoading(save,true,{text:'Saving...'});
   try{
    const siteIds=(siteChipApi.getValue()||[]).filter(id=>sites.some(s=>s.id===id&&s.active));
-   if(!siteIds.length)throw Error('Please assign at least one active site.');
    const permissions={};
    for(const [key] of getPermissionModules()){
     const acts=[...(permissionDraft[key]||new Set())];
