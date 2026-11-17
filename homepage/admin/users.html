@@ -2911,18 +2911,78 @@ function showModal(){
   if(editing){
     const u=editing;
     const shell=document.createElement('div');shell.className='auth-unified-shell';
-    shell.innerHTML=`<div class="auth-unified-tabs" role="tablist" aria-label="Site Admin settings">
-      <button type="button" class="auth-unified-tab active" role="tab" aria-selected="true" data-view="manage">Profile</button>
-      <button type="button" class="auth-unified-tab" role="tab" aria-selected="false" data-view="permissions">Edit Permissions</button>
-    </div><div class="auth-unified-pane" id="authManagePane"></div><div class="auth-unified-pane" id="authPermissionPane" hidden></div>`;
+
+shell.innerHTML = `
+  <div class="auth-unified-tabs"
+       role="tablist"
+       aria-label="Site Admin settings">
+
+    <button type="button"
+            class="auth-unified-tab active"
+            role="tab"
+            aria-selected="true"
+            data-view="manage">
+      Profile
+    </button>
+
+    <button type="button"
+            class="auth-unified-tab"
+            role="tab"
+            aria-selected="false"
+            data-view="permissions">
+      Edit Permissions
+    </button>
+
+    <button type="button"
+            class="auth-unified-tab"
+            role="tab"
+            aria-selected="false"
+            data-view="risk">
+      Risk Assessment
+    </button>
+  </div>
+
+  <div class="auth-unified-pane"
+       id="authManagePane"></div>
+
+  <div class="auth-unified-pane"
+       id="authPermissionPane"
+       hidden></div>
+
+  <div class="auth-unified-pane"
+       id="authRiskPane"
+       hidden></div>
+`;
+
     shell.querySelector('#authManagePane').append(form);
-    const switchView=async view=>{
-      const isManage=view==='manage';
-      shell.querySelector('#authManagePane').hidden=!isManage;
-      shell.querySelector('#authPermissionPane').hidden=isManage;
-      shell.querySelectorAll('.auth-unified-tab').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
-      if(!isManage&&!shell.querySelector('#permissionProfileForm'))await openPermissionEditor(u,shell.querySelector('#authPermissionPane'));
-    };
+
+const switchView = async view => {
+  const managePane = shell.querySelector('#authManagePane');
+  const permissionPane = shell.querySelector('#authPermissionPane');
+  const riskPane = shell.querySelector('#authRiskPane');
+
+  managePane.hidden = view !== 'manage';
+  permissionPane.hidden = view !== 'permissions';
+  riskPane.hidden = view !== 'risk';
+
+  shell.querySelectorAll('.auth-unified-tab').forEach(btn => {
+    const active = btn.dataset.view === view;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+
+  if (
+    view === 'permissions' &&
+    !shell.querySelector('#permissionProfileForm')
+  ) {
+    await openPermissionEditor(u, permissionPane);
+  }
+
+  if (view === 'risk') {
+    renderRiskAssessment(u, riskPane);
+  }
+};
+
     shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
     formModal=NewUI.modal.open({
   title:'Player · '+u.username,
