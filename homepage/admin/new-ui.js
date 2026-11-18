@@ -4545,6 +4545,9 @@ function create(target,opts={}){
  const today=day(new Date());let start=parse(opts.start)||null,end=parse(opts.end)||null;
  if(start&&end&&start>end)[start,end]=[end,start];
  let view=new Date((start||today).getFullYear(),(start||today).getMonth(),1),open=false,selectingEnd=false;
+/* DATE RANGE - LAST CONFIRMED DATES */
+let committedStart = start;
+let committedEnd = end;
  const wrap=document.createElement('div');wrap.className='shared-date-range';
  const trigger=document.createElement('div');trigger.className='shared-date-range-trigger';
  const a=document.createElement('input'),b=document.createElement('input');
@@ -4556,7 +4559,33 @@ function create(target,opts={}){
  const presets=document.createElement('div');presets.className='shared-date-range-presets';
  const cal=document.createElement('div');cal.className='shared-date-range-calendars';panel.append(presets,cal);wrap.append(trigger,panel);el.append(wrap);
  const presetNames=['Today','Yesterday','This Week','Last Week','This Month','Last Month','Last 7 days','Last 15 days','Last 30 days','Last 60 days'];
- const emit=()=>{a.value=fmt(start);b.value=fmt(end);const value={start:fmt(start),end:fmt(end)};el.dispatchEvent(new CustomEvent('change',{detail:value,bubbles:true}));if(typeof opts.onChange==='function')opts.onChange(value);};
+
+/* DATE RANGE - COMMIT VALID SELECTION */
+
+const emit = () => {
+  a.value = fmt(start);
+  b.value = fmt(end);
+
+  committedStart = start;
+  committedEnd = end;
+
+  const value = {
+    start: fmt(start),
+    end: fmt(end)
+  };
+
+  el.dispatchEvent(
+    new CustomEvent('change', {
+      detail: value,
+      bubbles: true
+    })
+  );
+
+  if (typeof opts.onChange === 'function') {
+    opts.onChange(value);
+  }
+};
+
  function preset(name){const wd=(today.getDay()+6)%7,first=shift(today,-wd);let s=today,e=today;
  switch(name){case 'Yesterday':s=e=shift(today,-1);break;case 'This Week':s=first;break;case 'Last Week':s=shift(first,-7);e=shift(first,-1);break;case 'This Month':s=new Date(today.getFullYear(),today.getMonth(),1);break;case 'Last Month':s=new Date(today.getFullYear(),today.getMonth()-1,1);e=new Date(today.getFullYear(),today.getMonth(),0);break;default:{const m=/Last (\d+) days/.exec(name);if(m)s=shift(today,-(+m[1]-1));}}
  start=s;end=e;selectingEnd=false;view=new Date(s.getFullYear(),s.getMonth(),1);emit();render();close();}
@@ -4575,17 +4604,151 @@ function create(target,opts={}){
  function move(n){view=new Date(view.getFullYear(),view.getMonth()+n,1);render();}
  function render(){cal.replaceChildren(month(0),month(1));}
  function openPanel(){document.querySelectorAll('.shared-date-range.is-open').forEach(x=>{if(x!==wrap)x._close?.();});open=true;wrap.classList.add('is-open');render();position();}
- function close(){open=false;wrap.classList.remove('is-open');}
+
+/* DATE RANGE - CANCEL UNFINISHED EDIT */
+
+function close() {
+  if (!open) return;
+
+  open = false;
+  wrap.classList.remove('is-open');
+
+  start = committedStart;
+  end = committedEnd;
+  selectingEnd = false;
+
+  a.value = fmt(start);
+  b.value = fmt(end);
+
+  if (start) {
+    view = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      1
+    );
+  }
+
+  render();
+}
+
  wrap._close=close;
  function position(){if(!open)return;panel.classList.remove('open-up');const r=trigger.getBoundingClientRect();if(window.innerHeight-r.bottom<Math.min(390,panel.offsetHeight+12)&&r.top>panel.offsetHeight+12)panel.classList.add('open-up');}
  presetNames.forEach(name=>{const btn=document.createElement('button');btn.type='button';btn.textContent=name;btn.onclick=()=>preset(name);presets.append(btn);});
- function typed(){const s=parse(a.value),e=parse(b.value);if(s&&e){start=s<=e?s:e;end=s<=e?e:s;selectingEnd=false;view=new Date(start.getFullYear(),start.getMonth(),1);emit();render();}else if(s&&!b.value.trim()){start=s;end=null;selectingEnd=true;render();}else if(e&&!a.value.trim()){start=null;end=e;render();}}
- [a,b].forEach(x=>{x.addEventListener('change',typed);x.addEventListener('keydown',ev=>{if(ev.key==='Enter'){typed();close();}if(ev.key==='Escape')close();});x.addEventListener('focus',openPanel);});
+
+/* DATE RANGE - HANDLE MANUAL TYPING */
+
+function typed() {
+  if (!open) return false;
+
+  const s = parse(a.value);
+  const e = parse(b.value);
+
+  // Commit only when both dates are valid.
+  if (s && e) {
+    start = s <= e ? s : e;
+    end = s <= e ? e : s;
+
+    selectingEnd = false;
+
+    view = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      1
+    );
+
+    emit();
+    render();
+
+    return true;
+  }
+
+  // Keep incomplete edits as drafts.
+  // Do not notify the table or save them.
+  return false;
+}
+
+/* DATE RANGE - INPUT EVENTS */
+
+[a, b].forEach(input => {
+
+  input.addEventListener('change', typed);
+
+  input.addEventListener('keydown', event => {
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+
+      typed();
+      close();
+
+      input.blur();
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+
+      close();
+      input.blur();
+    }
+
+  });
+
+  input.addEventListener('focus', openPanel);
+
+});
  ico.onclick=()=>open?close():openPanel();trigger.addEventListener('click',ev=>{if(ev.target===trigger||ev.target===arrow)openPanel();});
  const outside=ev=>{if(!wrap.contains(ev.target))close();};const esc=ev=>{if(ev.key==='Escape')close();};const resize=()=>position();
  document.addEventListener('pointerdown',outside);document.addEventListener('keydown',esc);window.addEventListener('resize',resize);
  a.value=fmt(start);b.value=fmt(end);
- const api={getValue:()=>({start:fmt(start),end:fmt(end)}),setValue(v,notify=true){start=parse(v?.start);end=parse(v?.end);if(start&&end&&start>end)[start,end]=[end,start];a.value=fmt(start);b.value=fmt(end);if(start)view=new Date(start.getFullYear(),start.getMonth(),1);render();if(notify)emit();},open:openPanel,close,destroy(){document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);window.removeEventListener('resize',resize);wrap.remove();delete el._newUIDateRange;}};
+
+/* DATE RANGE - PUBLIC API */
+
+const api = {
+  getValue: () => ({
+    start: fmt(start),
+    end: fmt(end)
+  }),
+
+  setValue(v, notify = true) {
+    start = parse(v?.start);
+    end = parse(v?.end);
+
+    if (start && end && start > end) {
+      [start, end] = [end, start];
+    }
+
+    committedStart = start;
+    committedEnd = end;
+    selectingEnd = false;
+
+    a.value = fmt(start);
+    b.value = fmt(end);
+
+    if (start) {
+      view = new Date(
+        start.getFullYear(),
+        start.getMonth(),
+        1
+      );
+    }
+
+    render();
+
+    if (notify) emit();
+  },
+
+  open: openPanel,
+  close,
+
+  destroy() {
+    document.removeEventListener('pointerdown', outside);
+    document.removeEventListener('keydown', esc);
+    window.removeEventListener('resize', resize);
+
+    wrap.remove();
+    delete el._newUIDateRange;
+  }
+};
  el._newUIDateRange=api;return api;
 }
 UI.dateRange=create;
