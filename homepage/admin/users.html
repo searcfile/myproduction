@@ -2702,6 +2702,26 @@ td:last-child .site-actions {
   color: var(--text);
 }
 
+/* AUTH USERS - CLICKABLE RISK USERNAME */
+
+.auth-risk-username-link {
+  color: #4096ff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color .2s ease;
+}
+
+.auth-risk-username-link:hover {
+  color: #69b1ff;
+  text-decoration: underline;
+}
+
+.auth-risk-username-link:focus-visible {
+  outline: 2px solid #4096ff;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 </style>
 </head>
 <body>
@@ -3147,8 +3167,39 @@ function toast(message,type='success'){if(window.NewUI?.showToast)NewUI.showToas
 function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:true}));}
     
 
+/* AUTH USERS - OPEN PLAYER FROM RISK USERNAME */
 
-function renderRiskAssessment(user, container) {
+function openRiskUsername(record, mode) {
+  const uid = String(record?.uid || '').trim();
+
+  if (!uid) {
+    toast('Player UID not found', 'error');
+    return;
+  }
+
+  const target = users.find(
+    u => String(u.uid) === uid
+  );
+
+  if (!target) {
+    toast('Player not found in loaded users', 'error');
+    return;
+  }
+
+  // Jangan buka semula player yang sama.
+  if (String(editing?.uid) === uid) return;
+
+  // Tutup modal player sebelumnya.
+  closeModal();
+
+  // Buka player baru, terus ke Risk Assessment.
+  manage(target, {
+    riskMode: mode
+  });
+}
+
+
+function renderRiskAssessment(user, container, initialMode = 'ip') {
   if (!container) return;
 
   container.replaceChildren();
@@ -3382,6 +3433,28 @@ if (mode === 'ip') {
         span.className = 'auth-risk-value';
         span.textContent = value;
 
+        
+/* CLICK USERNAME TO OPEN PLAYER */
+
+if (key === 'username' && record.uid) {
+  span.classList.add('auth-risk-username-link');
+
+  span.setAttribute('role', 'button');
+  span.setAttribute('tabindex', '0');
+
+  const openPlayer = () => {
+    openRiskUsername(record, mode);
+  };
+
+  span.addEventListener('click', openPlayer);
+
+  span.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openPlayer();
+    }
+  });
+}
 
 span.title = key === 'latestDevice'
   ? [
@@ -3521,7 +3594,7 @@ container.append(
   content
 );
 
-selectMode('ip');
+selectMode(initialMode);
 }
 
 
@@ -3552,7 +3625,7 @@ function formatRiskDate(value) {
 }
 
 
-function showModal(){
+function showModal(options = {}){
   if(!window.NewUI?.modal?.open){toast('Custom modal component unavailable. Check new-ui.js','error');return;}
   const form=$('userForm'),home=$('formSource');
   home.hidden=false;
@@ -3626,9 +3699,13 @@ const switchView = async view => {
     await openPermissionEditor(u, permissionPane);
   }
 
-  if (view === 'risk') {
-    renderRiskAssessment(u, riskPane);
-  }
+if (view === 'risk') {
+  renderRiskAssessment(
+    u,
+    riskPane,
+    options.riskMode || 'ip'
+  );
+}
 };
 
     shell.querySelectorAll('.auth-unified-tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
@@ -3641,6 +3718,10 @@ const switchView = async view => {
       destroyPermissionChips();permissionUser=null;
       home.append(form);home.hidden=true;formModal=null;editing=null;
     }});
+      // Auto buka Risk Assessment apabila klik username.
+if (options.riskMode) {
+  switchView('risk');
+}
   }else{
     formModal=NewUI.modal.open({
   title:'Create Username',
@@ -5109,7 +5190,7 @@ function create() {
   showModal();
 }
 
-function manage(u) {
+function manage(u, options = {}) {
   editing = u;
   $('modalFields').classList.add('is-editing');
   $('userForm').reset();
@@ -5139,7 +5220,7 @@ function manage(u) {
   $('save').textContent = 'Save Changes';
 
   syncSwitch();
-  showModal();
+  showModal(options);
 }
     
 /* ==========================================
