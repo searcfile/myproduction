@@ -3199,6 +3199,7 @@ td:last-child .site-actions {
 </div>
 
 
+
 <!-- PLAYER LOGIN DETAILS -->
 <div class="auth-player-login-details">
   <div class="auth-player-login-title">
@@ -3207,30 +3208,31 @@ td:last-child .site-actions {
 
   <div class="auth-player-login-grid">
     <div class="field">
-      <label for="playerLoginFailedCount">Login Failed Count</label>
-      <input id="playerLoginFailedCount" type="text"
-             placeholder="Not recorded" disabled>
+      <label for="playerLoginFailedCount">
+        Login Failed Count
+      </label>
+      <input id="playerLoginFailedCount"
+             type="text" placeholder="0" disabled>
     </div>
 
     <div class="field">
-      <label for="playerForgotPasswordCount">Forgot Password Count</label>
-      <input id="playerForgotPasswordCount" type="text"
-             placeholder="Not recorded" disabled>
+      <label for="playerPinFailedCount">
+        Secure 2FA Failed Count
+      </label>
+      <input id="playerPinFailedCount"
+             type="text" placeholder="0" disabled>
     </div>
 
     <div class="field">
-      <label for="playerTotalLoginFailedCount">Total Login Failed Count</label>
-      <input id="playerTotalLoginFailedCount" type="text"
-             placeholder="Not recorded" disabled>
-    </div>
-
-    <div class="field">
-      <label for="playerTotalForgotPasswordCount">Total Forgot Password Count</label>
-      <input id="playerTotalForgotPasswordCount" type="text"
-             placeholder="Not recorded" disabled>
+      <label for="playerTotalLoginFailedCount">
+        Total Login Failed Count
+      </label>
+      <input id="playerTotalLoginFailedCount"
+             type="text" placeholder="0" disabled>
     </div>
   </div>
 </div>
+
 
   </section>
 
@@ -5602,22 +5604,18 @@ const setPlayerCounter = (id, value) => {
 
 setPlayerCounter(
   'playerLoginFailedCount',
-  u.loginFailedCount
+  u.loginFailedCount ?? 0
 );
 
 setPlayerCounter(
-  'playerForgotPasswordCount',
-  u.forgotPasswordCount
+  'playerPinFailedCount',
+  u.pinFailedCount ?? 0
 );
 
 setPlayerCounter(
   'playerTotalLoginFailedCount',
-  u.totalLoginFailedCount
-);
-
-setPlayerCounter(
-  'playerTotalForgotPasswordCount',
-  u.totalForgotPasswordCount
+  (Number(u.loginFailedCount) || 0) +
+  (Number(u.pinFailedCount) || 0)
 );
 
 
