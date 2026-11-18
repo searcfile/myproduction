@@ -4744,7 +4744,7 @@ head.append(leftNav, title, rightNav);
 box.append(head);
 
  const grid=document.createElement('div');grid.className='shared-date-range-grid';['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(t=>{const h=document.createElement('span');h.className='shared-date-range-weekday';h.textContent=t;grid.append(h);});
- const lead=m.getDay(),total=Math.ceil((lead+last)/7)*7;
+ const lead=m.getDay(),total=42;
  
 for (let i = 0; i < total; i++) {
   const d = new Date(
