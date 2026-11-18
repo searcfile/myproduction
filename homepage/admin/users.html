@@ -2876,6 +2876,65 @@ td:last-child .site-actions {
   }
 }
 
+/* ==========================================
+   PLAYER INFO - CUSTOM REMARK TEXTAREA
+   ========================================== */
+
+.auth-player-remark {
+  width: 100%;
+  min-width: 0;
+  margin-top: 18px;
+}
+
+.auth-player-remark label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.auth-player-remark textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 110px;
+  padding: 8px 11px;
+
+  box-sizing: border-box;
+  resize: vertical;
+
+  border: 1px solid var(--input-line);
+  border-radius: 6px;
+  outline: none;
+
+  background: var(--input);
+  color: var(--text);
+  caret-color: var(--caret-color);
+
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+
+  transition: border-color .2s ease;
+}
+
+.auth-player-remark textarea::placeholder {
+  color: var(--placeholder, var(--muted));
+}
+
+.auth-player-remark textarea:hover {
+  border-color: var(--input-line-hover);
+}
+
+.auth-player-remark textarea:focus {
+  border-color: var(--input-line-focus);
+}
+
+.auth-player-remark-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 </style>
 </head>
 <body>
@@ -3300,6 +3359,23 @@ td:last-child .site-actions {
 
       </div>
     </div>
+
+<!-- PLAYER INFO - REMARK -->
+<div class="field full auth-player-remark">
+  <label for="playerRemark">Remark</label>
+
+  <textarea
+    id="playerRemark"
+    maxlength="2000"
+    rows="5"
+    placeholder="Write a note about this user..."
+    spellcheck="false"
+  ></textarea>
+
+  <small class="auth-player-remark-hint">
+    Private admin note for this user.
+  </small>
+</div>
 
   </section>
 
@@ -5552,6 +5628,8 @@ function create() {
   editing = null;
   $('modalFields').classList.remove('is-editing');
   $('userForm').reset();
+  
+  $('playerRemark').value = '';
 
   $('resetPasswordWrap').hidden = true;
   $('uidWrap').hidden = true;
@@ -5633,6 +5711,13 @@ setPlayerCounter(
   $('username').required = false;
 
   $('enabled').checked = !!u.enabled;
+
+/* PLAYER INFO - LOAD SAVED REMARK */
+
+$('playerRemark').value =
+  typeof u.remark === 'string'
+    ? u.remark
+    : '';
 
   $('password').required = false;
   $('secondPassword').required = false;
@@ -5755,11 +5840,31 @@ $('userForm').addEventListener('submit',async e=>{
   try{
     const password=$('password').value,pin=$('secondPassword').value;
     if(pin&&!/^[0-9]{6}$/.test(pin))throw Error('PIN must contain exactly 6 digits');
-    if(editing){
-      const body={enabled:$('enabled').checked};
-      if(password)body.password=password;if(pin)body.secondPassword=pin;
-      await api('/api/admin-users/'+encodeURIComponent(editing.uid),{method:'PATCH',body:JSON.stringify(body)});
-    }else{
+
+if (editing) {
+  const body = {
+    enabled: $('enabled').checked,
+    remark: $('playerRemark').value.trim()
+  };
+
+  if (password) {
+    body.password = password;
+  }
+
+  if (pin) {
+    body.secondPassword = pin;
+  }
+
+  await api(
+    '/api/admin-users/' +
+    encodeURIComponent(editing.uid),
+    {
+      method: 'PATCH',
+      body: JSON.stringify(body)
+    }
+  );
+}
+else{
       if(!password||!pin)throw Error('Password and PIN required');
       await api('/api/admin-users',{method:'POST',body:JSON.stringify({
         username:$('username').value.trim().toLowerCase(),password,secondPassword:pin,
