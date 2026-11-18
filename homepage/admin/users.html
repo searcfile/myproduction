@@ -760,11 +760,11 @@
   border-radius: 50%;
   background: #2685ff;
 }
+
 /* ==========================================
-   AUTH USERS - FINAL RESPONSIVE TOOLBAR
+   AUTH USERS - GAME LOGO STYLE RESPONSIVE
    ========================================== */
 
-/* TOOLBAR CARD */
 .auth-toolbar-card {
   width: 100%;
   min-width: 0;
@@ -774,185 +774,156 @@
   border: 1px solid var(--tx-border);
   border-radius: 12px;
   box-sizing: border-box;
+  overflow: visible !important;
 }
 
-/* DESKTOP */
-.auth-toolbar-card .auth-top-toolbar {
-  display: flex !important;
-  flex-direction: row !important;
+/* DESKTOP - 4 COLUMNS */
+#manageUsersPane .auth-toolbar-card .auth-top-toolbar {
+  display: grid !important;
+  grid-template-columns:
+    repeat(3, minmax(0, 400px))
+    minmax(max-content, 1fr);
   align-items: center !important;
-  justify-content: flex-start !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
+  gap: 10px !important;
   width: 100% !important;
   min-width: 0 !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* SEARCH - 400PX */
-.auth-toolbar-card .auth-search-holder {
-  flex: 0 0 400px !important;
-  width: 400px !important;
-  max-width: 100% !important;
+/* ALL FILTERS */
+#manageUsersPane .auth-top-toolbar > .auth-search-holder,
+#manageUsersPane .auth-top-toolbar > .auth-date-filter,
+#manageUsersPane .auth-top-toolbar > .auth-status-filter {
+  width: 100% !important;
+  max-width: none !important;
   min-width: 0 !important;
+  flex: none !important;
+  margin: 0 !important;
 }
 
-/* CUSTOM SEARCH */
-.auth-toolbar-card .auth-search-holder .shared-sync-search,
-.auth-toolbar-card .auth-search-holder .new-ui-input-wrap,
-.auth-toolbar-card .auth-search-holder input {
+/* SEARCH */
+#manageUsersPane .auth-search-holder .shared-sync-search,
+#manageUsersPane .auth-search-holder .new-ui-input-wrap,
+#manageUsersPane .auth-search-holder input {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
-  box-sizing: border-box !important;
 }
 
-/* CUSTOM STATUS DROPDOWN - 400PX */
-.auth-toolbar-card .auth-status-filter {
-  flex: 0 0 400px !important;
-  width: 400px !important;
-  max-width: 100% !important;
+/* DATE RANGE */
+#manageUsersPane .auth-date-filter #authDateRange,
+#manageUsersPane .auth-date-filter .shared-date-range,
+#manageUsersPane .auth-date-filter .shared-date-range-trigger {
+  width: 100% !important;
   min-width: 0 !important;
+}
+
+/* STATUS DROPDOWN */
+#manageUsersPane .auth-status-filter {
   position: relative;
   z-index: 23;
 }
 
-.auth-toolbar-card .auth-status-filter #statusFilterChips,
-.auth-toolbar-card .auth-status-filter .shared-chip-dropdown,
-.auth-toolbar-card .auth-status-filter .shared-chip-dropdown-trigger {
+#manageUsersPane .auth-status-filter #statusFilterChips,
+#manageUsersPane .auth-status-filter .shared-chip-dropdown,
+#manageUsersPane .auth-status-filter .shared-chip-dropdown-trigger {
   width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  min-width: 0 !important;
 }
 
-.auth-toolbar-card .auth-status-filter .shared-chip-dropdown-panel {
+#manageUsersPane .auth-status-filter .shared-chip-dropdown-panel {
   z-index: 1000 !important;
 }
 
-/* CREATE BUTTON - RIGHT */
-.auth-toolbar-card .auth-create {
-  flex: 0 0 auto !important;
-  align-self: center !important;
-  width: auto !important;
-  max-width: 100% !important;
-  height: 32px !important;
-  padding: 0 15px !important;
-  margin: 0 0 0 auto !important;
-  white-space: nowrap !important;
-}
-
-/* ==========================================
-   PHONE / TABLET / BROWSER ZOOM
-   ========================================== */
-
-@media (max-width: 900px) {
-
-  /* Susun semua dalam 3 baris */
-  .auth-toolbar-card .auth-top-toolbar {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    justify-content: flex-start !important;
-    flex-wrap: nowrap !important;
-    gap: 10px !important;
-  }
-
-  /* BARIS 1 - SEARCH */
-  .auth-toolbar-card .auth-search-holder {
-    flex: 0 0 auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* BARIS 2 - STATUS CHIPS */
-  .auth-toolbar-card .auth-status-filter {
-    flex: 0 0 auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* BARIS 3 - CREATE DI KANAN */
-  .auth-toolbar-card .auth-create {
-    flex: 0 0 auto !important;
-    align-self: flex-end !important;
-    width: auto !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    height: 32px !important;
-    padding: 0 15px !important;
-    white-space: nowrap !important;
-  }
-}
-
-
-/* ==========================================
-   AUTH USERS - LOGOUT ALL + CREATE BUTTONS
-   ========================================== */
-
-.auth-toolbar-card .auth-toolbar-actions {
-  display: flex;
+/* ACTION BUTTONS */
+#manageUsersPane .auth-toolbar-actions {
+  display: flex !important;
   align-items: center;
   justify-content: flex-end;
-  flex: 0 0 auto;
   gap: 8px;
-  margin-left: auto;
+  width: 100%;
   min-width: 0;
-}
-
-.auth-toolbar-card .auth-toolbar-actions .auth-create {
   margin: 0 !important;
-  height: 32px !important;
 }
 
-.auth-toolbar-card .auth-logout-all {
+#manageUsersPane .auth-toolbar-actions > button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0;
+  height: 32px !important;
+  padding: 0 15px !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+/* LOGOUT ALL */
+#manageUsersPane .auth-logout-all {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-
   height: 32px;
   padding: 0 15px;
-
   border: 1px solid rgba(215,56,75,.35);
   border-radius: 7px;
-
   background: rgba(215,56,75,.12);
   color: #ff8597;
-
   font-size: 12px;
   font-weight: 600;
-  white-space: nowrap;
   cursor: pointer;
   transition: .2s;
 }
 
-.auth-toolbar-card .auth-logout-all:hover:not(:disabled) {
+#manageUsersPane .auth-logout-all:hover:not(:disabled) {
   background: rgba(215,56,75,.22);
   border-color: #ff8597;
 }
 
-.auth-toolbar-card .auth-logout-all:disabled {
+#manageUsersPane .auth-logout-all:disabled {
   opacity: .45;
   cursor: not-allowed;
 }
 
-@media (max-width: 900px) {
-  .auth-toolbar-card .auth-toolbar-actions {
-    width: 100%;
-    margin-left: 0;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+/* MEDIUM DESKTOP */
+@media (min-width: 1101px) and (max-width: 1450px) {
+  #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr))
+      max-content;
   }
 }
 
+/* TABLET / PHONE / BROWSER ZOOM */
+@media (max-width: 1100px) {
+  #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px !important;
+  }
+
+  #manageUsersPane .auth-top-toolbar > .auth-search-holder,
+  #manageUsersPane .auth-top-toolbar > .auth-date-filter,
+  #manageUsersPane .auth-top-toolbar > .auth-status-filter {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  #manageUsersPane .auth-toolbar-actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+}
+
+/* SMALL PHONE */
 @media (max-width: 380px) {
-  .auth-toolbar-card .auth-toolbar-actions > button {
-    flex: 1 1 auto !important;
+  #manageUsersPane .auth-toolbar-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #manageUsersPane .auth-toolbar-actions > button {
+    width: 100% !important;
+    padding: 0 8px !important;
+    font-size: 12px;
   }
 }
 
@@ -2969,9 +2940,8 @@ td:last-child .site-actions {
 
 /* AUTH USERS - DATE RANGE FILTER */
 .auth-toolbar-card .auth-date-filter {
-  flex: 0 0 400px;
-  width: 400px;
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
   min-width: 0;
   position: relative;
   z-index: 21;
@@ -2994,14 +2964,6 @@ td:last-child .site-actions {
   overflow: visible !important;
 }
 
-@media (max-width: 900px) {
-  .auth-toolbar-card .auth-date-filter {
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-}
 
 /* AUTH USERS - SHOW ALL INPUT LABEL */
 
