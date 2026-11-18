@@ -4558,7 +4558,19 @@ let committedEnd = end;
  const panel=document.createElement('div');panel.className='shared-date-range-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Select date range');
  const presets=document.createElement('div');presets.className='shared-date-range-presets';
  const cal=document.createElement('div');cal.className='shared-date-range-calendars';panel.append(presets,cal);wrap.append(trigger,panel);el.append(wrap);
- const presetNames=['Today','Yesterday','This Week','Last Week','This Month','Last Month','Last 7 days','Last 15 days','Last 30 days','Last 60 days'];
+const presetNames = [
+  'Show All',
+  'Today',
+  'Yesterday',
+  'This Week',
+  'Last Week',
+  'This Month',
+  'Last Month',
+  'Last 7 days',
+  'Last 15 days',
+  'Last 30 days',
+  'Last 60 days'
+];
 
 /* DATE RANGE - COMMIT VALID SELECTION */
 
@@ -4592,6 +4604,24 @@ const emit = () => {
    ========================================== */
 
 function preset(name) {
+   
+  if (name === 'Show All') {
+    start = null;
+    end = null;
+    selectingEnd = false;
+
+    view = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    );
+
+    emit();
+    render();
+    close();
+    return;
+  }
+
   // Ambil tarikh semasa setiap kali preset ditekan.
   const now = day(new Date());
 
