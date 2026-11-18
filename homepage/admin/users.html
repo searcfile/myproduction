@@ -3563,39 +3563,14 @@ function getAccountNumber(uid) {
 
 const searchInput=$('search');
 
-/* ==========================================
-   AUTH USERS - DATE RANGE FILTER
-   ========================================== */
-
 
 /* ==========================================
-   AUTH USERS - DATE RANGE DEFAULT THIS MONTH
+   AUTH USERS - DATE RANGE DEFAULT SHOW ALL
    ========================================== */
 
-const authToday = new Date();
+let authDateStart = '';
+let authDateEnd = '';
 
-const authFormatDate = date => [
-  date.getFullYear(),
-  String(date.getMonth() + 1).padStart(2, '0'),
-  String(date.getDate()).padStart(2, '0')
-].join('-');
-
-// First day of current month
-const authFirstDay = new Date(
-  authToday.getFullYear(),
-  authToday.getMonth(),
-  1
-);
-
-// Last day of current month
-const authLastDay = new Date(
-  authToday.getFullYear(),
-  authToday.getMonth() + 1,
-  0
-);
-
-let authDateStart = authFormatDate(authFirstDay);
-let authDateEnd = authFormatDate(authLastDay);
 
 const authDatePicker = NewUI.dateRange(
   '#authDateRange',
