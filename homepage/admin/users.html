@@ -3003,6 +3003,42 @@ td:last-child .site-actions {
   }
 }
 
+/* AUTH USERS - SHOW ALL INPUT LABEL */
+
+#authDateRange .shared-date-range-trigger {
+  position: relative;
+}
+
+#authDateRange .auth-date-show-all {
+  display: none;
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  pointer-events: none;
+}
+
+#authDateRange.auth-date-is-all
+.auth-date-show-all {
+  display: block;
+}
+
+/* Hide empty date placeholders only */
+#authDateRange.auth-date-is-all
+.shared-date-range-trigger input {
+  visibility: hidden;
+}
+
+/* Keep calendar icon visible */
+#authDateRange.auth-date-is-all
+.shared-date-range-trigger svg {
+  visibility: visible;
+}
+
 </style>
 </head>
 <body>
