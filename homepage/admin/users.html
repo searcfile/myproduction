@@ -2858,21 +2858,17 @@ td:last-child .site-actions {
   width: 100%;
 }
 
-.auth-player-login-grid input {
+
+.auth-player-login-grid .shared-input {
   width: 100%;
   min-width: 0;
-  height: 34px;
+  height: 32px;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
-.auth-player-login-grid input:disabled {
-  opacity: 1 !important;
-  cursor: not-allowed !important;
-  caret-color: transparent !important;
-  -webkit-text-fill-color: var(--text, #eaf0fb);
-}
+
 
 @container (max-width: 420px) {
   .auth-player-login-grid {
@@ -3206,33 +3202,47 @@ td:last-child .site-actions {
     <span>Player Login Details</span>
   </div>
 
-  <div class="auth-player-login-grid">
-    <div class="field">
-      <label for="playerLoginFailedCount">
-        Login Failed Count
-      </label>
-      <input id="playerLoginFailedCount"
-             type="text" placeholder="0" disabled>
-    </div>
 
-    <div class="field">
-      <label for="playerPinFailedCount">
-        Secure 2FA Failed Count
-      </label>
-      <input id="playerPinFailedCount"
-             type="text" placeholder="0" disabled>
-    </div>
+<div class="auth-player-login-grid">
+  <div class="field">
+    <label for="playerLoginFailedCount">
+      Login Failed Count
+    </label>
+    <input
+      id="playerLoginFailedCount"
+      class="shared-input"
+      type="text"
+      placeholder="0"
+      disabled
+    >
+  </div>
 
-    <div class="field">
-      <label for="playerTotalLoginFailedCount">
-        Total Login Failed Count
-      </label>
-      <input id="playerTotalLoginFailedCount"
-             type="text" placeholder="0" disabled>
-    </div>
+  <div class="field">
+    <label for="playerPinFailedCount">
+      Secure 2FA Failed Count
+    </label>
+    <input
+      id="playerPinFailedCount"
+      class="shared-input"
+      type="text"
+      placeholder="0"
+      disabled
+    >
+  </div>
+
+  <div class="field">
+    <label for="playerTotalLoginFailedCount">
+      Total Login Failed Count
+    </label>
+    <input
+      id="playerTotalLoginFailedCount"
+      class="shared-input"
+      type="text"
+      placeholder="0"
+      disabled
+    >
   </div>
 </div>
-
 
   </section>
 
