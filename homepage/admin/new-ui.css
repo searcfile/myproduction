@@ -130,9 +130,9 @@ html[data-admin-theme="light"] {
   --caret-color:#ffffff;
   --list-hover:rgba(255,255,255,.08);
    
-  --gold: #1668dc;
-  --gold-hover: #3c89e8;
-  --gold-active: #1554ad;
+  --tx-primary-color: #1668dc;
+  --tx-primary-color-hover: #3c89e8;
+  --tx-primary-color-active: #1554ad;
 
 }
 
