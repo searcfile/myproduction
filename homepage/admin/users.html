@@ -2967,6 +2967,42 @@ td:last-child .site-actions {
   overflow-wrap: anywhere;
 }
 
+/* AUTH USERS - DATE RANGE FILTER */
+.auth-toolbar-card .auth-date-filter {
+  flex: 0 0 320px;
+  width: 320px;
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  z-index: 21;
+}
+
+.auth-toolbar-card .auth-date-filter #authDateRange,
+.auth-toolbar-card .auth-date-filter .shared-date-range {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-toolbar-card .auth-date-filter
+.shared-date-range-trigger {
+  width: 100%;
+  min-height: 32px;
+}
+
+/* Allow calendar to extend outside toolbar */
+.auth-toolbar-card {
+  overflow: visible !important;
+}
+
+@media (max-width: 900px) {
+  .auth-toolbar-card .auth-date-filter {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2993,6 +3029,11 @@ td:last-child .site-actions {
 <!-- AUTH USERS - CUSTOM STATUS FILTER -->
 <div class="auth-status-filter">
   <div id="statusFilterChips"></div>
+</div>
+
+<!-- AUTH USERS - DATE RANGE FILTER -->
+<div class="auth-date-filter">
+  <div id="authDateRange"></div>
 </div>
 
 <!-- AUTH USERS - ACTION BUTTONS -->
@@ -3524,6 +3565,27 @@ function getAccountNumber(uid) {
 }
 
 const searchInput=$('search');
+
+/* ==========================================
+   AUTH USERS - DATE RANGE FILTER
+   ========================================== */
+
+let authDateStart = '';
+let authDateEnd = '';
+
+const authDatePicker = NewUI.dateRange(
+  '#authDateRange',
+  {
+    onChange({ start, end }) {
+      authDateStart = start || '';
+      authDateEnd = end || '';
+
+      authCurrentPage = 1;
+      render();
+    }
+  }
+);
+
    /* ==========================================
    AUTH USERS - STATUS FILTER
    ========================================== */
@@ -5026,7 +5088,45 @@ function render(){
     );
 
 
-  return matchSearch && matchStatus;
+  // Filter by account registration date
+  const rawCreatedAt = u.createdAt;
+
+  let createdTime = 0;
+
+  if (typeof rawCreatedAt === 'number') {
+    createdTime = rawCreatedAt < 1e12
+      ? rawCreatedAt * 1000
+      : rawCreatedAt;
+  } else if (rawCreatedAt) {
+    const numeric = Number(rawCreatedAt);
+
+    createdTime =
+      Number.isFinite(numeric) && numeric > 0
+        ? (numeric < 1e12 ? numeric * 1000 : numeric)
+        : Date.parse(rawCreatedAt);
+  }
+
+  const createdDate = new Date(createdTime);
+
+  const createdDay =
+    Number.isFinite(createdTime) &&
+    createdTime > 0 &&
+    !Number.isNaN(createdDate.getTime())
+      ? [
+          createdDate.getFullYear(),
+          String(createdDate.getMonth() + 1).padStart(2, '0'),
+          String(createdDate.getDate()).padStart(2, '0')
+        ].join('-')
+      : '';
+
+  const matchDate =
+    !authDateStart && !authDateEnd
+      ? true
+      : Boolean(createdDay) &&
+        (!authDateStart || createdDay >= authDateStart) &&
+        (!authDateEnd || createdDay <= authDateEnd);
+
+  return matchSearch && matchStatus && matchDate;
 
 }).sort((a, b) => {
   const getTime = user => {
