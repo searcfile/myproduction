@@ -3315,7 +3315,7 @@ input::placeholder{
 .shared-date-range-weekday{font-size:12px;display:grid;place-items:center;height:27px;color:var(--text,#ddd)}
 .shared-date-range-day{display:grid;place-items:center;height:29px;min-width:0;padding:0;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
 .shared-date-range-day.outside{opacity:.26}
-.shared-date-range-day.today{color:#1677ff;font-weight:700}
+.shared-date-range-day.today{color:var(--tx-primary-color);font-weight:700}
 .shared-date-range-day.in-range{background:rgba(22,119,255,.12);border-radius:0}
 .shared-date-range-day.selected{background:#1677ff!important;color:#fff!important;font-weight:650;opacity:1}
 .shared-date-range-day:hover:not(.selected){background:var(--dropdown-bg-hover,#162b44)}
