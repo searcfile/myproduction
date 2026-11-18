@@ -3280,3 +3280,37 @@ input::placeholder{
 .image-wrap.shared-card-image-preview:focus-visible::after {
   opacity: 1;
 }
+
+/* SHARED NEWUI DATE RANGE PICKER */
+.shared-date-range{position:relative;width:100%;min-width:0;font:inherit;color:var(--text,#ddd)}
+.shared-date-range *{box-sizing:border-box}
+.shared-date-range-trigger{height:32px;display:flex;align-items:center;gap:5px;padding:0 9px;border:1px solid var(--input-line,#424242);border-radius:6px;background:var(--input,#141414);transition:border-color .2s}
+.shared-date-range-trigger:hover{border-color:var(--input-line-hover,#4096ff)}
+.shared-date-range.is-open .shared-date-range-trigger{border-color:var(--input-line-focus,#1677ff);box-shadow:0 0 0 2px rgba(22,119,255,.12)}
+.shared-date-range-input{width:50%;min-width:0;height:28px;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:var(--text,#ddd)!important;font-size:13px;font-family:inherit;padding:0!important}
+.shared-date-range-input::placeholder{color:var(--muted,#888)}
+.shared-date-range-arrow{color:var(--muted,#777);font-size:13px;flex:none}
+.shared-date-range-icon{display:grid;place-items:center;flex:none;width:22px;height:25px;border:0;background:transparent;color:var(--muted,#999);cursor:pointer;padding:2px}
+.shared-date-range-icon svg{width:15px;height:15px}
+.shared-date-range-panel{position:absolute;top:calc(100% + 5px);left:0;z-index:21400;display:none;width:max-content;max-width:min(740px,calc(100vw - 24px));border-radius:9px;background:var(--dropdown-bg,#1f1f1f);color:var(--text,#ddd);box-shadow:0 9px 28px rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--input-line,#383838)}
+.shared-date-range.is-open .shared-date-range-panel{display:flex}
+.shared-date-range-panel.open-up{top:auto;bottom:calc(100% + 5px)}
+.shared-date-range-presets{width:125px;max-height:345px;flex:none;overflow-y:auto;padding:7px 5px;border-right:1px solid var(--input-line,#383838);scrollbar-width:thin}
+.shared-date-range-presets button{display:block;width:100%;border:0;background:transparent;color:inherit;text-align:left;padding:8px 10px;border-radius:4px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.shared-date-range-presets button:hover{background:var(--dropdown-bg-hover,#162b44);color:var(--dropdown-color-hover,#91caff)}
+.shared-date-range-calendars{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:10px;padding:10px 12px 14px;min-width:0}
+.shared-date-range-month{width:224px;min-width:0}
+.shared-date-range-month-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:10px}
+.shared-date-range-month-head strong{font-size:13px;font-weight:600}
+.shared-date-range-month-head button{border:0;background:transparent;color:var(--muted,#999);font-size:22px;cursor:pointer;width:25px;height:27px;line-height:20px}
+.shared-date-range-month-head button:disabled{visibility:hidden}
+.shared-date-range-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+.shared-date-range-weekday{font-size:12px;display:grid;place-items:center;height:27px;color:var(--text,#ddd)}
+.shared-date-range-day{display:grid;place-items:center;height:29px;min-width:0;padding:0;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.shared-date-range-day.outside{opacity:.26}
+.shared-date-range-day.today{color:#4096ff;font-weight:700}
+.shared-date-range-day.in-range{background:rgba(22,119,255,.12);border-radius:0}
+.shared-date-range-day.selected{background:#1677ff!important;color:#fff!important;font-weight:650;opacity:1}
+.shared-date-range-day:hover:not(.selected){background:var(--dropdown-bg-hover,#162b44)}
+@media(max-width:720px){.shared-date-range-panel{max-width:calc(100vw - 20px)}.shared-date-range-presets{width:105px}.shared-date-range-calendars{gap:5px;padding:8px}.shared-date-range-month{width:185px}.shared-date-range-day{height:26px}}
+@media(max-width:540px){.shared-date-range-panel{width:min(100%,350px);max-width:calc(100vw - 20px);max-height:min(75vh,530px);overflow-y:auto;flex-direction:column}.shared-date-range-presets{width:100%;max-height:none;display:flex;overflow-x:auto;overflow-y:hidden;gap:4px;border-right:0;border-bottom:1px solid var(--input-line,#383838)}.shared-date-range-presets button{width:auto;flex:none;padding:7px 9px}.shared-date-range-calendars{grid-template-columns:1fr;justify-items:center;gap:12px}.shared-date-range-month{width:min(100%,280px)}.shared-date-range-day{height:31px}}
