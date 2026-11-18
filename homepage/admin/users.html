@@ -3564,13 +3564,37 @@ function getAccountNumber(uid) {
 const searchInput=$('search');
 
 
+
 /* ==========================================
-   AUTH USERS - DATE RANGE DEFAULT SHOW ALL
+   AUTH USERS - DATE RANGE SHOW ALL LABEL
    ========================================== */
 
 let authDateStart = '';
 let authDateEnd = '';
 
+function updateAuthDateLabel() {
+  const root = document.querySelector('#authDateRange');
+  if (!root) return;
+
+  const isShowAll = !authDateStart && !authDateEnd;
+
+  const trigger = root.querySelector(
+    '.shared-date-range-trigger'
+  );
+
+  if (!trigger) return;
+
+  let label = root.querySelector('.auth-date-show-all');
+
+  if (!label) {
+    label = document.createElement('span');
+    label.className = 'auth-date-show-all';
+    label.textContent = 'Show All';
+    trigger.appendChild(label);
+  }
+
+  root.classList.toggle('auth-date-is-all', isShowAll);
+}
 
 const authDatePicker = NewUI.dateRange(
   '#authDateRange',
@@ -3582,11 +3606,16 @@ const authDatePicker = NewUI.dateRange(
       authDateStart = start || '';
       authDateEnd = end || '';
 
+      updateAuthDateLabel();
+
       authCurrentPage = 1;
       render();
     }
   }
 );
+
+updateAuthDateLabel();
+
 
    /* ==========================================
    AUTH USERS - STATUS FILTER
