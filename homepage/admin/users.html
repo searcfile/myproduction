@@ -276,6 +276,33 @@
   background: var(--tx-hover) !important;
 }
 .auth-user-cell{white-space:nowrap}
+
+/* ==========================================
+   AUTH USERS - USERNAME ACCOUNT NUMBER
+   ========================================== */
+
+.auth-user-number {
+  display: inline-block;
+  min-width: 38px;
+  margin-right: 8px;
+  color: #8c8c8c;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.auth-risk-user-number {
+  display: inline-block;
+  min-width: 38px;
+  margin-right: 6px;
+  color: #8c8c8c;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+    
 .auth-avatar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(51,121,231,.18);color:#84b6ff;margin-right:9px;font-weight:750}
 .auth-user-cell strong{font-weight:600}
 .auth-uid-inline{display:flex;align-items:center;gap:8px;min-width:0}
@@ -3127,6 +3154,48 @@ td:last-child .site-actions {
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
 let users=[],editing=null,ready=false,formModal=null,loading=false,sites=[],permissionModal=null,accountModal=null;
+
+/* ==========================================
+   AUTH USERS - ACCOUNT CREATION NUMBER
+   ========================================== */
+
+function getAccountNumber(uid) {
+  const getCreatedTime = user => {
+    const value = user?.createdAt;
+
+    if (typeof value === 'number') {
+      return value < 1e12 ? value * 1000 : value;
+    }
+
+    if (!value) return 0;
+
+    const numeric = Number(value);
+
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric < 1e12 ? numeric * 1000 : numeric;
+    }
+
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const ordered = [...users].sort((a, b) => {
+    const difference =
+      getCreatedTime(a) - getCreatedTime(b);
+
+    if (difference !== 0) return difference;
+
+    return String(a.uid || '')
+      .localeCompare(String(b.uid || ''));
+  });
+
+  const index = ordered.findIndex(
+    user => String(user.uid) === String(uid)
+  );
+
+  return index >= 0 ? '#' + (index + 1) : '—';
+}
+
 const searchInput=$('search');
    /* ==========================================
    AUTH USERS - STATUS FILTER
@@ -3499,6 +3568,17 @@ if (mode === 'ip') {
         const span = document.createElement('span');
         span.className = 'auth-risk-value';
         span.textContent = value;
+
+/* RISK ASSESSMENT - ACCOUNT NUMBER */
+
+if (key === 'username') {
+  const number = document.createElement('span');
+
+  number.className = 'auth-risk-user-number';
+  number.textContent = getAccountNumber(record.uid);
+
+  td.appendChild(number);
+}
 
         
 /* CLICK USERNAME TO OPEN PLAYER */
@@ -4631,9 +4711,28 @@ function render(){
   for (const u of pageUsers) {
 
     const tr=document.createElement('tr');
-    const userTd=document.createElement('td');userTd.className='auth-user-cell';
-    const avatar=document.createElement('span');avatar.className='auth-avatar';avatar.textContent=(u.username||'?').slice(0,1).toUpperCase();
-    const name=document.createElement('strong');name.textContent=u.username;userTd.append(avatar,name);tr.append(userTd);
+
+/* AUTH USERS - USERNAME WITH ACCOUNT NUMBER */
+
+const userTd = document.createElement('td');
+userTd.className = 'auth-user-cell';
+
+const number = document.createElement('span');
+number.className = 'auth-user-number';
+number.textContent = getAccountNumber(u.uid);
+
+const avatar = document.createElement('span');
+avatar.className = 'auth-avatar';
+avatar.textContent = (u.username || '?')
+  .slice(0, 1)
+  .toUpperCase();
+
+const name = document.createElement('strong');
+name.textContent = u.username;
+
+userTd.append(number, avatar, name);
+tr.append(userTd);
+
     const uidTd=document.createElement('td');const uidWrap=document.createElement('div');uidWrap.className='auth-uid-inline';
     const code=document.createElement('span');code.className='mono';code.textContent=u.uid;
     uidWrap.append(code,btn('⧉','auth-copy',()=>copy(u.uid),'Copy UID'));uidTd.append(uidWrap);tr.append(uidTd);
