@@ -4586,9 +4586,106 @@ const emit = () => {
   }
 };
 
- function preset(name){const wd=(today.getDay()+6)%7,first=shift(today,-wd);let s=today,e=today;
- switch(name){case 'Yesterday':s=e=shift(today,-1);break;case 'This Week':s=first;break;case 'Last Week':s=shift(first,-7);e=shift(first,-1);break;case 'This Month':s=new Date(today.getFullYear(),today.getMonth(),1);break;case 'Last Month':s=new Date(today.getFullYear(),today.getMonth()-1,1);e=new Date(today.getFullYear(),today.getMonth(),0);break;default:{const m=/Last (\d+) days/.exec(name);if(m)s=shift(today,-(+m[1]-1));}}
- start=s;end=e;selectingEnd=false;view=new Date(s.getFullYear(),s.getMonth(),1);emit();render();close();}
+
+/* ==========================================
+   SHARED DATE RANGE - FULL PRESET PERIOD
+   ========================================== */
+
+function preset(name) {
+  // Ambil tarikh semasa setiap kali preset ditekan.
+  const now = day(new Date());
+
+  // Monday sebagai hari pertama minggu.
+  const wd = (now.getDay() + 6) % 7;
+  const first = shift(now, -wd);
+
+  let s = now;
+  let e = now;
+
+  switch (name) {
+
+    case 'Today':
+      s = now;
+      e = now;
+      break;
+
+    case 'Yesterday':
+      s = shift(now, -1);
+      e = shift(now, -1);
+      break;
+
+    case 'This Week':
+      s = first;
+      e = shift(first, 6);
+      break;
+
+    case 'Last Week':
+      s = shift(first, -7);
+      e = shift(first, -1);
+      break;
+
+    case 'This Month':
+      s = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      );
+
+      e = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      );
+      break;
+
+    case 'Last Month':
+      s = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1
+      );
+
+      e = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0
+      );
+      break;
+
+    default: {
+      const m = /^Last (\d+) days$/.exec(name);
+
+      if (m) {
+        s = shift(now, -(Number(m[1]) - 1));
+        e = now;
+      }
+
+      break;
+    }
+  }
+
+  // Apply tarikh pilihan.
+  start = s;
+  end = e;
+
+  selectingEnd = false;
+
+  view = new Date(
+    s.getFullYear(),
+    s.getMonth(),
+    1
+  );
+
+  // Simpan tarikh dan kemas kini filter.
+  emit();
+
+  // Refresh calendar.
+  render();
+
+  // Tutup calendar.
+  close();
+}
+
  function choose(d){if(!start||!selectingEnd){start=d;end=null;selectingEnd=true;}else{if(d<start){end=start;start=d;}else end=d;selectingEnd=false;emit();close();}a.value=fmt(start);b.value=fmt(end);render();}
  function month(offset){const m=new Date(view.getFullYear(),view.getMonth()+offset,1),last=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
  const box=document.createElement('div');box.className='shared-date-range-month';
