@@ -177,6 +177,32 @@ async function setPin(uid,pin){
  await db.ref(`adminUsers/${uid}`).update({secondPasswordEnabled:true,pinVersion:now()});
 }
 async function adminProfile(uid){const s=await db.ref(`adminUsers/${uid}`).once('value');return s.val();}
+
+/* ==========================================
+   PLAYER LOGIN FAILED COUNTERS
+   ========================================== */
+
+async function incrementLoginCounter(uid, field) {
+  if (!uid || ![
+    'loginFailedCount',
+    'pinFailedCount'
+  ].includes(field)) {
+    return;
+  }
+
+  const ref = db.ref(`adminUsers/${uid}/${field}`);
+
+  await ref.transaction(current => {
+    const count = Number(current);
+
+    return (
+      Number.isSafeInteger(count) && count >= 0
+        ? count
+        : 0
+    ) + 1;
+  });
+}
+
 /* ==========================================
    SITE ADMIN - ACTIVE SITE ACCESS CHECK
    ========================================== */
@@ -286,14 +312,17 @@ function publicUser(u, p) {
     firstLoginAt: p.firstLoginAt || null,
     lastLoginAt: p.lastLoginAt || null,
 
+
 passwordUpdatedAt: p.passwordUpdatedAt || null,
 passwordTracked: Boolean(p.passwordMatchTag),
 
 // Player Login Details
-loginFailedCount: p.loginFailedCount ?? null,
-forgotPasswordCount: p.forgotPasswordCount ?? null,
-totalLoginFailedCount: p.totalLoginFailedCount ?? null,
-totalForgotPasswordCount: p.totalForgotPasswordCount ?? null
+loginFailedCount: p.loginFailedCount ?? 0,
+pinFailedCount: p.pinFailedCount ?? 0,
+totalLoginFailedCount:
+  (Number(p.loginFailedCount) || 0) +
+  (Number(p.pinFailedCount) || 0)
+
 
   };
 }
@@ -313,7 +342,31 @@ app.post('/api/login/start',rateLimit({windowMs:15*60_000,limit:12}),async(req,r
 }
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(process.env.FIREBASE_WEB_API_KEY)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:profile.email,password,returnSecureToken:true})});
   const data=await r.json();
-  if(!r.ok||data.localId!==idx.uid)return fail(res,401,'Invalid credentials');
+ 
+if (!r.ok || data.localId !== idx.uid) {
+
+  // Rekod kegagalan password untuk username
+  // yang memang wujud dalam sistem.
+  if (!r.ok && (
+    data?.error?.message === 'INVALID_PASSWORD' ||
+    data?.error?.message === 'INVALID_LOGIN_CREDENTIALS'
+  )) {
+    try {
+      await incrementLoginCounter(
+        idx.uid,
+        'loginFailedCount'
+      );
+    } catch (counterError) {
+      console.error(
+        'Login failed counter error:',
+        counterError
+      );
+    }
+  }
+
+  return fail(res, 401, 'Invalid credentials');
+}
+         
   const challenge=crypto.randomBytes(32).toString('hex'), key=crypto.createHash('sha256').update(challenge).digest('hex');
   await db.ref(`loginChallenges/${key}`).set({uid:idx.uid,pinVersion:profile.pinVersion,expiresAt:now()+3*60_000,attempts:0});
   return res.json({ok:true,challenge,expiresInSeconds:180});
@@ -419,8 +472,32 @@ const countResult = await factorRef.transaction(v => {
   };
 
 }, undefined, false);
-   if(!countResult.committed)return fail(res,429,'PIN changed or temporarily locked');
-   if(!correct)return fail(res,401,'Invalid verification');
+
+if (!countResult.committed) {
+  return fail(
+    res,
+    429,
+    'PIN changed or temporarily locked'
+  );
+}
+
+if (!correct) {
+
+  try {
+    await incrementLoginCounter(
+      uid,
+      'pinFailedCount'
+    );
+  } catch (counterError) {
+    console.error(
+      'PIN failed counter error:',
+      counterError
+    );
+  }
+
+  return fail(res, 401, 'Invalid verification');
+}
+
    // Consume the challenge once, even if two correct requests race.
 const latestChallengeSnapshot = await challengeRef.once('value');
 
