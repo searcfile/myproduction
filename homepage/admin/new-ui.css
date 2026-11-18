@@ -3381,16 +3381,30 @@ input::placeholder{
   outline-offset: -2px;
 }
 
-/* DATE RANGE - YEAR ARROW SVG */
+
+/* DATE RANGE - YEAR & MONTH ARROW SVG */
 
 .shared-date-range-nav-btn svg {
   display: block;
-  width: 14px;
-  height: 14px;
   flex-shrink: 0;
   fill: currentColor;
   pointer-events: none;
 }
+
+/* PREVIOUS / NEXT YEAR - 10PX */
+.shared-date-range-nav-btn[aria-label="Previous year"] svg,
+.shared-date-range-nav-btn[aria-label="Next year"] svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* PREVIOUS / NEXT MONTH - 14PX */
+.shared-date-range-nav-btn[aria-label="Previous month"] svg,
+.shared-date-range-nav-btn[aria-label="Next month"] svg {
+  width: 14px;
+  height: 14px;
+}
+
 
 .shared-date-range-nav-btn {
   align-items: center;
