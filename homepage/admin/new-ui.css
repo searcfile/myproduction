@@ -63,6 +63,9 @@ html[data-admin-theme="light"] {
   --caret-color:rgba(0,0,0,.88);
 
   --list-hover:rgba(0,0,0,.08);
+  --tx-primary-color: #1677ff;
+  --tx-primary-color-hover: #4096ff;
+  --tx-primary-color-active: #0958d9;
 }
 
 /* =========================================================
@@ -126,6 +129,10 @@ html[data-admin-theme="light"] {
 
   --caret-color:#ffffff;
   --list-hover:rgba(255,255,255,.08);
+   
+  --gold: #1668dc;
+  --gold-hover: #3c89e8;
+  --gold-active: #1554ad;
 
 }
 
@@ -3350,31 +3357,25 @@ input::placeholder{
 .shared-date-range-nav-btn {
   display: grid;
   place-items: center;
-
-  width: 24px;
-  height: 27px;
   padding: 0;
-
   border: 0;
-  border-radius: 4px;
-
   background: transparent;
-  color: var(--muted, #999);
-
+  color: var(--text);
   font-family: inherit;
   font-size: 20px;
   line-height: 1;
-
   cursor: pointer;
   transition: color .15s, background .15s;
 }
 
 .shared-date-range-month-head
 .shared-date-range-nav-btn:hover {
-  color: var(--text, #fff);
-  background: var(--dropdown-bg-hover, #162b44);
+  color: var(--tx-primary-color-hover);
 }
-
+.shared-date-range-month-head
+.shared-date-range-nav-btn:active {
+  color: var(--tx-primary-color-active);
+}
 .shared-date-range-month-head
 .shared-date-range-nav-btn:focus-visible {
   outline: 2px solid var(--input-line-focus, #1677ff);
