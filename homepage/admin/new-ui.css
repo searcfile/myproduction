@@ -3314,3 +3314,63 @@ input::placeholder{
 .shared-date-range-day:hover:not(.selected){background:var(--dropdown-bg-hover,#162b44)}
 @media(max-width:720px){.shared-date-range-panel{max-width:calc(100vw - 20px)}.shared-date-range-presets{width:105px}.shared-date-range-calendars{gap:5px;padding:8px}.shared-date-range-month{width:185px}.shared-date-range-day{height:26px}}
 @media(max-width:540px){.shared-date-range-panel{width:min(100%,350px);max-width:calc(100vw - 20px);max-height:min(75vh,530px);overflow-y:auto;flex-direction:column}.shared-date-range-presets{width:100%;max-height:none;display:flex;overflow-x:auto;overflow-y:hidden;gap:4px;border-right:0;border-bottom:1px solid var(--input-line,#383838)}.shared-date-range-presets button{width:auto;flex:none;padding:7px 9px}.shared-date-range-calendars{grid-template-columns:1fr;justify-items:center;gap:12px}.shared-date-range-month{width:min(100%,280px)}.shared-date-range-day{height:31px}}
+
+/* ==========================================
+   DATE RANGE - MONTH & YEAR SELECTOR
+   ========================================== */
+
+.shared-date-range-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.shared-date-range-month-select,
+.shared-date-range-year-select {
+  appearance: auto;
+  -webkit-appearance: auto;
+
+  border: 1px solid transparent;
+  border-radius: 5px;
+
+  background: transparent;
+  color: var(--text, #ddd);
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  height: 28px;
+  padding: 2px 3px;
+
+  cursor: pointer;
+  outline: none;
+}
+
+.shared-date-range-month-select {
+  width: 68px;
+}
+
+.shared-date-range-year-select {
+  width: 75px;
+}
+
+.shared-date-range-month-select:hover,
+.shared-date-range-year-select:hover {
+  background: var(--dropdown-bg-hover, #162b44);
+  border-color: var(--input-line, #424242);
+}
+
+.shared-date-range-month-select:focus,
+.shared-date-range-year-select:focus {
+  border-color: var(--input-line-focus, #1677ff);
+}
+
+.shared-date-range-month-select option,
+.shared-date-range-year-select option {
+  background: var(--dropdown-bg, #1f1f1f);
+  color: var(--text, #ddd);
+}
