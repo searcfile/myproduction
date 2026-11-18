@@ -307,6 +307,10 @@ function publicUser(u, p) {
 ),
     enabled: p.active === true && !u.disabled,
 
+    remark: typeof p.remark === 'string'
+      ? p.remark
+      : '',
+
     createdAt: p.createdAt || null,
     updatedAt: p.updatedAt || null,
     firstLoginAt: p.firstLoginAt || null,
@@ -1186,6 +1190,26 @@ app.patch('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
   const p=await adminProfile(uid);
   if(!p||p.role!=='siteadmin')return fail(res,403,'Only Site Admin accounts may be modified here');
   const updates={updatedAt:now()},authUpdates={};
+          
+/* ==========================================
+   PLAYER INFO - SAVE REMARK
+   ========================================== */
+
+if (Object.hasOwn(req.body, 'remark')) {
+  if (
+    typeof req.body.remark !== 'string' ||
+    req.body.remark.length > 2000
+  ) {
+    return fail(
+      res,
+      400,
+      'Remark must be text with maximum 2000 characters'
+    );
+  }
+
+  updates.remark = req.body.remark.trim();
+}
+
   if(Object.hasOwn(req.body,'enabled')){
    if(typeof req.body.enabled!=='boolean')return fail(res,400,'enabled must be boolean');
    updates.active=req.body.enabled;authUpdates.disabled=!req.body.enabled;
