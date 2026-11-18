@@ -2561,6 +2561,20 @@ td:last-child .site-actions {
   cursor: default;
 }
 
+/* PLAYER DETAIL - DISABLED DATE INPUT */
+
+.auth-player-date-grid input:disabled {
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  caret-color: transparent !important;
+  -webkit-text-fill-color: var(--text, #eaf0fb);
+}
+
+.auth-player-date-grid input:disabled:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Responsive ikut lebar card/modal */
 .auth-player-card {
   container-type: inline-size;
@@ -3078,24 +3092,24 @@ td:last-child .site-actions {
 
   <div class="field">
     <label for="playerDateJoined">Date Joined</label>
-    <input
-      type="text"
-      id="playerDateJoined"
-      placeholder="Not recorded"
-      readonly
-      data-new-ui-input
-    >
+<input
+  type="text"
+  id="playerDateJoined"
+  placeholder="Not recorded"
+  disabled
+  data-new-ui-input
+>
   </div>
 
   <div class="field">
     <label for="playerLastLogin">Last Login</label>
-    <input
-      type="text"
-      id="playerLastLogin"
-      placeholder="Not recorded"
-      readonly
-      data-new-ui-input
-    >
+<input
+  type="text"
+  id="playerLastLogin"
+  placeholder="Not recorded"
+  disabled
+  data-new-ui-input
+>
   </div>
 
 </div>
