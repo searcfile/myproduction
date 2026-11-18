@@ -4745,7 +4745,46 @@ box.append(head);
 
  const grid=document.createElement('div');grid.className='shared-date-range-grid';['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(t=>{const h=document.createElement('span');h.className='shared-date-range-weekday';h.textContent=t;grid.append(h);});
  const lead=m.getDay(),total=Math.ceil((lead+last)/7)*7;
- for(let i=0;i<total;i++){const d=new Date(m.getFullYear(),m.getMonth(),i-lead+1);const cell=document.createElement('button');cell.type='button';cell.textContent=d.getDate();cell.className='shared-date-range-day';if(d.getMonth()!==m.getMonth())cell.classList.add('outside');if(fmt(d)===fmt(today))cell.classList.add('today');if((start&&fmt(d)===fmt(start))||(end&&fmt(d)===fmt(end)))cell.classList.add('selected');if(start&&end&&d>start&&d<end)cell.classList.add('in-range');cell.onclick=()=>choose(d);grid.append(cell);}
+ 
+for (let i = 0; i < total; i++) {
+  const d = new Date(
+    m.getFullYear(),
+    m.getMonth(),
+    i - lead + 1
+  );
+
+  const cell = document.createElement('button');
+  cell.type = 'button';
+  cell.textContent = d.getDate();
+  cell.className = 'shared-date-range-day';
+
+  const isCurrentMonth =
+    d.getFullYear() === m.getFullYear() &&
+    d.getMonth() === m.getMonth();
+
+  if (!isCurrentMonth) {
+    cell.classList.add('outside');
+  } else {
+    if (fmt(d) === fmt(today)) {
+      cell.classList.add('today');
+    }
+
+    if (
+      (start && fmt(d) === fmt(start)) ||
+      (end && fmt(d) === fmt(end))
+    ) {
+      cell.classList.add('selected');
+    }
+
+    if (start && end && d > start && d < end) {
+      cell.classList.add('in-range');
+    }
+  }
+
+  cell.onclick = () => choose(d);
+  grid.append(cell);
+}
+
  box.append(grid);return box;}
  function move(n){view=new Date(view.getFullYear(),view.getMonth()+n,1);render();}
  function render(){cal.replaceChildren(month(0),month(1));}
