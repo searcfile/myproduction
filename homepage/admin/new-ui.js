@@ -4652,16 +4652,23 @@ function preset(name) {
       );
       break;
 
-    default: {
-      const m = /^Last (\d+) days$/.exec(name);
 
-      if (m) {
-        s = shift(now, -(Number(m[1]) - 1));
-        e = now;
-      }
+default: {
+  const m = /^Last (\d+) days$/.exec(name);
 
-      break;
-    }
+  if (m) {
+    const days = Number(m[1]);
+
+    // Bermula N hari sebelum hari ini.
+    s = shift(now, -days);
+
+    // Berakhir semalam, tidak termasuk hari ini.
+    e = shift(now, -1);
+  }
+
+  break;
+}
+
   }
 
   // Apply tarikh pilihan.
