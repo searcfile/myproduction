@@ -2537,13 +2537,14 @@ td:last-child .site-actions {
    PLAYER DETAIL - JOINED & LAST LOGIN
    ========================================== */
 
+
 .auth-player-date-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   min-width: 0;
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .auth-player-date-grid .field {
@@ -2579,6 +2580,7 @@ td:last-child .site-actions {
 .auth-player-card {
   container-type: inline-size;
 }
+
 
 @container (max-width: 420px) {
   .auth-player-date-grid {
@@ -3087,32 +3089,48 @@ td:last-child .site-actions {
       </div>
     </div>
 
-<!-- PLAYER DETAIL - DATE JOINED & LAST LOGIN -->
+
+<!-- PLAYER DETAIL - REGISTER / DATE JOINED / LAST LOGIN -->
 <div class="auth-player-date-grid">
 
+  <!-- REGISTER -->
   <div class="field">
-    <label for="playerDateJoined">Date Joined</label>
-<input
-  type="text"
-  id="playerDateJoined"
-  placeholder="Not recorded"
-  disabled
-  data-new-ui-input
->
+    <label for="playerRegister">Register</label>
+    <input
+      type="text"
+      id="playerRegister"
+      placeholder="Not recorded"
+      disabled
+      data-new-ui-input
+    >
   </div>
 
+  <!-- DATE JOINED -->
+  <div class="field">
+    <label for="playerDateJoined">Date Joined</label>
+    <input
+      type="text"
+      id="playerDateJoined"
+      placeholder="Not recorded"
+      disabled
+      data-new-ui-input
+    >
+  </div>
+
+  <!-- LAST LOGIN -->
   <div class="field">
     <label for="playerLastLogin">Last Login</label>
-<input
-  type="text"
-  id="playerLastLogin"
-  placeholder="Not recorded"
-  disabled
-  data-new-ui-input
->
+    <input
+      type="text"
+      id="playerLastLogin"
+      placeholder="Not recorded"
+      disabled
+      data-new-ui-input
+    >
   </div>
 
 </div>
+
 
   </section>
 
@@ -5461,10 +5479,13 @@ function manage(u, options = {}) {
   $('username').value = u.username;
   $('username').disabled = true;
   
-/* PLAYER DETAIL - DATE JOINED & LAST LOGIN */
 
-$('playerDateJoined').value = date(u.createdAt);
+/* PLAYER DETAIL - REGISTER / DATE JOINED / LAST LOGIN */
+
+$('playerRegister').value = date(u.createdAt);
+$('playerDateJoined').value = date(u.firstLoginAt);
 $('playerLastLogin').value = date(u.lastLoginAt);
+
 
   // Username tidak perlu diisi semasa Edit Profile.
   $('username').required = false;
