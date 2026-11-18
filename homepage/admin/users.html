@@ -3216,14 +3216,21 @@ searchInput.addEventListener('input', () => {
   filterRiskRows();
 });
 
+
 if (window.NewUI?.syncSearch) {
   NewUI.syncSearch(searchInput, {
-    onSearch: async value => {
-      riskSearchText = value;
+    onSearch: async () => {
+      riskSearchText = searchInput.value;
       filterRiskRows();
+
+      // Kekalkan loading supaya spinner kelihatan
+      await new Promise(resolve =>
+        setTimeout(resolve, 750)
+      );
     }
   });
 }
+
 const modes = [
   ['ip', 'Same IP Address'],
   ['password', 'Same Password'],
