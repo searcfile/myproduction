@@ -3169,11 +3169,22 @@ function syncSwitch(){$('enabled').dispatchEvent(new Event('change',{bubbles:tru
 
 /* AUTH USERS - OPEN PLAYER FROM RISK USERNAME */
 
-function openRiskUsername(record, mode) {
+
+/* ==========================================
+   AUTH USERS - RISK USERNAME SMOOTH OPENING
+   ========================================== */
+
+let authOpeningRiskUsername = false;
+
+async function openRiskUsername(record, mode) {
   const uid = String(record?.uid || '').trim();
 
   if (!uid) {
     toast('Player UID not found', 'error');
+    return;
+  }
+
+  if (authOpeningRiskUsername || authOpeningAccount) {
     return;
   }
 
@@ -3189,13 +3200,69 @@ function openRiskUsername(record, mode) {
   // Jangan buka semula player yang sama.
   if (String(editing?.uid) === uid) return;
 
-  // Tutup modal player sebelumnya.
+  authOpeningRiskUsername = true;
+
+  // Tutup modal lama.
   closeModal();
 
-  // Buka player baru, terus ke Risk Assessment.
-  manage(target, {
-    riskMode: mode
-  });
+  // Loading sama seperti openAccount().
+  const loading = document.createElement('div');
+  loading.className = 'auth-open-loading';
+
+  loading.innerHTML = `
+    <div class="loading-box"
+         role="status"
+         aria-live="polite">
+
+      <div class="loading-dots" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="loading-text">
+        Please wait while fetching...
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(loading);
+
+  try {
+    // Paparkan loading asal selama 400ms.
+    await new Promise(resolve =>
+      setTimeout(resolve, 400)
+    );
+
+    // Buka modal player yang dipilih.
+    manage(target, {
+      riskMode: mode
+    });
+
+    // Fade-out seperti loading senarai utama.
+    loading.classList.add('is-closing');
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 180)
+    );
+
+  } catch (error) {
+    console.error(
+      '[Auth Users] Risk username opening:',
+      error
+    );
+
+    toast(
+      'Unable to open player: ' + error.message,
+      'error'
+    );
+
+  } finally {
+    loading.remove();
+    authOpeningRiskUsername = false;
+  }
 }
 
 
