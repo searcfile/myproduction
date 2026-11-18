@@ -3385,8 +3385,8 @@ input::placeholder{
 
 .shared-date-range-nav-btn svg {
   display: block;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   fill: currentColor;
   pointer-events: none;
