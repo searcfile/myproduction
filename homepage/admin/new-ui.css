@@ -3381,6 +3381,22 @@ input::placeholder{
   outline-offset: -2px;
 }
 
+/* DATE RANGE - YEAR ARROW SVG */
+
+.shared-date-range-nav-btn svg {
+  display: block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.shared-date-range-nav-btn {
+  align-items: center;
+  justify-content: center;
+}
+
 
 /* ==========================================
    DATE RANGE - CALENDAR ALIGNMENT FIX
