@@ -4697,64 +4697,52 @@ default: {
  function month(offset){const m=new Date(view.getFullYear(),view.getMonth()+offset,1),last=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
  const box=document.createElement('div');box.className='shared-date-range-month';
  const head=document.createElement('div');head.className='shared-date-range-month-head';
- const prev=document.createElement('button');prev.type='button';prev.textContent=offset?'':'‹';prev.setAttribute('aria-label','Previous month');prev.disabled=!!offset;
 
-/* DATE RANGE - MONTH & YEAR SELECTOR */
+/* DATE RANGE - FOUR ARROW NAVIGATION */
 
-const title = document.createElement('div');
-title.className = 'shared-date-range-title';
+const title = document.createElement('strong');
 
-const monthSelect = document.createElement('select');
-monthSelect.className = 'shared-date-range-month-select';
-monthSelect.setAttribute('aria-label', 'Select month');
+title.textContent = m.toLocaleString(
+  opts.locale || 'en-US',
+  { month: 'short', year: 'numeric' }
+);
 
-const yearSelect = document.createElement('select');
-yearSelect.className = 'shared-date-range-year-select';
-yearSelect.setAttribute('aria-label', 'Select year');
+function makeNav(symbol, label, delta, visible) {
+  const btn = document.createElement('button');
 
-// Month options
-for (let i = 0; i < 12; i++) {
-  const option = document.createElement('option');
+  btn.type = 'button';
+  btn.className = 'shared-date-range-nav-btn';
+  btn.textContent = symbol;
+  btn.setAttribute('aria-label', label);
 
-  option.value = i;
-  option.textContent = new Date(2026, i, 1)
-    .toLocaleString(opts.locale || 'en-US', {
-      month: 'short'
-    });
+  if (!visible) {
+    btn.style.visibility = 'hidden';
+  }
 
-  option.selected = i === m.getMonth();
-  monthSelect.appendChild(option);
+  btn.addEventListener('click', () => move(delta));
+
+  return btn;
 }
 
-// Year options: 1900 - 2100
-for (let y = 1900; y <= 2100; y++) {
-  const option = document.createElement('option');
+const leftNav = document.createElement('div');
+leftNav.className = 'shared-date-range-nav';
 
-  option.value = y;
-  option.textContent = y;
-  option.selected = y === m.getFullYear();
+leftNav.append(
+  makeNav('«', 'Previous year', -12, offset === 0),
+  makeNav('‹', 'Previous month', -1, offset === 0)
+);
 
-  yearSelect.appendChild(option);
-}
+const rightNav = document.createElement('div');
+rightNav.className = 'shared-date-range-nav';
 
-// Update calendar without changing selected dates
-function changeMonthYear() {
-  const year = Number(yearSelect.value);
-  const month = Number(monthSelect.value);
+rightNav.append(
+  makeNav('›', 'Next month', 1, offset === 1),
+  makeNav('»', 'Next year', 12, offset === 1)
+);
 
-  // offset = 0 for left, 1 for right
-  view = new Date(year, month - offset, 1);
+head.append(leftNav, title, rightNav);
+box.append(head);
 
-  render();
-}
-
-monthSelect.addEventListener('change', changeMonthYear);
-yearSelect.addEventListener('change', changeMonthYear);
-
-title.append(monthSelect, yearSelect);
-
- const next=document.createElement('button');next.type='button';next.textContent=offset?'›':'';next.setAttribute('aria-label','Next month');next.disabled=!offset;
- prev.onclick=()=>move(-1);next.onclick=()=>move(1);head.append(prev,title,next);box.append(head);
  const grid=document.createElement('div');grid.className='shared-date-range-grid';['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(t=>{const h=document.createElement('span');h.className='shared-date-range-weekday';h.textContent=t;grid.append(h);});
  const lead=m.getDay(),total=Math.ceil((lead+last)/7)*7;
  for(let i=0;i<total;i++){const d=new Date(m.getFullYear(),m.getMonth(),i-lead+1);const cell=document.createElement('button');cell.type='button';cell.textContent=d.getDate();cell.className='shared-date-range-day';if(d.getMonth()!==m.getMonth())cell.classList.add('outside');if(fmt(d)===fmt(today))cell.classList.add('today');if((start&&fmt(d)===fmt(start))||(end&&fmt(d)===fmt(end)))cell.classList.add('selected');if(start&&end&&d>start&&d<end)cell.classList.add('in-range');cell.onclick=()=>choose(d);grid.append(cell);}
