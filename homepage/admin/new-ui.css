@@ -3292,7 +3292,7 @@ input::placeholder{
 .shared-date-range-arrow{color:var(--muted,#777);font-size:13px;flex:none}
 .shared-date-range-icon{display:grid;place-items:center;flex:none;width:22px;height:25px;border:0;background:transparent;color:var(--muted,#999);cursor:pointer;padding:2px}
 .shared-date-range-icon svg{width:15px;height:15px}
-.shared-date-range-panel{position:absolute;top:calc(100% + 5px);left:0;z-index:21400;display:none;width:max-content;max-width:min(740px,calc(100vw - 24px));border-radius:9px;background:var(--dropdown-bg,#1f1f1f);color:var(--text,#ddd);box-shadow:0 9px 28px rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--input-line,#383838)}
+.shared-date-range-panel{position:absolute;top:calc(100% + 5px);left:0;z-index:21400;display:none;width:max-content;max-width:min(740px,calc(100vw - 24px));border-radius:8px;background:var(--dropdown-bg,#1f1f1f);color:var(--text,#ddd);box-shadow:0 9px 28px rgba(0,0,0,.35);overflow:hidden;border:0;}
 .shared-date-range.is-open .shared-date-range-panel{display:flex}
 .shared-date-range-panel.open-up{top:auto;bottom:calc(100% + 5px)}
 .shared-date-range-presets{width:125px;max-height:285px;flex:none;overflow-y:auto;padding:7px 5px;border-right:1px solid var(--input-line,#383838);scrollbar-width:thin}
