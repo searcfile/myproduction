@@ -1232,18 +1232,126 @@ if (!passwordOK(req.body.password)) {
   return res.json({ok:true,message:'Site Admin updated'});
  }catch(e){console.error('Update user',e.message);return fail(res,500,'Cannot update user');}
 });
-app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
- const uid=req.params.uid;
- try{
-  const p=await adminProfile(uid);
-  if(!p||p.role!=='siteadmin')return fail(res,403,'Only Site Admin accounts may be deleted');
-  await auth.deleteUser(uid);
-  await db.ref(`adminUsers/${uid}`).remove();
-  await db.ref(`privateSecondFactors/${uid}`).remove();
-  await db.ref(`adminUsernameIndex/${p.username}`).remove();
-  return res.json({ok:true});
- }catch(e){console.error('Delete user',e.message);return fail(res,500,'Cannot delete user');}
-});
+
+/* DELETE USERNAME + OWNED SITE */
+
+app.delete(
+  '/api/admin-users/:uid',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+    const uid = req.params.uid;
+
+    try {
+      const profile = await adminProfile(uid);
+
+      if (!profile || profile.role !== 'siteadmin') {
+        return fail(res, 403, 'Only Site Admin may be deleted');
+      }
+
+      const username = String(profile.username || '')
+        .trim()
+        .toLowerCase();
+
+      if (!usernameOK(username)) {
+        return fail(res, 409, 'Invalid username record');
+      }
+
+      const [indexSnap, siteSnap, usersSnap] =
+        await Promise.all([
+          db.ref(`adminUsernameIndex/${username}`)
+            .once('value'),
+          db.ref(`sites/${username}`).once('value'),
+          db.ref('adminUsers').once('value')
+        ]);
+
+      if (indexSnap.val()?.uid !== uid) {
+        return fail(res, 409, 'Username index mismatch');
+      }
+
+      const site = siteSnap.val();
+      const allUsers = usersSnap.val() || {};
+
+      const assignedIds = Array.isArray(profile.siteIds)
+        ? profile.siteIds
+        : [];
+
+      // Jangan delete jika user mempunyai site
+      // assignment lain yang belum dimigrasikan.
+      if (assignedIds.some(id => id !== username)) {
+        return fail(
+          res,
+          409,
+          'Other site assignments require manual review'
+        );
+      }
+
+      if (site) {
+        if (
+          String(site.name || '').toLowerCase() !== username
+        ) {
+          return fail(res, 409, 'Site identity mismatch');
+        }
+
+        const shared = Object.entries(allUsers).some(
+          ([otherUid, other]) =>
+            otherUid !== uid &&
+            Array.isArray(other?.siteIds) &&
+            other.siteIds.includes(username)
+        );
+
+        if (shared) {
+          return fail(
+            res,
+            409,
+            'Site is assigned to another username'
+          );
+        }
+
+        // Jangan padam site lama yang tidak terbukti
+        // dimiliki oleh akaun ini.
+        if (!assignedIds.includes(username)) {
+          return fail(
+            res,
+            409,
+            'Site ownership requires manual review'
+          );
+        }
+      }
+
+      // Firebase Auth dan RTDB ialah dua sistem berbeza.
+      await auth.deleteUser(uid);
+
+      const updates = {
+        [`adminUsers/${uid}`]: null,
+        [`privateSecondFactors/${uid}`]: null,
+        [`adminUsernameIndex/${username}`]: null
+      };
+
+      if (site) {
+        updates[`sites/${username}`] = null;
+      }
+
+      await db.ref().update(updates);
+
+      return res.json({
+        ok: true,
+        deletedUsername: username,
+        deletedSite: site ? username : null
+      });
+
+    } catch (error) {
+      console.error('[DELETE USER + SITE]', error);
+
+      return fail(
+        res,
+        500,
+        'Deletion failed; verify Auth and Firebase records'
+      );
+    }
+  }
+);
+
 /* =====================================================
    ADMIN PROFILE PERMISSIONS — SUPERADMIN ONLY
    ===================================================== */
