@@ -284,7 +284,7 @@
 .auth-user-number {
   display: inline-block;
   min-width: 38px;
-  margin-right: 8px;
+  margin-right: 3px;
   color: #8c8c8c;
   font-size: 11px;
   font-weight: 500;
@@ -4730,7 +4730,7 @@ avatar.textContent = (u.username || '?')
 const name = document.createElement('strong');
 name.textContent = u.username;
 
-userTd.append(number, avatar, name);
+userTd.append(avatar, number, name);
 tr.append(userTd);
 
     const uidTd=document.createElement('td');const uidWrap=document.createElement('div');uidWrap.className='auth-uid-inline';
