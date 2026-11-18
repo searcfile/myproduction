@@ -1232,18 +1232,83 @@ if (!passwordOK(req.body.password)) {
   return res.json({ok:true,message:'Site Admin updated'});
  }catch(e){console.error('Update user',e.message);return fail(res,500,'Cannot update user');}
 });
-app.delete('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
- const uid=req.params.uid;
- try{
-  const p=await adminProfile(uid);
-  if(!p||p.role!=='siteadmin')return fail(res,403,'Only Site Admin accounts may be deleted');
-  await auth.deleteUser(uid);
-  await db.ref(`adminUsers/${uid}`).remove();
-  await db.ref(`privateSecondFactors/${uid}`).remove();
-  await db.ref(`adminUsernameIndex/${p.username}`).remove();
-  return res.json({ok:true});
- }catch(e){console.error('Delete user',e.message);return fail(res,500,'Cannot delete user');}
+
+app.delete('/api/admin-users/:uid', requireAdmin, superOnly, async (req, res) => {
+  const uid = req.params.uid;
+
+  try {
+    const profile = await adminProfile(uid);
+
+    if (!profile || profile.role !== 'siteadmin') {
+      return fail(res, 403, 'Only Site Admin accounts may be deleted');
+    }
+
+    const siteIds = Array.isArray(profile.siteIds)
+      ? [...new Set(profile.siteIds)]
+      : [];
+
+    const [sitesSnap, usersSnap] = await Promise.all([
+      db.ref('sites').once('value'),
+      db.ref('adminUsers').once('value')
+    ]);
+
+    const sites = sitesSnap.val() || {};
+    const users = usersSnap.val() || {};
+
+    // Semak semua site yang akan dipadam.
+    for (const id of siteIds) {
+      if (!sites[id]) continue;
+
+      // Site mesti benar-benar sepadan dengan username.
+      if (id !== String(profile.username).toLowerCase()) {
+        return fail(res, 409,
+          'Site assignment requires manual review before deletion');
+      }
+
+      // Pastikan tiada Site Admin lain menggunakan site ini.
+      const shared = Object.entries(users).some(([otherUid, user]) =>
+        otherUid !== uid &&
+        Array.isArray(user?.siteIds) &&
+        user.siteIds.includes(id)
+      );
+
+      if (shared) {
+        return fail(res, 409,
+          'Cannot delete site assigned to another username');
+      }
+    }
+
+    // Padam Firebase Auth terlebih dahulu.
+    // Jika gagal, data RTDB tidak disentuh.
+    await auth.deleteUser(uid);
+
+    const updates = {
+      [`adminUsers/${uid}`]: null,
+      [`privateSecondFactors/${uid}`]: null,
+      [`adminUsernameIndex/${profile.username}`]: null
+    };
+
+    for (const id of siteIds) {
+      if (sites[id]) {
+        updates[`sites/${id}`] = null;
+      }
+    }
+
+    // Padam semua rekod RTDB yang berkaitan serentak.
+    await db.ref().update(updates);
+
+    return res.json({
+      ok: true,
+      deletedUsername: profile.username,
+      deletedSites: siteIds.filter(id => Boolean(sites[id]))
+    });
+
+  } catch (error) {
+    console.error('[DELETE USER AND SITE]', error);
+    return fail(res, 500, 'Cannot delete username and site');
+  }
 });
+
 /* =====================================================
    ADMIN PROFILE PERMISSIONS — SUPERADMIN ONLY
    ===================================================== */
