@@ -285,8 +285,16 @@ function publicUser(u, p) {
     updatedAt: p.updatedAt || null,
     firstLoginAt: p.firstLoginAt || null,
     lastLoginAt: p.lastLoginAt || null,
+
 passwordUpdatedAt: p.passwordUpdatedAt || null,
-passwordTracked: Boolean(p.passwordMatchTag)
+passwordTracked: Boolean(p.passwordMatchTag),
+
+// Player Login Details
+loginFailedCount: p.loginFailedCount ?? null,
+forgotPasswordCount: p.forgotPasswordCount ?? null,
+totalLoginFailedCount: p.totalLoginFailedCount ?? null,
+totalForgotPasswordCount: p.totalForgotPasswordCount ?? null
+
   };
 }
 
