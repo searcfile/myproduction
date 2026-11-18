@@ -2533,6 +2533,54 @@ td:last-child .site-actions {
   width: 100%;
 }
 
+/* ==========================================
+   PLAYER DETAIL - JOINED & LAST LOGIN
+   ========================================== */
+
+.auth-player-date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 16px;
+}
+
+.auth-player-date-grid .field {
+  min-width: 0;
+  width: 100%;
+}
+
+.auth-player-date-grid input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+
+/* Responsive ikut lebar card/modal */
+.auth-player-card {
+  container-type: inline-size;
+}
+
+@container (max-width: 420px) {
+  .auth-player-date-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Fallback */
+@supports not (container-type: inline-size) {
+  @media (max-width: 600px) {
+    .auth-player-date-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
 .auth-player-card .auth-uid-field {
   width: 100%;
   min-width: 0;
@@ -3024,6 +3072,33 @@ td:last-child .site-actions {
         </button>
       </div>
     </div>
+
+<!-- PLAYER DETAIL - DATE JOINED & LAST LOGIN -->
+<div class="auth-player-date-grid">
+
+  <div class="field">
+    <label for="playerDateJoined">Date Joined</label>
+    <input
+      type="text"
+      id="playerDateJoined"
+      placeholder="Not recorded"
+      readonly
+      data-new-ui-input
+    >
+  </div>
+
+  <div class="field">
+    <label for="playerLastLogin">Last Login</label>
+    <input
+      type="text"
+      id="playerLastLogin"
+      placeholder="Not recorded"
+      readonly
+      data-new-ui-input
+    >
+  </div>
+
+</div>
 
   </section>
 
@@ -5371,6 +5446,11 @@ function manage(u, options = {}) {
   $('uid').value = u.uid;
   $('username').value = u.username;
   $('username').disabled = true;
+  
+/* PLAYER DETAIL - DATE JOINED & LAST LOGIN */
+
+$('playerDateJoined').value = date(u.createdAt);
+$('playerLastLogin').value = date(u.lastLoginAt);
 
   // Username tidak perlu diisi semasa Edit Profile.
   $('username').required = false;
