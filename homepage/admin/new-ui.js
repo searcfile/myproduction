@@ -4529,3 +4529,64 @@ overlay.querySelector(
     };
   };
 })();
+
+/* SHARED NEWUI DATE RANGE PICKER */
+(function(){
+'use strict';
+const UI=window.NewUI=window.NewUI||{};
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>d?`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`:'';
+function parse(s){const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(s||'').trim());if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null;}
+const day=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const shift=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+function create(target,opts={}){
+ const el=typeof target==='string'?document.querySelector(target):target;
+ if(!el)return null;if(el._newUIDateRange)return el._newUIDateRange;
+ const today=day(new Date());let start=parse(opts.start)||null,end=parse(opts.end)||null;
+ if(start&&end&&start>end)[start,end]=[end,start];
+ let view=new Date((start||today).getFullYear(),(start||today).getMonth(),1),open=false,selectingEnd=false;
+ const wrap=document.createElement('div');wrap.className='shared-date-range';
+ const trigger=document.createElement('div');trigger.className='shared-date-range-trigger';
+ const a=document.createElement('input'),b=document.createElement('input');
+ [a,b].forEach((x,i)=>{x.type='text';x.placeholder=i?'To Date':'From Date';x.autocomplete='off';x.inputMode='numeric';x.setAttribute('aria-label',i?'End date':'Start date');x.className='shared-date-range-input';});
+ const arrow=document.createElement('span');arrow.className='shared-date-range-arrow';arrow.textContent='→';
+ const ico=document.createElement('button');ico.type='button';ico.className='shared-date-range-icon';ico.setAttribute('aria-label','Open calendar');ico.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg>';
+ trigger.append(a,arrow,b,ico);
+ const panel=document.createElement('div');panel.className='shared-date-range-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Select date range');
+ const presets=document.createElement('div');presets.className='shared-date-range-presets';
+ const cal=document.createElement('div');cal.className='shared-date-range-calendars';panel.append(presets,cal);wrap.append(trigger,panel);el.append(wrap);
+ const presetNames=['Today','Yesterday','This Week','Last Week','This Month','Last Month','Last 7 days','Last 15 days','Last 30 days','Last 60 days'];
+ const emit=()=>{a.value=fmt(start);b.value=fmt(end);const value={start:fmt(start),end:fmt(end)};el.dispatchEvent(new CustomEvent('change',{detail:value,bubbles:true}));if(typeof opts.onChange==='function')opts.onChange(value);};
+ function preset(name){const wd=(today.getDay()+6)%7,first=shift(today,-wd);let s=today,e=today;
+ switch(name){case 'Yesterday':s=e=shift(today,-1);break;case 'This Week':s=first;break;case 'Last Week':s=shift(first,-7);e=shift(first,-1);break;case 'This Month':s=new Date(today.getFullYear(),today.getMonth(),1);break;case 'Last Month':s=new Date(today.getFullYear(),today.getMonth()-1,1);e=new Date(today.getFullYear(),today.getMonth(),0);break;default:{const m=/Last (\d+) days/.exec(name);if(m)s=shift(today,-(+m[1]-1));}}
+ start=s;end=e;selectingEnd=false;view=new Date(s.getFullYear(),s.getMonth(),1);emit();render();close();}
+ function choose(d){if(!start||!selectingEnd){start=d;end=null;selectingEnd=true;}else{if(d<start){end=start;start=d;}else end=d;selectingEnd=false;emit();close();}a.value=fmt(start);b.value=fmt(end);render();}
+ function month(offset){const m=new Date(view.getFullYear(),view.getMonth()+offset,1),last=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
+ const box=document.createElement('div');box.className='shared-date-range-month';
+ const head=document.createElement('div');head.className='shared-date-range-month-head';
+ const prev=document.createElement('button');prev.type='button';prev.textContent=offset?'':'‹';prev.setAttribute('aria-label','Previous month');prev.disabled=!!offset;
+ const title=document.createElement('strong');title.textContent=m.toLocaleString(opts.locale||'en-US',{month:'short',year:'numeric'});
+ const next=document.createElement('button');next.type='button';next.textContent=offset?'›':'';next.setAttribute('aria-label','Next month');next.disabled=!offset;
+ prev.onclick=()=>move(-1);next.onclick=()=>move(1);head.append(prev,title,next);box.append(head);
+ const grid=document.createElement('div');grid.className='shared-date-range-grid';['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(t=>{const h=document.createElement('span');h.className='shared-date-range-weekday';h.textContent=t;grid.append(h);});
+ const lead=m.getDay(),total=Math.ceil((lead+last)/7)*7;
+ for(let i=0;i<total;i++){const d=new Date(m.getFullYear(),m.getMonth(),i-lead+1);const cell=document.createElement('button');cell.type='button';cell.textContent=d.getDate();cell.className='shared-date-range-day';if(d.getMonth()!==m.getMonth())cell.classList.add('outside');if(fmt(d)===fmt(today))cell.classList.add('today');if((start&&fmt(d)===fmt(start))||(end&&fmt(d)===fmt(end)))cell.classList.add('selected');if(start&&end&&d>start&&d<end)cell.classList.add('in-range');cell.onclick=()=>choose(d);grid.append(cell);}
+ box.append(grid);return box;}
+ function move(n){view=new Date(view.getFullYear(),view.getMonth()+n,1);render();}
+ function render(){cal.replaceChildren(month(0),month(1));}
+ function openPanel(){document.querySelectorAll('.shared-date-range.is-open').forEach(x=>{if(x!==wrap)x._close?.();});open=true;wrap.classList.add('is-open');render();position();}
+ function close(){open=false;wrap.classList.remove('is-open');}
+ wrap._close=close;
+ function position(){if(!open)return;panel.classList.remove('open-up');const r=trigger.getBoundingClientRect();if(window.innerHeight-r.bottom<Math.min(390,panel.offsetHeight+12)&&r.top>panel.offsetHeight+12)panel.classList.add('open-up');}
+ presetNames.forEach(name=>{const btn=document.createElement('button');btn.type='button';btn.textContent=name;btn.onclick=()=>preset(name);presets.append(btn);});
+ function typed(){const s=parse(a.value),e=parse(b.value);if(s&&e){start=s<=e?s:e;end=s<=e?e:s;selectingEnd=false;view=new Date(start.getFullYear(),start.getMonth(),1);emit();render();}else if(s&&!b.value.trim()){start=s;end=null;selectingEnd=true;render();}else if(e&&!a.value.trim()){start=null;end=e;render();}}
+ [a,b].forEach(x=>{x.addEventListener('change',typed);x.addEventListener('keydown',ev=>{if(ev.key==='Enter'){typed();close();}if(ev.key==='Escape')close();});x.addEventListener('focus',openPanel);});
+ ico.onclick=()=>open?close():openPanel();trigger.addEventListener('click',ev=>{if(ev.target===trigger||ev.target===arrow)openPanel();});
+ const outside=ev=>{if(!wrap.contains(ev.target))close();};const esc=ev=>{if(ev.key==='Escape')close();};const resize=()=>position();
+ document.addEventListener('pointerdown',outside);document.addEventListener('keydown',esc);window.addEventListener('resize',resize);
+ a.value=fmt(start);b.value=fmt(end);
+ const api={getValue:()=>({start:fmt(start),end:fmt(end)}),setValue(v,notify=true){start=parse(v?.start);end=parse(v?.end);if(start&&end&&start>end)[start,end]=[end,start];a.value=fmt(start);b.value=fmt(end);if(start)view=new Date(start.getFullYear(),start.getMonth(),1);render();if(notify)emit();},open:openPanel,close,destroy(){document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);window.removeEventListener('resize',resize);wrap.remove();delete el._newUIDateRange;}};
+ el._newUIDateRange=api;return api;
+}
+UI.dateRange=create;
+})();
