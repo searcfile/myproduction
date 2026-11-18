@@ -1709,13 +1709,9 @@ html[data-admin-theme="light"]
 html[data-admin-theme="light"] .shared-modal{background:#fff;border-color:#d9d9d9;color:var(--text);}
 html[data-admin-theme="light"] .shared-modal-close:hover{background:rgba(0,0,0,.06);}
 @media (max-width:650px) {
-  .shared-modal-backdrop {
-    padding: 10px;
-  }
 
   .shared-modal {
     max-height: none;
-    padding: 16px;
   }
 
   .shared-modal-title {
