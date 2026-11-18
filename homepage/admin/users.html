@@ -3001,14 +3001,30 @@ td:last-child .site-actions {
   visibility: visible;
 }
 
+
+/* INTEGRATED SITE MANAGEMENT */
+.auth-site-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px;padding:14px;border:1px solid var(--tx-border,#344963);border-radius:9px}
+.auth-site-details>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.auth-site-details small{font-size:11px;color:var(--muted,#9aaac0)}
+.auth-site-details strong{font-size:12px;overflow-wrap:anywhere}
+.auth-site-details input{width:100%;min-width:0}
+@media(max-width:620px){.auth-site-details{grid-template-columns:1fr}}
+/* Three site columns precede username: Firebase UID now column 5. */
+.auth-list .auth-table thead th:nth-child(2),.auth-list .auth-table tbody td:nth-child(2){position:static!important;left:auto!important;z-index:auto!important}
+.auth-list .auth-table thead th:nth-child(5){position:sticky!important;left:0!important;z-index:11!important;background:var(--tx-surface-soft)!important}
+.auth-list .auth-table tbody td:nth-child(5){position:sticky!important;left:0!important;z-index:4!important}
+.auth-list .auth-table tbody tr:nth-child(odd)>td:nth-child(5){background:var(--tx-surface)!important}
+.auth-list .auth-table tbody tr:nth-child(even)>td:nth-child(5){background:var(--tx-surface-soft)!important}
+.auth-list .auth-table tbody tr:hover>td:nth-child(5){background:var(--tx-hover)!important}
+.auth-list .auth-tablewrap .auth-table th:nth-child(2)::after,.auth-list .auth-tablewrap .auth-table td:nth-child(2)::after{content:none!important}
+.auth-list .auth-tablewrap .auth-table th:nth-child(5)::after,.auth-list .auth-tablewrap .auth-table td:nth-child(5)::after{content:"";position:absolute;top:0;bottom:-1px;left:100%;width:30px;pointer-events:none;box-shadow:none}
+.auth-list .auth-tablewrap.has-uid-shadow .auth-table th:nth-child(5)::after,.auth-list .auth-tablewrap.has-uid-shadow .auth-table td:nth-child(5)::after{box-shadow:inset 10px 0 8px -8px var(--ant-color-split)}
+.auth-list .auth-table thead th:nth-child(5),.auth-list .auth-table tbody td:nth-child(5){border-right:none!important}
+.auth-list .auth-table thead th:nth-child(6),.auth-list .auth-table tbody td:nth-child(6){border-left:1px solid var(--tx-border)!important}
 </style>
 </head>
 <body>
 <main class="workspace auth-workspace">
-<nav class="manage-main-tabs" aria-label="Management sections">
-<button type="button" class="manage-main-tab active" data-manage-tab="users">Admin Users</button>
-<button type="button" class="manage-main-tab" data-manage-tab="sites">Site Management</button>
-</nav>
 <div id="manageUsersPane" class="manage-pane">
 <!-- AUTH USERS - TOOLBAR CARD -->
 <div class="auth-toolbar-card">
@@ -3113,8 +3129,11 @@ td:last-child .site-actions {
   </div>
 
 </div>
-
-
+<div class="stats auth-stats auth-site-stats" aria-label="Site statistics">
+ <div class="card stat"><small>Total sites</small><strong id="smTotal">0</strong><span class="stat-note">Registered sites</span></div>
+ <div class="card stat"><small>Active sites</small><strong id="smActive">0</strong><span class="stat-note">Enabled sites</span></div>
+ <div class="card stat"><small>Inactive sites</small><strong id="smInactive">0</strong><span class="stat-note">Disabled sites</span></div>
+</div>
 <section class="card auth-list">
 
   <div class="tablewrap auth-tablewrap">
@@ -3130,6 +3149,9 @@ td:last-child .site-actions {
 
 <thead>
   <tr>
+    <th>Site Name</th>
+    <th>Site ID</th>
+    <th>Wallet Group</th>
     <th>Username</th>
     <th>Firebase UID</th>
     <th>Role</th>
@@ -3142,7 +3164,7 @@ td:last-child .site-actions {
 </thead>
         <tbody id="rows">
   <tr>
-<td colspan="8" class="auth-empty-cell">
+<td colspan="11" class="auth-empty-cell">
 <div class="auth-loading-center">
   <span class="auth-loading-dots" aria-hidden="true">
     <span></span>
@@ -3190,49 +3212,6 @@ td:last-child .site-actions {
   </div>
 </section>
 </div>
-<section id="manageSitesPane" class="manage-pane site-manager" hidden>
- <div class="auth-toolbar-card"><div class="auth-top-toolbar">
-  <div class="sm-search-holder"><input id="smSearch" type="search" placeholder="Search" aria-label="Search sites"></div>
-  <div class="sm-filter-holder"><div id="smStatusChips"></div></div>
-  <button type="button" id="smCreate" class="btn-primary-new site-create" disabled>+ Add Site</button>
- </div></div>
- <div class="stats auth-stats site-stat-grid">
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><small>Total sites</small><strong id="smTotal">
-  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
-    <span></span><span></span><span></span><span></span>
-  </span>
-</strong><span class="stat-note">Registered sites</span></div>
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5L20 6"/></svg></span><small>Active sites</small><strong id="smActive">
-  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
-    <span></span><span></span><span></span><span></span>
-  </span>
-</strong><span class="stat-note">Currently enabled</span></div>
-  <div class="card stat"><span class="stat-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg></span><small>Inactive sites</small><strong id="smInactive">
-  <span class="auth-loading-dots auth-stat-dots" aria-label="Loading">
-    <span></span><span></span><span></span><span></span>
-  </span>
-</strong><span class="stat-note">Currently disabled</span></div>
- </div>
- <section class="card auth-list site-table-card">
-  <div class="auth-tablewrap"><table class="auth-table">
-<thead>
-  <tr>
-<th>Site Name</th>
-<th>Site ID</th>
-<th>Wallet Group</th>
-<th>Status</th>
-<th>Create Date</th>
-<th>Edited Date</th>
-<th>Action</th>
-  </tr>
-  </thead>
-  <tbody id="smRows"><tr><td colspan="7" class="auth-empty-cell"><div class="auth-loading-center"><span class="auth-loading-dots"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div></td></tr></tbody></table></div>
-  <div id="smPagination" class="sm-pagination" hidden><span id="smPageInfo" class="sm-page-info"></span><div id="smPageNumbers" class="sm-page-numbers"></div>
-  <div class="sm-page-size"><select id="smPageSize" data-shared-dropdown data-placeholder="Rows per page" aria-label="Sites per page"><option value="10">10 / page</option><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select></div>
-  <div class="sm-page-goto"><span>Go to</span><input id="smPageJump" type="number" min="1" aria-label="Go to site page"><span>Page</span></div></div>
-  <div class="site-status" id="smStatus" role="status"></div>
- </section>
-</section>
 </main>
 
 <div id="permissionFormHome" hidden></div>
@@ -3428,6 +3407,19 @@ td:last-child .site-actions {
       </div>
     </div>
 
+<!-- PLAYER INFO - SITE MANAGEMENT (separate from account status) -->
+<div class="field full" id="playerSiteWrap" hidden>
+ <div class="auth-switch-row"><span><strong>Active Site</strong><small>Create or enable this username's site when saved</small></span>
+  <label class="shared-active-switch"><input id="playerSiteEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text">Inactive</span><span class="shared-active-knob" aria-hidden="true"></span></span></label>
+ </div>
+ <div class="auth-site-details">
+  <div><small>Site Name</small><strong id="playerSiteName">-</strong></div>
+  <div><small>Site ID</small><strong id="playerSiteId">-</strong></div>
+  <div><small>Wallet Group</small><input id="playerSiteWallet" data-new-ui-input maxlength="60" placeholder="Optional wallet group"></div>
+  <div><small>Date Time Add Site</small><strong id="playerSiteCreated">-</strong></div>
+  <div><small>Last Edited</small><strong id="playerSiteEdited">-</strong></div>
+ </div>
+</div>
 <!-- PLAYER INFO - REMARK -->
 <div class="field full auth-player-remark">
   <label for="playerRemark">Remark</label>
@@ -4826,7 +4818,7 @@ function emptyRow(message, kind = 'empty') {
   const tr = document.createElement('tr');
   const td = document.createElement('td');
 
-  td.colSpan = 8;
+  td.colSpan = 11;
   td.className = 'auth-empty-cell';
 
   if (kind === 'loading') {
@@ -5099,14 +5091,15 @@ function render(){
   $('total').textContent=users.length;
   $('activeCount').textContent=users.filter(u=>u.enabled).length;
   $('siteCount').textContent=users.filter(u=>u.role==='siteadmin').length;
+  $('smTotal').textContent=sites.length;
+  $('smActive').textContent=sites.filter(s=>s.active===true).length;
+  $('smInactive').textContent=sites.filter(s=>s.active!==true).length;
    const filtered = users.filter(u => {
 
   // Filter search username, UID dan role
-  const matchSearch = [
-    u.username,
-    u.uid,
-    u.role
-  ].join(' ').toLowerCase().includes(q);
+  const linkedSite = findUserSite(u);
+  const matchSearch = [u.username,u.uid,u.role,linkedSite?.name,linkedSite?.id,linkedSite?.walletGroupId]
+    .filter(Boolean).join(' ').toLowerCase().includes(q);
 
   // Filter status Active / Inactive
   const matchStatus =
@@ -5201,6 +5194,10 @@ function render(){
   for (const u of pageUsers) {
 
     const tr=document.createElement('tr');
+    const linkedSite = findUserSite(u);
+    cell(tr,linkedSite?.name||'-');
+    cell(tr,linkedSite?.id||'-');
+    cell(tr,linkedSite?.walletGroupId||'-');
 
 /* AUTH USERS - USERNAME WITH ACCOUNT NUMBER */
 
@@ -5372,10 +5369,11 @@ async function load() {
   startAuthTableSync();
 
   try {
-    const d = await api('/api/admin-users');
-
+    const [d, siteResponse] = await Promise.all([
+      api('/api/admin-users'),api('/api/sites')
+    ]);
     users = d.users || [];
-
+    sites = normalizeSiteRecords(siteResponse);
     render();
 
   } catch (e) {
@@ -5819,12 +5817,52 @@ async function openPermissionEditor(u,container){
   finally{await NewUI.setButtonLoading(save,false,{minDuration:850})}
  });
 }
+function normalizeSiteRecords(data){
+ const raw=Array.isArray(data)?data:(data?.sites??data?.items??[]);
+ return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}));
+}
+function findUserSite(u){
+ const id=String(u?.username||'').trim().toLowerCase();
+ return sites.find(s=>String(s.id||'').toLowerCase()===id)||null;
+}
+function refreshPlayerSite(u){
+ const wrap=$('playerSiteWrap');if(!wrap)return;
+ wrap.hidden=u?.role!=='siteadmin';
+ if(wrap.hidden)return;
+ const id=String(u.username||'').trim().toLowerCase(),site=findUserSite(u);
+ $('playerSiteEnabled').checked=site?.active===true;
+ $('playerSiteName').textContent=site?.name||id.toUpperCase();
+ $('playerSiteId').textContent=id;
+ $('playerSiteWallet').value=site?.walletGroupId||'';
+ $('playerSiteCreated').textContent=date(site?.createdAt);
+ $('playerSiteEdited').textContent=date(site?.updatedAt);
+ updatePlayerSiteSwitch();
+}
+function updatePlayerSiteSwitch(){
+ const label=$('playerSiteWrap')?.querySelector('.shared-active-text');
+ if(label)label.textContent=$('playerSiteEnabled').checked?'Active':'Inactive';
+}
+$('playerSiteEnabled').addEventListener('change',updatePlayerSiteSwitch);
+async function savePlayerSite(u){
+ if(u.role!=='siteadmin')return;
+ const id=String(u.username||'').trim().toLowerCase();
+ const existing=findUserSite(u),active=$('playerSiteEnabled').checked;
+ const walletGroupId=$('playerSiteWallet').value.trim()||null;
+ if(!existing){
+  if(!active)return; // OFF means no site created yet
+  if(!/^[a-z0-9_-]{1,48}$/.test(id))throw Error('Username is not a valid Site ID');
+  await api('/api/sites',{method:'POST',body:JSON.stringify({id,name:id,walletGroupId,active:true})});
+ }else if(existing.active!==active||(existing.walletGroupId||null)!==walletGroupId){
+  await api('/api/sites/'+encodeURIComponent(existing.id),{method:'PATCH',body:JSON.stringify({name:existing.name||id.toUpperCase(),walletGroupId,active})});
+ }
+}
 function create() {
   editing = null;
   $('modalFields').classList.remove('is-editing');
   $('userForm').reset();
   
   $('playerRemark').value = '';
+  $('playerSiteWrap').hidden = true;
 
   $('resetPasswordWrap').hidden = true;
   $('uidWrap').hidden = true;
@@ -5906,6 +5944,7 @@ setPlayerCounter(
   $('username').required = false;
 
   $('enabled').checked = !!u.enabled;
+  refreshPlayerSite(u);
 
 /* PLAYER INFO - LOAD SAVED REMARK */
 
@@ -6018,7 +6057,7 @@ async function removeUser(u,target){
   if(u.role!=='siteadmin')return;
   if(!window.NewUI?.confirm){toast('Custom confirm component unavailable. Check new-ui.js','error');return}
   const confirmed=await NewUI.confirm({
-    target,title:'Delete Username',message:'Delete username '+u.username+' permanently? This cannot be undone.',
+    target,title:'Delete Username',message:'Delete username '+u.username+' permanently? Linked site deletion requires the matching backend upgrade. This cannot be undone.',
     confirmText:'Delete',cancelText:'Cancel',loadingText:'Deleting...',
     onConfirm:async()=>{
       await api('/api/admin-users/'+encodeURIComponent(u.uid),{method:'DELETE'});
@@ -6058,6 +6097,7 @@ if (editing) {
       body: JSON.stringify(body)
     }
   );
+  await savePlayerSite(editing);
 }
 else{
       if(!password||!pin)throw Error('Password and PIN required');
@@ -6080,6 +6120,7 @@ if (wasEdit) {
 
   if (updatedUser) {
     editing = updatedUser;
+    refreshPlayerSite(updatedUser);
   }
 
   // Kosongkan password dan PIN selepas save
@@ -6164,302 +6205,7 @@ window.addEventListener('pagehide', () => {
 })();
 </script>
 
-<script>
-/* Site Management — same components and layout as Admin Users; existing /api/sites endpoints retained */
-(function(){
-'use strict';
-const el=id=>document.getElementById(id);
-let records=[],currentPage=1,pageSize=10,loaded=false,busy=false,siteModal=null,selectedStatuses=[];
-const paneUsers=el('manageUsersPane'),paneSites=el('manageSitesPane'),tabs=document.querySelectorAll('[data-manage-tab]');
-const dotLoading='<div class="auth-loading-center"><span class="auth-loading-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span>Please wait while fetching...</span></div>';
-function notify(message,type='success'){if(window.NewUI?.showToast)NewUI.showToast(message,type);else if(type==='error')console.error(message)}
-function setStatus(message,error=false){el('smStatus').textContent=message;el('smStatus').classList.toggle('is-error',error)}
-function switchTab(which){const showSites=which==='sites';paneSites.hidden=!showSites;paneUsers.hidden=showSites;tabs.forEach(t=>{const active=t.dataset.manageTab===which;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active))});if(showSites&&!loaded&&ready)loadSites()}
-tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.manageTab)));
-const filter=window.NewUI?.chips?.('#smStatusChips',{placeholder:'All Status',options:[{value:'active',label:'Active'},{value:'inactive',label:'Inactive'}],value:[],onChange(values){selectedStatuses=Array.isArray(values)?values:filter.getValue();currentPage=1;render()}});
-function normalize(data){const raw=Array.isArray(data)?data:Array.isArray(data?.sites)?data.sites:(data?.sites||data?.items||[]);return Array.isArray(raw)?raw:Object.entries(raw).map(([id,item])=>({id,...item}))}
-function makeCell(row,value){const td=document.createElement('td');td.textContent=String(value??'-');row.append(td);return td}
 
-function loadingRow(message = 'Please wait while fetching...') {
-  const tbody = el('smRows');
-  tbody.replaceChildren();
-
-  const tr = document.createElement('tr');
-  const td = document.createElement('td');
-
-  td.colSpan = 7;
-  td.className = 'auth-empty-cell';
-
-  if (typeof window.createLoadingState === 'function') {
-    td.innerHTML = window.createLoadingState(message, 'large');
-  } else {
-    td.innerHTML = dotLoading;
-  }
-
-  tr.appendChild(td);
-  tbody.appendChild(tr);
-}
-const icons={prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m13 6-6 6 6 6m6-12-6 6 6 6"/></svg>',forward:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 6 6 6-6 6m0-12 6 6-6 6"/></svg>'};
-function pagination(total){const footer=el('smPagination');footer.hidden=total===0;if(!total)return;const pages=Math.max(1,Math.ceil(total/pageSize));currentPage=Math.min(currentPage,pages);el('smPageInfo').textContent=`${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,total)} of ${total} items`;const holder=el('smPageNumbers');holder.replaceChildren();function button(label,target,active=false,kind='',disabled=false){const b=document.createElement('button');b.type='button';b.className='sm-page-btn '+kind+(active?' active':'');b.disabled=disabled;b.innerHTML=label;b.setAttribute('aria-label',kind==='sm-page-arrow'?(target<currentPage?'Previous page':'Next page'):'Page '+target);if(active)b.setAttribute('aria-current','page');b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,target));render()};holder.append(b)}function dots(back){const b=document.createElement('button');b.type='button';b.className='sm-page-btn sm-page-dots';b.innerHTML='<span class="sm-dots-text">•••</span><span class="sm-dots-icon">'+(back?icons.back:icons.forward)+'</span>';b.title=back?'Jump back 5 pages':'Jump forward 5 pages';b.onclick=()=>{currentPage=Math.min(pages,Math.max(1,currentPage+(back?-5:5)));render()};holder.append(b)}button(icons.prev,currentPage-1,false,'sm-page-arrow',currentPage===1);const nums=new Set([1,pages]);for(let i=Math.max(1,currentPage-2);i<=Math.min(pages,currentPage+2);i++)nums.add(i);let last=0;for(const n of [...nums].sort((a,b)=>a-b)){if(last&&n-last>1){if(n-last===2)button(String(last+1),last+1);else dots(n<=currentPage)}button(String(n),n,n===currentPage);last=n}button(icons.next,currentPage+1,false,'sm-page-arrow',currentPage===pages);el('smPageJump').max=String(pages)}
-function render(){if(!loaded)return;const query=el('smSearch').value.trim().toLowerCase();// ==========================================
-// SITE MANAGEMENT - NEWEST SITE FIRST
-// ==========================================
-
-const matches = records
-  .filter(x =>
-    (
-      String(x.id || '').toLowerCase().includes(query) ||
-      String(x.name || '').toLowerCase().includes(query)
-    ) &&
-    (
-      !selectedStatuses.length ||
-      selectedStatuses.includes(
-        x.active === true ? 'active' : 'inactive'
-      )
-    )
-  )
-  .sort((a, b) => {
-    const dateA = Number(a.createdAt) || 0;
-    const dateB = Number(b.createdAt) || 0;
-
-    // Site paling baru di atas
-    if (dateB !== dateA) {
-      return dateB - dateA;
-    }
-
-    // Susunan konsisten jika timestamp sama
-    return String(a.id || '').localeCompare(
-      String(b.id || '')
-    );
-  });
- const pages=Math.max(1,Math.ceil(matches.length/pageSize));currentPage=Math.max(1,Math.min(currentPage,pages));const tbody=el('smRows');tbody.replaceChildren();const shown=matches.slice((currentPage-1)*pageSize,currentPage*pageSize);
-if (!shown.length) {
-  const tr = document.createElement('tr');
-  const td = document.createElement('td');
-
-  td.colSpan = 7;
-  td.className = 'auth-empty-cell';
-
-  const message = records.length === 0 && !query && !selectedStatuses.length
-    ? 'No sites available'
-    : 'No Data';
-
-  if (typeof window.createEmptyState === 'function') {
-    td.innerHTML = window.createEmptyState(
-      message,
-      'large',
-      'center'
-    );
-  } else {
-    td.textContent = message;
-  }
-
-  tr.appendChild(td);
-  tbody.appendChild(tr);
-}
-for(const site of shown){const tr=document.createElement('tr');makeCell(tr,site.name);makeCell(tr,site.id);makeCell(tr,site.walletGroupId||'-');const td=makeCell(tr,'');td.textContent='';const badge=document.createElement('span');badge.className='site-badge'+(site.active===true?'':' off');badge.textContent=site.active===true?'Active':'Inactive';td.append(badge);
-
-// ==========================================
-// SITE MANAGEMENT - CREATE & EDIT DATE
-// ==========================================
-
-const createdCell = makeCell(tr, date(site.createdAt));
-createdCell.classList.add('site-date-cell');
-
-const editedCell = makeCell(tr, date(site.updatedAt));
-editedCell.classList.add('site-date-cell');
-
-// ACTION - kekal column terakhir
-const actions = makeCell(tr, '');
-actions.textContent = '';const edit = document.createElement('button');
-
-edit.type = 'button';
-edit.className = 'btn-edit-new';
-edit.title = 'Edit Site';
-edit.setAttribute('aria-label', 'Edit ' + site.name);
-
-edit.innerHTML = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M12 20h9"/>
-    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z"/>
-  </svg>
-`;
-
-edit.onclick = () => openEditor(site);
-
-// ==========================================
-// SITE MANAGEMENT - ACTION BUTTONS
-// ==========================================
-
-// Container Edit + Delete
-const actionWrap = document.createElement('div');
-actionWrap.className = 'site-actions';
-
-// Button Edit asal
-actionWrap.appendChild(edit);
-
-// Button Delete
-const deleteBtn = document.createElement('button');
-
-deleteBtn.type = 'button';
-deleteBtn.className = 'btn-delete-new site-delete-btn';
-deleteBtn.title = 'Delete Site';
-deleteBtn.setAttribute(
-  'aria-label',
-  'Delete ' + site.name
-);
-
-deleteBtn.innerHTML = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M3 6h18"/>
-    <path d="M8 6V4h8v2"/>
-    <path d="M19 6l-1 14H6L5 6"/>
-    <path d="M10 10v7"/>
-    <path d="M14 10v7"/>
-  </svg>
-`;
-
-deleteBtn.onclick = () => deleteSite(site, deleteBtn);
-
-// Susunan: Edit kiri, Delete kanan
-actionWrap.appendChild(deleteBtn);
-
-// Masukkan ke column ACTION
-actions.appendChild(actionWrap);
-
-// Masukkan row ke table
-tbody.appendChild(tr);
-}el('smTotal').textContent=records.length;el('smActive').textContent=records.filter(x=>x.active===true).length;el('smInactive').textContent=records.filter(x=>x.active!==true).length;pagination(matches.length)}
-async function loadSites(){if(busy)return;busy=true;el('smCreate').disabled=true;el('smTotal').innerHTML=el('smActive').innerHTML=el('smInactive').innerHTML='<span class="auth-loading-dots auth-stat-dots"><span></span><span></span><span></span><span></span></span>';loadingRow();el('smPagination').hidden=true;setStatus('');const loadingStarted = performance.now();try{records=normalize(await api('/api/sites'));const remaining = 700 - (performance.now() - loadingStarted);
-if (remaining > 0) {
-  await new Promise(resolve => setTimeout(resolve, remaining));
-}
-loaded=true;render();el('smCreate').disabled=false;setStatus('')}catch(error){loaded=false;
-el('smTotal').textContent = '!';
-el('smActive').textContent = '!';
-el('smInactive').textContent = '!';
-loadingRow('<span>Cannot load sites. Please try again.</span>');setStatus('Cannot load sites: '+error.message,true);notify('Cannot load sites: '+error.message,'error')}finally{busy=false}}
-// ==========================================
-// SITE MANAGEMENT - DELETE SITE
-// ==========================================
-
-async function deleteSite(site, target) {
-  if (!window.NewUI?.confirm) {
-    notify("Confirmation component unavailable", "error");
-    return;
-  }
-
-  await NewUI.confirm({
-    target,
-    title: "Delete Site",
-    message:
-      'Delete site "' + site.name +
-      '" (' + site.id + ') permanently? ' +
-      "This action cannot be undone.",
-
-    confirmText: "Delete",
-    cancelText: "Cancel",
-    loadingText: "Deleting...",
-
-    onConfirm: async () => {
-      await api(
-        "/api/sites/" + encodeURIComponent(site.id),
-        { method: "DELETE" }
-      );
-
-      // Kembali ke page pertama selepas delete
-      currentPage = 1;
-
-      await loadSites();
-      notify("Site deleted successfully.");
-    }
-  });
-}
-function openEditor(site=null){if(!window.NewUI?.modal?.open){notify('NewUI modal unavailable','error');return}const editingId=site?.id||null;const root=document.createElement('div');root.className='site-form-modal';root.innerHTML=`<form id="smForm" class="site-form"><div class="site-field"><label for="smName">Site Name</label><input id="smName" data-new-ui-input required maxlength="100" placeholder="Site Name"></div><div class="site-field"><label for="smId">Site ID</label><input id="smId" data-new-ui-input required maxlength="48" placeholder="Site ID"><div class="site-hint">Site ID cannot be changed later.</div></div><div class="site-field full"><label for="smWallet">Wallet Group ID (optional)</label><input id="smWallet" data-new-ui-input maxlength="60" placeholder="e.g. group-a"></div><div class="site-field full"><label class="site-switch-row"><span><strong>Active site</strong><small>Allow this site to remain enabled</small></span><span class="shared-active-switch"><input id="smEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive" checked><span class="shared-active-track"><span class="shared-active-text">Active</span><span class="shared-active-knob" aria-hidden="true"></span></span></span></label></div><div class="site-form-actions"><button type="button" id="smCancel" class="btn-cancel-new">Cancel</button><button type="submit" id="smSave" class="btn-primary-new">Save Site</button></div></form>`;root.querySelector('#smName').value=site?.name||''; // ==========================================
-// SITE NAME - AUTO UPPERCASE
-// ==========================================
-
-const siteNameInput = root.querySelector('#smName');
-const siteIdInput = root.querySelector('#smId');
-
-siteNameInput.addEventListener('input', () => {
-  siteNameInput.value = siteNameInput.value.toUpperCase();
-
-  // Semasa Add Site, Site ID ikut Site Name
-  if (!editingId) {
-    siteIdInput.value = siteNameInput.value
-      .trim()
-      .toLowerCase();
-  }
-});root.querySelector('#smId').value=site?.id||'';root.querySelector('#smId').disabled=!!site;root.querySelector('#smWallet').value=site?.walletGroupId||'';root.querySelector('#smEnabled').checked=site?.active!==false;siteModal=NewUI.modal.open({title:site?'Edit Site':'Add Site',width:'720px',content:root,onClose(){siteModal=null}});NewUI.init?.(root);NewUI.activeSwitch?.init?.(root);root.querySelector('#smCancel').onclick=()=>siteModal?.close();root.querySelector('#smForm').onsubmit=async event=>{event.preventDefault();const save=root.querySelector('#smSave');if(save.disabled)return;const id=editingId||root.querySelector('#smId').value.trim().toLowerCase();if(!/^[a-z0-9_-]{1,48}$/.test(id)){notify('Invalid Site ID','error');return}// ==========================================
-// SITE NAME - VALIDATION BEFORE SAVE
-// ==========================================
-
-const siteName = root.querySelector('#smName')
-  .value.trim().toUpperCase();
-
-if (!editingId && siteName.toLowerCase() !== id) {
-  notify(
-    'Site Name must match Site ID / Username',
-    'error'
-  );
-  return;
-}
-
-const payload = {
-  name: siteName,
-  walletGroupId:
-    root.querySelector('#smWallet').value.trim() || null,
-  active: root.querySelector('#smEnabled').checked
-};if(!payload.name){notify('Site name required','error');return}save.disabled=true;try{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,true,{text:'Saving...'});if(editingId)await api('/api/sites/'+encodeURIComponent(editingId),{method:'PATCH',body:JSON.stringify(payload)});else await api('/api/sites',{method:'POST',body:JSON.stringify({id,...payload})});if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});siteModal?.close();
-
-notify('Site saved successfully.');
-
-// Selepas Add Site, pergi ke halaman pertama
-if (!editingId) {
-  currentPage = 1;
-}
-
-await loadSites();}catch(error){notify('Save failed: '+error.message,'error')}finally{if(NewUI.setButtonLoading)await NewUI.setButtonLoading(save,false,{minDuration:700});save.disabled=false}}}
-
-const search = el('smSearch');
-
-if (window.NewUI?.syncSearch) {
-  NewUI.syncSearch(search, {
-    onSearch: async () => {
-      currentPage = 1;
-      render();
-
-      // Biar shared spinner nampak sekurang-kurangnya 750ms
-      await new Promise(resolve => setTimeout(resolve, 750));
-    }
-  });
-}
-search.addEventListener('input',()=>{currentPage=1;render()});el('smCreate').onclick=()=>openEditor();el('smPageSize').addEventListener('change',e=>{pageSize=Number(e.target.value)||10;currentPage=1;render()});el('smPageJump').addEventListener('keydown',e=>{if(e.key==='Enter'){const n=Number(e.target.value);const total=records.filter(x=>(String(x.id||'').toLowerCase().includes(search.value.trim().toLowerCase())||String(x.name||'').toLowerCase().includes(search.value.trim().toLowerCase()))&&(!selectedStatuses.length||selectedStatuses.includes(x.active===true?'active':'inactive'))).length;currentPage=Math.min(Math.max(1,Math.ceil(total/pageSize)),Math.max(1,Math.floor(n)||1));render();e.target.value=''}});
-})();
-</script>
 
 
 <script>
