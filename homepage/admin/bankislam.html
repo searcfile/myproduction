@@ -1115,6 +1115,102 @@ body {
     grid-column: 1 / -1 !important;
   }
 }
+    
+/* ==========================================
+   BANK ISLAM - CUSTOM INPUT POSITION
+   ========================================== */
+
+/* ROW 1 - 5 COLUMNS */
+#back .modal > .bi-input-row-1 {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(150px, 1.2fr)
+    minmax(140px, 1fr)
+    minmax(150px, 1fr)
+    minmax(220px, 1.5fr)
+    auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+  width: 100%;
+  min-width: 0;
+}
+
+/* FIELD WIDTH */
+#back .modal .bi-input-row-1 > .fld {
+  min-width: 0 !important;
+  width: 100%;
+  margin: 0 !important;
+}
+
+/* CLICK NOW BUTTON */
+#back .modal .bi-input-row-1 > #btnNow {
+  width: auto !important;
+  height: 32px !important;
+  padding: 0 15px !important;
+  white-space: nowrap;
+}
+
+/* ROW 2 */
+#back .modal > .bi-input-row-2 {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+}
+
+#back .modal .bi-field-name {
+  width: 100%;
+  margin: 0 !important;
+}
+
+/* NAME INPUTS */
+#back .modal .bi-input-row-2 .name-wrap {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  width: 100%;
+}
+
+#back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+/* HIDE LENGTH FIELD BUT KEEP IN DOM */
+#back .modal > .bi-hidden-length {
+  display: none !important;
+}
+
+/* TABLET */
+@media (max-width: 1100px) {
+  #back .modal > .bi-input-row-1 {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #back .modal .bi-input-row-1 > #btnNow {
+    width: fit-content !important;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 650px) {
+  #back .modal > .bi-input-row-1 {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  #back .modal .bi-input-row-2 .name-wrap {
+    flex-wrap: wrap !important;
+  }
+
+  #back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
+    flex: 1 1 100% !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1125,51 +1221,73 @@ body {
         <div class="modal" role="document" aria-label="Editor">
     <!-- RECEIPT SETTINGS TITLE -->
     <div class="bi-settings-title">Receipt Settings</div>
-          <div class="fld">
-            <label>Amount (RM)</label>
-            <input id="inAmount" data-new-ui-input type="text" inputmode="decimal" autocomplete="off" value="1,000.00">
-          </div>
 
-          <div class="row">
-<div class="col fld">
-  <label>Date &amp; Time</label>
-  <div class="dt-wrap">
-    <button type="button" class="btn-now" id="btnNow">Click Now</button>
-    <input id="inDate" data-new-ui-input class="dt-input" type="text" placeholder="Date & time">
-  </div>
-</div>
-            <div class="col fld">
-              <label>Reference Number</label>
-                <input id="inPrefix" data-new-ui-input type="text" placeholder="Auto" class="col">
-            </div>
-          </div>
+<!-- ROW 1: BANK, AMOUNT, PREFIX, DATE, NOW -->
+<div class="bi-input-row-1">
 
-          <div class="row">
-            <div class="col fld">
-              <label>Total ref length</label>
-              <select id="inLen" data-shared-dropdown>
-                <option>20</option><option selected>24</option>
-              </select>
-            </div>
-            <div class="col fld">
-              <label>Force Bank (optional)</label>
-              <select id="inBank" data-shared-dropdown>
-                <option value="">Random Bank</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="fld">
-  <label>Recipient Full Name</label>
-  <div class="name-wrap">
-    <button type="button" class="btn-mini" id="btnGenName">Auto</button>
-    <select id="nmAlpha" data-shared-dropdown class="nm-alpha" aria-label="First letter">
-      <option value="">A–Z</option>
+  <div class="fld bi-field-bank">
+    <label>Force Bank (optional)</label>
+    <select id="inBank" data-shared-dropdown>
+      <option value="">Random Bank</option>
     </select>
-    <input id="inName" data-new-ui-input type="text" placeholder="Holder Name" class="col">
   </div>
-  <label>Saat Update, data sensitif akan otomatis di-blur, hanya huruf awal nama yang tampak.</label>
+
+  <div class="fld bi-field-amount">
+    <label>Amount (RM)</label>
+    <input id="inAmount" data-new-ui-input type="text"
+           inputmode="decimal" autocomplete="off" value="1,000.00">
+  </div>
+
+  <div class="fld bi-field-prefix">
+    <label>Reference Number</label>
+    <input id="inPrefix" data-new-ui-input
+           type="text" placeholder="Auto">
+  </div>
+
+  <div class="fld bi-field-date">
+    <label>Date &amp; Time</label>
+    <input id="inDate" data-new-ui-input
+           class="dt-input" type="text" placeholder="Date & time">
+  </div>
+
+  <button type="button" class="btn-now" id="btnNow">
+    Click Now
+  </button>
+
 </div>
+
+<!-- ROW 2: AUTO, RANDOM LETTER, HOLDER NAME -->
+<div class="bi-input-row-2">
+
+  <div class="fld bi-field-name">
+    <label>Recipient Full Name</label>
+
+    <div class="name-wrap">
+      <button type="button" class="btn-mini" id="btnGenName">
+        Auto
+      </button>
+
+      <select id="nmAlpha" data-shared-dropdown
+              class="nm-alpha" aria-label="First letter">
+        <option value="">A–Z</option>
+      </select>
+
+      <input id="inName" data-new-ui-input
+             type="text" placeholder="Holder Name">
+    </div>
+  </div>
+
+</div>
+
+<!-- KEEP TOTAL REF LENGTH FOR EXISTING JAVASCRIPT -->
+<div class="bi-hidden-length">
+  <select id="inLen">
+    <option value="20">20</option>
+    <option value="23" selected>23</option>
+    <option value="24">24</option>
+  </select>
+</div>
+
 
 
 <!-- DIVIDER SELEPAS INPUT -->
