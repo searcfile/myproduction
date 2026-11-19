@@ -7763,51 +7763,160 @@ function openNoticeModal(message, timestamp) {
   return true;
 }
 
-  function markNoticeSeen(timestamp) {
-    const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-    const email = String(login.email || "guest").toLowerCase();
-    localStorage.setItem(`seenNotif_${timestamp}_${email}`, "1");
+/* ==========================================
+   NOTICE - FIREBASE READ STATE PER UID
+   ========================================== */
 
-    const dot = document.getElementById("notifDot");
-    if (dot) {
-      dot.style.display = "none";
-      dot.textContent = "";
-    }
+let noticeReadRef = null;
+let noticeReadHandler = null;
+let noticeReadUid = null;
+let noticeReadTimestamp = 0;
+let noticeReadReady = false;
+let latestNoticeData = null;
 
-    syncMenuNotifDot();
+function renderNoticeReadState() {
+  const button = document.getElementById("notifButton");
+  const dot = document.getElementById("notifDot");
 
-    if (window.updateFloatingFabNoticeDot) {
-      window.updateFloatingFabNoticeDot(0);
-    }
+  const data = latestNoticeData;
+
+  if (button) {
+    button.dataset.message = data?.message || "";
+    button.dataset.timestamp = String(data?.timestamp || 0);
   }
 
-  function showNotification(message, timestamp) {
-    const button = document.getElementById("notifButton");
-    const dot = document.getElementById("notifDot");
-    if (!button) return;
+  const isUnread =
+    noticeReadReady &&
+    !!data?.message &&
+    Number(data.timestamp) > noticeReadTimestamp;
 
-    const login = JSON.parse(localStorage.getItem("gmailLogin") || "{}");
-    const email = String(login.email || "guest").toLowerCase();
-    const seenKey = `seenNotif_${timestamp}_${email}`;
+  if (dot) {
+    dot.style.display = isUnread ? "flex" : "none";
+    dot.textContent = isUnread ? "1" : "";
+  }
 
-    button.dataset.message = message;
-    button.dataset.timestamp = String(timestamp);
+  syncMenuNotifDot();
 
-    localStorage.setItem("latestNotifMessage", message);
-    localStorage.setItem("latestNotifTimestamp", String(timestamp));
-
-const isUnread = !localStorage.getItem(seenKey);
-
-if (dot) {
-  dot.style.display = isUnread ? "flex" : "none";
-  dot.textContent = isUnread ? "1" : "";
+  window.updateFloatingFabNoticeDot?.(
+    isUnread ? 1 : 0
+  );
 }
 
-syncMenuNotifDot();
-
-// Sync Notice ke Floating FAB.
-window.updateFloatingFabNoticeDot(isUnread ? 1 : 0);
+function stopNoticeReadListener() {
+  if (noticeReadRef && noticeReadHandler) {
+    noticeReadRef.off("value", noticeReadHandler);
   }
+
+  noticeReadRef = null;
+  noticeReadHandler = null;
+  noticeReadUid = null;
+  noticeReadTimestamp = 0;
+  noticeReadReady = false;
+
+  renderNoticeReadState();
+}
+
+function startNoticeReadListener(user) {
+  stopNoticeReadListener();
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    sessionStorage.getItem("5g88.adminSession") !== user.uid
+  ) {
+    return;
+  }
+
+  const database = getSharedDb();
+  if (!database) return;
+
+  const uid = user.uid;
+
+  noticeReadUid = uid;
+
+  noticeReadRef = database.ref(
+    `adminNoticeRead/${uid}/lastReadTimestamp`
+  );
+
+  const ref = noticeReadRef;
+
+  noticeReadHandler = snapshot => {
+    if (noticeReadUid !== uid || noticeReadRef !== ref) {
+      return;
+    }
+
+    noticeReadTimestamp = Math.max(
+      0,
+      Number(snapshot.val()) || 0
+    );
+
+    noticeReadReady = true;
+    renderNoticeReadState();
+  };
+
+  noticeReadRef.on(
+    "value",
+    noticeReadHandler,
+    error => {
+      console.error("Notice read listener failed:", error);
+      if (noticeReadUid === uid) {
+        stopNoticeReadListener();
+      }
+    }
+  );
+}
+
+
+async function markNoticeSeen(timestamp) {
+  const user = firebase.auth().currentUser;
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    noticeReadUid !== user.uid ||
+    !noticeReadReady ||
+    !noticeReadRef
+  ) {
+    return;
+  }
+
+  const value = Number(timestamp);
+
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    return;
+  }
+
+  // Jangan undurkan status Read jika Notice baru
+  // tiba ketika operasi Firebase sedang berjalan.
+  const targetRef = noticeReadRef;
+  const uid = user.uid;
+
+  try {
+    await targetRef.transaction(current => {
+      const previous = Number(current) || 0;
+      return Math.max(previous, value);
+    });
+
+  } catch (error) {
+    console.error("Failed to mark Notice as read:", error);
+  }
+}
+
+
+function showNotification(message, timestamp) {
+  const value = Number(timestamp);
+
+  latestNoticeData =
+    message && Number.isSafeInteger(value) && value > 0
+      ? {
+          message: String(message),
+          timestamp: value
+        }
+      : null;
+
+  renderNoticeReadState();
+}
+
 
   function initNotifications() {
     const button = document.getElementById("notifButton");
@@ -7816,34 +7925,17 @@ window.updateFloatingFabNoticeDot(isUnread ? 1 : 0);
     moveNotifButtonResponsive();
     syncMenuNotifDot();
 
-    const savedMessage = localStorage.getItem("latestNotifMessage");
-    const savedTimestamp = localStorage.getItem("latestNotifTimestamp");
-
-    if (button && savedMessage && savedTimestamp) {
-      showNotification(savedMessage, savedTimestamp);
-    }
+// NOTICE - Firebase Read State
+firebase.auth().onAuthStateChanged(user => {
+  startNoticeReadListener(user);
+});
 
 button?.addEventListener("click", event => {
 
   event.stopPropagation();
 
-  const message =
-    button.dataset.message ||
-    localStorage.getItem(
-      "latestNotifMessage"
-    ) ||
-    "";
-
-  const timestamp =
-    Number(
-      button.dataset.timestamp ||
-      localStorage.getItem(
-        "latestNotifTimestamp"
-      ) ||
-      0
-    );
-
-
+const message = button.dataset.message || "";
+const timestamp = Number(button.dataset.timestamp || 0);
   /* ADA NOTICE */
   if (message) {
 
@@ -7861,7 +7953,6 @@ button?.addEventListener("click", event => {
 
     return;
   }
-
 
   /* TIADA NOTICE */
   openNoticeModal(
@@ -7899,14 +7990,27 @@ button?.addEventListener("click", event => {
       syncMenuNotifDot();
     });
 
-    const sharedDb = getSharedDb();
-    if (sharedDb) {
-      sharedDb.ref("notifikasi/pesanTerbaru").on("value", snapshot => {
-        const data = snapshot.val();
-        if (!data || !data.message || !data.timestamp) return;
-        showNotification(data.message, data.timestamp);
-      });
+
+const sharedDb = getSharedDb();
+
+if (sharedDb) {
+  sharedDb.ref("notifikasi/pesanTerbaru").on(
+    "value",
+    snapshot => {
+      const data = snapshot.val();
+
+      showNotification(
+        data?.message || "",
+        data?.timestamp || 0
+      );
+    },
+    error => {
+      console.error("Notice listener failed:", error);
+      showNotification("", 0);
     }
+  );
+}
+
   }
 /* ==========================================================
    FLOATING FAB
