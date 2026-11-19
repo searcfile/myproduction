@@ -742,9 +742,6 @@ function jiliCheckTabRefresh() {
   // Token baru = refresh daripada ikon SVG.
   sessionStorage.setItem(tokenKey, token);
   localStorage.removeItem(STORAGE_KEY);
-
-  console.log("[JILI] SVG tab refresh detected:", token);
-
   return true;
 }
 
@@ -1234,7 +1231,6 @@ window.addEventListener("message", function (event) {
 
   if (data.type === "5g88-reset-jili-tab") {
     resetTable();
-    console.log("[JILI] Tab refreshed and Reset Log executed");
   }
 });
 
@@ -1542,11 +1538,6 @@ function jiliRebuildDropdown() {
   // Dropdown sudah siap.
   jiliGamesReady = true;
 
-  console.log("[JILI] Dropdown rebuilt:", {
-    game: selectedGame,
-    bet: selectedBet,
-    win: selectedTotalWin
-  });
 }
 // JILI - Key selamat untuk Firebase
 function jiliBetKey(bet) {
@@ -1605,17 +1596,6 @@ gameData[game.name] = {
 };
   });
 
-  console.log("[JILI] Database games:",
-    Object.keys(jiliDbRecords).length
-  );
-
-  console.log("[JILI] Active games:",
-    Object.keys(gameData).length
-  );
-
-  console.log("[JILI] Inactive games:", inactive);
-  console.log("[JILI] Invalid games:", invalid);
-
   jiliRebuildDropdown();
 }
 async function jiliLoadGames() {
@@ -1629,10 +1609,6 @@ async function jiliLoadGames() {
     }
 
     const records = result.games;
-
-    console.log("[JILI] API response:", result);
-    console.log("[JILI] Games received:", records.length);
-
     jiliDbRecords = Object.fromEntries(
       records.map(game => [
         String(game.id || game._id || game.name),
