@@ -2397,21 +2397,15 @@ link.innerHTML = `
   ${ICON_CHECK}
 `;
 
-link.addEventListener("click", event => {
-  // Biarkan browser urus Ctrl+Click,
-  // Cmd+Click dan Shift+Click.
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
+    link.addEventListener(
+      "click",
+      event => {
 
-  event.preventDefault();
-  addTab(page);
-});
+        event.preventDefault();
+
+        addTab(page);
+      }
+    );
 
     return link;
   }
@@ -4436,49 +4430,19 @@ function refreshTab(tab) {
         element.classList.add("active-tab");
       }
 
-const title = document.createElement("a");
+      const title = document.createElement("span");
+      title.className = "admin-workspace-tab-name";
+      title.textContent = String(tab.name || tab.file)
+        .toLowerCase()
+        .replace(/\b\w/g, char => char.toUpperCase());
 
-title.className = "admin-workspace-tab-name";
-title.href = `./${tab.file}`;
+      element.append(title, createTabActions(tab));
 
-title.textContent = String(tab.name || tab.file)
-  .toLowerCase()
-  .replace(/\b\w/g, char => char.toUpperCase());
-
-title.addEventListener("click", event => {
-  if (!verifiedProfileReady) {
-    event.preventDefault();
-    return;
-  }
-
-  // Ctrl+Click / Cmd+Click / Shift+Click
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  navigateToTab(tab);
-});
-
-element.append(title, createTabActions(tab));
-
-element.addEventListener("click", event => {
-  if (!verifiedProfileReady) return;
-
-  if (event.target.closest("button, a")) return;
-
-  if (event.ctrlKey || event.metaKey) {
-    window.open(`./${tab.file}`, "_blank", "noopener");
-    return;
-  }
-
-  navigateToTab(tab);
-});
+      element.addEventListener("click", event => {
+         if (!verifiedProfileReady) return;
+        if (event.target.closest("button")) return;
+        navigateToTab(tab);
+      });
 
       tabList.appendChild(element);
     });
