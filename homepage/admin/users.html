@@ -3207,55 +3207,53 @@ td:last-child .site-actions {
 
 
 /* ==========================================
-   AUTH USERS - NEW TABLE COLUMN ORDER
-   Site Name | Username | Firebase UID |
-   Wallet Group | Role | ...
+   AUTH USERS - STICKY USERNAME (COLUMN 2)
    ========================================== */
 
-/* Reset sticky lama pada column 2 */
-.auth-list .auth-table thead th:nth-child(2),
-.auth-list .auth-table tbody td:nth-child(2) {
+/* Firebase UID - kembali menjadi column biasa */
+.auth-list .auth-table thead th:nth-child(3),
+.auth-list .auth-table tbody td:nth-child(3) {
   position: static !important;
   left: auto !important;
   z-index: auto !important;
 }
 
-/* Firebase UID sekarang column 3 */
-.auth-list .auth-table thead th:nth-child(3) {
+/* Username - sticky sebelah kiri */
+.auth-list .auth-table thead th:nth-child(2) {
   position: sticky !important;
   left: 0 !important;
   z-index: 11 !important;
   background: var(--tx-surface-soft) !important;
 }
 
-.auth-list .auth-table tbody td:nth-child(3) {
+.auth-list .auth-table tbody td:nth-child(2) {
   position: sticky !important;
   left: 0 !important;
   z-index: 4 !important;
 }
 
-/* Zebra background */
+/* Username ikut warna zebra row */
 .auth-list .auth-table tbody tr:nth-child(odd)
-> td:nth-child(3) {
+> td:nth-child(2) {
   background: var(--tx-surface) !important;
 }
 
 .auth-list .auth-table tbody tr:nth-child(even)
-> td:nth-child(3) {
+> td:nth-child(2) {
   background: var(--tx-surface-soft) !important;
 }
 
-/* Hover */
+/* Username ikut warna hover row */
 .auth-list .auth-table tbody tr:hover
-> td:nth-child(3) {
+> td:nth-child(2) {
   background: var(--tx-hover) !important;
 }
 
-/* Buang shadow lama column 2 dan 5 */
+/* Buang shadow sticky Firebase UID */
 .auth-list .auth-tablewrap .auth-table
-th:nth-child(2)::after,
+th:nth-child(3)::after,
 .auth-list .auth-tablewrap .auth-table
-td:nth-child(2)::after,
+td:nth-child(3)::after,
 .auth-list .auth-tablewrap .auth-table
 th:nth-child(5)::after,
 .auth-list .auth-tablewrap .auth-table
@@ -3263,11 +3261,11 @@ td:nth-child(5)::after {
   content: none !important;
 }
 
-/* Shadow baru di kanan Firebase UID */
+/* Shadow sebelah kanan Username */
 .auth-list .auth-tablewrap .auth-table
-th:nth-child(3)::after,
+th:nth-child(2)::after,
 .auth-list .auth-tablewrap .auth-table
-td:nth-child(3)::after {
+td:nth-child(2)::after {
   content: "";
   position: absolute;
   top: 0;
@@ -3275,27 +3273,29 @@ td:nth-child(3)::after {
   left: 100%;
   width: 30px;
   pointer-events: none;
+  z-index: 1;
   box-shadow: none;
   transition: box-shadow .3s ease;
 }
 
+/* Shadow aktif apabila Site Name sudah tersembunyi */
 .auth-list .auth-tablewrap.has-uid-shadow
-.auth-table th:nth-child(3)::after,
+.auth-table th:nth-child(2)::after,
 .auth-list .auth-tablewrap.has-uid-shadow
-.auth-table td:nth-child(3)::after {
+.auth-table td:nth-child(2)::after {
   box-shadow:
     inset 10px 0 8px -8px
     var(--ant-color-split);
 }
 
-/* Border antara Firebase UID dan Wallet Group */
-.auth-list .auth-table thead th:nth-child(3),
-.auth-list .auth-table tbody td:nth-child(3) {
+/* Border antara Username dan Firebase UID */
+.auth-list .auth-table thead th:nth-child(2),
+.auth-list .auth-table tbody td:nth-child(2) {
   border-right: none !important;
 }
 
-.auth-list .auth-table thead th:nth-child(4),
-.auth-list .auth-table tbody td:nth-child(4) {
+.auth-list .auth-table thead th:nth-child(3),
+.auth-list .auth-table tbody td:nth-child(3) {
   border-left: 1px solid var(--tx-border) !important;
 }
 
@@ -6717,28 +6717,25 @@ function updateShadow() {
     showActionShadow
   );
 
-  // FIREBASE UID - shadow kanan
 
-const uidHeader = wrap.querySelector(
-  ".auth-table thead th:nth-child(3)"
+// USERNAME - shadow kanan
+
+const usernameHeader = wrap.querySelector(
+  ".auth-table thead th:nth-child(2)"
 );
 
-const columnsBeforeUid = Array.from(
-  wrap.querySelectorAll(
-    ".auth-table thead th:nth-child(-n+2)"
-  )
+const siteNameHeader = wrap.querySelector(
+  ".auth-table thead th:nth-child(1)"
 );
 
-const widthBeforeUid = columnsBeforeUid.reduce(
-  (total, th) =>
-    total + th.getBoundingClientRect().width,
-  0
-);
+const siteNameWidth = siteNameHeader
+  ? siteNameHeader.getBoundingClientRect().width
+  : 0;
 
 const showUidShadow =
-  !!uidHeader &&
+  !!usernameHeader &&
   maxScroll > 1 &&
-  scrollLeft >= widthBeforeUid - 1;
+  scrollLeft >= siteNameWidth - 1;
 
 
   wrap.classList.toggle(
