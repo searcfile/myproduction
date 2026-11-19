@@ -30,7 +30,6 @@
     script.dataset.agentSupportLoader = "true";
 
     script.onload = () => {
-      console.log("[Agent Support] Script loaded:", page);
     };
 
     script.onerror = () => {
