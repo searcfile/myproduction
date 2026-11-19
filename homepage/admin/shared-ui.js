@@ -2397,15 +2397,19 @@ link.innerHTML = `
   ${ICON_CHECK}
 `;
 
-    link.addEventListener(
-      "click",
-      event => {
+link.addEventListener("click", event => {
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
 
-        event.preventDefault();
-
-        addTab(page);
-      }
-    );
+  event.preventDefault();
+  addTab(page);
+});
 
     return link;
   }
@@ -3294,13 +3298,10 @@ const results =
 
     results.forEach(page => {
 
-      const item =
-        document.createElement(
-          "button"
-        );
+const item = document.createElement("a");
 
-      item.type =
-        "button";
+item.href = `./$DIL1`;
+item.draggable = true;
 
       const currentFile =
   getCurrentFile();
@@ -3334,18 +3335,22 @@ item.className =
         item.textContent;
 
 
-      item.addEventListener(
-        "click",
-        event => {
+item.addEventListener("click", event => {
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
 
-          event.preventDefault();
-          event.stopPropagation();
+  event.preventDefault();
+  event.stopPropagation();
 
-          closeSearch();
-
-          addTab(page);
-        }
-      );
+  closeSearch();
+  addTab(page);
+});
 
 
       list.appendChild(item);
