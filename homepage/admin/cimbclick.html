@@ -905,6 +905,46 @@ html {
 .cimb-bank-form-actions button[hidden] {
   display: none !important;
 }
+      /* ==========================================
+   CIMB CLICKS - FIX CLICK NOW BUTTON
+   ========================================== */
+
+/* Date & Time input + Click Now */
+.builder-panel .builder-field .input-row:has(#btn-date) {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Input Date & Time */
+.builder-panel #input-date {
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Click Now button */
+.builder-panel #btn-date {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 90px !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  line-height: 1 !important;
+  font-size: 13px !important;
+}
 </style>
 <body>
   
