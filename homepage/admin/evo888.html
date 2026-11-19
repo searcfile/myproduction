@@ -3459,13 +3459,6 @@ function mgStart() {
 
         mgApplyCatalog(catalog);
 
-        console.log(
-          "[EVO888] Games loaded:",
-          result.games.length,
-          "in",
-          Math.round(performance.now() - startedAt) + "ms"
-        );
-
       } catch (error) {
         if (version !== loadVersion) return;
 
