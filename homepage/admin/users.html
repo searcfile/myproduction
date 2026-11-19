@@ -5736,67 +5736,22 @@ loading.innerHTML = `
   }
 }
 
-   
-
 
 /* ==========================================
-   AUTH USERS - PERMISSION TAB SCROLL SNAP
-   Keep horizontal scrolling + More dropdown
+   AUTH USERS - FULL TAB WHEEL SCROLL
+   Scroll by complete tabs, no bounce back
    ========================================== */
 
-let permissionWheelSnapTimer = null;
-
-function snapPermissionTab() {
-  const tabs = document.getElementById('permissionTabs');
-  if (!tabs) return;
-
-  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
-  if (maxScroll <= 0) return;
-
-  const buttons = [...tabs.querySelectorAll('.auth-permission-tab')];
-  if (!buttons.length) return;
-
-  const current = tabs.scrollLeft;
-  const viewportWidth = tabs.clientWidth;
-
-  // Cari kedudukan scroll yang membolehkan tab
-  // kelihatan penuh pada sempadan kiri atau kanan.
-  const positions = new Set([0, maxScroll]);
-
-  buttons.forEach(button => {
-    const left = button.offsetLeft - tabs.offsetLeft;
-    const right = left + button.offsetWidth;
-
-    positions.add(Math.max(0, Math.min(maxScroll, left)));
-    positions.add(Math.max(0, Math.min(
-      maxScroll,
-      right - viewportWidth
-    )));
-  });
-
-  let closest = current;
-  let minDistance = Infinity;
-
-  for (const position of positions) {
-    const distance = Math.abs(position - current);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      closest = position;
-    }
-  }
-
-  tabs.scrollTo({
-    left: closest,
-    behavior: 'smooth'
-  });
-}
+let permissionWheelLock = false;
 
 document.addEventListener('wheel', function(e) {
   const tabs = e.target.closest?.('#permissionTabs');
   if (!tabs) return;
 
-  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+  const buttons = [...tabs.querySelectorAll('.auth-permission-tab')];
+  if (!buttons.length) return;
+
+  const maxScroll = Math.max(0, tabs.scrollWidth - tabs.clientWidth);
   if (maxScroll <= 0) return;
 
   const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
@@ -5805,24 +5760,43 @@ document.addEventListener('wheel', function(e) {
 
   if (!delta) return;
 
-  const oldScroll = tabs.scrollLeft;
-
-  const nextScroll = Math.max(
-    0,
-    Math.min(maxScroll, oldScroll + delta * 2.2)
-  );
-
-  if (Math.abs(nextScroll - oldScroll) < 0.5) return;
-
+  // Jangan scroll modal apabila mouse berada di tabbar
   e.preventDefault();
 
-  tabs.scrollLeft = nextScroll;
+  if (permissionWheelLock) return;
 
-  clearTimeout(permissionWheelSnapTimer);
+  const current = tabs.scrollLeft;
+  const firstLeft = buttons[0].offsetLeft;
 
-  permissionWheelSnapTimer = setTimeout(() => {
-    snapPermissionTab();
-  }, 140);
+  const positions = buttons.map(button =>
+    Math.min(
+      maxScroll,
+      Math.max(0, button.offsetLeft - firstLeft)
+    )
+  );
+
+  let target = current;
+
+  if (delta > 0) {
+    target = positions.find(pos => pos > current + 2)
+      ?? maxScroll;
+  } else {
+    target = [...positions].reverse()
+      .find(pos => pos < current - 2) ?? 0;
+  }
+
+  if (Math.abs(target - current) < 1) return;
+
+  permissionWheelLock = true;
+
+  tabs.scrollTo({
+    left: target,
+    behavior: 'smooth'
+  });
+
+  setTimeout(() => {
+    permissionWheelLock = false;
+  }, 220);
 
 }, { passive: false });
 
@@ -5851,11 +5825,26 @@ function renderPermissionTabs() {
     if (!bar.isConnected || !bar.clientWidth) return;
 
     // Measure full tab width with More temporarily hidden.
-    more.hidden = true;
 
-    const needsMore = host.scrollWidth > host.clientWidth + 1;
+    // Kira lebar tab sebenar tanpa padding tambahan.
+    const tabButtons = [...host.querySelectorAll('.auth-permission-tab')];
+
+    const totalTabWidth = tabButtons.reduce(
+      (sum, button) => sum + button.offsetWidth,
+      0
+    );
+
+    const needsMore = totalTabWidth > bar.clientWidth + 1;
 
     more.hidden = !needsMore;
+
+    // Reserve ruang untuk tab terakhir keluar penuh.
+    const lastTab = tabButtons[tabButtons.length - 1];
+
+    host.style.paddingRight = lastTab
+      ? Math.max(0, host.clientWidth - lastTab.offsetWidth) + 'px'
+      : '0px';
+
 
     if (!needsMore) {
       options.replaceChildren();
@@ -5952,6 +5941,21 @@ function renderPermissionTabs() {
 
     host.appendChild(button);
   }
+
+  // Extra scroll space supaya tab terakhir boleh
+  // bergerak sampai ke kiri dan tampil penuh.
+  const tabButtons = [...host.querySelectorAll('.auth-permission-tab')];
+  const lastTab = tabButtons[tabButtons.length - 1];
+
+  if (lastTab) {
+    const extraSpace = Math.max(
+      0,
+      host.clientWidth - lastTab.offsetWidth
+    );
+
+    host.style.paddingRight = extraSpace + 'px';
+  }
+
 
   host.scrollLeft = permissionTabScroll;
 
