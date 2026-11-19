@@ -1072,7 +1072,49 @@ body {
   font-size: 11px;
   opacity: 0.65;
 }
+/* ==========================================
+   BANK ISLAM - RECEIPT SETTINGS & LOG
+   ========================================== */
 
+/* Receipt Settings title */
+#back .modal > .bi-settings-title {
+  grid-column: 1 / -1 !important;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.42857;
+  color: var(--page-text);
+  opacity: .9;
+  margin: 0 0 5px;
+}
+
+/* Divider antara input dan tombol */
+#back .modal > .bi-settings-divider {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  width: 100%;
+  height: 1px;
+  background: var(--tx-border);
+  opacity: .6;
+  margin: 6px 0;
+}
+
+/* Receipt Log title */
+.preview-outer-card > .bi-log-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.42857;
+  color: var(--page-text);
+  opacity: .9;
+  margin: 0 0 13px;
+}
+
+/* Responsive */
+@media (max-width: 650px) {
+  #back .modal > .bi-settings-title,
+  #back .modal > .bi-settings-divider {
+    grid-column: 1 / -1 !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1081,7 +1123,8 @@ body {
       <!-- KIRI: Editor selalu tampil -->
       <div class="back" id="back">
         <div class="modal" role="document" aria-label="Editor">
-
+    <!-- RECEIPT SETTINGS TITLE -->
+    <div class="bi-settings-title">Receipt Settings</div>
           <div class="fld">
             <label>Amount (RM)</label>
             <input id="inAmount" data-new-ui-input type="text" inputmode="decimal" autocomplete="off" value="1,000.00">
@@ -1128,6 +1171,9 @@ body {
   <label>Saat Update, data sensitif akan otomatis di-blur, hanya huruf awal nama yang tampak.</label>
 </div>
 
+
+<!-- DIVIDER SELEPAS INPUT -->
+<div class="bi-settings-divider"></div>
 
 <div class="ctl">
 
@@ -1180,7 +1226,11 @@ body {
 
 <!-- KANAN: Card -->
 <div class="preview-outer-card">
-      <div class="card" id="card">
+
+  <!-- RECEIPT LOG TITLE -->
+  <div class="bi-log-title">Receipt Log</div>
+
+  <div class="card" id="card">
         <!-- HAPUS tombol gear -->
         <div class="row-top">
           <div class="left">
