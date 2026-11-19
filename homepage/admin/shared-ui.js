@@ -2548,10 +2548,19 @@ pages
     left.append(icon, title);
     link.appendChild(left);
 
-    link.addEventListener("click", event => {
-      event.preventDefault();
-      addTab(page);
-    });
+link.addEventListener("click", event => {
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  addTab(page);
+});
 
     container.appendChild(link);
   });
@@ -2639,10 +2648,19 @@ left.appendChild(label);
 link.appendChild(left);
 
 
-      link.addEventListener("click", event => {
-        event.preventDefault();
-        addTab(page);
-      });
+link.addEventListener("click", event => {
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  addTab(page);
+});
 
       inner.appendChild(link);
     });
@@ -2710,10 +2728,19 @@ pages
     left.append(icon, title);
     link.appendChild(left);
 
-    link.addEventListener("click", event => {
-      event.preventDefault();
-      addTab(page);
-    });
+link.addEventListener("click", event => {
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  addTab(page);
+});
 
     container.appendChild(link);
   });
@@ -5211,6 +5238,17 @@ menu.addEventListener("click", event => {
   );
 
   if (!link || !menu.contains(link)) return;
+
+  // Ctrl + Click / Cmd + Click:
+  // Biarkan browser membuka tab baharu.
+  if (
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    event.button !== 0
+  ) {
+    return;
+  }
 
   event.preventDefault();
   event.stopImmediatePropagation();
