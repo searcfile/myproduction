@@ -1305,6 +1305,28 @@
    AUTH USERS - SCROLL TABS + NEWUI MORE
    ========================================== */
 
+/* ==========================================
+   MODULE PERMISSIONS - CUSTOM SEARCH
+   ========================================== */
+
+.auth-permission-search-holder {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  margin: 0 0 12px;
+}
+
+.auth-permission-search-holder .shared-sync-search {
+  width: 100%;
+  height: 32px;
+}
+
+@media (max-width: 620px) {
+  .auth-permission-search-holder {
+    max-width: 100%;
+  }
+}
+
 .auth-permission-tabbar {
   display: flex;
   align-items: stretch;
@@ -3171,6 +3193,16 @@ td:last-child .site-actions {
     padding: 12px;
     gap: 14px;
   }
+}
+
+.auth-permission-search-empty {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 /* Three site columns precede username: Firebase UID now column 5. */
@@ -5769,13 +5801,12 @@ document.addEventListener('wheel', function(e) {
 
 }, { passive: false });
 
-
-
-
 let permissionOverflowObserver = null;
 let permissionTabScroll = 0;
+let permissionModuleSearchText = '';
 
 function renderPermissionTabs() {
+
   const bar = document.getElementById('permissionTabbar');
   const host = document.getElementById('permissionTabs');
   const more = document.getElementById('permissionMore');
@@ -5787,10 +5818,23 @@ function renderPermissionTabs() {
   permissionOverflowObserver?.disconnect();
   permissionOverflowObserver = null;
 
-  const modules = getPermissionModules();
 
-  host.replaceChildren();
-  options.replaceChildren();
+const allModules = getPermissionModules();
+
+const keyword = permissionModuleSearchText
+  .trim()
+  .toLowerCase();
+
+const modules = keyword
+  ? allModules.filter(([key, label]) =>
+      label.toLowerCase().includes(keyword) ||
+      key.toLowerCase().includes(keyword)
+    )
+  : allModules;
+
+host.replaceChildren();
+options.replaceChildren();
+
 
   function updateOverflow() {
     if (!bar.isConnected || !bar.clientWidth) return;
@@ -5906,6 +5950,16 @@ function renderPermissionTabs() {
     host.appendChild(button);
   }
 
+// Tiada tab yang sepadan dengan carian
+if (keyword && modules.length === 0) {
+  const empty = document.createElement('div');
+
+  empty.className = 'auth-permission-search-empty';
+  empty.textContent = 'No matching modules';
+
+  host.appendChild(empty);
+}
+
   host.scrollLeft = permissionTabScroll;
 
   host.onscroll = () => {
@@ -6003,7 +6057,17 @@ async function openPermissionEditor(u,container){
  <div class="auth-permission-section">Site Assignment</div><div id="permissionSiteChoices"></div>
  <p class="auth-permission-note">Assign active sites before saving permissions.</p>
  <div class="auth-permission-section">Module Permissions</div>
- 
+ <!-- MODULE PERMISSIONS - CUSTOM SEARCH -->
+<div class="auth-permission-search-holder">
+  <input
+    type="search"
+    id="permissionModuleSearch"
+    placeholder="Search module tab..."
+    aria-label="Search module tab"
+    autocomplete="off"
+    spellcheck="false"
+  >
+</div>
 <div class="auth-permission-tabbar" id="permissionTabbar">
   <div class="auth-permission-tabs"
        id="permissionTabs"
@@ -6043,6 +6107,45 @@ async function openPermissionEditor(u,container){
  root.querySelector('#permissionUid').value=u.uid;
  root.querySelector('#permissionDisplayName').value=u.displayName||u.username;
  NewUI.init?.(root);
+
+/* ==========================================
+   MODULE PERMISSIONS - LIVE CUSTOM SEARCH
+   ========================================== */
+
+const permissionSearchInput = root.querySelector(
+  '#permissionModuleSearch'
+);
+
+permissionModuleSearchText = '';
+permissionTabScroll = 0;
+
+function filterPermissionModules() {
+  permissionModuleSearchText = permissionSearchInput.value;
+  permissionTabScroll = 0;
+
+  renderPermissionTabs();
+}
+
+// Live search semasa menaip
+permissionSearchInput.addEventListener(
+  'input',
+  filterPermissionModules
+);
+
+// Gunakan custom NewUI search + rotating icon
+if (window.NewUI?.syncSearch) {
+  NewUI.syncSearch(permissionSearchInput, {
+    onSearch: async () => {
+      filterPermissionModules();
+
+      // Spinner custom asal bro
+      await new Promise(resolve =>
+        setTimeout(resolve, 500)
+      );
+    }
+  });
+}
+
  root.querySelector('#permissionCancel').onclick=()=>container.closest('.auth-unified-shell')?.querySelector('[data-view=manage]')?.click();
  try{
   const response=await api('/api/sites');
