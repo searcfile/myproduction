@@ -2892,16 +2892,23 @@ function copyGameLogImage() {
       showToast("Image copied to clipboard", "success");
       return;
 
-    } catch (err) {
-      // Fallback: hantar base64 ke parent
-      const dataURL = canvas.toDataURL("image/png");
-      window.parent.postMessage(
-        { action: "copy-image-base64", base64: dataURL },
-        "https://5g88-main.vercel.app/"
-      );
-      showToast("Image sent to parent (fallback)", "info");
-      // (Opsional) console.error(err);
-    }
+
+} catch (err) {
+  console.warn("[MEGA888] Copy image failed:", err);
+
+  const dataURL = canvas.toDataURL("image/png");
+  const link = document.createElement("a");
+
+  link.href = dataURL;
+  link.download = "MEGA888-GameLog.png";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  showToast("Clipboard unavailable. Image downloaded.", "info");
+}
+
   });
 }
 document.addEventListener("keydown", function(e) {
@@ -2919,19 +2926,22 @@ document.querySelectorAll("button").forEach(btn => {
   });
 
 
-// ✅ Tukar ikut page
+
 window.HISTORY_TAB_NAME = "MEGA888";
-// ✅ Hantar ke main page
 function sendUserAction(actionName, extra = {}) {
   if (!actionName) return;
+
+  if (window.parent === window) return;
+
   window.parent.postMessage({
     type: "user-tab-action",
     tab: window.HISTORY_TAB_NAME,
     action: actionName,
     extra,
     time: Date.now()
-  }, "https://5g88-main.vercel.app");
+  }, window.location.origin);
 }
+
 /* =========================
    AUTO TRACK CLICK - COUNT SEMUA CLICK
 ========================= */
