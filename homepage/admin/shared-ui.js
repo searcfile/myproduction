@@ -2397,19 +2397,15 @@ link.innerHTML = `
   ${ICON_CHECK}
 `;
 
-link.addEventListener("click", event => {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
+    link.addEventListener(
+      "click",
+      event => {
 
-  event.preventDefault();
-  addTab(page);
-});
+        event.preventDefault();
+
+        addTab(page);
+      }
+    );
 
     return link;
   }
@@ -2552,19 +2548,10 @@ pages
     left.append(icon, title);
     link.appendChild(left);
 
-link.addEventListener("click", event => {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  addTab(page);
-});
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      addTab(page);
+    });
 
     container.appendChild(link);
   });
@@ -2652,19 +2639,10 @@ left.appendChild(label);
 link.appendChild(left);
 
 
-link.addEventListener("click", event => {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  addTab(page);
-});
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        addTab(page);
+      });
 
       inner.appendChild(link);
     });
@@ -2732,19 +2710,10 @@ pages
     left.append(icon, title);
     link.appendChild(left);
 
-link.addEventListener("click", event => {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  addTab(page);
-});
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      addTab(page);
+    });
 
     container.appendChild(link);
   });
@@ -3298,10 +3267,13 @@ const results =
 
     results.forEach(page => {
 
-const item = document.createElement("a");
+      const item =
+        document.createElement(
+          "button"
+        );
 
-item.href = `./$DIL1`;
-item.draggable = true;
+      item.type =
+        "button";
 
       const currentFile =
   getCurrentFile();
@@ -3335,22 +3307,18 @@ item.className =
         item.textContent;
 
 
-item.addEventListener("click", event => {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
+      item.addEventListener(
+        "click",
+        event => {
 
-  event.preventDefault();
-  event.stopPropagation();
+          event.preventDefault();
+          event.stopPropagation();
 
-  closeSearch();
-  addTab(page);
-});
+          closeSearch();
+
+          addTab(page);
+        }
+      );
 
 
       list.appendChild(item);
@@ -5243,17 +5211,6 @@ menu.addEventListener("click", event => {
   );
 
   if (!link || !menu.contains(link)) return;
-
-  // Ctrl + Click / Cmd + Click:
-  // Biarkan browser membuka tab baharu.
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    event.button !== 0
-  ) {
-    return;
-  }
 
   event.preventDefault();
   event.stopImmediatePropagation();
