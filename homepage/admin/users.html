@@ -5738,21 +5738,13 @@ loading.innerHTML = `
 
 
 /* ==========================================
-   AUTH USERS - FULL TAB WHEEL SCROLL
-   Scroll by complete tabs, no bounce back
+   AUTH USERS - CONTINUOUS TAB SCROLL
+   Stop after all tabs leave the viewport
    ========================================== */
-
-let permissionWheelLock = false;
 
 document.addEventListener('wheel', function(e) {
   const tabs = e.target.closest?.('#permissionTabs');
   if (!tabs) return;
-
-  const buttons = [...tabs.querySelectorAll('.auth-permission-tab')];
-  if (!buttons.length) return;
-
-  const maxScroll = Math.max(0, tabs.scrollWidth - tabs.clientWidth);
-  if (maxScroll <= 0) return;
 
   const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
     ? e.deltaX
@@ -5760,45 +5752,22 @@ document.addEventListener('wheel', function(e) {
 
   if (!delta) return;
 
-  // Jangan scroll modal apabila mouse berada di tabbar
-  e.preventDefault();
-
-  if (permissionWheelLock) return;
-
-  const current = tabs.scrollLeft;
-  const firstLeft = buttons[0].offsetLeft;
-
-  const positions = buttons.map(button =>
-    Math.min(
-      maxScroll,
-      Math.max(0, button.offsetLeft - firstLeft)
-    )
+  const maxScroll = Math.max(
+    0,
+    tabs.scrollWidth - tabs.clientWidth
   );
 
-  let target = current;
+  if (maxScroll <= 0) return;
 
-  if (delta > 0) {
-    target = positions.find(pos => pos > current + 2)
-      ?? maxScroll;
-  } else {
-    target = [...positions].reverse()
-      .find(pos => pos < current - 2) ?? 0;
-  }
+  e.preventDefault();
 
-  if (Math.abs(target - current) < 1) return;
-
-  permissionWheelLock = true;
-
-  tabs.scrollTo({
-    left: target,
-    behavior: 'smooth'
-  });
-
-  setTimeout(() => {
-    permissionWheelLock = false;
-  }, 220);
+  tabs.scrollLeft = Math.max(
+    0,
+    Math.min(maxScroll, tabs.scrollLeft + delta)
+  );
 
 }, { passive: false });
+
 
 
 let permissionOverflowObserver = null;
@@ -5838,12 +5807,13 @@ function renderPermissionTabs() {
 
     more.hidden = !needsMore;
 
-    // Reserve ruang untuk tab terakhir keluar penuh.
-    const lastTab = tabButtons[tabButtons.length - 1];
 
-    host.style.paddingRight = lastTab
-      ? Math.max(0, host.clientWidth - lastTab.offsetWidth) + 'px'
-      : '0px';
+// Ruang supaya semua tab boleh scroll keluar
+// sepenuhnya di sebelah kiri butang More.
+host.style.paddingRight = needsMore
+  ? host.clientWidth + 'px'
+  : '0px';
+
 
 
     if (!needsMore) {
@@ -5941,21 +5911,6 @@ function renderPermissionTabs() {
 
     host.appendChild(button);
   }
-
-  // Extra scroll space supaya tab terakhir boleh
-  // bergerak sampai ke kiri dan tampil penuh.
-  const tabButtons = [...host.querySelectorAll('.auth-permission-tab')];
-  const lastTab = tabButtons[tabButtons.length - 1];
-
-  if (lastTab) {
-    const extraSpace = Math.max(
-      0,
-      host.clientWidth - lastTab.offsetWidth
-    );
-
-    host.style.paddingRight = extraSpace + 'px';
-  }
-
 
   host.scrollLeft = permissionTabScroll;
 
