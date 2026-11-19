@@ -1835,7 +1835,7 @@ window.addEventListener("pagehide", () => {
   refreshFilters();render();startRealtime();
   // Keep original parent-frame activity tracking.
   window.HISTORY_TAB_NAME='ITEM COLLECTION';
-  const parentOrigin='https://5g88-main.vercel.app';
+  const parentOrigin='https://myproduction-v2-5g88myr1.vercel.app';
   document.addEventListener('click',e=>{
     const el=e.target.closest('button,a,[data-action]');if(!el||el.disabled)return;
     window.parent?.postMessage({type:'user-tab-action',tab:window.HISTORY_TAB_NAME,
