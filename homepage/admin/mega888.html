@@ -2897,7 +2897,7 @@ function copyGameLogImage() {
       const dataURL = canvas.toDataURL("image/png");
       window.parent.postMessage(
         { action: "copy-image-base64", base64: dataURL },
-        "https://5g88-main.vercel.app/"
+        "https://myproduction-v2-5g88myr1.vercel.app"
       );
       showToast("Image sent to parent (fallback)", "info");
       // (Opsional) console.error(err);
@@ -2930,7 +2930,7 @@ function sendUserAction(actionName, extra = {}) {
     action: actionName,
     extra,
     time: Date.now()
-  }, "https://5g88-main.vercel.app");
+  }, "https://myproduction-v2-5g88myr1.vercel.app");
 }
 /* =========================
    AUTO TRACK CLICK - COUNT SEMUA CLICK
