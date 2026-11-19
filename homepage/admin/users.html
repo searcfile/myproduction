@@ -658,7 +658,7 @@
 
 .auth-modal-fields{width:100%;min-width:0}
 .auth-formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:4px 0}
-.auth-formgrid .field{min-width:0;display:flex;flex-direction:column;gap:7px}
+.auth-formgrid .field{min-width:0;display:flex;flex-direction:column;gap:3px}
 .auth-formgrid .field.full{grid-column:1/-1}
 .auth-formgrid .field label:not(.auth-switch-row){font-size:12px;font-weight:600}
 .auth-formgrid .field input:not([type=checkbox]){height:32px;width:100%;min-width:0}
@@ -3106,16 +3106,16 @@ td:last-child .site-actions {
 .auth-site-details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid var(--tx-border, #344963);
-  border-radius: 9px;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--input-line);
+  border-radius: 8px;
 }
 
 .auth-site-field {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -3546,7 +3546,6 @@ td:last-child .site-actions {
 
         <span>
           <strong>Active account</strong>
-          <small>Allow this account to sign in</small>
         </span>
 
         <label class="shared-active-switch">
