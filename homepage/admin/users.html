@@ -5738,13 +5738,65 @@ loading.innerHTML = `
 
    
 
-document.addEventListener('wheel', function(e) {
-  const tabs = e.target.closest?.('#permissionTabs');
 
+/* ==========================================
+   AUTH USERS - PERMISSION TAB SCROLL SNAP
+   Keep horizontal scrolling + More dropdown
+   ========================================== */
+
+let permissionWheelSnapTimer = null;
+
+function snapPermissionTab() {
+  const tabs = document.getElementById('permissionTabs');
   if (!tabs) return;
 
   const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+  if (maxScroll <= 0) return;
 
+  const buttons = [...tabs.querySelectorAll('.auth-permission-tab')];
+  if (!buttons.length) return;
+
+  const current = tabs.scrollLeft;
+  const viewportWidth = tabs.clientWidth;
+
+  // Cari kedudukan scroll yang membolehkan tab
+  // kelihatan penuh pada sempadan kiri atau kanan.
+  const positions = new Set([0, maxScroll]);
+
+  buttons.forEach(button => {
+    const left = button.offsetLeft - tabs.offsetLeft;
+    const right = left + button.offsetWidth;
+
+    positions.add(Math.max(0, Math.min(maxScroll, left)));
+    positions.add(Math.max(0, Math.min(
+      maxScroll,
+      right - viewportWidth
+    )));
+  });
+
+  let closest = current;
+  let minDistance = Infinity;
+
+  for (const position of positions) {
+    const distance = Math.abs(position - current);
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      closest = position;
+    }
+  }
+
+  tabs.scrollTo({
+    left: closest,
+    behavior: 'smooth'
+  });
+}
+
+document.addEventListener('wheel', function(e) {
+  const tabs = e.target.closest?.('#permissionTabs');
+  if (!tabs) return;
+
+  const maxScroll = tabs.scrollWidth - tabs.clientWidth;
   if (maxScroll <= 0) return;
 
   const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY)
@@ -5763,9 +5815,17 @@ document.addEventListener('wheel', function(e) {
   if (Math.abs(nextScroll - oldScroll) < 0.5) return;
 
   e.preventDefault();
+
   tabs.scrollLeft = nextScroll;
 
+  clearTimeout(permissionWheelSnapTimer);
+
+  permissionWheelSnapTimer = setTimeout(() => {
+    snapPermissionTab();
+  }, 140);
+
 }, { passive: false });
+
 
 let permissionOverflowObserver = null;
 let permissionTabScroll = 0;
