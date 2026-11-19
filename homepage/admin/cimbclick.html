@@ -62,7 +62,7 @@
   <link rel="icon" type="image/svg+xml" href="./logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-  <title>page main main kanak2</title>
+  <title>CIMB Clicks</title>
   <link rel="stylesheet" href="./shared-ui.css">
   <link rel="stylesheet" href="./admin.css">
   <link rel="stylesheet" href="./new-ui.css">
@@ -478,150 +478,61 @@ html {
   scrollbar-color: #555 transparent;
 }
   
-/* ==========================================
-   CIMB - OPTIONS LEFT, PREVIEW RIGHT
-   ========================================== */
-
+/* =====================================================
+   SETTINGS UI ONLY — preview markup/styles untouched
+   ===================================================== */
 .app-layout {
-  display: grid !important;
-  grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
-  align-items: start !important;
-  gap: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
   width: calc(100% - 24px) !important;
-  margin: 12px !important;
+  margin:0 12px 12px !important;
 }
-
-/* LEFT OPTIONS CARD */
 .app-layout > .builder-panel {
+  position: static !important;
+  top: auto !important;
+  flex: 0 0 auto !important;
   width: 100% !important;
   max-width: 100% !important;
-  min-width: 0;
-  position: static !important;
-  flex: none !important;
   padding: 12px;
   border: 1px solid var(--tx-border);
   border-radius: 12px;
   background: var(--tx-surface-soft);
 }
-
-/* INPUTS: ONE ROW EACH */
 .builder-panel .builder-row {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 8px !important;
-  align-items: stretch;
+  align-items: end;
 }
-
-.builder-panel .builder-row > * {
-  min-width: 0;
+.builder-panel .builder-row > * { min-width: 0; }
+.builder-panel .builder-row > .btn-row {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
 }
-
-.builder-panel .builder-field,
-.builder-panel .input-row,
-.builder-panel .builder-row-2 {
-  min-width: 0;
-  width: 100%;
-}
-
-/* RECIPIENT + AUTO / DATE + NOW */
-.builder-panel .input-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.builder-panel .input-row > input {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: 100%;
-}
-
-.builder-panel .shared-active-switch,
-.builder-panel #btn-date {
-  flex: 0 0 auto;
-}
-
-/* REFERENCE + AMOUNT */
-.builder-panel .builder-row-2 {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.builder-panel .builder-row-2 .builder-field {
-  min-width: 0;
-}
-
-.builder-panel .builder-row-2 input {
-  width: 100%;
-  min-width: 0;
-}
-
-/* ACTION BUTTONS: TWO SEPARATE ROWS */
-.builder-panel .cimb-bottom-actions {
-  grid-column: 1 / -1 !important;
-  width: 100%;
-  min-width: 0;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 8px;
-}
-
-.builder-panel .cimb-bottom-actions .btn-row {
-  display: flex !important;
-  justify-content: flex-start !important;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100% !important;
-}
-
-.builder-panel .cimb-bottom-actions .cimb-bank-actions {
-  display: flex !important;
-  justify-content: flex-end !important;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100% !important;
-  margin: 0 !important;
-}
-
-.builder-panel .cimb-bottom-actions button {
-  flex: 0 0 auto !important;
-  width: auto !important;
-  min-width: 0 !important;
-  height: 32px;
-  padding: 0 12px !important;
-  white-space: nowrap;
-}
-
-/* RIGHT PREVIEW CARD */
+.builder-panel .btn-row > button { flex: 0 1 150px; }
 .app-layout > .preview-panel {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0;
-  flex: none !important;
-  align-self: start !important;
+  flex: 0 0 auto !important;
+  align-self: flex-start !important;
 }
-
-/* RESPONSIVE: STACK WHEN SPACE IS LIMITED */
-@media (max-width: 1100px) {
-  .app-layout {
+@media (max-width: 1000px) {
+  .builder-panel .builder-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 600px) {
+  .builder-panel .builder-row {
     grid-template-columns: minmax(0, 1fr) !important;
   }
+  .builder-panel .btn-row { flex-wrap: wrap; }
+  .builder-panel .btn-row > button { flex: 1 1 calc(50% - 8px); }
 }
 
-/* SMALL PHONES */
-@media (max-width: 550px) {
-  .builder-panel .cimb-bottom-actions .btn-row > button {
-    flex: 1 1 calc(50% - 8px) !important;
-  }
-
-  .builder-panel .cimb-bottom-actions .cimb-bank-actions > button {
-    flex: 1 1 calc(50% - 8px) !important;
-  }
-}
+/* ==========================================
+   CIMB CLICKS - PREVIEW OUTER PANEL
+   STYLE SEPERTI MEGA888
+   ========================================== */
 
 
 /* CIMB - OUTER PREVIEW PANEL SCROLL */
@@ -641,14 +552,14 @@ html {
 }
 
 
-/* Wrapper preview dalam kolum kanan */
+/* Wrapper preview memenuhi lebar panel */
 .app-layout > .preview-panel {
   width: 100% !important;
   max-width: 100% !important;
-  min-width: 0;
-  flex: none !important;
-  align-self: start !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
 }
+
 /* Receipt kekal saiz asal */
 .cimb-preview-outer > .container {
   width: 100%;
@@ -841,6 +752,74 @@ html {
    CIMB CLICKS - RESPONSIVE ACTION BUTTONS
    ========================================== */
 
+@media (max-width: 650px) {
+
+  /* Wrapper utama */
+  .builder-panel .cimb-bottom-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Create, Blur, Copy Image, Reset */
+  .builder-panel .cimb-bottom-actions .btn-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .builder-panel .cimb-bottom-actions .btn-row > button {
+    flex: 1 1 120px !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 100% !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  /* Create Bank + Manage Banks */
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .builder-panel .cimb-bottom-actions .cimb-bank-actions > button {
+    flex: 1 1 135px !important;
+    width: auto !important;
+    min-width: 135px !important;
+    max-width: 100% !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+}
 /* CIMB BANK - GLOBAL & SITE VISIBILITY */
 .cimb-bank-scope {
   display: flex;
