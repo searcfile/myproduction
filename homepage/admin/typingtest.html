@@ -1884,17 +1884,49 @@ function loadCurrentAdminUser() {
         return;
       }
 
-      const marker = sessionStorage.getItem("5g88.adminSession");
-      const expiry = Number(localStorage.getItem("autoLogout.expireAt"));
+let marker = sessionStorage.getItem("5g88.adminSession");
+let expiryRaw = sessionStorage.getItem("autoLogout.expireAt");
 
-      if (marker !== user.uid || !Number.isFinite(expiry) || expiry <= Date.now()) {
-        showTypingAuthStatus("Admin session expired or not verified");
-        console.warn("[Typing Test] Session check failed", {
-          markerMatches: marker === user.uid,
-          expiryValid: Number.isFinite(expiry) && expiry > Date.now()
-        });
-        return;
-      }
+// Selaraskan dengan session recovery dalam admin.js
+if (!marker && !expiryRaw) {
+  const savedRaw = localStorage.getItem(
+    `5g88.sessionExpire.${user.uid}`
+  );
+
+  const savedExpiry = Number(savedRaw);
+
+  if (
+    savedRaw &&
+    Number.isFinite(savedExpiry) &&
+    savedExpiry > Date.now()
+  ) {
+    sessionStorage.setItem("5g88.adminSession", user.uid);
+    sessionStorage.setItem("autoLogout.expireAt", savedRaw);
+
+    marker = user.uid;
+    expiryRaw = savedRaw;
+  }
+}
+
+const expiry = Number(expiryRaw);
+
+if (
+  marker !== user.uid ||
+  !expiryRaw ||
+  !Number.isFinite(expiry) ||
+  expiry <= Date.now()
+) {
+  showTypingAuthStatus("Admin session expired or not verified");
+
+  console.warn("[Typing Test] Session check failed", {
+    markerMatches: marker === user.uid,
+    expiryValid: !!expiryRaw &&
+      Number.isFinite(expiry) &&
+      expiry > Date.now()
+  });
+
+  return;
+}
 
       try {
         const token = await user.getIdTokenResult();
