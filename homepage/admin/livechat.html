@@ -1720,13 +1720,7 @@ function isLivechatVisible() {
 
 async function markAdminSeenInDB() {
   if (!currentActiveId) return;
-    console.log("[LiveChat Read Check]", {
-  chatId: currentActiveId,
-  visible: isLivechatVisible(),
-  parentActive: window.parent !== window
-    ? window.parent.isLivechatTabActive?.()
-    : true
-});
+
   if (!isLivechatVisible()) return;
   if (isMarkingUserRead) return;
 
@@ -1760,10 +1754,7 @@ async function markAdminSeenInDB() {
     if (Object.keys(updates).length) {
       await chatRef.update(updates);
     }
-console.log("[LiveChat Read Saved]", {
-  chatPath,
-  updatedFields: Object.keys(updates).length
-});
+
   } catch (error) {
     console.error(
       "LiveChat mark read failed:",
@@ -1843,11 +1834,6 @@ async function restoreAdminLivechatIdentity() {
   // Pastikan identiti chat sudah tersedia sebelum mark read.
   markAdminSeenInDB().catch(error => {
     console.error("[LiveChat] Read after login failed:", error);
-  });
-  console.log("LiveChat admin identity restored:", {
-    uid: user.uid,
-    username,
-    role: profile.role
   });
 
   return true;
