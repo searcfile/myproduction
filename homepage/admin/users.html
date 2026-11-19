@@ -3138,11 +3138,34 @@ td:last-child .site-actions {
   min-width: 0;
 }
 
-.auth-site-field > label {
+
+.auth-site-field > label,
+.auth-site-field > .auth-site-label {
   font-size: 12px;
   font-weight: 500;
   color: var(--text);
 }
+
+/* Read-only Site Assignment */
+#playerSiteWrap input[readonly] {
+  cursor: default !important;
+  opacity: 1 !important;
+  user-select: text;
+  caret-color: transparent;
+}
+
+/* Label Active Site tidak boleh toggle */
+#playerSiteWrap .auth-site-label {
+  cursor: default;
+  user-select: none;
+}
+
+/* Hanya kawasan switch boleh diklik */
+#playerSiteWrap .auth-site-switch-box
+.shared-active-switch {
+  cursor: pointer;
+}
+
 
 .auth-site-field input:not([type="checkbox"]) {
   width: 100%;
@@ -3585,6 +3608,7 @@ td:last-child .site-actions {
       <input
         id="playerSiteName"
         type="text"
+        readonly
         data-new-ui-input
         maxlength="60"
         placeholder="Enter site name"
@@ -3617,7 +3641,7 @@ td:last-child .site-actions {
 
     <!-- ROW 2: ACTIVE SITE -->
     <div class="auth-site-field">
-      <label for="playerSiteEnabled">Active Site</label>
+      <span class="auth-site-label">Active Site</span>
 
       <div class="auth-site-switch-box">
         <label class="shared-active-switch">
