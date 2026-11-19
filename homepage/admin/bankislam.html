@@ -1183,33 +1183,102 @@ body {
   display: none !important;
 }
 
-/* TABLET */
-@media (max-width: 1100px) {
+
+/* ==========================================
+   BANK ISLAM - RESPONSIVE INPUT POSITION
+   ========================================== */
+
+/* TABLET: BANK + AMOUNT, PREFIX + DATE + NOW */
+@media (max-width: 1100px) and (min-width: 651px) {
+
   #back .modal > .bi-input-row-1 {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr)) !important;
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      auto !important;
+    gap: 8px !important;
+  }
+
+  /* First row */
+  #back .modal .bi-field-bank {
+    grid-column: 1 !important;
+  }
+
+  #back .modal .bi-field-amount {
+    grid-column: 2 / 4 !important;
+  }
+
+  /* Second row */
+  #back .modal .bi-field-prefix {
+    grid-column: 1 !important;
+  }
+
+  #back .modal .bi-field-date {
+    grid-column: 2 !important;
   }
 
   #back .modal .bi-input-row-1 > #btnNow {
-    width: fit-content !important;
+    grid-column: 3 !important;
+    width: auto !important;
+    min-width: max-content !important;
   }
 }
 
-/* MOBILE */
+/* MOBILE: STACK INPUTS, KEEP DATE + NOW TOGETHER */
 @media (max-width: 650px) {
+
   #back .modal > .bi-input-row-1 {
     grid-template-columns:
-      minmax(0, 1fr) !important;
+      minmax(0, 1fr)
+      auto !important;
+    gap: 8px !important;
   }
 
+  #back .modal .bi-field-bank,
+  #back .modal .bi-field-amount,
+  #back .modal .bi-field-prefix {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Date shares row with Click Now */
+  #back .modal .bi-field-date {
+    grid-column: 1 !important;
+    min-width: 0 !important;
+  }
+
+  #back .modal .bi-input-row-1 > #btnNow {
+    grid-column: 2 !important;
+    width: auto !important;
+    min-width: max-content !important;
+    padding: 0 12px !important;
+  }
+
+  /* Auto + Random dropdown on same row */
   #back .modal .bi-input-row-2 .name-wrap {
+    display: flex !important;
     flex-wrap: wrap !important;
+    gap: 8px !important;
   }
 
+  #back .modal .bi-input-row-2 .name-wrap > .btn-mini {
+    flex: 0 0 auto !important;
+  }
+
+  #back .modal .bi-input-row-2 .name-wrap > .shared-dropdown {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Holder Name full width on next row */
   #back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
     flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }
+
 
 </style>
 </head>
