@@ -3626,6 +3626,21 @@ td:nth-child(2)::after {
       disabled
     >
   </div>
+
+    
+<div class="field">
+  <label for="playerTotalLoginCount">
+    Total Login Count
+  </label>
+  <input
+    id="playerTotalLoginCount"
+    class="shared-input"
+    type="text"
+    placeholder="0"
+    disabled
+  >
+</div>
+
 </div>
 
   </section>
@@ -6414,6 +6429,11 @@ setPlayerCounter(
   (Number(u.pinFailedCount) || 0)
 );
 
+
+setPlayerCounter(
+  'playerTotalLoginCount',
+  u.totalLoginCount ?? 0
+);
 
   // Username tidak perlu diisi semasa Edit Profile.
   $('username').required = false;
