@@ -5737,9 +5737,10 @@ loading.innerHTML = `
 }
 
 
+
 /* ==========================================
-   AUTH USERS - CONTINUOUS TAB SCROLL
-   Stop after all tabs leave the viewport
+   AUTH USERS - NATURAL PERMISSION TAB SCROLL
+   Stop when last tab is fully visible
    ========================================== */
 
 document.addEventListener('wheel', function(e) {
@@ -5767,6 +5768,7 @@ document.addEventListener('wheel', function(e) {
   );
 
 }, { passive: false });
+
 
 
 
@@ -5806,16 +5808,8 @@ function renderPermissionTabs() {
     const needsMore = totalTabWidth > bar.clientWidth + 1;
 
     more.hidden = !needsMore;
-
-
-// Ruang supaya semua tab boleh scroll keluar
-// sepenuhnya di sebelah kiri butang More.
-host.style.paddingRight = needsMore
-  ? host.clientWidth + 'px'
-  : '0px';
-
-
-
+    host.style.paddingRight = '0px';
+      
     if (!needsMore) {
       options.replaceChildren();
       more.classList.remove('is-open');
