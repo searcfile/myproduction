@@ -3098,13 +3098,77 @@ td:last-child .site-actions {
 }
 
 
-/* INTEGRATED SITE MANAGEMENT */
-.auth-site-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px;padding:14px;border:1px solid var(--tx-border,#344963);border-radius:9px}
-.auth-site-details>div{display:flex;flex-direction:column;gap:6px;min-width:0}
-.auth-site-details small{font-size:11px;color:var(--muted,#9aaac0)}
-.auth-site-details strong{font-size:12px;overflow-wrap:anywhere}
-.auth-site-details input{width:100%;min-width:0}
-@media(max-width:620px){.auth-site-details{grid-template-columns:1fr}}
+
+/* ==========================================
+   AUTH USERS - SITE ASSIGNMENT
+   ========================================== */
+
+.auth-site-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 8px 0 14px;
+  color: var(--muted, #9aaac0);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-site-section-title::before,
+.auth-site-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--tx-border, #344963);
+}
+
+.auth-site-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--tx-border, #344963);
+  border-radius: 9px;
+}
+
+.auth-site-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.auth-site-field > label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.auth-site-field input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+}
+
+.auth-site-field input[readonly] {
+  cursor: default;
+  opacity: .8;
+}
+
+.auth-site-switch-box {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+@media (max-width: 620px) {
+  .auth-site-details {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 14px;
+  }
+}
+
 /* Three site columns precede username: Firebase UID now column 5. */
 .auth-list .auth-table thead th:nth-child(2),.auth-list .auth-table tbody td:nth-child(2){position:static!important;left:auto!important;z-index:auto!important}
 .auth-list .auth-table thead th:nth-child(5){position:sticky!important;left:0!important;z-index:11!important;background:var(--tx-surface-soft)!important}
@@ -3505,19 +3569,100 @@ td:last-child .site-actions {
       </div>
     </div>
 
-<!-- PLAYER INFO - SITE MANAGEMENT (separate from account status) -->
+
+<!-- PLAYER INFO - SITE ASSIGNMENT -->
 <div class="field full" id="playerSiteWrap" hidden>
- <div class="auth-switch-row"><span><strong>Active Site</strong><small>Create or enable this username's site when saved</small></span>
-  <label class="shared-active-switch"><input id="playerSiteEnabled" type="checkbox" data-active-label="Active" data-inactive-label="Inactive"><span class="shared-active-track"><span class="shared-active-text">Inactive</span><span class="shared-active-knob" aria-hidden="true"></span></span></label>
- </div>
- <div class="auth-site-details">
-  <div><small>Site Name</small><strong id="playerSiteName">-</strong></div>
-  <div><small>Site ID</small><strong id="playerSiteId">-</strong></div>
-  <div><small>Wallet Group</small><input id="playerSiteWallet" data-new-ui-input maxlength="60" placeholder="Optional wallet group"></div>
-  <div><small>Date Time Add Site</small><strong id="playerSiteCreated">-</strong></div>
-  <div><small>Last Edited</small><strong id="playerSiteEdited">-</strong></div>
- </div>
+
+  <div class="auth-site-section-title">
+    <span>Site Assignment</span>
+  </div>
+
+  <div class="auth-site-details">
+
+    <!-- ROW 1: SITE NAME -->
+    <div class="auth-site-field">
+      <label for="playerSiteName">Site Name</label>
+      <input
+        id="playerSiteName"
+        type="text"
+        data-new-ui-input
+        maxlength="60"
+        placeholder="Enter site name"
+      >
+    </div>
+
+    <!-- ROW 1: SITE ID -->
+    <div class="auth-site-field">
+      <label for="playerSiteId">Site ID</label>
+      <input
+        id="playerSiteId"
+        type="text"
+        data-new-ui-input
+        readonly
+        placeholder="Site ID"
+      >
+    </div>
+
+    <!-- ROW 2: WALLET GROUP -->
+    <div class="auth-site-field">
+      <label for="playerSiteWallet">Wallet Group</label>
+      <input
+        id="playerSiteWallet"
+        type="text"
+        data-new-ui-input
+        maxlength="60"
+        placeholder="Optional wallet group"
+      >
+    </div>
+
+    <!-- ROW 2: ACTIVE SITE -->
+    <div class="auth-site-field">
+      <label for="playerSiteEnabled">Active Site</label>
+
+      <div class="auth-site-switch-box">
+        <label class="shared-active-switch">
+          <input
+            id="playerSiteEnabled"
+            type="checkbox"
+            data-active-label="Active"
+            data-inactive-label="Inactive"
+          >
+          <span class="shared-active-track">
+            <span class="shared-active-text">Inactive</span>
+            <span class="shared-active-knob" aria-hidden="true"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ROW 3: CREATED -->
+    <div class="auth-site-field">
+      <label for="playerSiteCreated">Date Time Add Site</label>
+      <input
+        id="playerSiteCreated"
+        type="text"
+        data-new-ui-input
+        readonly
+        value="-"
+      >
+    </div>
+
+    <!-- ROW 3: LAST EDITED -->
+    <div class="auth-site-field">
+      <label for="playerSiteEdited">Last Edited</label>
+      <input
+        id="playerSiteEdited"
+        type="text"
+        data-new-ui-input
+        readonly
+        value="-"
+      >
+    </div>
+
+  </div>
 </div>
+<!-- PLAYER INFO - REMARK -->
+
 <!-- PLAYER INFO - REMARK -->
 <div class="field full auth-player-remark">
   <label for="playerRemark">Remark</label>
@@ -5923,19 +6068,34 @@ function findUserSite(u){
  const id=String(u?.username||'').trim().toLowerCase();
  return sites.find(s=>String(s.id||'').toLowerCase()===id)||null;
 }
-function refreshPlayerSite(u){
- const wrap=$('playerSiteWrap');if(!wrap)return;
- wrap.hidden=u?.role!=='siteadmin';
- if(wrap.hidden)return;
- const id=String(u.username||'').trim().toLowerCase(),site=findUserSite(u);
- $('playerSiteEnabled').checked=site?.active===true;
- $('playerSiteName').textContent=site?.name||id.toUpperCase();
- $('playerSiteId').textContent=id;
- $('playerSiteWallet').value=site?.walletGroupId||'';
- $('playerSiteCreated').textContent=date(site?.createdAt);
- $('playerSiteEdited').textContent=date(site?.updatedAt);
- updatePlayerSiteSwitch();
+
+function refreshPlayerSite(u) {
+  const wrap = $('playerSiteWrap');
+  if (!wrap) return;
+
+  wrap.hidden = u?.role !== 'siteadmin';
+  if (wrap.hidden) return;
+
+  const id = String(u.username || '').trim().toLowerCase();
+  const site = findUserSite(u);
+
+  $('playerSiteEnabled').checked = site?.active === true;
+
+  $('playerSiteName').value = site?.name || id.toUpperCase();
+  $('playerSiteId').value = id;
+  $('playerSiteWallet').value = site?.walletGroupId || '';
+
+  $('playerSiteCreated').value = site?.createdAt
+    ? date(site.createdAt)
+    : '-';
+
+  $('playerSiteEdited').value = site?.updatedAt
+    ? date(site.updatedAt)
+    : '-';
+
+  updatePlayerSiteSwitch();
 }
+
 function updatePlayerSiteSwitch(){
  const label=$('playerSiteWrap')?.querySelector('.shared-active-text');
  if(label)label.textContent=$('playerSiteEnabled').checked?'Active':'Inactive';
@@ -5946,12 +6106,26 @@ async function savePlayerSite(u){
  const id=String(u.username||'').trim().toLowerCase();
  const existing=findUserSite(u),active=$('playerSiteEnabled').checked;
  const walletGroupId=$('playerSiteWallet').value.trim()||null;
+const siteName = $('playerSiteName').value.trim();
+
+if (!siteName) {
+  throw Error('Site Name is required');
+}
  if(!existing){
   if(!active)return; // OFF means no site created yet
   if(!/^[a-z0-9_-]{1,48}$/.test(id))throw Error('Username is not a valid Site ID');
-  await api('/api/sites',{method:'POST',body:JSON.stringify({id,name:id,walletGroupId,active:true})});
- }else if(existing.active!==active||(existing.walletGroupId||null)!==walletGroupId){
-  await api('/api/sites/'+encodeURIComponent(existing.id),{method:'PATCH',body:JSON.stringify({name:existing.name||id.toUpperCase(),walletGroupId,active})});
+  await api('/api/sites',{method:'POST',body:JSON.stringify({
+  id,
+  name:siteName,
+  walletGroupId,
+  active:true
+})});
+}else if(
+  existing.active !== active ||
+  (existing.walletGroupId || null) !== walletGroupId ||
+  existing.name !== siteName
+){
+  await api('/api/sites/'+encodeURIComponent(existing.id),{method:'PATCH',body:JSON.stringify({name:siteName,walletGroupId,active})});
  }
 }
 function create() {
