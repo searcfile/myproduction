@@ -3300,18 +3300,7 @@ function mgStart() {
       try {
         
 const startedAt = performance.now();
-
-console.log("[MEGA888] Starting Game Catalog request");
-
 const result = await mgApi("/games");
-
-console.log(
-  "[MEGA888] Backend response:",
-  Math.round(performance.now() - startedAt) + "ms",
-  "Games:",
-  result.games?.length ?? 0
-);
-
 
         if (
           version !== loadVersion ||
@@ -3332,16 +3321,6 @@ console.log(
 
         mgApplyCatalog(catalog);
         
-console.log(
-  "[MEGA888] Dropdown ready:",
-  Math.round(performance.now() - startedAt) + "ms"
-);
-
-        console.log(
-          "[MEGA888] Game Catalog ready:",
-          Object.keys(gameData).length
-        );
-
       } catch (error) {
         console.error(
           "[MEGA888] Games loading failed:",
