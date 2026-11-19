@@ -3519,13 +3519,6 @@ function mgStart() {
 
         mgApplyCatalog(catalog);
 
-        console.log(
-          "[SCR888H5] Games loaded:",
-          result.games.length,
-          "in",
-          Math.round(performance.now() - startedAt) + "ms"
-        );
-
       } catch (error) {
         if (version !== loadVersion) return;
 
