@@ -325,7 +325,9 @@ loginFailedCount: p.loginFailedCount ?? 0,
 pinFailedCount: p.pinFailedCount ?? 0,
 totalLoginFailedCount:
   (Number(p.loginFailedCount) || 0) +
-  (Number(p.pinFailedCount) || 0)
+  (Number(p.pinFailedCount) || 0),
+
+totalLoginCount: p.totalLoginCount ?? 0
 
 
   };
@@ -565,6 +567,20 @@ app.post('/api/account/session-event', requireAdmin, async (req, res) => {
 
     // LAST LOGIN - kemas kini setiap login.
     await userRef.child('lastLoginAt').set(timestamp);
+           
+// TOTAL LOGIN COUNT - tambah setiap login berjaya
+await userRef.child('totalLoginCount').transaction(
+  current => {
+    const count = Number(current);
+
+    return (
+      Number.isSafeInteger(count) && count >= 0
+        ? count
+        : 0
+    ) + 1;
+  }
+);
+
 
 
     // DEBUG sementara - semak sumber IP dari Render.
