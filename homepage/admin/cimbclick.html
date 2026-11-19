@@ -820,6 +820,47 @@ html {
     text-align: center !important;
   }
 }
+/* ==========================================
+   CIMB CLICKS - OPTION GENERATE
+   SAME STYLE AS MEGA888 GAME SETTINGS
+   ========================================== */
+
+/* TITLE */
+.builder-panel .cimb-option-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.42857;
+  color: var(--page-text);
+  opacity: .9;
+  margin: 0 0 13px;
+}
+
+/* DIVIDER */
+.builder-panel .cimb-option-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--tx-border);
+  margin: 14px 0 0;
+  opacity: .6;
+}
+
+/* Jarak antara title dan input */
+.builder-panel .top-inputs {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .builder-panel .cimb-option-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .builder-panel .cimb-option-divider {
+    margin-top: 12px;
+  }
+}
 /* CIMB BANK - GLOBAL & SITE VISIBILITY */
 .cimb-bank-scope {
   display: flex;
@@ -853,11 +894,16 @@ html {
 </style>
 <body>
   
-  <div class="app-layout">
-    <!-- ✅ PANEL KIRI: input + buttons -->
-    <aside class="builder-panel">
-      <div class="top-inputs">
-        <div class="builder-row">
+<div class="app-layout">
+  <!-- PANEL KIRI: OPTION GENERATE -->
+  <aside class="builder-panel">
+
+    <div class="cimb-option-title">
+      Option Generate
+    </div>
+
+    <div class="top-inputs">
+      <div class="builder-row">
           <!-- ===== Custom Bank Dropdown ===== -->
 <div class="builder-field">
 <select
@@ -931,6 +977,10 @@ html {
 </div>
         </div>
       </div>
+
+      <!-- DIVIDER BAWAH OPTION GENERATE -->
+      <div class="cimb-option-divider"></div>
+
     </aside>
 
     <!-- ✅ PANEL KANAN: receipt preview -->
