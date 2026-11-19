@@ -7601,11 +7601,6 @@ if (typeof window.syncLivechatAlertState === "function") {
   window.syncLivechatAlertState(unread);
 }
 
-console.log("[LiveChat Badge]", {
-  chatId,
-  unread,
-  activeTab: window.isLivechatTabActive?.()
-});
   };
 
   livechatUnreadRef.on(
