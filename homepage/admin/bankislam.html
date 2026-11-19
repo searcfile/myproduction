@@ -1173,8 +1173,11 @@ body {
   width: 100%;
 }
 
+/* IN NAME - DESKTOP MAX 300PX */
 #back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
-  flex: 1 1 auto !important;
+  flex: 0 1 300px !important;
+  width: 100% !important;
+  max-width: 300px !important;
   min-width: 0 !important;
 }
 
@@ -1271,12 +1274,13 @@ body {
     max-width: none !important;
   }
 
-  /* Holder Name full width on next row */
-  #back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
-    flex: 1 1 100% !important;
-    width: 100% !important;
-    min-width: 0 !important;
-  }
+/* MOBILE - IN NAME FULL WIDTH */
+#back .modal .bi-input-row-2 .name-wrap > .new-ui-input-wrap {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
 }
 
 
