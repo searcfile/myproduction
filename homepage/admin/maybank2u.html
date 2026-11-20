@@ -2319,11 +2319,13 @@ function mainanWaitForAuth() {
             return;
           }
         
-          const modal = NewUI.modal.open({
-            title: editing ? "Edit Bank" : "Create Bank",
-            width: 720,
-            stack: editing,
-            content: `
+
+const modal = NewUI.modal.open({
+  title: editing ? "Edit Bank" : "Create Bank",
+  width: 720,
+  stack: true,
+  content: `
+
               <form id="mainanBankForm" class="mainan-bank-form">
         
                 <label>
@@ -2912,11 +2914,13 @@ editBtn.addEventListener("click", () => {
     });
   }
 
-  // ===== CREATE BANK =====
+// ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
-    modal.close();
-    mainanOpenBankForm();
-  });
+    if (!mainanCan("create")) {
+      return mainanToast("Permission denied", "error");
+    }
+mainanOpenBankForm();
+});
 
   // ===== INITIAL RENDER =====
   renderList();
