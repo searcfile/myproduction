@@ -4001,13 +4001,16 @@ const decodedPecahan = scrDecodePecahan(old.pecahan);
   actions.append(status.field, right);
   form.append(actions);
 
-  const modal = NewUI.modal.open({
-    title: editing ? "Edit Game" : "Create Game",
-    content: form,
-    width: 720
-  });
 
-  cancel.onclick = () => modal.close();
+const modal = NewUI.modal.open({
+  title: editing ? "Edit Game" : "Create Game",
+  content: form,
+  width: 720,
+  stack: editing
+});
+
+cancel.onclick = () => modal.close();
+
   siteSelector.init();
     
   form.querySelectorAll("input[data-new-ui-input]")
@@ -4219,11 +4222,13 @@ function mgManager() {
 
   /* ===== MODAL ===== */
 
-  const modal = NewUI.modal.open({
-    title: "Manage SCR888H5 Games",
-    content: host,
-    width: 1100
-  });
+
+const modal = NewUI.modal.open({
+  title: "Manage SCR888H5 Games",
+  content: host,
+  width: 1100,
+  stack: false
+});
 
   /* ===== CUSTOM SEARCH + ROTATING ICON ===== */
 
@@ -4369,10 +4374,14 @@ function mgManager() {
 
       /* EDIT */
 
-      edit.onclick = () => {
-        modal.close();
-        mgEditor(name);
-      };
+
+/* ===== EDIT - KEEP MANAGE GAMES OPEN ===== */
+
+edit.onclick = () => {
+  // Jangan tutup modal Manage Games
+  mgEditor(name);
+};
+
 
       /* DELETE */
 
