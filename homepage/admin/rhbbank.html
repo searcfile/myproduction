@@ -1508,11 +1508,46 @@ async function rhbLoadAccess() {
   rhbUpdateBankButtons();
 }
 
+// ===== RHB BANK - SITE PRELOAD =====
+let rhbSites = [];
+let rhbSitesLoaded = false;
+let rhbSitesPromise = null;
+let rhbSitesVersion = 0;
+
 async function rhbLoadSites() {
+  const version = rhbSitesVersion;
   const data = await rhbApi("/api/rhb/sites");
-  return Array.isArray(data.sites) ? data.sites : [];
+
+  if (version !== rhbSitesVersion) {
+    throw new Error("Site session changed");
+  }
+
+  rhbSites = Array.isArray(data.sites)
+    ? data.sites
+    : [];
+
+  rhbSitesLoaded = true;
+  return rhbSites;
 }
 
+function rhbEnsureSites() {
+  if (rhbSitesLoaded) {
+    return Promise.resolve(rhbSites);
+  }
+
+  if (!rhbSitesPromise) {
+    const request = rhbLoadSites();
+    rhbSitesPromise = request;
+
+    request.finally(() => {
+      if (rhbSitesPromise === request) {
+        rhbSitesPromise = null;
+      }
+    }).catch(() => {});
+  }
+
+  return rhbSitesPromise;
+}
 function makeAccountFor(bank) {
   const record = Object.values(RHB_BANK_RECORDS)
     .find(item => item.name === bank && item.active);
@@ -1924,18 +1959,26 @@ function syncRhbSwitchText(input) {
   });
 });
 
-rhbLoadSites().then(sites => {
-  const allowed = new Set(sites.map(site => site.id));
+// ===== RHB - INSTANT SITE VISIBILITY =====
+let siteRequestVersion = 0;
+
+function renderRhbSites(sites) {
+  const allowed = new Set(
+    sites.map(site => site.id)
+  );
 
   selectedSiteIds = selectedSiteIds.filter(
     id => allowed.has(id)
   );
 
+  siteContainer.replaceChildren();
+
   const chips = NewUI.chips(siteContainer, {
     options: sites.map(site => ({
       value: site.id,
-      label: site.name
+      label: site.name || site.id
     })),
+
     value: selectedSiteIds,
     multiple: true,
     placeholder: "Select Sites",
@@ -1951,6 +1994,7 @@ rhbLoadSites().then(sites => {
     throw new Error("Cannot initialize site dropdown");
   }
 
+  // Kekalkan permission Site Admin semasa Edit
   if (id && rhbAccess.role !== "superadmin") {
     siteContainer.querySelectorAll(
       "button, input, [tabindex]"
@@ -1958,18 +2002,51 @@ rhbLoadSites().then(sites => {
       if ("disabled" in control) {
         control.disabled = true;
       }
+
       control.setAttribute("aria-disabled", "true");
       control.tabIndex = -1;
     });
   }
 
   sitesReady = true;
+}
 
-}).catch(error => {
-  sitesReady = false;
-  siteContainer.textContent = "Failed to load sites";
-  rhbToast(error.message, "error");
-});
+// Site sudah tersedia: render terus
+if (rhbSitesLoaded) {
+  try {
+    renderRhbSites(rhbSites);
+  } catch (error) {
+    sitesReady = false;
+    rhbToast(error.message, "error");
+  }
+} else {
+  // Paparkan kotak Select Sites dahulu
+  NewUI.chips(siteContainer, {
+    options: [],
+    value: [],
+    multiple: true,
+    placeholder: "Select Sites"
+  });
+
+  // Isi senarai sebenar apabila API selesai
+  const requestVersion = ++siteRequestVersion;
+
+  rhbEnsureSites()
+    .then(sites => {
+      if (!form.isConnected) return;
+      if (requestVersion !== siteRequestVersion) return;
+
+      renderRhbSites(sites);
+    })
+    .catch(error => {
+      if (!form.isConnected) return;
+      if (requestVersion !== siteRequestVersion) return;
+
+      sitesReady = false;
+      siteContainer.textContent = "Failed to load sites";
+      rhbToast(error.message, "error");
+    });
+}
 
   form.querySelector("[data-cancel]")
     .addEventListener("click", () => modal.close());
@@ -2357,7 +2434,21 @@ document.getElementById("rhbManageBank")
 /* ---------- Init ---------- */
 
 firebase.auth().onAuthStateChanged(async user => {
+  // Reset cache apabila sesi auth berubah
+  rhbSitesVersion++;
+  rhbSites = [];
+  rhbSitesLoaded = false;
+  rhbSitesPromise = null;
+
   if (!user || user.isAnonymous) return;
+
+  // Preload Site Visibility lebih awal
+  rhbEnsureSites().catch(error => {
+    console.error(
+      "[RHB BANK] Site preload failed:",
+      error
+    );
+  });
 
   rhbRestoring = true;
 
