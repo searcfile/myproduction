@@ -165,17 +165,86 @@ span.cls_006,div.cls_006{font-family:Arial,serif;font-size:8.1px;color:#000;font
   border-radius: 3px;
   transition: all 0.2s;
 }
-.date-mode-2{visibility:hidden}
 
-.d-dd{position:absolute;bottom:-1.8px;left:125px;width:15px;padding:2px;}
-.d-mm{position:absolute;bottom:-1.8px;left:148px;width:50px;height:21px; padding:2px}
-.d-yyyy{position:absolute;bottom:-1.8px;left:200px;width:29px;padding:2px;}
-.d-hh{position:absolute;bottom:-1.8px;left:237px;width:22px;padding:2px;}
-.d-ii{position:absolute;bottom:-1.8px;left:267px;width:24px;padding:2px;}
-.d-ss{position:absolute;bottom:-1.8px;left:299px;width:15px;padding:2px;}
-.d-colon{position:absolute;bottom:0px;width:24px}
-.d-colon1{left:256px}
-.d-colon2{left:286px}
+/* MAYBANK - FIX DATE INPUT CHANGE MODE */
+
+.date-mode-2 {
+  visibility: hidden;
+}
+
+/* Date input container */
+.paper #editor #inDate2 {
+  position: absolute !important;
+  left: 125px !important;
+  top: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+
+  width: max-content !important;
+  height: 24px !important;
+  white-space: nowrap !important;
+}
+
+/* Reset original absolute positions */
+.paper #editor #inDate2 input,
+.paper #editor #inDate2 select {
+  position: static !important;
+  inset: auto !important;
+
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+
+  min-width: 0 !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 2px 3px !important;
+
+  font-family: Arial, sans-serif !important;
+  font-size: 12px !important;
+  line-height: normal !important;
+  text-align: center !important;
+}
+
+/* Day */
+.paper #editor #dd {
+  width: 32px !important;
+}
+
+/* Month */
+.paper #editor #mm {
+  width: 57px !important;
+  padding-right: 14px !important;
+}
+
+/* Year - display all 4 digits */
+.paper #editor #yyyy {
+  width: 48px !important;
+}
+
+/* Hour, minute, second */
+.paper #editor #hh,
+.paper #editor #ii,
+.paper #editor #ss {
+  width: 32px !important;
+}
+
+/* Colon separators */
+.paper #editor #inDate2 .d-colon {
+  position: static !important;
+  inset: auto !important;
+  display: inline-block !important;
+
+  width: 4px !important;
+  flex: 0 0 4px !important;
+
+  font-size: 12px !important;
+  line-height: 24px !important;
+  color: #000 !important;
+  text-align: center !important;
+}
+
 
 .amt-input{position:absolute;left:125px;border-radius: 3px;transition: all 0.2s;}
 #inRef{border-radius: 3px;transition: all 0.2s;width: 120px !important;}
@@ -208,7 +277,9 @@ span.cls_006,div.cls_006{font-family:Arial,serif;font-size:8.1px;color:#000;font
   left: 235px !important;
   top: 50px !important;
 }
-
+.paper #editor .pos-date {
+  overflow: visible !important;
+}
 .paper #editor .pos-amt {
   position: absolute !important;
   left: 235px !important;
