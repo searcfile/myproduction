@@ -2428,12 +2428,14 @@ content.innerHTML = `
   </div>
 `;
   content.elements.rule.value = current?.rule || "prefix";
+
 const modal = NewUI.modal.open({
   title: id ? "Edit Bank" : "Create Bank",
   content,
   width: 720,
-  stack: Boolean(id)
+  stack: true
 });
+
   NewUI.init(content);
   NewUI.activeSwitch.init(content);
     const globalSwitch = content.elements.visibleToAllSites;
@@ -2808,11 +2810,16 @@ NewUI.syncSearch(search, {
   }
 });
 
+
   // ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
-    modal.close();
+    if (!cimbCan("create")) {
+      return bankToast("Permission denied", "error");
+    }
+
     bankFormModal();
   });
+
 
   // ===== LOAD BANKS =====
   cimbLoadBanks()
