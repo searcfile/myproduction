@@ -1875,11 +1875,12 @@ if (id && (!current || current.canManage !== true)) {
   `;
 
 
+
 const modal = NewUI.modal.open({
   title: id ? "Edit Bank" : "Create Bank",
   content: form,
   width: 720,
-  stack: Boolean(id)
+  stack: true
 });
 
 
@@ -2307,15 +2308,16 @@ edit.addEventListener("click", () => {
     });
   }
 
+
   // ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
     if (!rhbCan("create")) {
       return rhbToast("Permission denied", "error");
     }
 
-    modal.close();
     rhbBankFormModal();
   });
+
 
   // ===== INITIAL RENDER =====
   renderList();
