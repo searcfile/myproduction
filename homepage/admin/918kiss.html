@@ -1394,6 +1394,161 @@ select:focus-visible{
   background: var(--tx-hover) !important;
 }
 
+/* ==========================================
+   918KISS - MANAGE GAMES TABLE
+   ========================================== */
+
+.mg-manager {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--page-text);
+}
+
+/* Search max 400px */
+.mg-manager-search {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  flex: 0 0 auto !important;
+}
+
+.mg-manager-search input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.mg-manager-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+  height: 32px;
+}
+
+.mg-manager-search .shared-sync-search-input {
+  height: 32px !important;
+  font-size: 13px !important;
+}
+
+.mg-manager-search .shared-sync-search-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* Table scroll container */
+.mg-manager-table-wrap {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(55vh, 520px);
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+/* Override CSS Game Log */
+.mg-manager-table {
+  width: 100% !important;
+  min-width: 950px;
+  margin: 0 !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  font-size: 13px !important;
+  color: var(--page-text);
+}
+
+/* Border horizontal + vertical */
+.mg-manager-table th,
+.mg-manager-table td {
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-right: 1px solid var(--border-input) !important;
+  border-bottom: 1px solid var(--border-input) !important;
+  background: var(--list-bg);
+  color: var(--page-text);
+  font-size: 13px !important;
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+  width: auto !important;
+}
+
+/* Column terakhir */
+.mg-manager-table th:last-child,
+.mg-manager-table td:last-child {
+  border-right: 0 !important;
+  text-align: center;
+}
+
+/* Sticky table header */
+.mg-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--list-bg);
+  font-weight: 600;
+}
+
+/* Hover row */
+.mg-manager-table tbody tr:hover td {
+  background: var(--list-hover);
+}
+
+/* Last row */
+.mg-manager-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Edit/Delete */
+.mg-manager-table .mg-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mg-manager-table .mg-item-actions button {
+  height: 30px;
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+/* Empty result */
+.mg-manager-empty {
+  padding: 24px 12px !important;
+  text-align: center !important;
+  font-size: 13px;
+  opacity: .7;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .mg-manager-table-wrap {
+    max-height: 60vh;
+  }
+
+  .mg-manager-table th,
+  .mg-manager-table td {
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
 </style>
 <body>
 
@@ -3542,45 +3697,254 @@ await mgReload();
 
 
 
-function mgManager(){
-const host = mgElement('div', 'mg-manager');
+/* ==========================================
+   918KISS - MANAGE GAMES TABLE + SEARCH
+   ========================================== */
 
-const names = Object.keys(gameData)
-  .filter(name => {
-    const record = mgRecords[name];
+function mgManager() {
+  if (!mgCan("edit") && !mgCan("delete")) {
+    mgToast("Permission denied", "error");
+    return;
+  }
 
-    if (mgAccess.role === "superadmin") return true;
+  const host = mgElement("div", "mg-manager");
 
-    if (record?.visibleToAllSites !== false) return false;
+  // SEARCH
+  const searchWrap = mgElement("div", "mg-manager-search");
+  const searchInput = document.createElement("input");
 
-    const selected = Object.keys(record?.siteVisibility || {})
-      .filter(id => record.siteVisibility[id] === true);
+  searchInput.type = "search";
+  searchInput.placeholder = "Search";
+  searchInput.autocomplete = "off";
+  searchInput.setAttribute("aria-label", "Search game name");
+  searchWrap.append(searchInput);
 
-    const assigned = mgSites.map(site => site.id);
+  // TABLE
+  const tableWrap = mgElement("div", "mg-manager-table-wrap");
+  const table = document.createElement("table");
+  table.className = "mg-manager-table";
 
-    return selected.length > 0 &&
-      selected.every(id => assigned.includes(id));
-  })
-  .sort((a, b) => a.localeCompare(b));
-  if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
- names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
- const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');
-edit.type=del.type='button';edit.onclick=()=>{modal.close();mgEditor(name)};
- edit.hidden = !mgCan("edit");
-del.hidden = !mgCan("delete");
-del.disabled = !mgGameIds[name];
-del.title = "Delete Game";
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
 
- del.onclick=async()=>{if(!mgGameIds[name])return;if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{
-  await mgApi(
-  "/games/" + encodeURIComponent(mgGameIds[name]),
-  {method:"DELETE"}
-);
-await mgReload();
-  modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
- acts.append(edit,del);item.append(title,acts);host.append(item);});
- const modal=NewUI.modal.open({title:'Manage 918KISS Games',content:host,width:650});
+  [
+    "Game Name",
+    "Betting",
+    "Free Game",
+    "Created Date",
+    "Last Edited",
+    "Action"
+  ].forEach(label => {
+    const th = document.createElement("th");
+    th.textContent = label;
+    headerRow.append(th);
+  });
+
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  host.append(searchWrap, tableWrap);
+
+  // Kekalkan site visibility asal 918KISS
+  const names = Object.keys(gameData)
+    .filter(name => {
+      const record = mgRecords[name];
+
+      if (mgAccess.role === "superadmin") return true;
+      if (record?.visibleToAllSites !== false) return false;
+
+      const selected = Object.keys(record?.siteVisibility || {})
+        .filter(id => record.siteVisibility[id] === true);
+
+      const assigned = mgSites.map(site => site.id);
+
+      return selected.length > 0 &&
+        selected.every(id => assigned.includes(id));
+    })
+    .sort((a, b) => a.localeCompare(b));
+
+  const modal = NewUI.modal.open({
+    title: "Manage 918KISS Games",
+    content: host,
+    width: 1100
+  });
+
+  // FORMAT DATE TIME
+  function mgFormatDate(value) {
+    if (value == null || value === "") return "—";
+
+    let date;
+
+    if (typeof value === "number") {
+      date = new Date(value < 1e12 ? value * 1000 : value);
+    } else if (typeof value === "object" && value.seconds != null) {
+      date = new Date(value.seconds * 1000);
+    } else if (/^\d+$/.test(String(value))) {
+      const number = Number(value);
+      date = new Date(number < 1e12 ? number * 1000 : number);
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return "—";
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kuala_Lumpur",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(date);
+
+    const get = type =>
+      parts.find(part => part.type === type)?.value ?? "00";
+
+    return (
+      `${get("hour")}:${get("minute")}:${get("second")} ` +
+      `${get("day")}/${get("month")}/${get("year")}`
+    );
+  }
+
+  // RENDER ROWS
+  function renderRows(keyword = "") {
+    tbody.replaceChildren();
+
+    const filteredNames = names.filter(name =>
+      name.toLowerCase().includes(keyword.trim().toLowerCase())
+    );
+
+    if (!filteredNames.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 6;
+      td.className = "mg-manager-empty";
+      td.textContent = names.length
+        ? "No matching games found"
+        : "No games yet";
+
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    filteredNames.forEach(name => {
+      const game = gameData[name];
+      if (!game) return;
+
+      const record = mgRecords[name] || {};
+      const tr = document.createElement("tr");
+
+      const nameTd = document.createElement("td");
+      const strong = document.createElement("strong");
+      strong.textContent = name;
+      nameTd.append(strong);
+
+      const bettingTd = document.createElement("td");
+      bettingTd.textContent =
+        `${Array.isArray(game.bets) ? game.bets.length : 0} bets`;
+
+      const freeTd = document.createElement("td");
+      freeTd.textContent =
+        (Array.isArray(game.freeGameOptions)
+          ? game.freeGameOptions
+          : []
+        ).join(", ") || "None";
+
+      const createdTd = document.createElement("td");
+      createdTd.textContent = mgFormatDate(
+        record.createdAt ?? record.created_at
+      );
+
+      const editedTd = document.createElement("td");
+      editedTd.textContent = mgFormatDate(
+        record.updatedAt ?? record.updated_at
+      );
+
+      const actionTd = document.createElement("td");
+      const actions = mgElement("div", "mg-item-actions");
+
+      const edit = mgElement("button", "btn-edit-new", "Edit");
+      const del = mgElement("button", "btn-delete-new", "Delete");
+
+      edit.type = "button";
+      del.type = "button";
+
+      edit.hidden = !mgCan("edit");
+      del.hidden = !mgCan("delete");
+
+      del.disabled = !mgGameIds[name];
+      del.title = "Delete Game";
+
+      edit.onclick = () => {
+        modal.close();
+        mgEditor(name);
+      };
+
+      del.onclick = async () => {
+        if (!mgGameIds[name]) return;
+
+        const confirmed = await NewUI.confirm({
+          target: del,
+          title: "Delete Game",
+          message: `Delete game ${name}?`,
+          confirmText: "Delete"
+        });
+
+        if (!confirmed) return;
+
+        try {
+          await mgApi(
+            "/games/" + encodeURIComponent(mgGameIds[name]),
+            { method: "DELETE" }
+          );
+
+          await mgReload();
+          modal.close();
+          mgManager();
+          mgToast("Game deleted", "success");
+        } catch (error) {
+          mgToast(error.message, "error");
+        }
+      };
+
+      actions.append(edit, del);
+      actionTd.append(actions);
+
+      tr.append(
+        nameTd,
+        bettingTd,
+        freeTd,
+        createdTd,
+        editedTd,
+        actionTd
+      );
+
+      tbody.append(tr);
+    });
+  }
+
+  // CUSTOM SEARCH + ROTATING ICON
+  window.NewUI?.syncSearch?.(searchInput, {
+    onSearch: async keyword => {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      renderRows(keyword);
+    }
+  });
+
+  // LIVE FILTER
+  searchInput.addEventListener("input", () => {
+    renderRows(searchInput.value);
+  });
+
+  renderRows();
 }
+
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',mgStart);
