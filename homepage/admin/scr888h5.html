@@ -726,7 +726,47 @@ select:focus-visible{
   box-shadow: 0 0 0 2px rgba(0,60,180,0.15);
   transition: all .2s ease;
 }
-  
+  /* ===== MANAGE SCR888H5 - SEARCH & CREATE ===== */
+
+.mg-manager-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-manager-toolbar .mg-manager-search {
+  flex: 0 1 400px;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.mg-manager-create {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 15px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.mg-manager-create[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .mg-manager-toolbar .mg-manager-search {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .mg-manager-create {
+    margin-left: auto;
+  }
+}
 /* SCR888H5 settings UI matching 918KISS; original Game Log CSS retained */
 /* SCR888H5 management / responsive design; original screenshot table untouched */
 *:not(#gameLog):not(#gameLog *) {
@@ -4006,7 +4046,7 @@ const modal = NewUI.modal.open({
   title: editing ? "Edit Game" : "Create Game",
   content: form,
   width: 720,
-  stack: editing
+  stack: true
 });
 
 cancel.onclick = () => modal.close();
@@ -4184,8 +4224,34 @@ function mgManager() {
 
   searchWrap.append(searchInput);
 
-  /* ===== TABLE ===== */
+  /* ===== SEARCH + CREATE TOOLBAR ===== */
 
+  const toolbar = mgElement(
+    "div",
+    "mg-manager-toolbar"
+  );
+
+  const createBtn = mgElement(
+    "button",
+    "btn-primary-new mg-manager-create",
+    "+ Create Game"
+  );
+
+  createBtn.type = "button";
+  createBtn.hidden = !mgCan("create");
+
+  createBtn.addEventListener("click", () => {
+    if (!mgCan("create")) {
+      return mgToast("Permission denied", "error");
+    }
+
+    // Buka Create Game tanpa tutup Manage Games
+    mgEditor();
+  });
+
+  toolbar.append(searchWrap, createBtn);
+
+  /* ===== TABLE ===== */
   const tableWrap = mgElement("div", "mg-manager-table-wrap");
   const table = document.createElement("table");
   table.className = "mg-manager-table";
@@ -4212,7 +4278,7 @@ function mgManager() {
 
   table.append(thead, tbody);
   tableWrap.append(table);
-  host.append(searchWrap, tableWrap);
+  host.append(toolbar, tableWrap);
 
   /* ===== SORT GAMES ===== */
 
