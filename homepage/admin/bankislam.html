@@ -1282,6 +1282,124 @@ body {
 }
 
 
+/* ==========================================
+   BANK ISLAM - MANAGE BANKS TABLE
+   SAME STYLE AS CIMB
+   ========================================== */
+
+.bi-bank-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  color: var(--page-text);
+}
+
+.bi-bank-manager-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bi-bank-search-host {
+  flex: 0 1 400px;
+  width: 400px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bi-bank-search-host .shared-sync-search {
+  width: 100%;
+}
+
+.bi-bank-manager-table-wrap {
+  width: 100%;
+  min-width: 0;
+  max-height: min(55vh, 520px);
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.bi-bank-manager-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: var(--page-text);
+}
+
+.bi-bank-manager-table th,
+.bi-bank-manager-table td {
+  padding: 10px 12px;
+  border-right: 1px solid var(--border-input);
+  border-bottom: 1px solid var(--border-input);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: var(--page-bg2);
+}
+
+.bi-bank-manager-table th:last-child,
+.bi-bank-manager-table td:last-child {
+  border-right: none;
+}
+
+.bi-bank-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: 600;
+  background: var(--page-bg2);
+}
+
+.bi-bank-manager-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bi-bank-manager-table tbody tr:hover td {
+  background: var(--tx-hover, rgba(128,128,128,.08));
+}
+
+.bi-bank-actions-cell {
+  text-align: center !important;
+}
+
+.bi-bank-table-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.bi-bank-table-buttons button {
+  width: auto;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.bi-bank-status-active {
+  color: #22c55e;
+}
+
+.bi-bank-status-inactive {
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .bi-bank-search-host {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .bi-bank-manager-toolbar > button {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2528,89 +2646,234 @@ await biStartBankListener();
   });
 }
 
+
 function biOpenManageBanks() {
-  const modal = NewUI.modal.open({
-    title: "Manage Banks",
-    width: 720,
-    content: `<div id="biBankList" class="bi-bank-list"></div>`
+  const content = document.createElement("div");
+  content.className = "bi-bank-manager";
+
+  // ===== TOOLBAR =====
+  const toolbar = document.createElement("div");
+  toolbar.className = "bi-bank-manager-toolbar";
+
+  const searchHost = document.createElement("div");
+  searchHost.className = "bi-bank-search-host";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.placeholder = "Search bank...";
+  search.setAttribute("aria-label", "Search bank");
+
+  searchHost.append(search);
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn-primary-new";
+  addButton.textContent = "+ Create Bank";
+  addButton.hidden = !biCan("create");
+
+  toolbar.append(searchHost, addButton);
+
+  // ===== TABLE =====
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "bi-bank-manager-table-wrap";
+
+  const table = document.createElement("table");
+  table.className = "bi-bank-manager-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  [
+    "Bank Name",
+    "Length",
+    "Rule",
+    "Digits",
+    "Status",
+    "Actions"
+  ].forEach(title => {
+    const th = document.createElement("th");
+    th.textContent = title;
+    th.scope = "col";
+    headerRow.append(th);
   });
 
-  const list = modal.body.querySelector("#biBankList");
-  const banks = Object.values(biBankRecords)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  thead.append(headerRow);
 
-  if (!banks.length) {
-    window.showEmptyState?.(list, "No data", "large", "center");
-    return;
-  }
+  const tbody = document.createElement("tbody");
 
-  banks.forEach(bank => {
-    const row = document.createElement("div");
-    row.className = "bi-bank-row";
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  content.append(toolbar, tableWrap);
 
-    row.innerHTML = `
-      <div class="bi-bank-info">
-        <strong>${biEscape(bank.name)}</strong>
-<small>
-  Length: ${bank.len}
-  · ${biEscape(bank.rule)}:
-  ${biEscape(bank.digits || "No digits")}
-  · ${bank.active !== false ? "Active" : "Inactive"}
-</small>
-      </div>
+  // ===== OPEN MODAL =====
+  const modal = NewUI.modal.open({
+    title: "Manage Banks",
+    content,
+    width: 1100,
+    stack: false
+  });
 
-      <div class="bi-bank-buttons">
-        <button type="button"
-                class="btn-edit-new"
-                data-edit>Edit</button>
+  // ===== RENDER TABLE =====
+  function renderList() {
+    tbody.replaceChildren();
 
-        <button type="button"
-                class="btn-delete-new"
-                data-delete>Delete</button>
-      </div>
-    `;
-row.querySelector("[data-edit]").disabled =
-  !biCan("edit") || !bank.canManage;
+    const keyword = search.value.trim().toLowerCase();
 
-row.querySelector("[data-delete]").disabled =
-  !biCan("delete") || !bank.canDelete;
-    row.querySelector("[data-edit]")
-      .addEventListener("click", () => {
+    const banks = Object.values(biBankRecords)
+      .sort((a, b) =>
+        String(a.name || "").localeCompare(
+          String(b.name || "")
+        )
+      )
+      .filter(bank => {
+        const searchable = [
+          bank.name,
+          bank.len,
+          bank.rule,
+          bank.digits,
+          bank.active !== false ? "Active" : "Inactive"
+        ].join(" ").toLowerCase();
+
+        return searchable.includes(keyword);
+      });
+
+    if (!banks.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 6;
+      td.style.textAlign = "center";
+      td.style.padding = "35px 12px";
+      td.textContent = keyword
+        ? "No matching banks"
+        : "No data";
+
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    banks.forEach(bank => {
+      const tr = document.createElement("tr");
+
+      function addCell(value) {
+        const td = document.createElement("td");
+        td.textContent = String(value ?? "");
+        tr.append(td);
+        return td;
+      }
+
+      // BANK NAME
+      const nameCell = addCell(bank.name);
+      nameCell.style.fontWeight = "600";
+
+      // LENGTH
+      addCell(bank.len);
+
+      // RULE
+      addCell(bank.rule);
+
+      // DIGITS
+      addCell(bank.digits || "(none)");
+
+      // STATUS
+      const active = bank.active !== false;
+
+      const statusCell = addCell(
+        active ? "Active" : "Inactive"
+      );
+
+      statusCell.className = active
+        ? "bi-bank-status-active"
+        : "bi-bank-status-inactive";
+
+      // ACTIONS
+      const actionCell = document.createElement("td");
+      actionCell.className = "bi-bank-actions-cell";
+
+      const buttons = document.createElement("div");
+      buttons.className = "bi-bank-table-buttons";
+
+      // EDIT
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "btn-edit-new";
+      editBtn.textContent = "Edit";
+
+      editBtn.disabled =
+        !biCan("edit") || !bank.canManage;
+
+      editBtn.addEventListener("click", () => {
         modal.close();
         biOpenBankForm(bank.id);
       });
 
-    const deleteBtn = row.querySelector("[data-delete]");
+      // DELETE
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn-delete-new";
+      deleteBtn.textContent = "Delete";
 
-    deleteBtn.addEventListener("click", () => {
-      NewUI.confirm({
-        target: deleteBtn,
-        title: "Delete Bank",
-        message: `Delete ${bank.name}?`,
-        confirmText: "Delete",
-        cancelText: "Cancel",
-        loadingText: "Deleting...",
+      deleteBtn.disabled =
+        !biCan("delete") || !bank.canDelete;
 
-        onConfirm: async () => {
-          await biApi(
-  `/api/bankislam/banks/${encodeURIComponent(bank.id)}`,
-  {
-    method: "DELETE"
-  }
-);
+      deleteBtn.addEventListener("click", () => {
+        NewUI.confirm({
+          target: deleteBtn,
+          title: "Delete Bank",
+          message: `Delete ${bank.name}?`,
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          loadingText: "Deleting...",
 
-await biStartBankListener();
+          onConfirm: async () => {
+            await biApi(
+              `/api/bankislam/banks/${encodeURIComponent(bank.id)}`,
+              { method: "DELETE" }
+            );
 
-          biToast("Bank deleted successfully", "success");
-          modal.close();
-          biOpenManageBanks();
-        }
+            await biStartBankListener();
+
+            biToast(
+              "Bank deleted successfully",
+              "success"
+            );
+
+            renderList();
+          }
+        });
       });
-    });
 
-    list.appendChild(row);
+      buttons.append(editBtn, deleteBtn);
+      actionCell.append(buttons);
+      tr.append(actionCell);
+
+      tbody.append(tr);
+    });
+  }
+
+  // ===== SEARCH =====
+  search.addEventListener("input", renderList);
+
+  if (window.NewUI?.syncSearch) {
+    NewUI.syncSearch(search, {
+      onSearch: async () => {
+        await biStartBankListener();
+        renderList();
+      }
+    });
+  }
+
+  // ===== CREATE BANK =====
+  addButton.addEventListener("click", () => {
+    modal.close();
+    biOpenBankForm();
   });
+
+  // ===== INITIAL RENDER =====
+  renderList();
 }
+
 
 document.getElementById("biCreateBank")
   ?.addEventListener("click", () => {
