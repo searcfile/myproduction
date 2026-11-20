@@ -678,7 +678,47 @@ input[type="number"] {
   padding: 0 !important;
   color: var(--page-text);
 }
+/* ===== JILISLOT MANAGER TOOLBAR ===== */
 
+.jili-manager-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.jili-manager-toolbar .jili-manager-search {
+  flex: 0 1 400px !important;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.jili-manager-create {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 15px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.jili-manager-create[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .jili-manager-toolbar .jili-manager-search {
+    flex: 1 1 100% !important;
+    max-width: 100%;
+  }
+
+  .jili-manager-create {
+    margin-left: auto;
+  }
+}
 /* SEARCH */
 
 .jili-manager-search {
@@ -2045,19 +2085,18 @@ if (record?.bets?.length) {
 
 /* ===== JILI EDIT GAME - MODAL STACKING ===== */
 
-// Simpan modal Manage Games yang masih terbuka
-const previousModal = id ? jiliModalInstance : null;
+/* ===== JILI CREATE & EDIT GAME - MODAL STACKING ===== */
 
-// Create Game masih menggunakan cara biasa
-if (!id) {
-  jiliCloseModal();
-}
+// Simpan modal Manage Games yang masih terbuka
+const previousModal = jiliModalInstance;
+
+// Jangan tutup Manage Games ketika Create atau Edit
 
 const modal = window.NewUI.modal.open({
   title: id ? "Edit Game" : "Create Game",
   content: form,
   width: 720,
-  stack: Boolean(id),
+  stack: true,
 
   onClose: () => {
     if (jiliModalInstance === modal) {
@@ -2297,6 +2336,23 @@ function jiliOpenManager(query = "") {
 
   searchWrap.append(searchInput);
 
+  /* ===== SEARCH + CREATE TOOLBAR ===== */
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "jili-manager-toolbar";
+
+  const createBtn = document.createElement("button");
+  createBtn.type = "button";
+  createBtn.className = "btn-primary-new jili-manager-create";
+  createBtn.textContent = "+ Create Game";
+
+  createBtn.addEventListener("click", () => {
+    // Buka Create Game di atas Manage Games
+    jiliOpenEditor();
+  });
+
+  toolbar.append(searchWrap, createBtn);
+
   /* ===== TABLE ===== */
 
   const tableWrap = document.createElement("div");
@@ -2328,7 +2384,7 @@ function jiliOpenManager(query = "") {
   table.append(thead, tbody);
   tableWrap.append(table);
 
-  host.append(searchWrap, tableWrap);
+  host.append(toolbar, tableWrap);
 
 
 /* ===== MANAGE JILI GAMES - MODAL ===== */
