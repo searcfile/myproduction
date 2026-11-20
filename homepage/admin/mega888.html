@@ -4080,15 +4080,15 @@ editedTd.textContent = mgFormatDate(
       edit.hidden = !mgCan("edit");
       del.hidden = !mgCan("delete");
 
-      /* ===== EDIT ===== */
+/* ===== EDIT - KEEP MANAGE GAMES OPEN ===== */
 
-      edit.onclick = () => {
+edit.onclick = () => {
 
-        modal.close();
+  // Jangan tutup modal Manage Games
+  mgEditor(name);
 
-        mgEditor(name);
+};
 
-      };
 
       /* ===== DELETE ===== */
 
