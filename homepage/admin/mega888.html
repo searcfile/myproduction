@@ -1479,6 +1479,25 @@ select:focus-visible{
   align-self: stretch !important;
   margin-top: 0 !important;
 }
+/* ===== MANAGE MEGA888 SYNC SEARCH ===== */
+
+.mg-manager-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+  height: 32px;
+}
+
+.mg-manager-search .shared-sync-search-input {
+  height: 32px !important;
+  font-size: 13px !important;
+}
+
+.mg-manager-search .shared-sync-search-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+}
 /* Override global Game Log table CSS */
 .mg-manager-table {
   width: 100% !important;
@@ -3823,18 +3842,13 @@ function mgManager() {
 
 const searchInput = document.createElement("input");
 
-searchInput.type = "text";
-searchInput.placeholder = "Search game name...";
+searchInput.type = "search";
+searchInput.placeholder = "Search";
 searchInput.autocomplete = "off";
 
 searchInput.setAttribute(
   "aria-label",
   "Search game name"
-);
-
-searchInput.setAttribute(
-  "data-new-ui-input",
-  ""
 );
 
 searchWrap.append(searchInput);
@@ -3892,8 +3906,20 @@ const modal = NewUI.modal.open({
   width: 1100
 });
 
-/* Initialize custom NewUI search */
-window.NewUI?.input?.(searchInput);
+/* Initialize shared search with rotating icon */
+
+window.NewUI?.syncSearch?.(searchInput, {
+  onSearch: async (keyword) => {
+
+    // Bagi spinner sempat dipaparkan
+    await new Promise(resolve =>
+      setTimeout(resolve, 250)
+    );
+
+    renderRows(keyword);
+
+  }
+});
 /* ===== FORMAT CREATED / UPDATED DATE ===== */
 
 function mgFormatDate(value) {
@@ -3918,15 +3944,24 @@ function mgFormatDate(value) {
 
   if (Number.isNaN(date.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Kuala_Lumpur",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  }).format(date).replace(",", "");
+const parts = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Kuala_Lumpur",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23"
+}).formatToParts(date);
+
+const get = type =>
+  parts.find(part => part.type === type)?.value ?? "00";
+
+return (
+  `${get("hour")}:${get("minute")}:${get("second")} ` +
+  `${get("day")}/${get("month")}/${get("year")}`
+);
 }
   /* ===== RENDER ROWS ===== */
 
