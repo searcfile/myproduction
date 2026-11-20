@@ -2042,17 +2042,35 @@ if (record?.bets?.length) {
   footer.append(status.field, buttons);
   form.append(footer);
 
-  // NEWUI MODAL
+
+/* ===== JILI EDIT GAME - MODAL STACKING ===== */
+
+// Simpan modal Manage Games yang masih terbuka
+const previousModal = id ? jiliModalInstance : null;
+
+// Create Game masih menggunakan cara biasa
+if (!id) {
   jiliCloseModal();
+}
 
-  const modal = window.NewUI.modal.open({
-    title: id ? "Edit Game" : "Create Game",
-    content: form,
-    width: 720
-  });
+const modal = window.NewUI.modal.open({
+  title: id ? "Edit Game" : "Create Game",
+  content: form,
+  width: 720,
+  stack: Boolean(id),
 
-  jiliModalInstance = modal;
-  cancel.onclick = jiliCloseModal;
+  onClose: () => {
+    if (jiliModalInstance === modal) {
+      jiliModalInstance = previousModal;
+    }
+  }
+});
+
+jiliModalInstance = modal;
+
+// Cancel hanya tutup Edit Game
+cancel.onclick = () => modal.close();
+
 
   window.NewUI?.input?.(name.input);
   window.SharedActiveSwitch?.sync?.(global.input);
@@ -2312,22 +2330,26 @@ function jiliOpenManager(query = "") {
 
   host.append(searchWrap, tableWrap);
 
-  /* ===== MODAL ===== */
 
-  jiliCloseModal();
+/* ===== MANAGE JILI GAMES - MODAL ===== */
 
-  const modal = window.NewUI.modal.open({
-    title: "Manage JILI Games",
-    content: host,
-    width: 1100,
-    onClose: () => {
-      if (jiliModalInstance === modal) {
-        jiliModalInstance = null;
-      }
+jiliCloseModal();
+
+const modal = window.NewUI.modal.open({
+  title: "Manage JILI Games",
+  content: host,
+  width: 1100,
+  stack: false,
+
+  onClose: () => {
+    if (jiliModalInstance === modal) {
+      jiliModalInstance = null;
     }
-  });
+  }
+});
 
-  jiliModalInstance = modal;
+jiliModalInstance = modal;
+
 
   /* ===== FORMAT TIMESTAMP ===== */
 
