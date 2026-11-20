@@ -1659,12 +1659,35 @@ function biUpdateBankButtons() {
     );
   }
 }
+// ===== BANK ISLAM - SITE VISIBILITY PRELOAD =====
+let biSitesLoaded = false;
+let biSitesPromise = null;
+
 async function biLoadSites() {
   const data = await biApi("/api/bankislam/sites");
 
-  biSites = data.sites || [];
+  biSites = Array.isArray(data.sites)
+    ? data.sites
+    : [];
+
+  biSitesLoaded = true;
 
   return biSites;
+}
+
+function biEnsureSites() {
+  if (biSitesLoaded) {
+    return Promise.resolve(biSites);
+  }
+
+  if (!biSitesPromise) {
+    biSitesPromise = biLoadSites()
+      .finally(() => {
+        biSitesPromise = null;
+      });
+  }
+
+  return biSitesPromise;
 }
 let BANKS = [];
 let biBankRecords = {};
@@ -2433,46 +2456,89 @@ if (!biIsSuperAdmin) {
   globalInput.checked = false;
 }
 
-const allowedSiteIds = new Set(
-  biSites.map(site => site.id)
-);
+// ===== BANK ISLAM - INSTANT SITE VISIBILITY =====
 
-selectedSiteIds = selectedSiteIds.filter(
-  id => allowedSiteIds.has(id)
-);
+let allowedSiteIds = new Set();
+let sitesReady = false;
 
-const chips = NewUI.chips(siteContainer, {
-  options: biSites.map(site => ({
-    value: site.id,
-    label: site.name || site.id
-  })),
+function renderBiSites(sites) {
+  allowedSiteIds = new Set(
+    sites.map(site => site.id)
+  );
 
-  value: selectedSiteIds,
-  multiple: true,
-  placeholder: "Select Sites",
+  // Kekalkan pilihan asal ketika Edit Bank
+  selectedSiteIds = selectedSiteIds.filter(
+    id => allowedSiteIds.has(id)
+  );
 
-  onChange(values) {
-    selectedSiteIds = Array.isArray(values)
-      ? values.filter(id => allowedSiteIds.has(id))
-      : [];
+  siteContainer.replaceChildren();
+
+  const chips = NewUI.chips(siteContainer, {
+    options: sites.map(site => ({
+      value: site.id,
+      label: site.name || site.id
+    })),
+
+    value: selectedSiteIds,
+    multiple: true,
+    placeholder: "Select Sites",
+
+    onChange(values) {
+      selectedSiteIds = Array.isArray(values)
+        ? values.filter(id => allowedSiteIds.has(id))
+        : [];
+    }
+  });
+
+  if (!chips) {
+    throw new Error("Cannot initialize site dropdown");
   }
-});
 
-if (!chips) {
-  biToast("Cannot initialize site dropdown", "error");
-  modal.close();
-  return;
+  // Site Admin tidak boleh tukar site semasa Edit
+  if (editing && !biIsSuperAdmin) {
+    siteContainer.querySelectorAll(
+      "button, input, [tabindex]"
+    ).forEach(el => {
+      if ("disabled" in el) el.disabled = true;
+      el.setAttribute("aria-disabled", "true");
+      el.tabIndex = -1;
+    });
+  }
+
+  sitesReady = true;
 }
 
-// Site Admin tidak boleh menukar site semasa Edit
-if (editing && !biIsSuperAdmin) {
-  siteContainer.querySelectorAll(
-    "button, input, [tabindex]"
-  ).forEach(el => {
-    if ("disabled" in el) el.disabled = true;
-    el.setAttribute("aria-disabled", "true");
-    el.tabIndex = -1;
+// Bina input terus menggunakan site yang sudah tersedia
+if (biSitesLoaded) {
+  try {
+    renderBiSites(biSites);
+  } catch (error) {
+    biToast(error.message, "error");
+  }
+} else {
+  // Kotak Select Sites muncul tanpa menunggu API
+  NewUI.chips(siteContainer, {
+    options: [],
+    value: [],
+    multiple: true,
+    placeholder: "Select Sites"
   });
+
+  // Kemudian isi pilihan site sebenar
+  biEnsureSites()
+    .then(sites => {
+      if (!form.isConnected) return;
+
+      renderBiSites(sites);
+    })
+    .catch(error => {
+      if (!form.isConnected) return;
+
+      biToast(
+        "Failed to load sites: " + error.message,
+        "error"
+      );
+    });
 }
 
 /* ==========================================
@@ -2550,10 +2616,18 @@ globalInput.addEventListener(
     number.value = number.value.replace(/\D/g, "");
   });
 
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
+form.addEventListener("submit", async event => {
+  event.preventDefault();
 
-    if (!form.reportValidity()) return;
+  if (!sitesReady) {
+    biToast(
+      "Please wait for sites to finish loading",
+      "error"
+    );
+    return;
+  }
+
+  if (!form.reportValidity()) return;
 
 const normalized = biNormalizeBank({
   name: name.value,
@@ -2942,6 +3016,9 @@ firebase.auth().onAuthStateChanged(user => {
 /* START BANK ISLAM ACCESS & DATA */
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) {
+      biSites = [];
+biSitesLoaded = false;
+biSitesPromise = null;
     biPermissions = [];
     biIsSuperAdmin = false;
     biUpdateBankButtons();
@@ -2950,7 +3027,15 @@ firebase.auth().onAuthStateChanged(async user => {
 
   try {
 await biLoadAccess();
-await biLoadSites();
+
+// Preload sites lebih awal
+biEnsureSites().catch(error => {
+  console.error(
+    "[BANK ISLAM] Site preload failed:",
+    error
+  );
+});
+
 await biStartBankListener();
 biUpdateBankButtons();
   } catch (error) {
