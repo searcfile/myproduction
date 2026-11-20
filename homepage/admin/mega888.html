@@ -793,12 +793,12 @@ select:focus-visible{
 .mg-field label{font-size:13px;font-weight:600}.mg-field input,.mg-field textarea{width:100%;min-width:0;background:var(--input);border:1px solid var(--input-line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
 .mg-field input{height:34px}.mg-field textarea{resize:vertical;min-height:70px}.mg-field small{opacity:.7}
 .mg-betrow{border:1px solid var(--input-line);border-radius:9px;padding:10px;display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,2fr) auto;gap:10px;align-items:end}
-.mg-betrow button{min-width:32px}.mg-manager{display:flex;flex-direction:column;gap:8px}.mg-item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--input-line);border-radius:8px;padding:10px;flex-wrap:wrap}.mg-item small{opacity:.7}.mg-item-actions{display:flex;gap:7px}
+.mg-betrow button{min-width:32px}
 .mg-form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.mg-notice{padding:10px;border-radius:8px;border:1px solid var(--input-line);font-size:13px}
 @media(max-width:600px){.mg-head h1{font-size:18px}.mg-betrow{grid-template-columns:minmax(0,1fr)}.mg-betrow button{justify-self:end}}
 
 /* ==========================================
-   MEGA888 - SCORE & WINNER RESPONSIVE GRID
+   MEGA888 - SCORE & WINNER RESPONSIVE GRID    
    ========================================== */
 
 /* Desktop: 8 kolum dalam satu baris */
@@ -1375,6 +1375,137 @@ select:focus-visible{
 }
 #gameLogEmpty .shared-empty:hover {
   background: var(--tx-hover) !important;
+}
+/* ==========================================
+   MEGA888 - MANAGE GAMES TABLE
+   ========================================== */
+
+.mg-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  color: var(--page-text);
+}
+
+/* Search */
+.mg-manager-search {
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-manager-search input {
+  display: block;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  background: var(--page-input);
+  color: var(--page-text);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.mg-manager-search input:focus {
+  border-color: #1668dc;
+  outline: none;
+}
+
+/* Table container */
+.mg-manager-table-wrap {
+  width: 100%;
+  max-height: 55vh;
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+/* Override global Game Log table CSS */
+.mg-manager-table {
+  width: 100% !important;
+  min-width: 470px;
+  margin: 0 !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  font-size: 13px !important;
+  color: var(--page-text);
+}
+
+.mg-manager-table th,
+.mg-manager-table td {
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border-input) !important;
+  background: var(--list-bg);
+  color: var(--page-text);
+  font-size: 13px !important;
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+  width: auto !important;
+}
+
+/* Sticky header */
+.mg-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--list-bg);
+  font-weight: 600;
+}
+
+/* Hover */
+.mg-manager-table tbody tr:hover td {
+  background: var(--list-hover);
+}
+
+.mg-manager-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Action */
+.mg-manager-table .mg-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.mg-manager-table .mg-item-actions button {
+  height: 30px;
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+/* Empty */
+.mg-manager-empty {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--page-text);
+  opacity: .7;
+}
+
+.mg-manager-table th:last-child,
+.mg-manager-table td:last-child {
+  text-align: right;
+}
+
+/* Phone */
+@media (max-width: 600px) {
+  .mg-manager-table-wrap {
+    max-height: 60vh;
+  }
+
+  .mg-manager-table th,
+  .mg-manager-table td {
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
 }
 </style>
 <body>
@@ -3613,32 +3744,276 @@ try {
 
 
 
-function mgManager(){
-if (!mgCan("edit") && !mgCan("delete")) {
-  mgToast("Permission denied", "error");
-  return;
-}
-const host = mgElement('div', 'mg-manager');
+/* ==========================================
+   MEGA888 - MANAGE GAMES TABLE + SEARCH
+   ========================================== */
 
-const names = Object.keys(gameData).sort((a, b) =>
-  a.localeCompare(b)
-); if(!names.length)window.showEmptyState?.(host,'No games yet','large','center');
- names.forEach(name=>{const item=mgElement('div','mg-item'),title=mgElement('div');title.append(mgElement('strong','',name),mgElement('small','',` • ${gameData[name].bets.length} bets • Free: ${(gameData[name].freeGameOptions||[]).join(', ')||'None'}`));
- const acts=mgElement('div','mg-item-actions'),edit=mgElement('button','btn-edit-new','Edit'),del=mgElement('button','btn-delete-new','Delete');
- edit.type = del.type = "button";
-edit.hidden = !mgCan("edit");
-del.hidden = !mgCan("delete");
- edit.onclick=()=>{modal.close();mgEditor(name)};
- del.onclick=async()=>{if(!await NewUI.confirm({target:del,title:'Delete Game',message:`Delete game ${name}?`,confirmText:'Delete'}))return;try{
+function mgManager() {
 
- await mgApi(
-  "/games/" + encodeURIComponent(mgGameIds[name]),
-  { method: "DELETE" }
-);
+  if (!mgCan("edit") && !mgCan("delete")) {
+    mgToast("Permission denied", "error");
+    return;
+  }
 
-await mgReload();modal.close();mgManager();mgToast('Game deleted')}catch(e){mgToast(e.message,'error')}};
- acts.append(edit,del);item.append(title,acts);host.append(item);});
- const modal=NewUI.modal.open({title:'Manage MEGA888 Games',content:host,width:650});
+  const host = mgElement("div", "mg-manager");
+
+  /* ===== SEARCH ===== */
+
+  const searchWrap = mgElement(
+    "div",
+    "mg-manager-search"
+  );
+
+  const searchInput = document.createElement("input");
+
+  searchInput.type = "search";
+  searchInput.placeholder = "Search game name...";
+  searchInput.autocomplete = "off";
+  searchInput.setAttribute(
+    "aria-label",
+    "Search game name"
+  );
+
+  searchWrap.append(searchInput);
+
+  /* ===== TABLE ===== */
+
+  const tableWrap = mgElement(
+    "div",
+    "mg-manager-table-wrap"
+  );
+
+  const table = document.createElement("table");
+  table.className = "mg-manager-table";
+
+  const thead = document.createElement("thead");
+
+  const headerRow = document.createElement("tr");
+
+  [
+    "Game Name",
+    "Betting",
+    "Free Game",
+    "Action"
+  ].forEach(label => {
+
+    const th = document.createElement("th");
+    th.textContent = label;
+
+    headerRow.append(th);
+
+  });
+
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  table.append(thead, tbody);
+  tableWrap.append(table);
+
+  host.append(searchWrap, tableWrap);
+
+  /* ===== SORT GAME ===== */
+
+  const names = Object.keys(gameData).sort(
+    (a, b) => a.localeCompare(b)
+  );
+
+  /* ===== MODAL ===== */
+
+  const modal = NewUI.modal.open({
+    title: "Manage MEGA888 Games",
+    content: host,
+    width: 850
+  });
+
+  /* ===== RENDER ROWS ===== */
+
+  function renderRows(keyword = "") {
+
+    tbody.replaceChildren();
+
+    const filteredNames = names.filter(name =>
+      name.toLowerCase().includes(
+        keyword.trim().toLowerCase()
+      )
+    );
+
+    if (!filteredNames.length) {
+
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 4;
+      td.className = "mg-manager-empty";
+
+      td.textContent = names.length
+        ? "No matching games found"
+        : "No games yet";
+
+      tr.append(td);
+      tbody.append(tr);
+
+      return;
+    }
+
+    filteredNames.forEach(name => {
+
+      const game = gameData[name];
+
+      if (!game) return;
+
+      const tr = document.createElement("tr");
+
+      /* Game Name */
+
+      const nameTd = document.createElement("td");
+
+      const strong = document.createElement("strong");
+      strong.textContent = name;
+
+      nameTd.append(strong);
+
+      /* Betting */
+
+      const bettingTd = document.createElement("td");
+
+      const bets = Array.isArray(game.bets)
+        ? game.bets
+        : [];
+
+      bettingTd.textContent = `${bets.length} bets`;
+
+      /* Free Game */
+
+      const freeTd = document.createElement("td");
+
+      const freeOptions = Array.isArray(
+        game.freeGameOptions
+      )
+        ? game.freeGameOptions
+        : [];
+
+      freeTd.textContent =
+        freeOptions.join(", ") || "None";
+
+      /* Action */
+
+      const actionTd = document.createElement("td");
+
+      const actions = mgElement(
+        "div",
+        "mg-item-actions"
+      );
+
+      const edit = mgElement(
+        "button",
+        "btn-edit-new",
+        "Edit"
+      );
+
+      const del = mgElement(
+        "button",
+        "btn-delete-new",
+        "Delete"
+      );
+
+      edit.type = "button";
+      del.type = "button";
+
+      edit.hidden = !mgCan("edit");
+      del.hidden = !mgCan("delete");
+
+      /* ===== EDIT ===== */
+
+      edit.onclick = () => {
+
+        modal.close();
+
+        mgEditor(name);
+
+      };
+
+      /* ===== DELETE ===== */
+
+      del.onclick = async () => {
+
+        const confirmed = await NewUI.confirm({
+          target: del,
+          title: "Delete Game",
+          message: `Delete game ${name}?`,
+          confirmText: "Delete"
+        });
+
+        if (!confirmed) return;
+
+        try {
+
+          const gameId = mgGameIds[name];
+
+          if (gameId == null) {
+            throw new Error("Game ID not found");
+          }
+
+          await mgApi(
+            "/games/" + encodeURIComponent(gameId),
+            {
+              method: "DELETE"
+            }
+          );
+
+          await mgReload();
+
+          modal.close();
+
+          mgManager();
+
+          mgToast(
+            "Game deleted",
+            "success"
+          );
+
+        } catch (error) {
+
+          mgToast(
+            error.message,
+            "error"
+          );
+
+        }
+
+      };
+
+      actions.append(edit, del);
+      actionTd.append(actions);
+
+      /* ===== ADD ROW ===== */
+
+      tr.append(
+        nameTd,
+        bettingTd,
+        freeTd,
+        actionTd
+      );
+
+      tbody.append(tr);
+
+    });
+
+  }
+
+  /* ===== LIVE SEARCH ===== */
+
+  searchInput.addEventListener("input", () => {
+
+    renderRows(searchInput.value);
+
+  });
+
+  /* ===== INITIAL RENDER ===== */
+
+  renderRows();
+
 }
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
