@@ -1478,6 +1478,167 @@ select:focus-visible{
   background: var(--tx-hover) !important;
 }
 
+/* ==========================================
+   PUSSY888 - MANAGE GAMES TABLE
+   ========================================== */
+
+.mg-manager {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  width: 100%;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--page-text);
+}
+
+/* Search */
+.mg-manager-search {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.mg-manager-search input {
+  width: 100%;
+  height: 32px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mg-manager-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+  height: 32px;
+}
+
+.mg-manager-search .shared-sync-search-input {
+  height: 32px !important;
+  font-size: 13px !important;
+}
+
+.mg-manager-search .shared-sync-search-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* Table container */
+.mg-manager-table-wrap {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(55vh, 520px);
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+/* Table */
+.mg-manager-table {
+  width: 100% !important;
+  min-width: 950px;
+  margin: 0 !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  font-size: 13px !important;
+  color: var(--page-text);
+}
+
+/* Cell borders */
+.mg-manager-table th,
+.mg-manager-table td {
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-right: 1px solid var(--border-input) !important;
+  border-bottom: 1px solid var(--border-input) !important;
+  background: var(--list-bg);
+  color: var(--page-text);
+  font-size: 13px !important;
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+  width: auto !important;
+}
+
+/* Last column */
+.mg-manager-table th:last-child,
+.mg-manager-table td:last-child {
+  border-right: 0 !important;
+  text-align: center;
+}
+
+/* Sticky header */
+.mg-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--list-bg);
+  font-weight: 600;
+}
+
+/* Hover */
+.mg-manager-table tbody tr:hover td {
+  background: var(--list-hover);
+}
+
+/* Last row */
+.mg-manager-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Edit / Delete */
+.mg-manager-table .mg-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mg-manager-table .mg-item-actions button {
+  height: 30px;
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+/* Empty state */
+.mg-manager-empty {
+  padding: 24px 12px !important;
+  text-align: center !important;
+  font-size: 13px;
+  color: var(--page-text);
+  opacity: .7;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .mg-manager-table-wrap {
+    max-height: 60vh;
+  }
+
+  .mg-manager-table th,
+  .mg-manager-table td {
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
 </style>
 <body>
 
@@ -3893,6 +4054,11 @@ pecahan[pussyBetKey(bet)] = wins;
 
 /* ================= MANAGE GAMES ================= */
 
+
+/* ==========================================
+   PUSSY888 - MANAGE GAMES TABLE
+   ========================================== */
+
 function mgManager() {
   if (!mgCan("edit") && !mgCan("delete")) {
     mgToast("Permission denied", "error");
@@ -3901,98 +4067,240 @@ function mgManager() {
 
   const host = mgElement("div", "mg-manager");
 
-  const names = Object.keys(gameData).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  // SEARCH
+  const searchWrap = mgElement("div", "mg-manager-search");
+  const searchInput = document.createElement("input");
 
-  if (!names.length) {
-    window.showEmptyState?.(
-      host,
-      "No games yet",
-      "large",
-      "center"
-    );
-  }
+  searchInput.type = "search";
+  searchInput.placeholder = "Search";
+  searchInput.autocomplete = "off";
+  searchInput.setAttribute("aria-label", "Search game name");
 
-  names.forEach(name => {
-    const item = mgElement("div", "mg-item");
-    const title = mgElement("div");
+  searchWrap.append(searchInput);
 
-    title.append(
-      mgElement("strong", "", name),
-      mgElement(
-        "small",
-        "",
-        ` • ${gameData[name].bets.length} bets • Free: ${
-          (gameData[name].freeGameOptions || []).join(", ") || "None"
-        }`
-      )
-    );
+  // TABLE
+  const tableWrap = mgElement("div", "mg-manager-table-wrap");
+  const table = document.createElement("table");
+  table.className = "mg-manager-table";
 
-    const acts = mgElement("div", "mg-item-actions");
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
 
-    const edit = mgElement(
-      "button",
-      "btn-edit-new",
-      "Edit"
-    );
-
-    const del = mgElement(
-      "button",
-      "btn-delete-new",
-      "Delete"
-    );
-
-    edit.type = "button";
-    del.type = "button";
-
-    edit.hidden = !mgCan("edit");
-    del.hidden = !mgCan("delete");
-
-    edit.onclick = () => {
-      modal.close();
-      mgEditor(name);
-    };
-
-    del.onclick = async () => {
-      const confirmed = await NewUI.confirm({
-        target: del,
-        title: "Delete Game",
-        message: `Delete game ${name}?`,
-        confirmText: "Delete"
-      });
-
-      if (!confirmed) return;
-
-      try {
-        await mgApi(
-          "/games/" + encodeURIComponent(mgGameIds[name]),
-          { method: "DELETE" }
-        );
-
-        await mgReload();
-
-        modal.close();
-        mgManager();
-
-        mgToast("Game deleted");
-
-      } catch (err) {
-        mgToast(err.message, "error");
-      }
-    };
-
-    acts.append(edit, del);
-    item.append(title, acts);
-    host.append(item);
+  [
+    "Game Name",
+    "Betting",
+    "Free Game",
+    "Created Date",
+    "Last Edited",
+    "Action"
+  ].forEach(label => {
+    const th = document.createElement("th");
+    th.textContent = label;
+    headerRow.append(th);
   });
 
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  host.append(searchWrap, tableWrap);
+
+  const names = Object.keys(gameData).sort(
+    (a, b) => a.localeCompare(b)
+  );
+
+  // MODAL
   const modal = NewUI.modal.open({
     title: "Manage PUSSY888 Games",
     content: host,
-    width: 650
+    width: 1100
   });
+
+  // FORMAT DATE TIME
+  function mgFormatDate(value) {
+    if (value == null || value === "") return "—";
+
+    let date;
+
+    if (typeof value === "number") {
+      date = new Date(value < 1e12 ? value * 1000 : value);
+    } else if (
+      typeof value === "object" &&
+      value.seconds != null
+    ) {
+      date = new Date(value.seconds * 1000);
+    } else if (/^\d+$/.test(String(value))) {
+      const number = Number(value);
+      date = new Date(number < 1e12 ? number * 1000 : number);
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return "—";
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kuala_Lumpur",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(date);
+
+    const get = type =>
+      parts.find(part => part.type === type)?.value ?? "00";
+
+    return (
+      `${get("hour")}:${get("minute")}:${get("second")} ` +
+      `${get("day")}/${get("month")}/${get("year")}`
+    );
+  }
+
+  // RENDER TABLE
+  function renderRows(keyword = "") {
+    tbody.replaceChildren();
+
+    const filteredNames = names.filter(name =>
+      name.toLowerCase().includes(
+        String(keyword).trim().toLowerCase()
+      )
+    );
+
+    if (!filteredNames.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 6;
+      td.className = "mg-manager-empty";
+      td.textContent = names.length
+        ? "No matching games found"
+        : "No games yet";
+
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    filteredNames.forEach(name => {
+      const game = gameData[name];
+      if (!game) return;
+
+      const record = mgRecords[name] || {};
+      const tr = document.createElement("tr");
+
+      // GAME NAME
+      const nameTd = document.createElement("td");
+      const strong = document.createElement("strong");
+      strong.textContent = name;
+      nameTd.append(strong);
+
+      // BETTING
+      const bettingTd = document.createElement("td");
+      bettingTd.textContent = `${
+        Array.isArray(game.bets) ? game.bets.length : 0
+      } bets`;
+
+      // FREE GAME
+      const freeTd = document.createElement("td");
+      freeTd.textContent = (
+        Array.isArray(game.freeGameOptions)
+          ? game.freeGameOptions
+          : []
+      ).join(", ") || "None";
+
+      // CREATED DATE
+      const createdTd = document.createElement("td");
+      createdTd.textContent = mgFormatDate(
+        record.createdAt ?? record.created_at
+      );
+
+      // LAST EDITED
+      const editedTd = document.createElement("td");
+      editedTd.textContent = mgFormatDate(
+        record.updatedAt ?? record.updated_at
+      );
+
+      // ACTION
+      const actionTd = document.createElement("td");
+      const actions = mgElement("div", "mg-item-actions");
+
+      const edit = mgElement("button", "btn-edit-new", "Edit");
+      const del = mgElement("button", "btn-delete-new", "Delete");
+
+      edit.type = "button";
+      del.type = "button";
+
+      edit.hidden = !mgCan("edit");
+      del.hidden = !mgCan("delete");
+
+      edit.onclick = () => {
+        modal.close();
+        mgEditor(name);
+      };
+
+      del.onclick = async () => {
+        const confirmed = await NewUI.confirm({
+          target: del,
+          title: "Delete Game",
+          message: `Delete game ${name}?`,
+          confirmText: "Delete"
+        });
+
+        if (!confirmed) return;
+
+        try {
+          await mgApi(
+            "/games/" + encodeURIComponent(mgGameIds[name]),
+            { method: "DELETE" }
+          );
+
+          await mgReload();
+
+          modal.close();
+          mgManager();
+
+          mgToast("Game deleted");
+        } catch (err) {
+          mgToast(err.message, "error");
+        }
+      };
+
+      actions.append(edit, del);
+      actionTd.append(actions);
+
+      tr.append(
+        nameTd,
+        bettingTd,
+        freeTd,
+        createdTd,
+        editedTd,
+        actionTd
+      );
+
+      tbody.append(tr);
+    });
+  }
+
+  // CUSTOM SEARCH WITH ROTATING ICON
+  window.NewUI?.syncSearch?.(searchInput, {
+    onSearch: async keyword => {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      renderRows(keyword);
+    }
+  });
+
+  // LIVE SEARCH
+  searchInput.addEventListener("input", () => {
+    renderRows(searchInput.value);
+  });
+
+  renderRows();
 }
+
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',mgStart);
