@@ -2299,10 +2299,11 @@ function biOpenBankForm(editId = null) {
     return;
   }
 
-  const modal = NewUI.modal.open({
-    title: editing ? "Edit Bank" : "Create Bank",
-    width: 720,
-    content: `
+const modal = NewUI.modal.open({
+  title: editing ? "Edit Bank" : "Create Bank",
+  width: 720,
+  stack: editing,
+  content: `
       <form id="biBankForm" class="bi-bank-form">
         <label>
           Bank Name
@@ -2804,11 +2805,9 @@ function biOpenManageBanks() {
       editBtn.disabled =
         !biCan("edit") || !bank.canManage;
 
-      editBtn.addEventListener("click", () => {
-        modal.close();
-        biOpenBankForm(bank.id);
-      });
-
+editBtn.addEventListener("click", () => {
+  biOpenBankForm(bank.id);
+});
       // DELETE
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
