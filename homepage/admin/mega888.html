@@ -1513,8 +1513,12 @@ select:focus-visible{
 .mg-manager-table th,
 .mg-manager-table td {
   padding: 10px 12px !important;
+
+  /* Border setiap row dan column */
   border: 0 !important;
+  border-right: 1px solid var(--border-input) !important;
   border-bottom: 1px solid var(--border-input) !important;
+
   background: var(--list-bg);
   color: var(--page-text);
   font-size: 13px !important;
@@ -1523,7 +1527,11 @@ select:focus-visible{
   white-space: nowrap;
   width: auto !important;
 }
-
+/* Column terakhir tidak perlu border kanan */
+.mg-manager-table th:last-child,
+.mg-manager-table td:last-child {
+  border-right: 0 !important;
+}
 /* Sticky header */
 .mg-manager-table thead th {
   position: sticky;
