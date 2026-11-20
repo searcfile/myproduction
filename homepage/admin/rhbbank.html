@@ -1874,11 +1874,14 @@ if (id && (!current || current.canManage !== true)) {
     </div>
   `;
 
-  const modal = NewUI.modal.open({
-    title: id ? "Edit Bank" : "Create Bank",
-    content: form,
-    width: 720
-  });
+
+const modal = NewUI.modal.open({
+  title: id ? "Edit Bank" : "Create Bank",
+  content: form,
+  width: 720,
+  stack: Boolean(id)
+});
+
 
   NewUI.init(form);
   NewUI.activeSwitch?.init?.(form);
@@ -2224,10 +2227,11 @@ function rhbManageBanksModal() {
       edit.hidden =
         !rhbCan("edit") || bank.canManage !== true;
 
-      edit.addEventListener("click", () => {
-        modal.close();
-        rhbBankFormModal(id);
-      });
+
+edit.addEventListener("click", () => {
+  rhbBankFormModal(id);
+});
+
 
       // DELETE
       const del = document.createElement("button");
