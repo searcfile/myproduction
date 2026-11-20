@@ -967,23 +967,28 @@ html {
   gap: 10px;
 }
 
-.cimb-bank-manager-search {
-  width: 100%;
-  max-width: 400px;
+
+/* MANAGE BANKS - CUSTOM SYNC SEARCH */
+
+.cimb-bank-search-host {
+  width: 400px;
+  max-width: 100%;
   min-width: 0;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--border-input);
-  border-radius: 6px;
-  background: var(--page-input);
-  color: var(--page-text);
-  font-size: 13px;
+  flex: 0 1 400px;
 }
 
-.cimb-bank-manager-search:focus {
-  border-color: #1668dc;
-  outline: none;
+.cimb-bank-search-host .shared-sync-search {
+  width: 100%;
 }
+
+@media (max-width: 600px) {
+  .cimb-bank-search-host {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
 
 .cimb-bank-manager-table-wrap {
   width: 100%;
@@ -2579,11 +2584,10 @@ function bankManageModal() {
   const toolbar = document.createElement("div");
   toolbar.className = "cimb-bank-manager-toolbar";
 
-  const search = document.createElement("input");
-  search.type = "search";
-  search.placeholder = "Search bank...";
-  search.className = "cimb-bank-manager-search";
-  search.setAttribute("aria-label", "Search bank");
+const search = document.createElement("input");
+search.type = "search";
+search.placeholder = "Search bank...";
+search.setAttribute("aria-label", "Search bank");
 
   const addButton = document.createElement("button");
   addButton.type = "button";
@@ -2591,7 +2595,11 @@ function bankManageModal() {
   addButton.textContent = "+ Create Bank";
   addButton.hidden = !cimbCan("create");
 
-  toolbar.append(search, addButton);
+const searchHost = document.createElement("div");
+searchHost.className = "cimb-bank-search-host";
+
+searchHost.append(search);
+toolbar.append(searchHost, addButton);
 
   // ===== TABLE WRAPPER =====
   const tableWrap = document.createElement("div");
@@ -2784,8 +2792,15 @@ function bankManageModal() {
     }
   }
 
-  // ===== SEARCH =====
-  search.addEventListener("input", renderList);
+// ===== SEARCH =====
+search.addEventListener("input", renderList);
+
+NewUI.syncSearch(search, {
+  onSearch: async () => {
+    await cimbLoadBanks();
+    renderList();
+  }
+});
 
   // ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
