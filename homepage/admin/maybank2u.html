@@ -2154,10 +2154,33 @@ function mainanWaitForAuth() {
             !mainanCan("delete");
         }
         
-        async function mainanLoadSites() {
-          const data = await mainanApi("/api/maybank2u/sites");
-          return Array.isArray(data.sites) ? data.sites : [];
-        }
+// ===== MAYBANK2U - SITE PRELOAD CACHE =====
+let mainanSitesCache = null;
+let mainanSitesPromise = null;
+
+async function mainanLoadSites() {
+  const data = await mainanApi("/api/maybank2u/sites");
+  return Array.isArray(data.sites) ? data.sites : [];
+}
+
+function mainanEnsureSites() {
+  if (mainanSitesCache !== null) {
+    return Promise.resolve(mainanSitesCache);
+  }
+
+  if (!mainanSitesPromise) {
+    mainanSitesPromise = mainanLoadSites()
+      .then(sites => {
+        mainanSitesCache = sites;
+        return sites;
+      })
+      .finally(() => {
+        mainanSitesPromise = null;
+      });
+  }
+
+  return mainanSitesPromise;
+}
         const mainanToast = (message, type = "success") => {
           window.showToast?.(message, type);
         };
@@ -2256,10 +2279,15 @@ function mainanWaitForAuth() {
         async function mainanStartBankListener() {
           mainanBankLoaded = false;
         
-          try {
-            await mainanLoadAccess();
-        
-            const data = await mainanApi("/api/maybank2u/banks");
+try {
+  await mainanLoadAccess();
+
+  // Muat senarai site lebih awal, tanpa tunggu Create Bank
+  mainanEnsureSites().catch(error => {
+    console.error("[MAYBANK2U] Site preload failed:", error);
+  });
+
+  const data = await mainanApi("/api/maybank2u/banks");
         
             const records = {};
         
@@ -2460,8 +2488,21 @@ const modal = NewUI.modal.open({
 
 const saveBtnSiteReady = { value: false };
 
-mainanLoadSites()
+// Paparkan kotak Select Sites terus
+// sementara senarai site belum tersedia.
+if (mainanSitesCache === null) {
+  NewUI.chips(siteContainer, {
+    options: [],
+    value: [],
+    multiple: true,
+    placeholder: "Select Sites"
+  });
+}
+
+// Gunakan senarai site yang sudah dipreload
+mainanEnsureSites()
   .then(sites => {
+    if (!siteContainer.isConnected) return;
     const allowedSiteIds = new Set(
       sites.map(site => site.id)
     );
@@ -2950,8 +2991,29 @@ mainanOpenBankForm();
             mainanOpenManageBanks();
           });
         
-        /* START FIREBASE REALTIME LISTENER */
-        mainanStartBankListener();
+/* START FIREBASE REALTIME LISTENER */
+
+// Reset cache bila login user bertukar
+let mainanSitesCurrentUid =
+  firebase.auth().currentUser?.uid || null;
+
+firebase.auth().onAuthStateChanged(user => {
+  const nextUid = user?.uid || null;
+
+  if (mainanSitesCurrentUid !== nextUid) {
+    mainanSitesCurrentUid = nextUid;
+    mainanSitesCache = null;
+    mainanSitesPromise = null;
+
+    if (nextUid) {
+      mainanEnsureSites().catch(error => {
+        console.error("[MAYBANK2U] Site preload failed:", error);
+      });
+    }
+  }
+});
+
+mainanStartBankListener();
         // ✅ Tukar ikut page
         window.HISTORY_TAB_NAME = "MAYBANK2U";
         // ✅ Hantar ke main page
