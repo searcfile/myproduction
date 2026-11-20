@@ -3802,7 +3802,16 @@ save.type = "submit";
 right.append(cancel, save);
 actions.append(statusField, right);
 form.append(actions);
- const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+
+const modal = NewUI.modal.open({
+  title: oldName ? "Edit Game" : "Create Game",
+  content: form,
+  width: 720,
+  stack: Boolean(oldName)
+});
+
+cancel.onclick = () => modal.close();
+
  form.querySelectorAll('input[data-new-ui-input]').forEach(input=>NewUI.input(input));
 globalInput.disabled = mgAccess.role !== "superadmin";
 
@@ -3983,11 +3992,14 @@ function mgManager() {
     (a, b) => a.localeCompare(b)
   );
 
-  const modal = NewUI.modal.open({
-    title: "Manage EVO888 Games",
-    content: host,
-    width: 1100
-  });
+
+const modal = NewUI.modal.open({
+  title: "Manage EVO888 Games",
+  content: host,
+  width: 1100,
+  stack: false
+});
+
 
   // Search custom + rotating icon
   window.NewUI?.syncSearch?.(searchInput, {
@@ -4108,10 +4120,14 @@ function mgManager() {
       edit.hidden = !mgCan("edit");
       del.hidden = !mgCan("delete");
 
-      edit.onclick = () => {
-        modal.close();
-        mgEditor(name);
-      };
+
+/* ===== EDIT - KEEP MANAGE GAMES OPEN ===== */
+
+edit.onclick = () => {
+  // Kekalkan Manage Games di belakang
+  mgEditor(name);
+};
+
 
       del.onclick = async () => {
         const confirmed = await NewUI.confirm({
