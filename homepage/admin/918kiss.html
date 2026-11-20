@@ -3558,7 +3558,16 @@ rightActions.append(cancel, save);
 actions.append(statusWrap, rightActions);
 form.append(actions);
 
- const modal=NewUI.modal.open({title:oldName?'Edit Game':'Create Game',content:form,width:720});cancel.onclick=()=>modal.close();
+
+const modal = NewUI.modal.open({
+  title: oldName ? "Edit Game" : "Create Game",
+  content: form,
+  width: 720,
+  stack: Boolean(oldName)
+});
+
+cancel.onclick = () => modal.close();
+
 
 window.SharedActiveSwitch?.sync(globalInput);
 window.SharedActiveSwitch?.sync(statusInput);
@@ -3765,11 +3774,13 @@ function mgManager() {
     })
     .sort((a, b) => a.localeCompare(b));
 
-  const modal = NewUI.modal.open({
-    title: "Manage 918KISS Games",
-    content: host,
-    width: 1100
-  });
+
+const modal = NewUI.modal.open({
+  title: "Manage 918KISS Games",
+  content: host,
+  width: 1100,
+  stack: false
+});
 
   // FORMAT DATE TIME
   function mgFormatDate(value) {
@@ -3881,10 +3892,15 @@ function mgManager() {
       del.disabled = !mgGameIds[name];
       del.title = "Delete Game";
 
-      edit.onclick = () => {
-        modal.close();
-        mgEditor(name);
-      };
+
+/* ===== EDIT - KEEP MANAGE GAMES OPEN ===== */
+
+edit.onclick = () => {
+
+  // Jangan tutup modal Manage Games
+  mgEditor(name);
+
+};
 
       del.onclick = async () => {
         if (!mgGameIds[name]) return;
