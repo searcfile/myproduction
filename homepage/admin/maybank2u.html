@@ -1166,6 +1166,125 @@
     margin: 8px 0;
   }
 }
+
+/* ==========================================
+   MAYBANK2U - MANAGE BANKS TABLE
+   ========================================== */
+
+.mainan-bank-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  color: var(--page-text);
+}
+
+.mainan-bank-manager-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mainan-bank-search-host {
+  width: 400px;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 400px;
+}
+
+.mainan-bank-search-host .shared-sync-search {
+  width: 100%;
+}
+
+.mainan-bank-manager-table-wrap {
+  width: 100%;
+  min-width: 0;
+  max-height: min(55vh, 520px);
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.mainan-bank-manager-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: var(--page-text);
+}
+
+.mainan-bank-manager-table th,
+.mainan-bank-manager-table td {
+  padding: 10px 12px;
+  border-right: 1px solid var(--border-input);
+  border-bottom: 1px solid var(--border-input);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: var(--page-bg2);
+}
+
+.mainan-bank-manager-table th:last-child,
+.mainan-bank-manager-table td:last-child {
+  border-right: none;
+}
+
+.mainan-bank-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: 600;
+  background: var(--page-bg2);
+}
+
+.mainan-bank-manager-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.mainan-bank-manager-table tbody tr:hover td {
+  background: var(--list-hover, rgba(128,128,128,.08));
+}
+
+.mainan-bank-manager-table .mainan-bank-actions-cell {
+  text-align: center;
+}
+
+.mainan-bank-table-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mainan-bank-table-buttons button {
+  width: auto;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.mainan-bank-status-active {
+  color: #22c55e;
+}
+
+.mainan-bank-status-inactive {
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .mainan-bank-search-host {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .mainan-bank-manager-toolbar > button {
+    width: 100%;
+  }
+}
+
         </style>
         <body>
          <div class="wrap">
@@ -2577,91 +2696,232 @@ mainanLoadSites()
            MANAGE BANKS MODAL
            ========================================================== */
         
-        function mainanOpenManageBanks() {
-          const modal = NewUI.modal.open({
-            title: "Manage Banks",
-            width: 720,
-            content: `<div id="mainanBankList" class="mainan-bank-list"></div>`
-          });
-        
-          const list = modal.body.querySelector("#mainanBankList");
-        
-          const banks = Object.values(MAINAN_BANK_RECORDS)
-            .sort((a, b) => a.name.localeCompare(b.name));
-        
-          if (!banks.length) {
-            window.showEmptyState?.(list, "No data", "large", "center");
-            return;
+
+function mainanOpenManageBanks() {
+  const content = document.createElement("div");
+  content.className = "mainan-bank-manager";
+
+  // ===== TOOLBAR =====
+  const toolbar = document.createElement("div");
+  toolbar.className = "mainan-bank-manager-toolbar";
+
+  const searchHost = document.createElement("div");
+  searchHost.className = "mainan-bank-search-host";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.placeholder = "Search bank...";
+  search.setAttribute("aria-label", "Search bank");
+
+  searchHost.append(search);
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn-primary-new";
+  addButton.textContent = "+ Create Bank";
+  addButton.hidden = !mainanCan("create");
+
+  toolbar.append(searchHost, addButton);
+
+  // ===== TABLE =====
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "mainan-bank-manager-table-wrap";
+
+  const table = document.createElement("table");
+  table.className = "mainan-bank-manager-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  [
+    "Bank Name",
+    "Length",
+    "Rule",
+    "Digits",
+    "Status",
+    "Actions"
+  ].forEach(title => {
+    const th = document.createElement("th");
+    th.textContent = title;
+    th.scope = "col";
+    headerRow.append(th);
+  });
+
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  content.append(toolbar, tableWrap);
+
+  // ===== OPEN MODAL =====
+  const modal = NewUI.modal.open({
+    title: "Manage Banks",
+    content,
+    width: 1100,
+    stack: false
+  });
+
+  // ===== RENDER TABLE =====
+  function renderList() {
+    tbody.replaceChildren();
+
+    const keyword = search.value.trim().toLowerCase();
+
+    const banks = Object.values(MAINAN_BANK_RECORDS)
+      .sort((a, b) =>
+        String(a.name || "").localeCompare(
+          String(b.name || "")
+        )
+      )
+      .filter(bank => {
+        const searchable = [
+          bank.name,
+          bank.len,
+          bank.rule,
+          bank.digits,
+          bank.active !== false ? "Active" : "Inactive"
+        ].join(" ").toLowerCase();
+
+        return searchable.includes(keyword);
+      });
+
+    if (!banks.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 6;
+      td.style.textAlign = "center";
+      td.style.padding = "35px 12px";
+      td.textContent = keyword
+        ? "No matching banks"
+        : "No data";
+
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    banks.forEach(bank => {
+      const tr = document.createElement("tr");
+
+      function addCell(value) {
+        const td = document.createElement("td");
+        td.textContent = String(value ?? "");
+        tr.append(td);
+        return td;
+      }
+
+      // BANK NAME
+      const nameCell = addCell(bank.name);
+      nameCell.style.fontWeight = "600";
+
+      // LENGTH
+      addCell(bank.len);
+
+      // RULE
+      addCell(bank.rule);
+
+      // DIGITS
+      addCell(bank.digits || "(none)");
+
+      // STATUS
+      const active = bank.active !== false;
+
+      const statusCell = addCell(
+        active ? "Active" : "Inactive"
+      );
+
+      statusCell.className = active
+        ? "mainan-bank-status-active"
+        : "mainan-bank-status-inactive";
+
+      // ACTIONS
+      const actionCell = document.createElement("td");
+      actionCell.className = "mainan-bank-actions-cell";
+
+      const buttons = document.createElement("div");
+      buttons.className = "mainan-bank-table-buttons";
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "btn-edit-new";
+      editBtn.textContent = "Edit";
+
+      editBtn.hidden =
+        !mainanCan("edit") || !bank.canManage;
+
+      editBtn.addEventListener("click", () => {
+        modal.close();
+        mainanOpenBankForm(bank.id);
+      });
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn-delete-new";
+      deleteBtn.textContent = "Delete";
+
+      deleteBtn.hidden =
+        !mainanCan("delete") || !bank.canDelete;
+
+      deleteBtn.addEventListener("click", () => {
+        NewUI.confirm({
+          target: deleteBtn,
+          title: "Delete Bank",
+          message: `Are you sure you want to delete ${bank.name}?`,
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          loadingText: "Deleting...",
+
+          onConfirm: async () => {
+            await mainanApi(
+              `/api/maybank2u/banks/${encodeURIComponent(bank.id)}`,
+              { method: "DELETE" }
+            );
+
+            await mainanStartBankListener();
+
+            mainanToast(
+              "Bank deleted successfully",
+              "success"
+            );
+
+            renderList();
           }
-        
-          banks.forEach(bank => {
-            const row = document.createElement("div");
-            row.className = "mainan-bank-list-row";
-        
-            row.innerHTML = `
-              <div class="mainan-bank-list-info">
-                <strong>${mainanEscape(bank.name)}</strong>
-        <small>
-          Length: ${bank.len}
-          · ${mainanEscape(bank.rule)}:
-          ${mainanEscape(bank.digits || "None")}
-          · ${bank.active !== false ? "Active" : "Inactive"}
-        </small>
-              </div>
-        
-              <div class="mainan-bank-list-buttons">
-                <button type="button" class="btn-edit-new" data-edit>
-                  Edit
-                </button>
-                <button type="button" class="btn-delete-new" data-delete>
-                  Delete
-                </button>
-              </div>
-            `;
-        
-            const editBtn = row.querySelector("[data-edit]");
-            const deleteBtn = row.querySelector("[data-delete]");
-        editBtn.hidden =
-          !mainanCan("edit") || !bank.canManage;
-        
-        deleteBtn.hidden =
-          !mainanCan("delete") || !bank.canDelete;
-            editBtn.addEventListener("click", () => {
-              modal.close();
-              mainanOpenBankForm(bank.id);
-            });
-        
-            deleteBtn.addEventListener("click", () => {
-              NewUI.confirm({
-                target: deleteBtn,
-                title: "Delete Bank",
-                message: `Are you sure you want to delete ${bank.name}?`,
-                confirmText: "Delete",
-                cancelText: "Cancel",
-                loadingText: "Deleting...",
-        
-                onConfirm: async () => {
-                  await mainanApi(
-          `/api/maybank2u/banks/${encodeURIComponent(bank.id)}`,
-          {
-            method: "DELETE"
-          }
-        );
-        
+        });
+      });
+
+      buttons.append(editBtn, deleteBtn);
+      actionCell.append(buttons);
+      tr.append(actionCell);
+
+      tbody.append(tr);
+    });
+  }
+
+  // ===== CUSTOM SEARCH =====
+  search.addEventListener("input", renderList);
+
+  if (window.NewUI?.syncSearch) {
+    NewUI.syncSearch(search, {
+      onSearch: async () => {
         await mainanStartBankListener();
-        
-                  mainanToast("Bank deleted successfully", "success");
-        
-                  modal.close();
-                  mainanOpenManageBanks();
-                }
-              });
-            });
-        
-            list.appendChild(row);
-          });
-        }
-        
+        renderList();
+      }
+    });
+  }
+
+  // ===== CREATE BANK =====
+  addButton.addEventListener("click", () => {
+    modal.close();
+    mainanOpenBankForm();
+  });
+
+  // ===== INITIAL RENDER =====
+  renderList();
+}
+
         /* ==========================================================
            BUTTON EVENTS
            ========================================================== */
