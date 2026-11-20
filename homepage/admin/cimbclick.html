@@ -2428,7 +2428,12 @@ content.innerHTML = `
   </div>
 `;
   content.elements.rule.value = current?.rule || "prefix";
-  const modal = NewUI.modal.open({title:id ? "Edit Bank" : "Create Bank",content,width:720});
+const modal = NewUI.modal.open({
+  title: id ? "Edit Bank" : "Create Bank",
+  content,
+  width: 720,
+  stack: Boolean(id)
+});
   NewUI.init(content);
   NewUI.activeSwitch.init(content);
     const globalSwitch = content.elements.visibleToAllSites;
@@ -2730,10 +2735,11 @@ toolbar.append(searchHost, addButton);
       edit.hidden =
         !cimbCan("edit") || !bank.canManage;
 
-      edit.addEventListener("click", () => {
-        modal.close();
-        bankFormModal(key);
-      });
+
+edit.addEventListener("click", () => {
+  bankFormModal(key);
+});
+
 
       // DELETE
       const del = document.createElement("button");
