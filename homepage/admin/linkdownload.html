@@ -510,7 +510,56 @@ body {
 .ld-card .ld-image img:active {
   opacity: 0.8;
 }
+/* ==========================================
+   LINK DOWNLOAD - GLOBAL ACTIVE & SITE
+   SAME LAYOUT AS MEGA888
+   ========================================== */
 
+.ld-modal-form .ld-site-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.ld-modal-form .ld-site-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  width: 100%;
+}
+
+.ld-modal-form .ld-site-row .shared-active-switch {
+  margin: 0;
+  align-self: flex-start;
+}
+
+.ld-modal-form .ld-site-panel .ld-field {
+  display: flex !important;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+}
+
+.ld-modal-form #ldSiteVisibilityChips {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.ld-modal-form #ldSiteVisibilityChips .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.ld-modal-form .ld-site-panel .ld-hint {
+  margin: 0;
+  font-size: 12px;
+}
 </style>
 </head>
 <body>
@@ -1043,11 +1092,111 @@ function syncSiteDropdown() {
     globalInput.checked ? 'none' : '';
 }
 
-globalInput.addEventListener('change', syncSiteDropdown);
-syncSiteDropdown();
+// ===== LINK DOWNLOAD - MEGA888 SITE LAYOUT =====
+
+const sitePanel = el('div', 'ld-site-panel');
+
+// ===== GLOBAL ACTIVE =====
+const globalRow = el('div', 'ld-site-row');
+
+const globalLabel = el(
+  'label',
+  '',
+  'Global Active'
+);
+
+const globalSwitch = el(
+  'label',
+  'shared-active-switch'
+);
+
+const globalInput = el('input');
+globalInput.type = 'checkbox';
+globalInput.checked = old?.active !== false;
+
+globalInput.dataset.activeLabel = 'Active';
+globalInput.dataset.inactiveLabel = 'Inactive';
+
+const globalTrack = el(
+  'span',
+  'shared-active-track'
+);
+
+globalTrack.append(
+  el('span', 'shared-active-text'),
+  el('span', 'shared-active-knob')
+);
+
+globalSwitch.append(globalInput, globalTrack);
+
+globalRow.append(
+  globalLabel,
+  globalSwitch
+);
+
+sitePanel.append(globalRow);
+
+// ===== SITE VISIBILITY =====
+const siteOptions = Object.entries(sites)
+  .filter(([, site]) =>
+    site && site.active === true
+  )
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([siteId, site]) => ({
+    value: siteId,
+    label: `${site.name || siteId} (${siteId})`
+  }));
+
+const siteField = el('div', 'ld-field');
+
+const siteLabel = el(
+  'label',
+  '',
+  'Site Visibility'
+);
+
+const siteChipsHost = el('div');
+siteChipsHost.id = 'ldSiteVisibilityChips';
+
+siteField.append(
+  siteLabel,
+  siteChipsHost
+);
+
+sitePanel.append(siteField);
+
+// ===== DESCRIPTION =====
+const siteHint = el(
+  'div',
+  'ld-hint',
+  'ON: Semua site. OFF: Ikut Site Visibility.'
+);
+
+sitePanel.append(siteHint);
+
+// ===== KEEP SELECTED SITES =====
+let siteChips = null;
+
+const initialSiteValues = siteOptions
+  .filter(option =>
+    old?.siteVisibility?.[option.value] === true
+  )
+  .map(option => option.value);
+
+// Input Site Visibility sentiasa dipaparkan
 form.append(sitePanel);
  const imageLabel=el('div','ld-label','Card Image');form.append(imageLabel);const imageHost=el('div');form.append(imageHost);const section=el('div','ld-section-heading');section.append(el('strong','','Download Links'));const add=el('button','ld-button btn-primary-new','+ Add Row');add.type='button';section.append(add);form.append(section);const rows=el('div','ld-rows');form.append(rows);const existing=Array.isArray(old?.links)?old.links:[];(existing.length?existing:[{label:'KIOSK AGENT LINK',action:'copy',enabled:true}]).forEach(x=>addRow(rows,x));add.onclick=()=>addRow(rows,{label:'',action:'copy',enabled:true});const footer=el('div','ld-footer');const cancel=el('button','ld-button btn-cancel-new','Cancel');cancel.type='button';cancel.onclick=()=>modal?.close();const save=el('button','ld-button btn-primary-new',id?'Save Changes':'Create Card');save.type='submit';footer.append(cancel,save);form.append(footer);modal=NewUI.modal.open({title:id?'Edit Download Card':'Create Download Card',content:form,width:720});
-siteChips = NewUI.chips('#ldSiteVisibilityChips', {placeholder:'Select Sites',options:siteOptions});
+// ===== LINK DOWNLOAD - SITE CHIPS =====
+siteChips = NewUI.chips(
+  '#ldSiteVisibilityChips',
+  {
+    placeholder: 'Select Sites',
+    options: siteOptions,
+    value: initialSiteValues,
+    multiple: true
+  }
+);
+
 siteChips.setValue(initialSiteValues);
 upload=NewUI.imageUpload(imageHost,{maxSizeMB:5,onError:e=>toast(e.message,'error')});if(old?.image)try{upload.setUrl(old.image);}catch{}form.addEventListener('submit',async e=>{e.preventDefault();const title=clean(name.input.value),group=clean(platform.input.value),links=[...rows.children].map(r=>r._get());if(!title||!group){toast('Card name and platform are required.','warning');return;}if(!links.length){toast('Add at least one link row.','warning');return;}for(const link of links){if(!link.label){toast('Each row needs a button label.','warning');return;}if(link.enabled&&!safeUrl(link.url)){toast('Active links require a valid http(s) URL.','warning');return;}}let image = old?.image || '';try{NewUI.setButtonLoading(save,true);save.disabled=true;if(upload.getFile())image=await uploadImage(upload.getFile());if(!db)throw Error('Firebase database is unavailable');const ref=id?db.ref(PATH+'/'+id):db.ref(PATH).push();const selectedSiteIds = new Set(
   siteChips.getValue() || []
