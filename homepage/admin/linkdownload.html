@@ -1053,44 +1053,6 @@ form.append(
     'Position 1 = card pertama. Card lain akan berganjak secara automatik.'
   )
 );
- // Site Visibility: satu card, status berbeza mengikut Site.
- const sitePanel=el('div','ld-site-panel');
- sitePanel.append(el('strong','','Site Visibility'));
- const siteHint=el('div','ld-hint','Pilih Site yang boleh melihat card. Site baharu akan Hidden secara default.');
- sitePanel.append(siteHint);
- const globalRow=el('div','ld-site-row');globalRow.append(el('span','','Global Active'));
- const globalSwitch=el('label','shared-active-switch');const globalInput=el('input');globalInput.type='checkbox';globalInput.checked=old?.active!==false;
- globalInput.dataset.activeLabel='Active';globalInput.dataset.inactiveLabel='Inactive';
- const globalTrack=el('span','shared-active-track');globalTrack.append(el('span','shared-active-text'),el('span','shared-active-knob'));
- globalSwitch.append(globalInput,globalTrack);globalRow.append(globalSwitch);sitePanel.append(globalRow);
-const siteOptions = Object.entries(sites)
-  .filter(([, site]) => site && site.active === true)
-  .sort((a, b) => a[0].localeCompare(b[0]))
-  .map(([siteId, site]) => ({
-    value: siteId,
-    label: `${site.name || siteId} (${siteId})`
-  }));
-
-const siteField = el('div', 'ld-field');
-siteField.append(
-  el('label', '', 'Select Visible Sites')
-);
-
-const siteChipsHost = el('div');
-siteChipsHost.id = 'ldSiteVisibilityChips';
-
-siteField.append(siteChipsHost);
-sitePanel.append(siteField);
-
-let siteChips = null;
-const initialSiteValues = siteOptions
-  .filter(option => old?.siteVisibility?.[option.value] === true)
-  .map(option => option.value);
-
-function syncSiteDropdown() {
-  siteField.style.display =
-    globalInput.checked ? 'none' : '';
-}
 
 // ===== LINK DOWNLOAD - MEGA888 SITE LAYOUT =====
 
