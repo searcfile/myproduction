@@ -2845,6 +2845,15 @@ function createSharedModal(options = {}) {
   if(options.footer!=null)setContent(options.footer,footer);
   if(options.footer==null)footer.hidden=true;
   function keydown(event) {
+    const opened = Array.from(
+  document.querySelectorAll(
+    ".shared-modal-backdrop.open"
+  )
+);
+
+if (opened[opened.length - 1] !== backdrop) {
+  return;
+}
     if(event.key==='Escape' && options.closeOnEscape!==false){event.preventDefault();close();}
     if(event.key==='Tab') {
       const focusables=Array.from(dialog.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')).filter(e=>e.getClientRects().length);
@@ -2854,26 +2863,78 @@ function createSharedModal(options = {}) {
       else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
     }
   }
-  function open() {
-    if(destroyed)return;
-    document.querySelectorAll('.shared-modal-backdrop.open').forEach(e=>{if(e!==backdrop)e._sharedModalAPI?.close();});
-    previousFocus=document.activeElement;
-    backdrop.classList.add('open');backdrop.setAttribute('aria-hidden','false');
-    document.documentElement.classList.add('new-ui-modal-open');
-    document.addEventListener('keydown',keydown);
-    closeButton.focus();
-    options.onOpen?.(api);
+
+function open() {
+  if (destroyed) return api;
+
+  if (backdrop.classList.contains("open")) {
     return api;
   }
-  function close() {
-    if(!backdrop.classList.contains('open'))return;
-    backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');
-    document.documentElement.classList.remove('new-ui-modal-open');
-    document.removeEventListener('keydown',keydown);
-    if(previousFocus?.isConnected)previousFocus.focus();
-    options.onClose?.(api);
-    if(options.destroyOnClose!==false)destroy();
+
+  if (options.stack !== true) {
+    document.querySelectorAll(
+      ".shared-modal-backdrop.open"
+    ).forEach(element => {
+      if (element !== backdrop) {
+        element._sharedModalAPI?.close();
+      }
+    });
   }
+
+  previousFocus = document.activeElement;
+
+  const remaining = document.querySelectorAll(
+    ".shared-modal-backdrop.open"
+  ).length;
+
+  backdrop.style.zIndex = String(999999 + remaining * 2);
+
+  backdrop.classList.add("open");
+  backdrop.setAttribute("aria-hidden", "false");
+
+  document.documentElement.classList.add(
+    "new-ui-modal-open"
+  );
+
+  document.addEventListener("keydown", keydown);
+
+  closeButton.focus();
+
+  options.onOpen?.(api);
+
+  return api;
+}
+
+
+function close() {
+  if (!backdrop.classList.contains("open")) return;
+
+  backdrop.classList.remove("open");
+  backdrop.setAttribute("aria-hidden", "true");
+
+  document.removeEventListener("keydown", keydown);
+
+  const remaining = document.querySelectorAll(
+    ".shared-modal-backdrop.open"
+  );
+
+  if (!remaining.length) {
+    document.documentElement.classList.remove(
+      "new-ui-modal-open"
+    );
+  }
+
+  if (previousFocus?.isConnected) {
+    previousFocus.focus();
+  }
+
+  options.onClose?.(api);
+
+  if (options.destroyOnClose !== false) {
+    destroy();
+  }
+}
+
   function destroy() {
     if(destroyed)return;
     destroyed=true;
