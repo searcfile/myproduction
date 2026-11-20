@@ -1381,14 +1381,24 @@ select:focus-visible{
    ========================================== */
 
 .mg-manager {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+
+  gap: 12px !important;
+
   width: 100%;
   min-width: 0;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
   color: var(--page-text);
 }
-
 .mg-manager-search {
   width: 100%;
   max-width: 400px;
@@ -1429,13 +1439,46 @@ select:focus-visible{
 
 /* Table container */
 .mg-manager-table-wrap {
+  display: block !important;
+
   width: 100%;
-  max-height: 55vh;
+  min-width: 0;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(55vh, 520px);
+
+  flex: 0 1 auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
   overflow: auto;
+
   border: 1px solid var(--border-input);
   border-radius: 8px;
 }
+    /* ===== MANAGE GAMES SEARCH POSITION ===== */
 
+.mg-manager > .mg-manager-search {
+  display: block !important;
+
+  width: 100%;
+  max-width: 400px;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  flex: 0 0 auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.mg-manager > .mg-manager-table-wrap {
+  align-self: stretch !important;
+  margin-top: 0 !important;
+}
 /* Override global Game Log table CSS */
 .mg-manager-table {
   width: 100% !important;
