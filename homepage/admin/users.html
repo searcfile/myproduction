@@ -6249,12 +6249,16 @@ if (window.NewUI?.syncSearch) {
   const response=await api('/api/sites');
   if(permissionUser?.uid!==u.uid||!root.isConnected)return;
   sites=response.sites||[];
-  const visible=sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id));
-  siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
-   placeholder:visible.length?'Select Site Assignment':'No sites available',
-   options:visible.map(s=>({value:s.id,label:s.name+' ('+s.id+')'+(s.active?'':' · inactive')})),
-   value:(u.siteIds||[]).filter(id=>visible.some(s=>s.id===id))
-  });
+const visible=sites.filter(s=>s.active||(u.siteIds||[]).includes(s.id));
+
+siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
+  placeholder:visible.length?'Select Site Assignment':'No sites available',
+  options:visible.map(s=>({
+    value:s.id,
+    label:(s.name || s.id)+(s.active?'':' · inactive')
+  })),
+  value:(u.siteIds||[]).filter(id=>visible.some(s=>s.id===id))
+});
   permissionDraft={};const modules=getPermissionModules();
   for(const [key] of modules){const saved=u.permissions?.[key]||u.permissions?.[key.replace(/\.html$/,'_html')]||[];permissionDraft[key]=new Set(Array.isArray(saved)?saved.filter(x=>permissionActions(key).includes(x)):[])}
   activePermissionModule=modules[0]?.[0]||'';renderPermissionTabs();renderPermissionPanel();
