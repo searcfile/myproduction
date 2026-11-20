@@ -2299,11 +2299,13 @@ function biOpenBankForm(editId = null) {
     return;
   }
 
+
 const modal = NewUI.modal.open({
   title: editing ? "Edit Bank" : "Create Bank",
   width: 720,
-  stack: editing,
+  stack: true,
   content: `
+
       <form id="biBankForm" class="bi-bank-form">
         <label>
           Bank Name
@@ -2864,11 +2866,15 @@ editBtn.addEventListener("click", () => {
     });
   }
 
-  // ===== CREATE BANK =====
+// ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
-    modal.close();
-    biOpenBankForm();
-  });
+    if (!biCan("create")) {
+      return biToast("Permission denied", "error");
+    }
+
+
+biOpenBankForm();
+});
 
   // ===== INITIAL RENDER =====
   renderList();
