@@ -2868,30 +2868,40 @@ td:last-child .site-actions {
   overflow-x: auto;
 }
 
-/* RISK ASSESSMENT - SITE COLUMN */
-.auth-risk-table th:first-child,
-.auth-risk-table td:first-child {
-  min-width: 150px;
-  width: 150px;
-  white-space: nowrap;
+/* ==========================================
+   RISK ASSESSMENT - SITE COLUMN CENTER FIX
+   ========================================== */
+
+/* CENTER SITE HEADER */
+.auth-risk-table thead th:first-child {
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
   text-align: center !important;
   vertical-align: middle !important;
 }
 
-/* CENTER SITE NAME */
-.auth-risk-table td:first-child .auth-risk-value {
-  display: block;
-  width: 100%;
+/* CENTER SITE TABLE CELL */
+.auth-risk-table tbody td:first-child {
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
   text-align: center !important;
-  font-weight: 500;
-  color: var(--text);
+  vertical-align: middle !important;
+  padding: 13px 12px !important;
+  font-weight: 500 !important;
 }
 
-.auth-risk-table td:first-child .auth-risk-value {
-  font-weight: 500;
-  color: var(--text);
+/* CENTER SITE TEXT */
+.auth-risk-table tbody td:first-child > .auth-risk-value {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  color: var(--text) !important;
 }
-
 /* AUTH USERS - CLICKABLE RISK USERNAME */
 
 .auth-risk-username-link {
