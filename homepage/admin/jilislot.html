@@ -658,6 +658,207 @@ input[type="number"] {
 .jili-empty-panel .shared-empty:hover {
   background: var(--tx-hover) !important;
 }
+
+/* ==========================================
+   JILISLOT - MANAGE GAMES TABLE
+   ========================================== */
+
+.jili-manager-table {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+
+  width: 100%;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--page-text);
+}
+
+/* SEARCH */
+
+.jili-manager-search {
+  display: block !important;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.jili-manager-search input {
+  width: 100% !important;
+  max-width: 400px !important;
+  height: 32px;
+  min-width: 0 !important;
+  padding: 0 12px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: var(--page-input);
+  color: var(--page-text);
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+}
+
+.jili-manager-search input:focus {
+  border-color: #1668dc;
+  outline: none;
+}
+
+/* CUSTOM SEARCH */
+
+.jili-manager-search .shared-sync-search {
+  width: 100%;
+  max-width: 400px;
+}
+
+.jili-manager-search .shared-sync-search-input {
+  height: 32px !important;
+  font-size: 13px !important;
+}
+
+.jili-manager-search .shared-sync-search-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* TABLE WRAPPER */
+
+.jili-manager-table-wrap {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(55vh, 520px);
+
+  flex: 0 1 auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: auto;
+
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+/* TABLE */
+
+.jili-manager-data-table {
+  width: 100% !important;
+  min-width: 950px;
+  margin: 0 !important;
+
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+
+  font-size: 13px !important;
+  color: var(--page-text);
+}
+
+/* TABLE CELL BORDER */
+
+.jili-manager-data-table th,
+.jili-manager-data-table td {
+  padding: 10px 12px !important;
+
+  border: 0 !important;
+  border-right: 1px solid var(--border-input) !important;
+  border-bottom: 1px solid var(--border-input) !important;
+
+  background: var(--list-bg);
+  color: var(--page-text);
+
+  font-size: 13px !important;
+  line-height: 1.4;
+
+  text-align: left;
+  white-space: nowrap;
+  width: auto !important;
+}
+
+/* LAST COLUMN */
+
+.jili-manager-data-table th:last-child,
+.jili-manager-data-table td:last-child {
+  border-right: 0 !important;
+  text-align: center;
+}
+
+/* STICKY HEADER */
+
+.jili-manager-data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--list-bg);
+  font-weight: 600;
+}
+
+/* ROW HOVER */
+
+.jili-manager-data-table tbody tr:hover td {
+  background: var(--list-hover);
+}
+
+/* LAST ROW */
+
+.jili-manager-data-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* ACTION */
+
+.jili-manager-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.jili-manager-actions button {
+  height: 30px;
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.jili-manager-actions .jili-danger {
+  background: #d9363e;
+}
+
+/* NO DATA */
+
+.jili-manager-empty {
+  padding: 24px 12px !important;
+  text-align: center !important;
+  opacity: .7;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+  .jili-manager-table-wrap {
+    max-height: 60vh;
+  }
+
+  .jili-manager-data-table th,
+  .jili-manager-data-table td {
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
 </style>
 </head>
 
@@ -2048,44 +2249,315 @@ pecahan[jiliBetKey(bet)] = wins;
     await window.NewUI.setButtonLoading(saveButton, false);
   }
 }
-function jiliOpenManager(query=""){
- const records=Object.entries(jiliDbRecords).filter(([,x])=>x?.name).sort((a,b)=>a[1].name.localeCompare(b[1].name));
- jiliOpenModal("Manage JILI Games",`
- <div class="jili-manager-toolbar"></div>
- <div class="jili-help" style="margin-top:8px">${records.length} games in database.</div>
- <div id="jiliGameList" class="jili-game-list"></div>`);
- const list=document.getElementById("jiliGameList");
- const render=(term)=>{
-   const found=records.filter(([,r])=>r.name.toLowerCase().includes(term.toLowerCase()));
-   list.innerHTML=found.length?found.map(([id,r])=>`<div class="jili-game-entry"><div><strong>${jiliEsc(r.name)}</strong><small>${r.bets?.length||0} bets · ${r.active===false?"Inactive":"Active"}</small></div><div class="jili-row-actions"><button type="button" data-edit="${jiliEsc(id)}">Edit</button><button type="button" class="jili-danger" data-delete="${jiliEsc(id)}">Delete</button></div></div>`).join(""):'<div class="jili-help" style="padding:20px;text-align:center">No data</div>';
- };
- requestAnimationFrame(() => {
-   if (list.isConnected) {
-     render(query);
-   }
- });
- list.addEventListener("click",async e=>{
-   const edit=e.target.closest("[data-edit]");if(edit){jiliOpenEditor(edit.dataset.edit);return;}
-   const del=e.target.closest("[data-delete]");if(!del)return;
-   const id=del.dataset.delete;
-   const confirmed = await window.NewUI.confirm({
-  target: del,
-  title: "Delete Game?",
-  message: `Are you sure you want to delete "${jiliDbRecords[id]?.name}"?`,
-  confirmText: "Delete",
-  cancelText: "Cancel",
-  danger: true
-});
 
-if (!confirmed) return;
-   try{await jiliApi(`/${encodeURIComponent(id)}`, {
-  method: "DELETE"
-});
-    await jiliLoadGames();showToast("Game deleted","success");jiliOpenManager();}
-   catch(err){showToast(err.message||"Delete failed","error");}
- });
+/* ==========================================
+   JILISLOT - MANAGE GAMES TABLE + SEARCH
+   ========================================== */
 
+function jiliOpenManager(query = "") {
+
+  const records = Object.entries(jiliDbRecords)
+    .filter(([, record]) => record?.name)
+    .sort((a, b) =>
+      String(a[1].name).localeCompare(String(b[1].name))
+    );
+
+  const host = document.createElement("div");
+  host.className = "jili-manager-table";
+
+  /* ===== SEARCH ===== */
+
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "jili-manager-search";
+
+  const searchInput = document.createElement("input");
+  searchInput.type = "search";
+  searchInput.placeholder = "Search";
+  searchInput.autocomplete = "off";
+  searchInput.setAttribute("aria-label", "Search game name");
+  searchInput.value = query;
+
+  searchWrap.append(searchInput);
+
+  /* ===== TABLE ===== */
+
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "jili-manager-table-wrap";
+
+  const table = document.createElement("table");
+  table.className = "jili-manager-data-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  [
+    "Game Name",
+    "Betting",
+    "Free Game",
+    "Created Date",
+    "Last Edited",
+    "Action"
+  ].forEach(label => {
+    const th = document.createElement("th");
+    th.textContent = label;
+    headerRow.append(th);
+  });
+
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  table.append(thead, tbody);
+  tableWrap.append(table);
+
+  host.append(searchWrap, tableWrap);
+
+  /* ===== MODAL ===== */
+
+  jiliCloseModal();
+
+  const modal = window.NewUI.modal.open({
+    title: "Manage JILI Games",
+    content: host,
+    width: 1100,
+    onClose: () => {
+      if (jiliModalInstance === modal) {
+        jiliModalInstance = null;
+      }
+    }
+  });
+
+  jiliModalInstance = modal;
+
+  /* ===== FORMAT TIMESTAMP ===== */
+
+  function formatDate(value) {
+    if (value == null || value === "") return "—";
+
+    let date;
+
+    if (typeof value === "object" && value.seconds != null) {
+      date = new Date(value.seconds * 1000);
+    } else if (
+      typeof value === "number" ||
+      /^\d+$/.test(String(value))
+    ) {
+      const number = Number(value);
+      date = new Date(
+        number < 1e12 ? number * 1000 : number
+      );
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return "—";
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kuala_Lumpur",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(date);
+
+    const get = type =>
+      parts.find(part => part.type === type)?.value ?? "00";
+
+    return (
+      `${get("hour")}:${get("minute")}:${get("second")} ` +
+      `${get("day")}/${get("month")}/${get("year")}`
+    );
+  }
+
+  /* ===== CREATE CELL ===== */
+
+  function makeCell(value) {
+    const td = document.createElement("td");
+    td.textContent = String(value ?? "—");
+    return td;
+  }
+
+  /* ===== RENDER ROWS ===== */
+
+  function renderRows(keyword = "") {
+    tbody.replaceChildren();
+
+    const term = String(keyword).trim().toLowerCase();
+
+    const filtered = records.filter(([, record]) =>
+      String(record.name).toLowerCase().includes(term)
+    );
+
+    if (!filtered.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 6;
+      td.className = "jili-manager-empty";
+      td.textContent = records.length
+        ? "No matching games found"
+        : "No games yet";
+
+      tr.append(td);
+      tbody.append(tr);
+      return;
+    }
+
+    filtered.forEach(([id, record]) => {
+      const tr = document.createElement("tr");
+
+      /* GAME NAME */
+
+      const nameTd = document.createElement("td");
+      const strong = document.createElement("strong");
+
+      strong.textContent = record.name;
+      nameTd.append(strong);
+
+      /* BETTING */
+
+      const bettingTd = makeCell(
+        `${Array.isArray(record.bets)
+          ? record.bets.length
+          : 0} bets`
+      );
+
+      /* FREE GAME */
+
+      // JILI menggunakan bets + pecahan.
+      // Jangan reka data Free Game yang tiada.
+      const freeTd = makeCell(
+        Array.isArray(record.freeGameOptions)
+          ? record.freeGameOptions.join(", ") || "None"
+          : "—"
+      );
+
+      /* CREATED DATE */
+
+      const createdTd = makeCell(
+        formatDate(
+          record.createdAt ??
+          record.created_at
+        )
+      );
+
+      /* LAST EDITED */
+
+      const editedTd = makeCell(
+        formatDate(
+          record.updatedAt ??
+          record.updated_at
+        )
+      );
+
+      /* ACTION */
+
+      const actionTd = document.createElement("td");
+      const actions = document.createElement("div");
+      actions.className = "jili-manager-actions";
+
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "btn-edit-new";
+      edit.textContent = "Edit";
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "btn-delete-new jili-danger";
+      del.textContent = "Delete";
+
+      /* EDIT - KEEP ORIGINAL JILI EDITOR */
+
+      edit.addEventListener("click", () => {
+        jiliOpenEditor(id);
+      });
+
+      /* DELETE - KEEP ORIGINAL JILI API */
+
+      del.addEventListener("click", async () => {
+        const confirmed = await window.NewUI.confirm({
+          target: del,
+          title: "Delete Game?",
+          message:
+            `Are you sure you want to delete "${record.name}"?`,
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          danger: true
+        });
+
+        if (!confirmed) return;
+
+        del.disabled = true;
+
+        try {
+          await jiliApi(
+            `/${encodeURIComponent(id)}`,
+            { method: "DELETE" }
+          );
+
+          const loaded = await jiliLoadGames();
+
+          if (!loaded) {
+            throw new Error(
+              "Game deleted, but refreshing the list failed"
+            );
+          }
+
+          showToast("Game deleted", "success");
+
+          jiliOpenManager(searchInput.value);
+
+        } catch (error) {
+          showToast(
+            error.message || "Delete failed",
+            "error"
+          );
+          del.disabled = false;
+        }
+      });
+
+      actions.append(edit, del);
+      actionTd.append(actions);
+
+      tr.append(
+        nameTd,
+        bettingTd,
+        freeTd,
+        createdTd,
+        editedTd,
+        actionTd
+      );
+
+      tbody.append(tr);
+    });
+  }
+
+  /* ===== CUSTOM SEARCH ===== */
+
+  if (typeof window.NewUI?.syncSearch === "function") {
+    window.NewUI.syncSearch(searchInput, {
+      onSearch: async keyword => {
+        await new Promise(resolve =>
+          setTimeout(resolve, 250)
+        );
+
+        if (host.isConnected) {
+          renderRows(keyword);
+        }
+      }
+    });
+  }
+
+  searchInput.addEventListener("input", () => {
+    renderRows(searchInput.value);
+  });
+
+  renderRows(query);
 }
+
 
 document.getElementById("jiliCreateBtn").addEventListener("click",()=>jiliOpenEditor());
 document.getElementById("jiliManageBtn").addEventListener("click",()=>jiliOpenManager());
