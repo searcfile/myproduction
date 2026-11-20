@@ -3319,7 +3319,28 @@ td:nth-child(2)::after {
 .auth-list .auth-table tbody td:nth-child(3) {
   border-left: 1px solid var(--tx-border) !important;
 }
+/* ==========================================
+   AUTH USERS - MAIN TABLE SITE COLUMN CENTER
+   ========================================== */
 
+/* CENTER HEADER SITE */
+#manageUsersPane .auth-table thead th:first-child {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* CENTER ALL SITE NAMES */
+#manageUsersPane .auth-table tbody td:first-child {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* CENTER ELEMENT INSIDE SITE CELL */
+#manageUsersPane .auth-table tbody td:first-child > * {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
 </style>
 </head>
 <body>
