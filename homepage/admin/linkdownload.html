@@ -1106,7 +1106,7 @@ const siteOptions = Object.entries(sites)
   .sort((a, b) => a[0].localeCompare(b[0]))
   .map(([siteId, site]) => ({
     value: siteId,
-    label: `${site.name || siteId} (${siteId})`
+    label: site.name || siteId
   }));
 
 const siteField = el('div', 'ld-field');
