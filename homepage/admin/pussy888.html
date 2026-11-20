@@ -3892,13 +3892,16 @@ const decodedPecahan = pussyDecodePecahan(old.pecahan);
   actions.append(statusField, right);
   form.append(actions);
 
-  const modal = NewUI.modal.open({
-    title: oldName ? "Edit Game" : "Create Game",
-    content: form,
-    width: 720
-  });
 
-  cancel.onclick = () => modal.close();
+const modal = NewUI.modal.open({
+  title: oldName ? "Edit Game" : "Create Game",
+  content: form,
+  width: 720,
+  stack: Boolean(oldName)
+});
+
+cancel.onclick = () => modal.close();
+
 
   form
     .querySelectorAll("input[data-new-ui-input]")
@@ -4111,12 +4114,14 @@ function mgManager() {
     (a, b) => a.localeCompare(b)
   );
 
-  // MODAL
-  const modal = NewUI.modal.open({
-    title: "Manage PUSSY888 Games",
-    content: host,
-    width: 1100
-  });
+
+// MODAL
+const modal = NewUI.modal.open({
+  title: "Manage PUSSY888 Games",
+  content: host,
+  width: 1100,
+  stack: false
+});
 
   // FORMAT DATE TIME
   function mgFormatDate(value) {
@@ -4237,10 +4242,13 @@ function mgManager() {
       edit.hidden = !mgCan("edit");
       del.hidden = !mgCan("delete");
 
-      edit.onclick = () => {
-        modal.close();
-        mgEditor(name);
-      };
+
+/* ===== EDIT - KEEP MANAGE GAMES OPEN ===== */
+
+edit.onclick = () => {
+  // Jangan tutup modal Manage Games
+  mgEditor(name);
+};
 
       del.onclick = async () => {
         const confirmed = await NewUI.confirm({
