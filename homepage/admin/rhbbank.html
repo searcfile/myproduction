@@ -946,6 +946,126 @@ body > .wrap > #preview {
   white-space: nowrap;
 }
 
+/* ==========================================
+   RHB BANK - MANAGE BANKS TABLE
+   SAME STYLE AS CIMB
+   ========================================== */
+
+.rhb-bank-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  color: var(--page-text);
+}
+
+.rhb-bank-manager-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.rhb-bank-search-host {
+  flex: 0 1 400px;
+  width: 400px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.rhb-bank-search-host .shared-sync-search {
+  width: 100%;
+}
+
+.rhb-bank-manager-table-wrap {
+  width: 100%;
+  max-height: min(55vh, 520px);
+  overflow: auto;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.rhb-bank-manager-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: var(--page-text);
+}
+
+.rhb-bank-manager-table th,
+.rhb-bank-manager-table td {
+  padding: 10px 12px;
+  border-right: 1px solid var(--border-input);
+  border-bottom: 1px solid var(--border-input);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: var(--page-bg2);
+}
+
+.rhb-bank-manager-table th:last-child,
+.rhb-bank-manager-table td:last-child {
+  border-right: none;
+}
+
+.rhb-bank-manager-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: 600;
+  background: var(--page-bg2);
+}
+
+.rhb-bank-manager-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rhb-bank-manager-table tbody tr:hover td {
+  background: var(--tx-hover, rgba(128,128,128,.08));
+}
+
+.rhb-bank-actions-cell {
+  text-align: center !important;
+}
+
+.rhb-bank-table-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.rhb-bank-table-buttons button {
+  width: auto;
+  height: 32px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.rhb-bank-status-active {
+  color: #22c55e;
+}
+
+.rhb-bank-status-inactive {
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .rhb-bank-search-host {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .rhb-bank-manager-toolbar > button {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1955,79 +2075,175 @@ await rhbLoadBanks();
   });
 }
 
+
 function rhbManageBanksModal() {
   if (!window.NewUI?.modal?.open) {
     return rhbToast("Custom modal belum tersedia.", "error");
   }
 
   const content = document.createElement("div");
+  content.className = "rhb-bank-manager";
 
-  const list = document.createElement("div");
-  list.className = "rhb-catalog-list";
+  // ===== TOOLBAR =====
+  const toolbar = document.createElement("div");
+  toolbar.className = "rhb-bank-manager-toolbar";
 
-  content.append(list);
+  const searchHost = document.createElement("div");
+  searchHost.className = "rhb-bank-search-host";
 
+  const search = document.createElement("input");
+  search.type = "search";
+  search.placeholder = "Search bank...";
+  search.setAttribute("aria-label", "Search bank");
+
+  searchHost.append(search);
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn-primary-new";
+  addButton.textContent = "+ Create Bank";
+  addButton.hidden = !rhbCan("create");
+
+  toolbar.append(searchHost, addButton);
+
+  // ===== TABLE =====
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "rhb-bank-manager-table-wrap";
+
+  const table = document.createElement("table");
+  table.className = "rhb-bank-manager-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  [
+    "Bank Name",
+    "Account Pattern",
+    "Status",
+    "Actions"
+  ].forEach(title => {
+    const th = document.createElement("th");
+    th.textContent = title;
+    th.scope = "col";
+    headerRow.append(th);
+  });
+
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  content.append(toolbar, tableWrap);
+
+  // ===== MODAL =====
   const modal = NewUI.modal.open({
     title: "Manage Banks",
     content,
-    width: 720
+    width: 1100,
+    stack: false
   });
 
+  // ===== RENDER =====
   function renderList() {
-    list.replaceChildren();
+    tbody.replaceChildren();
+
+    const keyword = search.value.trim().toLowerCase();
 
     const records = Object.entries(RHB_BANK_RECORDS)
-      .sort((a, b) => a[1].name.localeCompare(b[1].name));
+      .sort((a, b) =>
+        String(a[1].name || "").localeCompare(
+          String(b[1].name || "")
+        )
+      )
+      .filter(([, bank]) => {
+        const searchable = [
+          bank.name,
+          bank.pattern,
+          bank.active ? "Active" : "Inactive"
+        ].join(" ").toLowerCase();
+
+        return searchable.includes(keyword);
+      });
 
     if (!records.length) {
-      if (window.showEmptyState) {
-        window.showEmptyState(list, "No data", "large", "center");
-      } else {
-        list.textContent = "No data";
-      }
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+
+      td.colSpan = 4;
+      td.style.textAlign = "center";
+      td.style.padding = "35px 12px";
+      td.textContent = keyword
+        ? "No matching banks"
+        : "No data";
+
+      tr.append(td);
+      tbody.append(tr);
       return;
     }
 
     for (const [id, bank] of records) {
-      const row = document.createElement("div");
-      row.className = "rhb-catalog-item";
+      const tr = document.createElement("tr");
 
-      const info = document.createElement("div");
-      info.className = "rhb-catalog-info";
+      function addCell(value) {
+        const td = document.createElement("td");
+        td.textContent = String(value ?? "");
+        tr.append(td);
+        return td;
+      }
 
-      const name = document.createElement("strong");
-      name.textContent = bank.name;
+      // BANK NAME
+      const nameCell = addCell(bank.name);
+      nameCell.style.fontWeight = "600";
 
-      const details = document.createElement("small");
-      details.textContent =
-        `Pattern: ${bank.pattern} · ` +
-        (bank.active ? "Active" : "Inactive");
+      // ACCOUNT PATTERN
+      addCell(bank.pattern);
 
-      info.append(name, details);
+      // STATUS
+      const statusCell = addCell(
+        bank.active ? "Active" : "Inactive"
+      );
 
-      const actions = document.createElement("div");
-      actions.className = "rhb-catalog-buttons";
+      statusCell.className = bank.active
+        ? "rhb-bank-status-active"
+        : "rhb-bank-status-inactive";
 
+      // ACTIONS
+      const actionCell = document.createElement("td");
+      actionCell.className = "rhb-bank-actions-cell";
+
+      const buttons = document.createElement("div");
+      buttons.className = "rhb-bank-table-buttons";
+
+      // EDIT
       const edit = document.createElement("button");
       edit.type = "button";
       edit.className = "btn-edit-new";
       edit.textContent = "Edit";
-edit.hidden =
-  !rhbCan("edit") || bank.canManage !== true;
+
+      edit.hidden =
+        !rhbCan("edit") || bank.canManage !== true;
+
       edit.addEventListener("click", () => {
         modal.close();
         rhbBankFormModal(id);
       });
 
+      // DELETE
       const del = document.createElement("button");
       del.type = "button";
       del.className = "btn-delete-new";
       del.textContent = "Delete";
-del.hidden =
-  !rhbCan("delete") || bank.canDelete !== true;
+
+      del.hidden =
+        !rhbCan("delete") || bank.canDelete !== true;
+
       del.addEventListener("click", async () => {
         if (!window.NewUI?.confirm) {
-          return rhbToast("Custom confirm belum tersedia.", "error");
+          return rhbToast(
+            "Custom confirm belum tersedia.",
+            "error"
+          );
         }
 
         const confirmed = await NewUI.confirm({
@@ -2039,31 +2255,68 @@ del.hidden =
         });
 
         if (!confirmed) return;
+
         del.disabled = true;
 
         try {
           await rhbApi(
-  `/api/rhb/banks/${encodeURIComponent(id)}`,
-  { method: "DELETE" }
-);
+            `/api/rhb/banks/${encodeURIComponent(id)}`,
+            { method: "DELETE" }
+          );
 
-await rhbLoadBanks();
+          await rhbLoadBanks();
+
           delete RHB_BANK_RECORDS[id];
+
           renderList();
+
           rhbToast("Bank deleted successfully");
         } catch (error) {
-          rhbToast("Gagal delete: " + error.message, "error");
+          rhbToast(
+            "Gagal delete: " + error.message,
+            "error"
+          );
           del.disabled = false;
         }
       });
 
-      actions.append(edit, del);
-      row.append(info, actions);
-      list.append(row);
+      buttons.append(edit, del);
+      actionCell.append(buttons);
+      tr.append(actionCell);
+      tbody.append(tr);
     }
   }
-renderList();
+
+  // ===== SEARCH =====
+  search.addEventListener("input", renderList);
+
+  if (typeof NewUI.syncSearch === "function") {
+    NewUI.syncSearch(search, {
+      onSearch: async () => {
+        try {
+          await rhbLoadBanks();
+          renderList();
+        } catch (error) {
+          rhbToast(error.message, "error");
+        }
+      }
+    });
+  }
+
+  // ===== CREATE BANK =====
+  addButton.addEventListener("click", () => {
+    if (!rhbCan("create")) {
+      return rhbToast("Permission denied", "error");
+    }
+
+    modal.close();
+    rhbBankFormModal();
+  });
+
+  // ===== INITIAL RENDER =====
+  renderList();
 }
+
 
 document.getElementById("rhbCreateBank")
   ?.addEventListener("click", () => {
