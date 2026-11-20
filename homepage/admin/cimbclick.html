@@ -2157,7 +2157,30 @@ async function cimbLoadSites() {
   const data = await cimbApi("/api/cimbclick/sites");
   return Array.isArray(data.sites) ? data.sites : [];
 }
+// ===== CIMB SITE VISIBILITY PRELOAD =====
+let cimbSitesCache = [];
+let cimbSitesLoaded = false;
+let cimbSitesPromise = null;
 
+function cimbEnsureSites() {
+  if (cimbSitesLoaded) {
+    return Promise.resolve(cimbSitesCache);
+  }
+
+  if (!cimbSitesPromise) {
+    cimbSitesPromise = cimbLoadSites()
+      .then(sites => {
+        cimbSitesCache = sites;
+        cimbSitesLoaded = true;
+        return sites;
+      })
+      .finally(() => {
+        cimbSitesPromise = null;
+      });
+  }
+
+  return cimbSitesPromise;
+}
 async function cimbLoadAccess() {
   const data = await cimbApi("/api/cimbclick/access");
 
@@ -2299,6 +2322,15 @@ if (user && cimbPersistenceReady) {
 async function initFirebaseBanks() {
   try {
     await cimbLoadAccess();
+
+    // Preload site lebih awal
+    cimbEnsureSites().catch(error => {
+      console.error(
+        "[CIMB] Site preload failed:",
+        error
+      );
+    });
+
     await cimbLoadBanks();
   } catch (error) {
     bankCatalogLoaded = false;
@@ -2462,38 +2494,35 @@ let selectedSiteIds = Object.entries(
 
 let allowedSiteIds = new Set();
 
+// ===== CIMB SITE VISIBILITY - INSTANT DROPDOWN =====
 saveButton.disabled = true;
-siteContainer.textContent = "Loading sites...";
 
-try {
-  const sites = await cimbLoadSites();
-
+function renderCimbSiteChips(sites) {
   allowedSiteIds = new Set(
     sites.map(site => site.id)
   );
 
-  // Jangan hilangkan pilihan lama ketika Edit.
   const initialSiteIds = selectedSiteIds.filter(
     id => allowedSiteIds.has(id)
   );
 
   siteContainer.replaceChildren();
 
-const chips = NewUI.chips(siteContainer, {
-  options: sites.map(site => ({
-    value: site.id,
-    label: site.name
-  })),
-  value: initialSiteIds,
-  multiple: true,
-  placeholder: "Select Sites",
+  const chips = NewUI.chips(siteContainer, {
+    options: sites.map(site => ({
+      value: site.id,
+      label: site.name
+    })),
+    value: initialSiteIds,
+    multiple: true,
+    placeholder: "Select Sites",
 
-  onChange(values) {
-    selectedSiteIds = Array.isArray(values)
-      ? values.filter(id => allowedSiteIds.has(id))
-      : [];
-  }
-});
+    onChange(values) {
+      selectedSiteIds = Array.isArray(values)
+        ? values.filter(id => allowedSiteIds.has(id))
+        : [];
+    }
+  });
 
   if (!chips) {
     throw Error("Cannot initialize site dropdown");
@@ -2502,10 +2531,36 @@ const chips = NewUI.chips(siteContainer, {
   selectedSiteIds = initialSiteIds;
   sitesLoaded = true;
   saveButton.disabled = false;
+}
 
-} catch (error) {
-  siteContainer.textContent = "Failed to load sites";
-  bankToast(error.message, "error");
+// Paparkan dropdown terus menggunakan cache
+if (cimbSitesLoaded) {
+  try {
+    renderCimbSiteChips(cimbSitesCache);
+  } catch (error) {
+    bankToast(error.message, "error");
+  }
+} else {
+  // Kotak Select Sites muncul dahulu
+  NewUI.chips(siteContainer, {
+    options: [],
+    value: [],
+    multiple: true,
+    placeholder: "Select Sites"
+  });
+
+  // Isi pilihan sebenar selepas API siap
+  cimbEnsureSites()
+    .then(sites => {
+      if (!content.isConnected) return;
+      renderCimbSiteChips(sites);
+    })
+    .catch(error => {
+      if (!content.isConnected) return;
+
+      siteContainer.textContent = "Failed to load sites";
+      bankToast(error.message, "error");
+    });
 }
   content.querySelector("[data-cancel]").addEventListener("click",()=>modal.close());
   content.addEventListener("submit", async event => {
@@ -3042,7 +3097,19 @@ function cimbInitPersistence() {
     cimbPersistenceReady = true;
   });
 }
+let cimbSitesAuthUid = null;
 
+firebase.auth().onAuthStateChanged(user => {
+  const nextUid =
+    user && !user.isAnonymous ? user.uid : null;
+
+  if (cimbSitesAuthUid !== nextUid) {
+    cimbSitesAuthUid = nextUid;
+    cimbSitesCache = [];
+    cimbSitesLoaded = false;
+    cimbSitesPromise = null;
+  }
+});
 cimbInitPersistence();
 initFirebaseBanks();
 
