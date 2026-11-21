@@ -940,6 +940,45 @@ input[type="number"] {
   margin: 0 !important;
   text-align: center !important;
 }
+
+/* ==========================================
+   JILISLOT - MANAGE GAMES STATUS COLUMN
+   ========================================== */
+
+.jili-manager-data-table .jili-game-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 75px;
+  height: 25px;
+  padding: 3px 10px;
+
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ACTIVE - GREEN */
+
+.jili-manager-data-table .jili-game-status-active {
+  color: #52c41a;
+  background: rgba(82, 196, 26, 0.10);
+  border-color: rgba(82, 196, 26, 0.35);
+}
+
+/* INACTIVE - RED */
+
+.jili-manager-data-table .jili-game-status-inactive {
+  color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.10);
+  border-color: rgba(255, 77, 79, 0.35);
+}
+
 </style>
 </head>
 
@@ -2439,14 +2478,17 @@ function jiliOpenManager(query = "") {
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
 
-  [
-    "Game Name",
-    "Betting",
-    "Free Game",
-    "Created Date",
-    "Last Edited",
-    "Action"
-  ].forEach(label => {
+
+[
+  "Game Name",
+  "Betting",
+  "Free Game",
+  "Status",
+  "Created Date",
+  "Last Edited",
+  "Action"
+].forEach(label => {
+
     const th = document.createElement("th");
     th.textContent = label;
     headerRow.append(th);
@@ -2543,7 +2585,7 @@ function showJiliManagerLoading() {
   const tr = document.createElement("tr");
   const td = document.createElement("td");
 
-  td.colSpan = 6;
+td.colSpan = 7;
   td.className = "shared-loading-table-cell";
 
   tr.append(td);
@@ -2577,7 +2619,7 @@ if (!filtered.length) {
   const tr = document.createElement("tr");
   const td = document.createElement("td");
 
-  td.colSpan = 6;
+td.colSpan = 7;
   td.className = "jili-manager-empty jili-manager-no-data";
 
   // Gunakan icon custom sama seperti MEGA888
@@ -2625,6 +2667,24 @@ if (!filtered.length) {
           ? record.freeGameOptions.join(", ") || "None"
           : "—"
       );
+
+/* ===== JILISLOT - GAME ACTIVE STATUS ===== */
+
+const statusTd = document.createElement("td");
+
+const isActive = record.active !== false;
+
+const statusBadge = document.createElement("span");
+
+statusBadge.className = isActive
+  ? "jili-game-status jili-game-status-active"
+  : "jili-game-status jili-game-status-inactive";
+
+statusBadge.textContent = isActive
+  ? "Active"
+  : "Inactive";
+
+statusTd.append(statusBadge);
 
       /* CREATED DATE */
 
@@ -2713,14 +2773,17 @@ if (!filtered.length) {
       actions.append(edit, del);
       actionTd.append(actions);
 
-      tr.append(
-        nameTd,
-        bettingTd,
-        freeTd,
-        createdTd,
-        editedTd,
-        actionTd
-      );
+
+tr.append(
+  nameTd,
+  bettingTd,
+  freeTd,
+  statusTd,
+  createdTd,
+  editedTd,
+  actionTd
+);
+
 
       tbody.append(tr);
     });
