@@ -1120,6 +1120,48 @@ body > .wrap > #preview {
   text-align: center !important;
 }
 
+/* ==========================================
+   RHB BANK - MANAGE BANKS PAGINATION
+   SAME AS MEGA888
+   ========================================== */
+
+.rhb-bank-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+.rhb-bank-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+.rhb-bank-manager-pagination[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .rhb-bank-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2267,9 +2309,21 @@ function rhbManageBanksModal() {
 
   const tbody = document.createElement("tbody");
 
-  table.append(thead, tbody);
-  tableWrap.append(table);
-  content.append(toolbar, tableWrap);
+
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== RHB BANK - PAGINATION CONTAINER ===== */
+
+const paginationWrap = document.createElement("div");
+paginationWrap.className = "rhb-bank-manager-pagination";
+
+content.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   // ===== MODAL =====
   const modal = NewUI.modal.open({
@@ -2278,6 +2332,30 @@ function rhbManageBanksModal() {
     width: 1100,
     stack: false
   });
+
+/* ===== RHB BANK - PAGINATION INITIALIZATION ===== */
+
+let rhbCurrentPage = 1;
+let rhbPageSize = 10;
+
+const rhbPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      rhbCurrentPage = page;
+      rhbPageSize = pageSize;
+
+      if (!content.isConnected) return;
+
+      renderList();
+    }
+  }
+);
 
 /* ===== RHB MANAGE BANKS - SHARED TABLE LOADING ===== */
 
@@ -2352,6 +2430,34 @@ async function loadRhbManagerTable() {
       });
 
 
+/* ===== RHB BANK - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(records.length / rhbPageSize)
+);
+
+rhbCurrentPage = Math.max(
+  1,
+  Math.min(rhbCurrentPage, totalPages)
+);
+
+// Update pagination mengikut hasil Search
+rhbPagination.update({
+  total: records.length,
+  page: rhbCurrentPage,
+  pageSize: rhbPageSize
+});
+
+// Ambil records untuk page aktif sahaja
+const startIndex =
+  (rhbCurrentPage - 1) * rhbPageSize;
+
+const paginatedRecords = records.slice(
+  startIndex,
+  startIndex + rhbPageSize
+);
+
 /* ===== RHB MANAGE BANKS - CUSTOM NO DATA ===== */
 if (!records.length) {
   const tr = document.createElement("tr");
@@ -2377,7 +2483,7 @@ if (!records.length) {
 }
 
 
-    for (const [id, bank] of records) {
+ for (const [id, bank] of paginatedRecords) {
       const tr = document.createElement("tr");
 
       function addCell(value) {
@@ -2486,15 +2592,22 @@ edit.addEventListener("click", () => {
 
 /* ===== RHB MANAGE BANKS - SEARCH WITH LOADING ===== */
 
+
 search.addEventListener("input", () => {
+  rhbCurrentPage = 1;
+
   if (!rhbManagerLoading) {
     renderList();
   }
 });
 
+
+
 if (typeof NewUI.syncSearch === "function") {
   NewUI.syncSearch(search, {
     onSearch: async () => {
+      rhbCurrentPage = 1;
+
       await loadRhbManagerTable();
     }
   });
