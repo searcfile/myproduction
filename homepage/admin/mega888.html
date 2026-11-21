@@ -3965,14 +3965,24 @@ try {
     }
   );
 
-  await mgReload();
+/* ===== RELOAD DATA FROM BACKEND ===== */
 
-  await NewUI.setButtonLoading(save, false, {
-    minDuration: 700
-  });
+await mgReload();
 
-  modal.close();
-  mgToast("Game saved", "success");
+/* ===== LIVE UPDATE MANAGE GAMES TABLE ===== */
+
+mgRefreshManagerRows?.();
+
+/* ===== FINISH SAVE LOADING ===== */
+
+await NewUI.setButtonLoading(save, false, {
+  minDuration: 700
+});
+
+modal.close();
+
+mgToast("Game saved", "success");
+
 
 } catch (err) {
   mgToast("Save failed: " + err.message, "error");
@@ -3988,6 +3998,10 @@ try {
 /* ==========================================
    MEGA888 - MANAGE GAMES TABLE + SEARCH
    ========================================== */
+
+/* ===== MEGA888 - LIVE MANAGE GAMES REFRESH ===== */
+
+let mgRefreshManagerRows = null;
 
 function mgManager() {
 
@@ -4486,6 +4500,15 @@ tr.append(
   }
 
 
+
+/* ===== REFRESH MANAGE GAMES WITHOUT PAGE RELOAD ===== */
+
+mgRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  stopManagerTableLoading();
+  renderRows(searchInput.value);
+};
 
 /* ===== LIVE SEARCH + PAGINATION RESET ===== */
 
