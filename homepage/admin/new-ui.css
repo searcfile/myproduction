@@ -2811,7 +2811,7 @@ html.new-ui-modal-open {
   background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   caret-color: var(--caret-color);
   cursor: text;
 }
@@ -2852,8 +2852,8 @@ html.new-ui-modal-open {
 /* Pilihan 10 / 20 / 50 / 100 */
 .new-ui-pagination-size .shared-dropdown-option {
   min-height: 32px;
-  padding: 5px 9px;
-  font-size: 12px;
+  padding: 5px 12px;
+  font-size: 14px;
 }
 
 /* Pastikan panel tidak terpotong oleh pagination */
