@@ -1796,7 +1796,49 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
     font-size: 12px !important;
   }
 }
+/* ==========================================
+   EVO888 MANAGE GAMES - CUSTOM NO DATA
+   WITHOUT CARD
+   ========================================== */
 
+.mg-manager-no-data {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+}
+
+.mg-manager-no-data .shared-empty {
+  width: 100% !important;
+  min-height: 80px !important;
+  padding: 12px 0 !important;
+  margin: 0 auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.mg-manager-no-data .shared-empty:hover {
+  background: transparent !important;
+}
+
+.mg-manager-no-data .shared-empty-image {
+  margin: 0 auto !important;
+}
+
+.mg-manager-no-data .shared-empty-text {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
 </style>
 <body>
 
@@ -4124,20 +4166,30 @@ const modal = NewUI.modal.open({
       )
     );
 
-    if (!filtered.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
+/* ===== EVO888 MANAGE GAMES - CUSTOM NO DATA ===== */
+if (!filtered.length) {
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
 
-      td.colSpan = 6;
-      td.className = "mg-manager-empty";
-      td.textContent = names.length
-        ? "No matching games found"
-        : "No games yet";
+  td.colSpan = 6;
+  td.className = "mg-manager-empty mg-manager-no-data";
 
-      tr.append(td);
-      tbody.append(tr);
-      return;
-    }
+  // Gunakan icon custom seperti MEGA888
+  if (typeof window.createEmptyState === "function") {
+    td.innerHTML = window.createEmptyState(
+      "No data",
+      "small",
+      "center"
+    );
+  } else {
+    td.textContent = "No data";
+  }
+
+  tr.append(td);
+  tbody.append(tr);
+
+  return;
+}
 
     filtered.forEach(name => {
       const game = gameData[name];
