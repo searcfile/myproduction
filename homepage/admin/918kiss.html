@@ -3845,16 +3845,25 @@ await mgApi(
   }
 );
 
+
+/* ===== RELOAD LATEST GAME DATA ===== */
+
 await mgReload();
 
+/* ===== LIVE UPDATE 918KISS MANAGE GAMES ===== */
 
-  // Pastikan spinner sempat kelihatan
-  await NewUI.setButtonLoading(save, false, {
-    minDuration: 700
-  });
+mgRefreshManagerRows?.();
 
-  modal.close();
-  mgToast("Game saved", "success");
+/* ===== FINISH SAVE LOADING ===== */
+
+await NewUI.setButtonLoading(save, false, {
+  minDuration: 700
+});
+
+modal.close();
+
+mgToast("Game saved", "success");
+
 
 } catch (err) {
   mgToast("Save failed: " + err.message, "error");
@@ -3870,6 +3879,10 @@ await mgReload();
 /* ==========================================
    918KISS - MANAGE GAMES TABLE + SEARCH
    ========================================== */
+
+/* ===== 918KISS - LIVE MANAGE GAMES REFRESH ===== */
+
+let mgRefreshManagerRows = null;
 
 function mgManager() {
   if (!mgCan("edit") && !mgCan("delete")) {
@@ -3961,7 +3974,7 @@ host.append(
 
 
   // Kekalkan site visibility asal 918KISS
-  const names = Object.keys(gameData)
+let names = Object.keys(gameData)  
     .filter(name => {
       const record = mgRecords[name];
 
@@ -4261,6 +4274,37 @@ tr.append(
     });
   }
 
+
+/* ===== 918KISS - REFRESH TABLE AFTER SAVE ===== */
+
+mgRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  // Ambil game terbaru dan kekalkan site visibility
+  names = Object.keys(gameData)
+    .filter(name => {
+      const record = mgRecords[name];
+
+      if (mgAccess.role === "superadmin") return true;
+      if (record?.visibleToAllSites !== false) return false;
+
+      const selected = Object.keys(
+        record?.siteVisibility || {}
+      ).filter(id => record.siteVisibility[id] === true);
+
+      const assigned = mgSites.map(site => site.id);
+
+      return selected.length > 0 &&
+        selected.every(id => assigned.includes(id));
+    })
+    .sort((a, b) => a.localeCompare(b));
+
+  // Hentikan loading table lama
+  stopManagerTableLoading();
+
+  // Refresh table dengan search dan pagination semasa
+  renderRows(searchInput.value);
+};
 
 /* ===== CUSTOM SEARCH + ROTATING ICON ===== */
 
