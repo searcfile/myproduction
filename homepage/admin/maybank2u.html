@@ -2148,6 +2148,10 @@ firebase.auth().onAuthStateChanged(user => {
         let MAINAN_BANK_RECORDS = {};
         let mainanBankLoaded = false;
         
+/* ===== MAYBANK2U - PREVENT DUPLICATE BANK REQUEST ===== */
+let mainanBankRequest = null;
+let mainanBankDataUid = null;
+
         let mainanAccess = {
           role: "",
           actions: []
@@ -2348,50 +2352,73 @@ function mainanEnsureSites() {
           mainanBankLoaded = true;
         }
         
-        async function mainanStartBankListener() {
-          mainanBankLoaded = false;
-        
 
-try {
-  const data = await mainanApi("/api/maybank2u/banks");
+/* ===== MAYBANK2U - SAFE BANK LOADER ===== */
 
-        
-            const records = {};
-        
-            for (const bank of data.banks || []) {
-              const normalized = mainanNormalizeBank(bank);
-        
-              if (normalized && bank.id) {
-                records[bank.id] = {
-                  ...normalized,
-                  id: bank.id,
-                  siteVisibility: bank.siteVisibility || {},
-                  canManage: bank.canManage === true,
-                  canDelete: bank.canDelete === true
-                };
-              }
-            }
-        
-            MAINAN_BANK_RECORDS = records;
-            mainanRefreshBankCatalog();
-        
-          } catch (error) {
-            console.error("Maybank bank load failed:", error);
-            MAINAN_BANK_RECORDS = {};
-           mainanBankLoaded = false;
-           mainanAccess = {
-          role: "",
-          actions: []
+async function mainanStartBankListener() {
+  // Kongsi request yang masih berjalan.
+  if (mainanBankRequest) {
+    return mainanBankRequest;
+  }
+
+  const request = (async () => {
+    const user = await mainanWaitForAuth();
+    const uid = user.uid;
+
+    // Jangan gunakan rekod milik sesi pengguna lama.
+    if (mainanBankDataUid !== uid) {
+      MAINAN_BANK_RECORDS = {};
+      mainanBankLoaded = false;
+      mainanBankDataUid = uid;
+    }
+
+    const data = await mainanApi("/api/maybank2u/banks");
+
+    const records = {};
+
+    for (const bank of data.banks || []) {
+      const normalized = mainanNormalizeBank(bank);
+
+      if (normalized && bank.id) {
+        records[bank.id] = {
+          ...normalized,
+          id: bank.id,
+          siteVisibility: bank.siteVisibility || {},
+          canManage: bank.canManage === true,
+          canDelete: bank.canDelete === true
         };
-        
-        mainanRefreshBankCatalog();
-        mainanBankLoaded = false;
-            document.getElementById("mainanCreateBank").hidden = true;
-            document.getElementById("mainanManageBanks").hidden = true;
-        
-            mainanToast(error.message, "error");
-          }
-        }
+      }
+    }
+
+    // Elakkan respons sesi lama menggantikan sesi baru.
+    if (firebase.auth().currentUser?.uid !== uid) {
+      throw new Error("User session changed");
+    }
+
+    MAINAN_BANK_RECORDS = records;
+    mainanBankDataUid = uid;
+    mainanRefreshBankCatalog();
+
+    return records;
+  })();
+
+  mainanBankRequest = request;
+
+  try {
+    return await request;
+  } catch (error) {
+    console.error("[MAYBANK2U] Bank loading failed:", error);
+
+    // Kekalkan rekod terakhir jika refresh gagal.
+    // Jangan kosongkan permission di sini.
+    throw error;
+  } finally {
+    if (mainanBankRequest === request) {
+      mainanBankRequest = null;
+    }
+  }
+}
+
         
         /* ==========================================================
            CREATE / EDIT BANK MODAL
@@ -2911,28 +2938,53 @@ function finishMainanManagerLoading() {
   renderList();
 }
 
-async function loadMainanManagerTable() {
+
+/* ===== MAYBANK2U MANAGE BANKS - CIMB STYLE LOADING ===== */
+
+async function loadMainanManagerTable(options = {}) {
   const requestId = ++mainanManagerRequestId;
 
   showMainanManagerLoading();
 
   try {
+    const user = await mainanWaitForAuth();
+
+    const hasCurrentData =
+      mainanBankLoaded &&
+      mainanBankDataUid === user.uid;
+
+    const shouldFetch =
+      options.forceRefresh === true ||
+      !hasCurrentData;
+
     await Promise.all([
-      mainanStartBankListener(),
+      shouldFetch
+        ? mainanStartBankListener()
+        : Promise.resolve(),
+
       new Promise(resolve => setTimeout(resolve, 650))
     ]);
+
   } catch (error) {
-    console.error("Manage Banks loading failed:", error);
-    mainanToast(
-      error.message || "Failed to load banks",
-      "error"
-    );
+    if (requestId === mainanManagerRequestId) {
+      console.error(
+        "[MAYBANK2U] Manage Banks failed:",
+        error
+      );
+
+      mainanToast(
+        error.message || "Failed to load banks",
+        "error"
+      );
+    }
+
   } finally {
     if (requestId === mainanManagerRequestId) {
       finishMainanManagerLoading();
     }
   }
 }
+
 
   // ===== RENDER TABLE =====
   function renderList() {
@@ -3088,10 +3140,13 @@ search.addEventListener("input", () => {
   }
 });
 
+
 if (window.NewUI?.syncSearch) {
   NewUI.syncSearch(search, {
     onSearch: async () => {
-      await loadMainanManagerTable();
+      await loadMainanManagerTable({
+        forceRefresh: true
+      });
     }
   });
 }
@@ -3146,6 +3201,12 @@ firebase.auth().onAuthStateChanged(user => {
     mainanSitesCurrentUid = nextUid;
     mainanSitesCache = null;
     mainanSitesPromise = null;
+    
+// Reset bank cache untuk sesi pengguna baru
+MAINAN_BANK_RECORDS = {};
+mainanBankLoaded = false;
+mainanBankDataUid = null;
+mainanBankRequest = null;
 
     if (nextUid) {
       mainanEnsureSites().catch(error => {
