@@ -898,7 +898,48 @@ input[type="number"] {
     font-size: 12px !important;
   }
 }
+/* ==========================================
+   JILISLOT MANAGE GAMES - NO DATA WITHOUT CARD
+   ========================================== */
 
+.jili-manager-no-data {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+}
+
+.jili-manager-no-data .shared-empty {
+  width: 100% !important;
+  min-height: 80px !important;
+  padding: 12px 0 !important;
+  margin: 0 auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.jili-manager-no-data .shared-empty:hover {
+  background: transparent !important;
+}
+
+.jili-manager-no-data .shared-empty-image {
+  margin: 0 auto !important;
+}
+
+.jili-manager-no-data .shared-empty-text {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
 </style>
 </head>
 
@@ -2503,20 +2544,30 @@ jiliModalInstance = modal;
       String(record.name).toLowerCase().includes(term)
     );
 
-    if (!filtered.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
+/* ===== JILISLOT MANAGE GAMES - CUSTOM NO DATA ===== */
+if (!filtered.length) {
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
 
-      td.colSpan = 6;
-      td.className = "jili-manager-empty";
-      td.textContent = records.length
-        ? "No matching games found"
-        : "No games yet";
+  td.colSpan = 6;
+  td.className = "jili-manager-empty jili-manager-no-data";
 
-      tr.append(td);
-      tbody.append(tr);
-      return;
-    }
+  // Gunakan icon custom sama seperti MEGA888
+  if (typeof window.createEmptyState === "function") {
+    td.innerHTML = window.createEmptyState(
+      "No data",
+      "small",
+      "center"
+    );
+  } else {
+    td.textContent = "No data";
+  }
+
+  tr.append(td);
+  tbody.append(tr);
+
+  return;
+}
 
     filtered.forEach(([id, record]) => {
       const tr = document.createElement("tr");
