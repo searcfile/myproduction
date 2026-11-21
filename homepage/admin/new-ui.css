@@ -2147,9 +2147,9 @@ bottom: 0;
    font-weight: 400;
    font-size:14px;
    cursor:pointer;
-   color: rgba(255, 255, 255, 0.85);
-   border:1px solid #424242;
-   background: #141414;
+   color: var(--text);
+   border:1px solid var(--input-line);
+   background: var(--input);
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 .btn-cancel-new:hover {
