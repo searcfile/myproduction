@@ -2879,6 +2879,66 @@ function mainanOpenManageBanks() {
     stack: false
   });
 
+/* ===== MAYBANK2U MANAGE BANKS - TABLE LOADING ===== */
+
+let mainanManagerLoading = false;
+let mainanManagerRequestId = 0;
+
+function showMainanManagerLoading() {
+  mainanManagerLoading = true;
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  if (typeof window.showLoadingState === "function") {
+    window.showLoadingState(
+      td,
+      "Please wait while fetching...",
+      "small"
+    );
+  } else {
+    td.textContent = "Please wait while fetching...";
+  }
+}
+
+function finishMainanManagerLoading() {
+  mainanManagerLoading = false;
+
+  if (!content.isConnected) return;
+
+  renderList();
+}
+
+async function loadMainanManagerTable() {
+  const requestId = ++mainanManagerRequestId;
+
+  showMainanManagerLoading();
+
+  try {
+    await Promise.all([
+      mainanStartBankListener(),
+      new Promise(resolve => setTimeout(resolve, 650))
+    ]);
+  } catch (error) {
+    console.error("Manage Banks loading failed:", error);
+    mainanToast(
+      error.message || "Failed to load banks",
+      "error"
+    );
+  } finally {
+    if (requestId === mainanManagerRequestId) {
+      finishMainanManagerLoading();
+    }
+  }
+}
+
   // ===== RENDER TABLE =====
   function renderList() {
     tbody.replaceChildren();
@@ -3024,17 +3084,23 @@ editBtn.addEventListener("click", () => {
     });
   }
 
-  // ===== CUSTOM SEARCH =====
-  search.addEventListener("input", renderList);
 
-  if (window.NewUI?.syncSearch) {
-    NewUI.syncSearch(search, {
-      onSearch: async () => {
-        await mainanStartBankListener();
-        renderList();
-      }
-    });
+/* ===== MAYBANK2U MANAGE BANKS - CUSTOM SEARCH ===== */
+
+search.addEventListener("input", () => {
+  if (!mainanManagerLoading) {
+    renderList();
   }
+});
+
+if (window.NewUI?.syncSearch) {
+  NewUI.syncSearch(search, {
+    onSearch: async () => {
+      await loadMainanManagerTable();
+    }
+  });
+}
+
 
 // ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
@@ -3044,8 +3110,8 @@ editBtn.addEventListener("click", () => {
 mainanOpenBankForm();
 });
 
-  // ===== INITIAL RENDER =====
-  renderList();
+/* ===== INITIAL RENDER WITH TABLE LOADING ===== */
+loadMainanManagerTable();
 }
 
         /* ==========================================================
