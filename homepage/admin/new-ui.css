@@ -2772,15 +2772,95 @@ html.new-ui-modal-open {
 .new-ui-pagination-dots:hover .new-ui-pagination-dots-text,.new-ui-pagination-dots:focus-visible .new-ui-pagination-dots-text{display:none}
 .new-ui-pagination-dots:hover .new-ui-pagination-dots-icon,.new-ui-pagination-dots:focus-visible .new-ui-pagination-dots-icon{display:inline-flex}
 .new-ui-pagination-size{position:relative;flex:0 0 105px;width:105px}
-.new-ui-pagination-size-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;height:32px;padding:0 9px;border:1px solid #424242;border-radius:6px;background:var(--input,#141414);color:inherit;font:inherit;cursor:pointer;white-space:nowrap}
-.new-ui-pagination-size-trigger:hover,.new-ui-pagination-size-trigger[aria-expanded=true]{border-color:#4096ff}
-.new-ui-pagination-size-trigger svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;transition:transform .2s}
-.new-ui-pagination-size-trigger[aria-expanded=true] svg{transform:rotate(180deg)}
-.new-ui-pagination-size-panel{position:absolute;bottom:calc(100% + 5px);left:0;z-index:99999;width:100%;max-height:180px;overflow-y:auto;padding:4px;border:1px solid #424242;border-radius:7px;background:var(--dropdown-bg,#1f1f1f);box-shadow:0 10px 28px rgba(0,0,0,.35)}
-.new-ui-pagination-size-panel[hidden]{display:none!important}
-.new-ui-pagination-size-option{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:32px;padding:5px 8px;border:0;border-radius:5px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.new-ui-pagination-size-option:hover{background:rgba(64,150,255,.13);color:#4096ff}
-.new-ui-pagination-size-option.active{color:#4096ff}
+
+/* ==========================================
+   5G88 GLOBAL SEARCHABLE PAGINATION SIZE
+   ========================================== */
+
+.new-ui-pagination-size {
+  position: relative;
+  flex: 0 0 105px;
+  width: 105px;
+  min-width: 105px;
+  overflow: visible;
+}
+
+/* Gunakan dropdown asal */
+.new-ui-pagination-size .shared-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Kotak input */
+.new-ui-pagination-size .shared-dropdown-trigger {
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 6px;
+  background: var(--input);
+}
+
+/* Input sebenar + blinking caret */
+.new-ui-pagination-size .shared-dropdown-input {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0 24px 0 9px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  caret-color: var(--caret-color);
+  cursor: text;
+}
+
+/* Hover */
+.new-ui-pagination-size
+.shared-dropdown-trigger:hover {
+  border-color: var(--input-line-hover);
+}
+
+/* Focus */
+.new-ui-pagination-size
+.shared-dropdown.open
+.shared-dropdown-trigger,
+.new-ui-pagination-size
+.shared-dropdown:focus-within
+.shared-dropdown-trigger {
+  border-color: var(--input-line-focus);
+}
+
+/* Dropdown pilihan buka ke atas */
+.new-ui-pagination-size .shared-dropdown-panel {
+  top: auto;
+  bottom: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  min-width: 100%;
+  max-width: 160px;
+  z-index: 99999;
+}
+
+/* Senarai pilihan */
+.new-ui-pagination-size .shared-dropdown-options {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* Pilihan 10 / 20 / 50 / 100 */
+.new-ui-pagination-size .shared-dropdown-option {
+  min-height: 32px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+/* Pastikan panel tidak terpotong oleh pagination */
+.new-ui-pagination {
+  overflow: visible;
+}
+
 .new-ui-pagination-goto{display:inline-flex;align-items:center;gap:7px;color:#a2b0c5;white-space:nowrap}
 .new-ui-pagination-jump{flex:0 0 45px;width:45px;height:28px;padding:0 5px;border:1px solid #424242;border-radius:6px;background:#141414;color:#eaf0fb;font:inherit;text-align:center;outline:none;appearance:textfield;-moz-appearance:textfield}
 .new-ui-pagination-jump::-webkit-outer-spin-button,.new-ui-pagination-jump::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
