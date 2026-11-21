@@ -4195,14 +4195,25 @@ pecahan[pussyBetKey(bet)] = wins;
         }
       );
 
-      await mgReload();
 
-      await NewUI.setButtonLoading(save, false, {
-        minDuration: 700
-      });
+/* ===== RELOAD LATEST GAME DATA ===== */
 
-      modal.close();
-      mgToast("Game saved", "success");
+await mgReload();
+
+/* ===== LIVE UPDATE PUSSY888 MANAGE GAMES ===== */
+
+mgRefreshManagerRows?.();
+
+/* ===== FINISH SAVE LOADING ===== */
+
+await NewUI.setButtonLoading(save, false, {
+  minDuration: 700
+});
+
+modal.close();
+
+mgToast("Game saved", "success");
+
 
     } catch (err) {
       mgToast(
@@ -4222,6 +4233,10 @@ pecahan[pussyBetKey(bet)] = wins;
 /* ==========================================
    PUSSY888 - MANAGE GAMES TABLE
    ========================================== */
+
+/* ===== PUSSY888 - LIVE MANAGE GAMES REFRESH ===== */
+
+let mgRefreshManagerRows = null;
 
 function mgManager() {
   if (!mgCan("edit") && !mgCan("delete")) {
@@ -4315,9 +4330,9 @@ host.append(
 );
 
 
-  const names = Object.keys(gameData).sort(
-    (a, b) => a.localeCompare(b)
-  );
+let names = Object.keys(gameData).sort(
+  (a, b) => a.localeCompare(b)
+);
 
 
 // MODAL
@@ -4610,6 +4625,23 @@ tr.append(
     });
   }
 
+
+/* ===== PUSSY888 - REFRESH TABLE AFTER SAVE ===== */
+
+mgRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  // Ambil senarai game terbaru selepas mgReload()
+  names = Object.keys(gameData).sort(
+    (a, b) => a.localeCompare(b)
+  );
+
+  // Hentikan loading lama jika masih berjalan
+  stopManagerTableLoading();
+
+  // Render semula dengan search dan pagination semasa
+  renderRows(searchInput.value);
+};
 
 /* ===== CUSTOM SEARCH WITH ROTATING ICON ===== */
 
