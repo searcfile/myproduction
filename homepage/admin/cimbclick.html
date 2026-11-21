@@ -1120,6 +1120,48 @@ html {
   margin: 0 !important;
   text-align: center !important;
 }
+
+/* ==========================================
+   CIMB - MANAGE BANKS PAGINATION
+   ========================================== */
+
+.cimb-bank-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+.cimb-bank-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+.cimb-bank-manager-pagination[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .cimb-bank-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 <body>
   
@@ -2733,10 +2775,21 @@ toolbar.append(searchHost, addButton);
 
   const tbody = document.createElement("tbody");
 
-  table.append(thead, tbody);
-  tableWrap.append(table);
 
-  content.append(toolbar, tableWrap);
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== CIMB - MANAGE BANKS PAGINATION ===== */
+
+const paginationWrap = document.createElement("div");
+paginationWrap.className = "cimb-bank-manager-pagination";
+
+content.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   // ===== OPEN MANAGE MODAL =====
   const modal = NewUI.modal.open({
@@ -2745,6 +2798,30 @@ toolbar.append(searchHost, addButton);
     width: 1100,
     stack: false
   });
+
+/* ===== CIMB - PAGINATION INITIALIZATION ===== */
+
+let cimbCurrentPage = 1;
+let cimbPageSize = 10;
+
+const cimbPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      cimbCurrentPage = page;
+      cimbPageSize = pageSize;
+
+      if (!content.isConnected) return;
+
+      renderList();
+    }
+  }
+);
 
 /* ===== CIMB MANAGE BANKS - CUSTOM TABLE LOADING ===== */
 
@@ -2802,6 +2879,34 @@ function stopCimbManagerLoading() {
         return searchable.includes(keyword);
       });
 
+/* ===== CIMB - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(records.length / cimbPageSize)
+);
+
+cimbCurrentPage = Math.max(
+  1,
+  Math.min(cimbCurrentPage, totalPages)
+);
+
+// Update jumlah data dan halaman aktif
+cimbPagination.update({
+  total: records.length,
+  page: cimbCurrentPage,
+  pageSize: cimbPageSize
+});
+
+// Ambil bank untuk halaman aktif sahaja
+const startIndex =
+  (cimbCurrentPage - 1) * cimbPageSize;
+
+const paginatedRecords = records.slice(
+  startIndex,
+  startIndex + cimbPageSize
+);
+
 /* ===== CIMB MANAGE BANKS - CUSTOM NO DATA ===== */
 if (!records.length) {
   const tr = document.createElement("tr");
@@ -2826,7 +2931,7 @@ if (!records.length) {
   return;
 }
 
-    for (const [key, bank] of records) {
+ for (const [key, bank] of paginatedRecords) {
       const tr = document.createElement("tr");
 
       function addCell(value) {
@@ -2942,16 +3047,22 @@ edit.addEventListener("click", () => {
 
 let cimbSearchRequestId = 0;
 
+
 search.addEventListener("input", () => {
   cimbSearchRequestId++;
   stopCimbManagerLoading();
+
+  // Search baru bermula dari Page 1
+  cimbCurrentPage = 1;
+
   renderList();
 });
+
 
 NewUI.syncSearch(search, {
   onSearch: async () => {
     const requestId = ++cimbSearchRequestId;
-
+    cimbCurrentPage = 1;
     stopCimbManagerLoading();
     showCimbManagerLoading();
 
