@@ -4081,15 +4081,25 @@ try {
     }
   );
 
-  await mgReload();
 
-  // Pastikan spinner sempat kelihatan
-  await NewUI.setButtonLoading(save, false, {
-    minDuration: 700
-  });
+/* ===== RELOAD LATEST EVO888 GAME DATA ===== */
 
-  modal.close();
-  mgToast("Game saved", "success");
+await mgReload();
+
+/* ===== LIVE UPDATE MANAGE GAMES ===== */
+
+mgRefreshManagerRows?.();
+
+/* ===== FINISH SAVE LOADING ===== */
+
+await NewUI.setButtonLoading(save, false, {
+  minDuration: 700
+});
+
+modal.close();
+
+mgToast("Game saved", "success");
+
 
 } catch (err) {
   mgToast("Save failed: " + err.message, "error");
@@ -4104,6 +4114,10 @@ try {
 /* ==========================================
    EVO888 - MANAGE GAMES TABLE + SEARCH
    ========================================== */
+
+/* ===== EVO888 - LIVE MANAGE GAMES REFRESH ===== */
+
+let mgRefreshManagerRows = null;
 
 function mgManager() {
   if (!mgCan("edit") && !mgCan("delete")) {
@@ -4195,9 +4209,11 @@ host.append(
 );
 
 
-  const names = Object.keys(gameData).sort(
-    (a, b) => a.localeCompare(b)
-  );
+
+let names = Object.keys(gameData).sort(
+  (a, b) => a.localeCompare(b)
+);
+
 
 
 const modal = NewUI.modal.open({
@@ -4230,6 +4246,25 @@ const mgPagination = NewUI.pagination(
     }
   }
 );
+
+/* ==========================================
+   EVO888 - REFRESH MANAGE GAMES AFTER SAVE
+   ========================================== */
+
+mgRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  // Ambil senarai game terbaru selepas Save
+  names = Object.keys(gameData).sort(
+    (a, b) => a.localeCompare(b)
+  );
+
+  // Hentikan loading lama
+  stopManagerTableLoading();
+
+  // Refresh table tanpa tutup Manage Games
+  renderRows(searchInput.value);
+};
 
 /* ===== SEARCH CUSTOM + ROTATING ICON ===== */
 
