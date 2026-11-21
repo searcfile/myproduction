@@ -2746,6 +2746,38 @@ toolbar.append(searchHost, addButton);
     stack: false
   });
 
+/* ===== CIMB MANAGE BANKS - CUSTOM TABLE LOADING ===== */
+
+let cimbManagerLoadingTimer = null;
+
+function showCimbManagerLoading() {
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  if (typeof window.showLoadingState === "function") {
+    window.showLoadingState(
+      td,
+      "Please wait while fetching...",
+      "small"
+    );
+  } else {
+    td.textContent = "Please wait while fetching...";
+  }
+}
+
+function stopCimbManagerLoading() {
+  clearTimeout(cimbManagerLoadingTimer);
+  cimbManagerLoadingTimer = null;
+}
+
   // ===== RENDER TABLE =====
   function renderList() {
     tbody.replaceChildren();
@@ -2905,13 +2937,42 @@ edit.addEventListener("click", () => {
     }
   }
 
-// ===== SEARCH =====
-search.addEventListener("input", renderList);
+
+/* ===== CIMB MANAGE BANKS - SEARCH ===== */
+
+let cimbSearchRequestId = 0;
+
+search.addEventListener("input", () => {
+  cimbSearchRequestId++;
+  stopCimbManagerLoading();
+  renderList();
+});
 
 NewUI.syncSearch(search, {
   onSearch: async () => {
-    await cimbLoadBanks();
-    renderList();
+    const requestId = ++cimbSearchRequestId;
+
+    stopCimbManagerLoading();
+    showCimbManagerLoading();
+
+    try {
+      await Promise.all([
+        cimbLoadBanks(),
+        new Promise(resolve => setTimeout(resolve, 650))
+      ]);
+
+      if (!content.isConnected) return;
+      if (requestId !== cimbSearchRequestId) return;
+
+      renderList();
+
+    } catch (error) {
+      if (requestId !== cimbSearchRequestId) return;
+      if (!content.isConnected) return;
+
+      bankToast(error.message, "error");
+      renderList();
+    }
   }
 });
 
@@ -2926,12 +2987,30 @@ NewUI.syncSearch(search, {
   });
 
 
-  // ===== LOAD BANKS =====
-  cimbLoadBanks()
-    .then(renderList)
-    .catch(error => {
-      bankToast(error.message, "error");
-    });
+
+/* ===== LOAD BANKS WITH CUSTOM TABLE LOADING ===== */
+
+showCimbManagerLoading();
+
+cimbManagerLoadingTimer = setTimeout(async () => {
+  cimbManagerLoadingTimer = null;
+
+  try {
+    await cimbLoadBanks();
+
+    if (!content.isConnected) return;
+
+    renderList();
+
+  } catch (error) {
+    if (!content.isConnected) return;
+
+    bankToast(error.message, "error");
+    renderList();
+  }
+
+}, 650);
+
 }
 
 
