@@ -1884,6 +1884,42 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   }
 }
 
+/* ==========================================
+   EVO888 - MANAGE GAMES STATUS COLUMN
+   ========================================== */
+
+.mg-manager-table .mg-game-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 75px;
+  height: 25px;
+  padding: 3px 10px;
+
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Active - Green */
+.mg-manager-table .mg-game-status-active {
+  color: #52c41a;
+  background: rgba(82, 196, 26, 0.10);
+  border-color: rgba(82, 196, 26, 0.35);
+}
+
+/* Inactive - Red */
+.mg-manager-table .mg-game-status-inactive {
+  color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.10);
+  border-color: rgba(255, 77, 79, 0.35);
+}
+
 </style>
 <body>
 
@@ -4122,14 +4158,17 @@ function mgManager() {
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
 
-  [
-    "Game Name",
-    "Betting",
-    "Free Game",
-    "Created Date",
-    "Last Edited",
-    "Action"
-  ].forEach(label => {
+
+[
+  "Game Name",
+  "Betting",
+  "Free Game",
+  "Status",
+  "Created Date",
+  "Last Edited",
+  "Action"
+].forEach(label => {
+
     const th = document.createElement("th");
     th.textContent = label;
     headerRow.append(th);
@@ -4264,7 +4303,7 @@ function showManagerTableLoading() {
   const tr = document.createElement("tr");
   const td = document.createElement("td");
 
-  td.colSpan = 6;
+td.colSpan = 7;
   td.className = "shared-loading-table-cell";
 
   tr.append(td);
@@ -4326,7 +4365,7 @@ if (!filtered.length) {
   const tr = document.createElement("tr");
   const td = document.createElement("td");
 
-  td.colSpan = 6;
+td.colSpan = 7;
   td.className = "mg-manager-empty mg-manager-no-data";
 
   // Gunakan icon custom seperti MEGA888
@@ -4373,6 +4412,24 @@ paginatedNames.forEach(name => {
           ? game.freeGameOptions.join(", ") || "None"
           : "None"
       );
+
+/* ===== EVO888 - GAME ACTIVE STATUS ===== */
+
+const statusTd = document.createElement("td");
+
+const isActive = record.active !== false;
+
+const statusBadge = document.createElement("span");
+
+statusBadge.className = isActive
+  ? "mg-game-status mg-game-status-active"
+  : "mg-game-status mg-game-status-inactive";
+
+statusBadge.textContent = isActive
+  ? "Active"
+  : "Inactive";
+
+statusTd.append(statusBadge);
 
       const createdTd = makeCell(
         formatDate(record.createdAt ?? record.created_at)
@@ -4438,14 +4495,17 @@ edit.onclick = () => {
       actions.append(edit, del);
       actionTd.append(actions);
 
-      tr.append(
-        nameTd,
-        bettingTd,
-        freeTd,
-        createdTd,
-        editedTd,
-        actionTd
-      );
+
+tr.append(
+  nameTd,
+  bettingTd,
+  freeTd,
+  statusTd,
+  createdTd,
+  editedTd,
+  actionTd
+);
+
 
       tbody.append(tr);
     });
