@@ -1077,7 +1077,49 @@ html {
     width: 100%;
   }
 }
+/* ==========================================
+   CIMB MANAGE BANKS - CUSTOM NO DATA
+   SAME AS MEGA888 - WITHOUT CARD
+   ========================================== */
 
+.cimb-bank-manager-table .cimb-bank-manager-empty {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+}
+
+.cimb-bank-manager-empty .shared-empty {
+  width: 100% !important;
+  min-height: 80px !important;
+  padding: 12px 0 !important;
+  margin: 0 auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.cimb-bank-manager-empty .shared-empty:hover {
+  background: transparent !important;
+}
+
+.cimb-bank-manager-empty .shared-empty-image {
+  margin: 0 auto !important;
+}
+
+.cimb-bank-manager-empty .shared-empty-text {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
 </style>
 <body>
   
@@ -2728,21 +2770,29 @@ toolbar.append(searchHost, addButton);
         return searchable.includes(keyword);
       });
 
-    if (!records.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
+/* ===== CIMB MANAGE BANKS - CUSTOM NO DATA ===== */
+if (!records.length) {
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
 
-      td.colSpan = 6;
-      td.style.textAlign = "center";
-      td.style.padding = "35px 12px";
-      td.textContent = keyword
-        ? "No matching banks"
-        : "No data";
+  td.colSpan = 6;
+  td.className = "cimb-bank-manager-empty";
 
-      tr.append(td);
-      tbody.append(tr);
-      return;
-    }
+  // Icon custom sama seperti MEGA888
+  if (typeof window.createEmptyState === "function") {
+    td.innerHTML = window.createEmptyState(
+      "No data",
+      "small",
+      "center"
+    );
+  } else {
+    td.textContent = "No data";
+  }
+
+  tr.append(td);
+  tbody.append(tr);
+  return;
+}
 
     for (const [key, bank] of records) {
       const tr = document.createElement("tr");
