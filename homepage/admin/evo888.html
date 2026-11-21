@@ -1839,6 +1839,51 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   margin: 0 !important;
   text-align: center !important;
 }
+
+/* ==========================================
+   EVO888 - MANAGE GAMES PAGINATION
+   ========================================== */
+
+.mg-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+/* Pagination bawah table */
+.mg-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+/* Sembunyikan apabila tiada data */
+.mg-manager-pagination[hidden] {
+  display: none !important;
+}
+
+/* Responsive phone */
+@media (max-width: 768px) {
+  .mg-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 <body>
 
@@ -4092,10 +4137,24 @@ function mgManager() {
 
   thead.append(headerRow);
 
-  const tbody = document.createElement("tbody");
-  table.append(thead, tbody);
-  tableWrap.append(table);
-  host.append(toolbar, tableWrap);
+
+const tbody = document.createElement("tbody");
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== EVO888 - MANAGE GAMES PAGINATION ===== */
+
+const paginationWrap = mgElement(
+  "div",
+  "mg-manager-pagination"
+);
+
+host.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   const names = Object.keys(gameData).sort(
     (a, b) => a.localeCompare(b)
@@ -4109,7 +4168,29 @@ const modal = NewUI.modal.open({
   stack: false
 });
 
+/* ===== EVO888 - PAGINATION INITIALIZATION ===== */
 
+let mgCurrentPage = 1;
+let mgPageSize = 10;
+
+const mgPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      mgCurrentPage = page;
+      mgPageSize = pageSize;
+
+      if (!host.isConnected) return;
+
+      renderRows(searchInput.value);
+    }
+  }
+);
 
 /* ===== SEARCH CUSTOM + ROTATING ICON ===== */
 
@@ -4122,9 +4203,14 @@ window.NewUI?.syncSearch?.(searchInput, {
       setTimeout(resolve, 250)
     );
 
-    if (!host.isConnected) return;
 
-    renderRows(searchInput.value);
+if (!host.isConnected) return;
+
+// Reset ke Page 1 selepas Search
+mgCurrentPage = 1;
+
+renderRows(searchInput.value);
+
   }
 });
 
@@ -4206,6 +4292,35 @@ function stopManagerTableLoading() {
       )
     );
 
+/* ===== EVO888 - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(filtered.length / mgPageSize)
+);
+
+// Pastikan page aktif masih valid
+mgCurrentPage = Math.max(
+  1,
+  Math.min(mgCurrentPage, totalPages)
+);
+
+// Sync pagination dengan data Search
+mgPagination.update({
+  total: filtered.length,
+  page: mgCurrentPage,
+  pageSize: mgPageSize
+});
+
+// Ambil game untuk halaman semasa sahaja
+const startIndex =
+  (mgCurrentPage - 1) * mgPageSize;
+
+const paginatedNames = filtered.slice(
+  startIndex,
+  startIndex + mgPageSize
+);
+
 /* ===== EVO888 MANAGE GAMES - CUSTOM NO DATA ===== */
 if (!filtered.length) {
   const tr = document.createElement("tr");
@@ -4231,7 +4346,7 @@ if (!filtered.length) {
   return;
 }
 
-    filtered.forEach(name => {
+paginatedNames.forEach(name => {
       const game = gameData[name];
       if (!game) return;
 
@@ -4337,12 +4452,18 @@ edit.onclick = () => {
   }
 
 
-/* ===== LIVE SEARCH ===== */
+
+/* ===== LIVE SEARCH + PAGINATION RESET ===== */
 
 searchInput.addEventListener("input", () => {
   stopManagerTableLoading();
+
+  // Reset ke halaman pertama
+  mgCurrentPage = 1;
+
   renderRows(searchInput.value);
 });
+
 
 /* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
 
