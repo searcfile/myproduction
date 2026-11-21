@@ -1066,6 +1066,59 @@ body > .wrap > #preview {
   }
 }
 
+/* ==========================================
+   RHB MANAGE BANKS - CUSTOM NO DATA
+   SAME AS MEGA888 - WITHOUT CARD
+   ========================================== */
+
+.rhb-bank-manager-table .rhb-bank-manager-empty {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+}
+
+/* Custom empty icon tanpa card */
+.rhb-bank-manager-empty .shared-empty {
+  width: 100% !important;
+  min-height: 80px !important;
+  padding: 12px 0 !important;
+  margin: 0 auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Buang background hover pada icon */
+.rhb-bank-manager-empty .shared-empty:hover {
+  background: transparent !important;
+}
+
+/* Center icon */
+.rhb-bank-manager-empty .shared-empty-image {
+  margin: 0 auto !important;
+}
+
+/* Center tulisan No data */
+.rhb-bank-manager-empty .shared-empty-text {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+
+/* Kekalkan background table ketika hover */
+.rhb-bank-manager-table tr:hover .rhb-bank-manager-empty {
+  background: var(--page-bg2) !important;
+}
+
 </style>
 </head>
 <body>
@@ -2247,21 +2300,31 @@ function rhbManageBanksModal() {
         return searchable.includes(keyword);
       });
 
-    if (!records.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
 
-      td.colSpan = 4;
-      td.style.textAlign = "center";
-      td.style.padding = "35px 12px";
-      td.textContent = keyword
-        ? "No matching banks"
-        : "No data";
+/* ===== RHB MANAGE BANKS - CUSTOM NO DATA ===== */
+if (!records.length) {
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
 
-      tr.append(td);
-      tbody.append(tr);
-      return;
-    }
+  td.colSpan = 4;
+  td.className = "rhb-bank-manager-empty";
+
+  // Gunakan icon custom sama seperti MEGA888
+  if (typeof window.createEmptyState === "function") {
+    td.innerHTML = window.createEmptyState(
+      "No data",
+      "small",
+      "center"
+    );
+  } else {
+    td.textContent = "No data";
+  }
+
+  tr.append(td);
+  tbody.append(tr);
+  return;
+}
+
 
     for (const [id, bank] of records) {
       const tr = document.createElement("tr");
