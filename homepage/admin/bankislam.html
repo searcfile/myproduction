@@ -2847,6 +2847,55 @@ function biOpenManageBanks() {
     stack: false
   });
 
+/* ===== BANK ISLAM - CUSTOM TABLE LOADING ===== */
+
+let biManagerLoading = false;
+let biManagerRequestId = 0;
+
+function showBiManagerLoading() {
+  biManagerLoading = true;
+
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+async function loadBiManagerTable() {
+  const requestId = ++biManagerRequestId;
+
+  showBiManagerLoading();
+
+  try {
+    await Promise.all([
+      biStartBankListener(),
+      new Promise(resolve => setTimeout(resolve, 650))
+    ]);
+  } catch (error) {
+    console.error("Bank Islam table loading:", error);
+  } finally {
+    if (requestId !== biManagerRequestId) return;
+
+    biManagerLoading = false;
+
+    if (!content.isConnected) return;
+
+    renderList();
+  }
+}
+
   // ===== RENDER TABLE =====
   function renderList() {
     tbody.replaceChildren();
@@ -2994,17 +3043,23 @@ editBtn.addEventListener("click", () => {
     });
   }
 
-  // ===== SEARCH =====
-  search.addEventListener("input", renderList);
 
-  if (window.NewUI?.syncSearch) {
-    NewUI.syncSearch(search, {
-      onSearch: async () => {
-        await biStartBankListener();
-        renderList();
-      }
-    });
+/* ===== BANK ISLAM - SEARCH WITH TABLE LOADING ===== */
+
+search.addEventListener("input", () => {
+  if (!biManagerLoading) {
+    renderList();
   }
+});
+
+if (window.NewUI?.syncSearch) {
+  NewUI.syncSearch(search, {
+    onSearch: async () => {
+      await loadBiManagerTable();
+    }
+  });
+}
+
 
 // ===== CREATE BANK =====
   addButton.addEventListener("click", () => {
@@ -3016,8 +3071,10 @@ editBtn.addEventListener("click", () => {
 biOpenBankForm();
 });
 
-  // ===== INITIAL RENDER =====
-  renderList();
+
+/* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
+loadBiManagerTable();
+
 }
 
 
