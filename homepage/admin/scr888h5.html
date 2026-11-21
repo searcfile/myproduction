@@ -4285,14 +4285,25 @@ siteVisibility: editingGlobal
         }
       );
 
-      await mgReload();
 
-      await NewUI.setButtonLoading(save, false, {
-        minDuration: 700
-      });
+/* ===== RELOAD LATEST SCR888H5 GAME DATA ===== */
 
-      modal.close();
-      mgToast("Game saved", "success");
+await mgReload();
+
+/* ===== LIVE UPDATE MANAGE GAMES ===== */
+
+mgRefreshManagerRows?.();
+
+/* ===== FINISH SAVE LOADING ===== */
+
+await NewUI.setButtonLoading(save, false, {
+  minDuration: 700
+});
+
+modal.close();
+
+mgToast("Game saved", "success");
+
 
     } catch (err) {
       mgToast("Save failed: " + err.message, "error");
@@ -4325,6 +4336,10 @@ function mgEditable(game) {
 /* ==========================================
    SCR888H5 - MANAGE GAMES TABLE + SEARCH
    ========================================== */
+
+/* ===== SCR888H5 - LIVE MANAGE GAMES REFRESH ===== */
+
+let mgRefreshManagerRows = null;
 
 function mgManager() {
   if (!mgCan("edit") && !mgCan("delete")) {
@@ -4421,9 +4436,10 @@ host.append(
 
   /* ===== SORT GAMES ===== */
 
-  const names = Object.keys(gameData).sort(
-    (a, b) => a.localeCompare(b)
-  );
+
+let names = Object.keys(gameData).sort(
+  (a, b) => a.localeCompare(b)
+);
 
   /* ===== MODAL ===== */
 
@@ -4459,6 +4475,25 @@ const mgPagination = NewUI.pagination(
   }
 );
 
+
+/* ==========================================
+   SCR888H5 - REFRESH MANAGE GAMES AFTER SAVE
+   ========================================== */
+
+mgRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  // Ambil senarai game terkini
+  names = Object.keys(gameData).sort(
+    (a, b) => a.localeCompare(b)
+  );
+
+  // Hentikan loading lama
+  stopManagerTableLoading();
+
+  // Render semula table tanpa tutup modal
+  renderRows(searchInput.value);
+};
 
 /* ===== CUSTOM SEARCH + ROTATING ICON ===== */
 
