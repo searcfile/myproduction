@@ -1678,7 +1678,47 @@ select:focus-visible{
     font-size: 12px !important;
   }
 }
+/* ==========================================
+   PUSSY888 MANAGE GAMES - CUSTOM NO DATA
+   ========================================== */
 
+.pussy-manager-no-data {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.pussy-manager-no-data .shared-empty {
+  width: 100% !important;
+  min-height: 80px !important;
+  padding: 12px 0 !important;
+  margin: 0 auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.pussy-manager-no-data .shared-empty:hover {
+  background: transparent !important;
+}
+
+.pussy-manager-no-data .shared-empty-image {
+  margin: 0 auto !important;
+}
+
+.pussy-manager-no-data .shared-empty-text {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
 </style>
 <body>
 
@@ -4249,8 +4289,18 @@ const modal = NewUI.modal.open({
       td.colSpan = 6;
       td.className = "mg-manager-empty";
       td.textContent = names.length
-        ? "No matching games found"
-        : "No games yet";
+        
+td.className = "pussy-manager-empty pussy-manager-no-data";
+
+if (typeof window.createEmptyState === "function") {
+  td.innerHTML = window.createEmptyState(
+    "No data",
+    "small",
+    "center"
+  );
+} else {
+  td.textContent = "No data";
+}
 
       tr.append(td);
       tbody.append(tr);
