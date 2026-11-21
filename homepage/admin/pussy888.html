@@ -4272,6 +4272,35 @@ const modal = NewUI.modal.open({
     );
   }
 
+/* ===== MANAGE GAMES - SHARED TABLE LOADING ===== */
+
+let mgTableLoadingTimer = null;
+
+function showManagerTableLoading() {
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  // Custom loading asal daripada new-ui.js
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+function stopManagerTableLoading() {
+  clearTimeout(mgTableLoadingTimer);
+  mgTableLoadingTimer = null;
+}
+
   // RENDER TABLE
   function renderRows(keyword = "") {
     tbody.replaceChildren();
@@ -4410,20 +4439,45 @@ edit.onclick = () => {
     });
   }
 
-  // CUSTOM SEARCH WITH ROTATING ICON
-  window.NewUI?.syncSearch?.(searchInput, {
-    onSearch: async keyword => {
-      await new Promise(resolve => setTimeout(resolve, 250));
-      renderRows(keyword);
-    }
-  });
 
-  // LIVE SEARCH
-  searchInput.addEventListener("input", () => {
-    renderRows(searchInput.value);
-  });
+/* ===== CUSTOM SEARCH WITH ROTATING ICON ===== */
 
-  renderRows();
+window.NewUI?.syncSearch?.(searchInput, {
+  onSearch: async keyword => {
+    stopManagerTableLoading();
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 250)
+    );
+
+    if (!host.isConnected) return;
+    if (keyword !== searchInput.value) return;
+
+    renderRows(keyword);
+  }
+});
+
+
+
+/* ===== LIVE SEARCH ===== */
+
+searchInput.addEventListener("input", () => {
+  stopManagerTableLoading();
+  renderRows(searchInput.value);
+});
+
+/* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
+
+showManagerTableLoading();
+
+mgTableLoadingTimer = setTimeout(() => {
+  mgTableLoadingTimer = null;
+
+  if (!host.isConnected) return;
+
+  renderRows(searchInput.value);
+}, 650);
+
 }
 
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
