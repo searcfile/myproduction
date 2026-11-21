@@ -2351,15 +2351,10 @@ function mainanEnsureSites() {
         async function mainanStartBankListener() {
           mainanBankLoaded = false;
         
+
 try {
-  await mainanLoadAccess();
-
-  // Muat senarai site lebih awal, tanpa tunggu Create Bank
-  mainanEnsureSites().catch(error => {
-    console.error("[MAYBANK2U] Site preload failed:", error);
-  });
-
   const data = await mainanApi("/api/maybank2u/banks");
+
         
             const records = {};
         
@@ -3160,7 +3155,47 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-mainanStartBankListener();
+
+/* ===== MAYBANK2U - INITIAL ACCESS AND BANK LOAD ===== */
+
+(async function mainanInitialLoad() {
+  try {
+    // Semak access sekali ketika halaman bermula
+    await mainanLoadAccess();
+
+    // Preload sites tanpa menghalang bank loading
+    mainanEnsureSites().catch(error => {
+      console.error(
+        "[MAYBANK2U] Site preload failed:",
+        error
+      );
+    });
+
+    // Ambil data bank
+    await mainanStartBankListener();
+
+  } catch (error) {
+    console.error(
+      "[MAYBANK2U] Initial load failed:",
+      error
+    );
+
+    mainanBankLoaded = false;
+    mainanAccess = {
+      role: "",
+      actions: []
+    };
+
+    document.getElementById("mainanCreateBank").hidden = true;
+    document.getElementById("mainanManageBanks").hidden = true;
+
+    mainanToast(
+      error.message || "Failed to initialize MAYBANK2U",
+      "error"
+    );
+  }
+})();
+
         // ✅ Tukar ikut page
         window.HISTORY_TAB_NAME = "MAYBANK2U";
         // ✅ Hantar ke main page
