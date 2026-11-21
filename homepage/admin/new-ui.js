@@ -4066,54 +4066,385 @@ if (document.readyState === 'loading') {
   const down = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
 
-  window.NewUI.pagination = function(target, config = {}) {
-    const root = typeof target === 'string' ? document.querySelector(target) : target;
-    if (!(root instanceof HTMLElement)) throw new Error('NewUI.pagination: target not found');
-    if (root.__newUIPagination) return root.__newUIPagination;
-    let total = Math.max(0, Number(config.total) || 0);
-    let pageSize = Math.max(1, Number(config.pageSize) || 10);
-    let page = Math.max(1, Number(config.page) || 1);
-    const sizes = Array.isArray(config.pageSizes) && config.pageSizes.length ? config.pageSizes.filter(n => Number.isInteger(n) && n > 0) : [10,20,50,100];
-    const onChange = typeof config.onChange === 'function' ? config.onChange : () => {};
-    root.classList.add('new-ui-pagination');
-    root.innerHTML = '<span class="new-ui-pagination-info"></span><div class="new-ui-pagination-numbers"></div><div class="new-ui-pagination-size"><button class="new-ui-pagination-size-trigger" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>'+down+'</button><div class="new-ui-pagination-size-panel" role="listbox" hidden></div></div><div class="new-ui-pagination-goto"><span>Go to</span><input class="new-ui-pagination-jump" type="number" min="1" aria-label="Go to page"><span>Page</span></div>';
-    const info = root.querySelector('.new-ui-pagination-info');
-    const nums = root.querySelector('.new-ui-pagination-numbers');
-    const trigger = root.querySelector('.new-ui-pagination-size-trigger');
-    const sizeText = trigger.querySelector('span');
-    const panel = root.querySelector('.new-ui-pagination-size-panel');
-    const jump = root.querySelector('.new-ui-pagination-jump');
-    const pages = () => Math.max(1, Math.ceil(total / pageSize));
-    function closeMenu(){panel.hidden = true; trigger.setAttribute('aria-expanded','false');}
-    function notify(){onChange({page,pageSize,total,totalPages:pages(),start:total?(page-1)*pageSize:0,end:Math.min(total,page*pageSize)});}
-    function go(p){const next=clamp(Math.floor(Number(p)||1),1,pages()); if(next===page)return;page=next;render();notify();}
-    function btn(label,p,disabled=false,active=false,kind=''){
-      const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-btn'+(kind?' '+kind:'')+(active?' active':'');b.disabled=disabled;
-      if(kind==='new-ui-pagination-arrow'){b.innerHTML=SVG[label];b.setAttribute('aria-label',label==='prev'?'Previous page':'Next page');}
-      else b.textContent=String(label);
-      if(active)b.setAttribute('aria-current','page');b.addEventListener('click',()=>go(p));nums.append(b);
+
+/* ===== 5G88 GLOBAL CUSTOM PAGINATION ===== */
+
+window.NewUI.pagination = function(target, config = {}) {
+  const root = typeof target === "string"
+    ? document.querySelector(target)
+    : target;
+
+  if (!(root instanceof HTMLElement)) {
+    throw new Error("NewUI.pagination: target not found");
+  }
+
+  if (root.__newUIPagination) {
+    return root.__newUIPagination;
+  }
+
+  let total = Math.max(0, Number(config.total) || 0);
+  let pageSize = Math.max(1, Number(config.pageSize) || 10);
+  let page = Math.max(1, Number(config.page) || 1);
+
+  const sizes = Array.isArray(config.pageSizes) &&
+    config.pageSizes.length
+      ? [...new Set(
+          config.pageSizes.filter(n =>
+            Number.isInteger(n) && n > 0
+          )
+        )]
+      : [10, 20, 50, 100];
+
+  const onChange = typeof config.onChange === "function"
+    ? config.onChange
+    : () => {};
+
+  const pages = () =>
+    Math.max(1, Math.ceil(total / pageSize));
+
+  root.classList.add("new-ui-pagination");
+
+  root.innerHTML = `
+    <span class="new-ui-pagination-info"></span>
+
+    <div class="new-ui-pagination-numbers"></div>
+
+    <div class="new-ui-pagination-size">
+      <select
+        class="new-ui-pagination-size-select"
+        aria-label="Rows per page"
+      ></select>
+    </div>
+
+    <div class="new-ui-pagination-goto">
+      <span>Go to</span>
+      <input
+        class="new-ui-pagination-jump"
+        type="number"
+        min="1"
+        aria-label="Go to page"
+      >
+      <span>Page</span>
+    </div>
+  `;
+
+  const info = root.querySelector(
+    ".new-ui-pagination-info"
+  );
+
+  const nums = root.querySelector(
+    ".new-ui-pagination-numbers"
+  );
+
+  const sizeSelect = root.querySelector(
+    ".new-ui-pagination-size-select"
+  );
+
+  const jump = root.querySelector(
+    ".new-ui-pagination-jump"
+  );
+
+  // Isi pilihan page size.
+  function syncSizeOptions() {
+    const values = [...new Set([...sizes, pageSize])];
+
+    sizeSelect.replaceChildren();
+
+    values.forEach(n => {
+      const option = document.createElement("option");
+      option.value = String(n);
+      option.textContent = `${n} / page`;
+      sizeSelect.append(option);
+    });
+
+    sizeSelect.value = String(pageSize);
+  }
+
+  syncSizeOptions();
+
+  // Gunakan searchable dropdown asal 5G88.
+  const sizeDropdown = NewUI.dropdown(sizeSelect, {
+    placeholder: "Rows per page"
+  });
+
+  if (!sizeDropdown) {
+    console.warn(
+      "[NewUI.pagination] Searchable dropdown unavailable"
+    );
+  }
+
+  function notify() {
+    onChange({
+      page,
+      pageSize,
+      total,
+      totalPages: pages(),
+      start: total ? (page - 1) * pageSize : 0,
+      end: Math.min(total, page * pageSize)
+    });
+  }
+
+  function go(p) {
+    const next = clamp(
+      Math.floor(Number(p) || 1),
+      1,
+      pages()
+    );
+
+    if (next === page) return;
+
+    page = next;
+    render();
+    notify();
+  }
+
+  function btn(
+    label,
+    p,
+    disabled = false,
+    active = false,
+    kind = ""
+  ) {
+    const b = document.createElement("button");
+
+    b.type = "button";
+
+    b.className =
+      "new-ui-pagination-btn" +
+      (kind ? " " + kind : "") +
+      (active ? " active" : "");
+
+    b.disabled = disabled;
+
+    if (kind === "new-ui-pagination-arrow") {
+      b.innerHTML = SVG[label];
+
+      b.setAttribute(
+        "aria-label",
+        label === "prev"
+          ? "Previous page"
+          : "Next page"
+      );
+    } else {
+      b.textContent = String(label);
     }
-    function dots(dir){const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-dots';b.title=dir==='prev'?'Jump back 5 pages':'Jump forward 5 pages';b.setAttribute('aria-label',b.title);b.innerHTML='<span class="new-ui-pagination-dots-text" aria-hidden="true">•••</span><span class="new-ui-pagination-dots-icon" aria-hidden="true">'+SVG[dir==='prev'?'back5':'forward5']+'</span>';b.addEventListener('click',()=>go(page+(dir==='prev'?-5:5)));nums.append(b);}
-    function render(){
-      page=clamp(page,1,pages());root.hidden=total===0;if(!total){closeMenu();return;}
-      info.textContent=`${(page-1)*pageSize+1}-${Math.min(total,page*pageSize)} of ${total} items`;
-      sizeText.textContent=pageSize+' / page';jump.max=String(pages());jump.value='';nums.replaceChildren();
-      btn('prev',page-1,page===1,false,'new-ui-pagination-arrow');
-      const visible=new Set([1,pages()]);for(let p=Math.max(1,page-2);p<=Math.min(pages(),page+2);p++)visible.add(p);
-      let previous=0;[...visible].sort((a,b)=>a-b).forEach(p=>{if(p-previous>1)dots(p<=page?'prev':'next');btn(p,p,false,p===page);previous=p;});
-      btn('next',page+1,page===pages(),false,'new-ui-pagination-arrow');
-      panel.replaceChildren();sizes.forEach(n=>{const b=document.createElement('button');b.type='button';b.className='new-ui-pagination-size-option'+(n===pageSize?' active':'');b.textContent=n+' / page';b.setAttribute('role','option');b.setAttribute('aria-selected',String(n===pageSize));b.addEventListener('click',()=>{closeMenu();if(n===pageSize)return;pageSize=n;page=1;render();notify();});panel.append(b);});
+
+    if (active) {
+      b.setAttribute("aria-current", "page");
     }
-    trigger.addEventListener('click',()=>{const open=panel.hidden;panel.hidden=!open;trigger.setAttribute('aria-expanded',String(open));});
-    function outside(e){if(!root.contains(e.target))closeMenu();}
-    function escape(e){if(e.key==='Escape')closeMenu();}
-    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
-    function jumpNow(){if(jump.value.trim()==='')return;go(jump.value);jump.value='';}
-    jump.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();jumpNow();}});
-    jump.addEventListener('change',jumpNow);
-    const api={setTotal(n){total=Math.max(0,Number(n)||0);render();},setPage(p){go(p);},setPageSize(n){const v=Math.floor(Number(n));if(v<1||!Number.isFinite(v))return;pageSize=v;page=1;render();notify();},update(opts={}){if(opts.total!==undefined)total=Math.max(0,Number(opts.total)||0);if(opts.pageSize!==undefined)pageSize=Math.max(1,Number(opts.pageSize)||10);if(opts.page!==undefined)page=Math.max(1,Number(opts.page)||1);render();},getState(){return{page,pageSize,total,totalPages:pages()};},destroy(){document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);root.replaceChildren();root.classList.remove('new-ui-pagination');delete root.__newUIPagination;}};
-    root.__newUIPagination=api;render();return api;
+
+    b.addEventListener("click", () => go(p));
+
+    nums.append(b);
+  }
+
+  function dots(dir) {
+    const b = document.createElement("button");
+
+    b.type = "button";
+    b.className = "new-ui-pagination-dots";
+
+    b.title = dir === "prev"
+      ? "Jump back 5 pages"
+      : "Jump forward 5 pages";
+
+    b.setAttribute("aria-label", b.title);
+
+    b.innerHTML = `
+      <span
+        class="new-ui-pagination-dots-text"
+        aria-hidden="true"
+      >•••</span>
+
+      <span
+        class="new-ui-pagination-dots-icon"
+        aria-hidden="true"
+      >
+        ${SVG[dir === "prev" ? "back5" : "forward5"]}
+      </span>
+    `;
+
+    b.addEventListener("click", () => {
+      go(page + (dir === "prev" ? -5 : 5));
+    });
+
+    nums.append(b);
+  }
+
+  function render() {
+    page = clamp(page, 1, pages());
+
+    root.hidden = total === 0;
+
+    if (!total) {
+      sizeDropdown?.close?.();
+      return;
+    }
+
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(total, page * pageSize);
+
+    info.textContent =
+      `${start}-${end} of ${total} items`;
+
+    if (
+      sizeSelect.value !== String(pageSize) ||
+      !Array.from(sizeSelect.options).some(
+        option => option.value === String(pageSize)
+      )
+    ) {
+      syncSizeOptions();
+    }
+
+    sizeDropdown?.refresh?.();
+
+    jump.max = String(pages());
+
+    nums.replaceChildren();
+
+    btn(
+      "prev",
+      page - 1,
+      page === 1,
+      false,
+      "new-ui-pagination-arrow"
+    );
+
+    const visible = new Set([1, pages()]);
+
+    for (
+      let p = Math.max(1, page - 2);
+      p <= Math.min(pages(), page + 2);
+      p++
+    ) {
+      visible.add(p);
+    }
+
+    let previous = 0;
+
+    [...visible]
+      .sort((a, b) => a - b)
+      .forEach(p => {
+        if (p - previous > 1) {
+          dots(p <= page ? "prev" : "next");
+        }
+
+        btn(p, p, false, p === page);
+
+        previous = p;
+      });
+
+    btn(
+      "next",
+      page + 1,
+      page === pages(),
+      false,
+      "new-ui-pagination-arrow"
+    );
+  }
+
+  // Pilihan 10 / 20 / 50 / 100.
+  sizeSelect.addEventListener("change", () => {
+    const n = Number(sizeSelect.value);
+
+    if (!Number.isInteger(n) || n < 1) return;
+    if (n === pageSize) return;
+
+    pageSize = n;
+    page = 1;
+
+    render();
+    notify();
+  });
+
+  // Go to Page.
+  function jumpNow() {
+    if (jump.value.trim() === "") return;
+
+    const targetPage = jump.value;
+    jump.value = "";
+
+    go(targetPage);
+  }
+
+  jump.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      jumpNow();
+    }
+  });
+
+  jump.addEventListener("change", jumpNow);
+
+  const api = {
+    setTotal(n) {
+      total = Math.max(0, Number(n) || 0);
+      render();
+    },
+
+    setPage(p) {
+      go(p);
+    },
+
+    setPageSize(n) {
+      const v = Math.floor(Number(n));
+
+      if (!Number.isFinite(v) || v < 1) return;
+      if (v === pageSize) return;
+
+      pageSize = v;
+      page = 1;
+
+      render();
+      notify();
+    },
+
+    update(opts = {}) {
+      if (opts.total !== undefined) {
+        total = Math.max(0, Number(opts.total) || 0);
+      }
+
+      if (opts.pageSize !== undefined) {
+        const n = Math.floor(Number(opts.pageSize));
+
+        if (Number.isFinite(n) && n > 0) {
+          pageSize = n;
+        }
+      }
+
+      if (opts.page !== undefined) {
+        page = Math.max(1, Number(opts.page) || 1);
+      }
+
+      render();
+    },
+
+    getState() {
+      return {
+        page,
+        pageSize,
+        total,
+        totalPages: pages()
+      };
+    },
+
+    destroy() {
+      sizeDropdown?.close?.();
+
+      root.replaceChildren();
+      root.classList.remove("new-ui-pagination");
+
+      delete root.__newUIPagination;
+    }
   };
+
+  root.__newUIPagination = api;
+
+  render();
+
+  return api;
+};
+
 })();
 
 /* ==========================================
