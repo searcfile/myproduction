@@ -1025,8 +1025,14 @@ body > .wrap > #preview {
   border-bottom: none;
 }
 
+
+/* RHB MANAGE BANKS - HOVER SAME AS CIMB */
 .rhb-bank-manager-table tbody tr:hover td {
-  background: var(--tx-hover, rgba(128,128,128,.08));
+  background: var(
+    --list-hover,
+    rgba(128,128,128,.08)
+  ) !important;
+  transition: background-color .2s ease;
 }
 
 .rhb-bank-actions-cell {
@@ -1112,11 +1118,6 @@ body > .wrap > #preview {
   width: 100% !important;
   margin: 0 !important;
   text-align: center !important;
-}
-
-/* Kekalkan background table ketika hover */
-.rhb-bank-manager-table tr:hover .rhb-bank-manager-empty {
-  background: var(--page-bg2) !important;
 }
 
 </style>
