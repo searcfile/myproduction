@@ -2533,6 +2533,34 @@ jiliModalInstance = modal;
     return td;
   }
 
+/* ===== JILISLOT MANAGE GAMES - SHARED LOADING ===== */
+
+let jiliManagerLoadingTimer = null;
+
+function showJiliManagerLoading() {
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+function stopJiliManagerLoading() {
+  clearTimeout(jiliManagerLoadingTimer);
+  jiliManagerLoadingTimer = null;
+}
+
   /* ===== RENDER ROWS ===== */
 
   function renderRows(keyword = "") {
@@ -2698,28 +2726,49 @@ if (!filtered.length) {
     });
   }
 
-  /* ===== CUSTOM SEARCH ===== */
 
-  if (typeof window.NewUI?.syncSearch === "function") {
-    window.NewUI.syncSearch(searchInput, {
-      onSearch: async keyword => {
-        await new Promise(resolve =>
-          setTimeout(resolve, 250)
-        );
+/* ===== CUSTOM SEARCH ===== */
 
-        if (host.isConnected) {
-          renderRows(keyword);
-        }
-      }
-    });
-  }
+if (typeof window.NewUI?.syncSearch === "function") {
+  window.NewUI.syncSearch(searchInput, {
+    onSearch: async keyword => {
 
-  searchInput.addEventListener("input", () => {
-    renderRows(searchInput.value);
+      stopJiliManagerLoading();
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 250)
+      );
+
+      if (!host.isConnected) return;
+
+      renderRows(searchInput.value);
+    }
   });
-
-  renderRows(query);
 }
+
+
+
+/* ===== LIVE SEARCH ===== */
+
+searchInput.addEventListener("input", () => {
+  stopJiliManagerLoading();
+  renderRows(searchInput.value);
+});
+
+/* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
+
+showJiliManagerLoading();
+
+jiliManagerLoadingTimer = setTimeout(() => {
+  jiliManagerLoadingTimer = null;
+
+  if (!host.isConnected) return;
+
+  renderRows(searchInput.value);
+}, 650);
+
+}
+
 
 
 document.getElementById("jiliCreateBtn").addEventListener("click",()=>jiliOpenEditor());
