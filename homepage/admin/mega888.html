@@ -4041,18 +4041,24 @@ const modal = NewUI.modal.open({
 
 /* Initialize shared search with rotating icon */
 
+
 window.NewUI?.syncSearch?.(searchInput, {
   onSearch: async (keyword) => {
 
-    // Bagi spinner sempat dipaparkan
+    stopManagerTableLoading();
+
     await new Promise(resolve =>
       setTimeout(resolve, 250)
     );
+
+    if (!host.isConnected) return;
+    if (keyword !== searchInput.value) return;
 
     renderRows(keyword);
 
   }
 });
+
 /* ===== FORMAT CREATED / UPDATED DATE ===== */
 
 function mgFormatDate(value) {
@@ -4096,6 +4102,36 @@ return (
   `${get("day")}/${get("month")}/${get("year")}`
 );
 }
+
+/* ===== MANAGE GAMES - SHARED TABLE LOADING ===== */
+
+let mgTableLoadingTimer = null;
+
+function showManagerTableLoading() {
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  // Panggil custom loading asal new-ui.js
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+function stopManagerTableLoading() {
+  clearTimeout(mgTableLoadingTimer);
+  mgTableLoadingTimer = null;
+}
+
   /* ===== RENDER ROWS ===== */
 
   function renderRows(keyword = "") {
@@ -4291,17 +4327,30 @@ tr.append(
 
   }
 
-  /* ===== LIVE SEARCH ===== */
 
-  searchInput.addEventListener("input", () => {
+/* ===== LIVE SEARCH ===== */
 
-    renderRows(searchInput.value);
+searchInput.addEventListener("input", () => {
+  stopManagerTableLoading();
+  renderRows(searchInput.value);
+});
 
-  });
 
   /* ===== INITIAL RENDER ===== */
 
-  renderRows();
+
+/* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
+
+showManagerTableLoading();
+
+mgTableLoadingTimer = setTimeout(() => {
+  mgTableLoadingTimer = null;
+
+  if (!host.isConnected) return;
+
+  renderRows(searchInput.value);
+}, 650);
+
 
 }
 // Inline button handlers live in this module; expose only the existing UI entrypoints.
