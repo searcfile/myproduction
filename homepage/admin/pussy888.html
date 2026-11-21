@@ -1719,6 +1719,51 @@ select:focus-visible{
   margin: 0 !important;
   text-align: center !important;
 }
+
+/* ==========================================
+   PUSSY888 - MANAGE GAMES PAGINATION
+   ========================================== */
+
+.mg-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+/* Pagination di bawah table, rata kanan */
+.mg-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+/* Hide pagination apabila tiada data */
+.mg-manager-pagination[hidden] {
+  display: none !important;
+}
+
+/* Responsive phone */
+@media (max-width: 768px) {
+  .mg-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 <body>
 
@@ -4213,9 +4258,23 @@ toolbar.append(searchWrap, createBtn);
 
   const tbody = document.createElement("tbody");
 
+
 table.append(thead, tbody);
 tableWrap.append(table);
-host.append(toolbar, tableWrap);
+
+/* ===== PUSSY888 - MANAGE GAMES PAGINATION ===== */
+
+const paginationWrap = mgElement(
+  "div",
+  "mg-manager-pagination"
+);
+
+host.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   const names = Object.keys(gameData).sort(
     (a, b) => a.localeCompare(b)
@@ -4229,6 +4288,30 @@ const modal = NewUI.modal.open({
   width: 1100,
   stack: false
 });
+
+/* ===== PUSSY888 - PAGINATION INITIALIZATION ===== */
+
+let mgCurrentPage = 1;
+let mgPageSize = 10;
+
+const mgPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      mgCurrentPage = page;
+      mgPageSize = pageSize;
+
+      if (!host.isConnected) return;
+
+      renderRows(searchInput.value);
+    }
+  }
+);
 
   // FORMAT DATE TIME
   function mgFormatDate(value) {
@@ -4311,6 +4394,34 @@ function stopManagerTableLoading() {
       )
     );
 
+/* ===== PUSSY888 - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(filteredNames.length / mgPageSize)
+);
+
+mgCurrentPage = Math.max(
+  1,
+  Math.min(mgCurrentPage, totalPages)
+);
+
+// Sync jumlah data dan page aktif
+mgPagination.update({
+  total: filteredNames.length,
+  page: mgCurrentPage,
+  pageSize: mgPageSize
+});
+
+// Hanya ambil game untuk page semasa
+const startIndex =
+  (mgCurrentPage - 1) * mgPageSize;
+
+const paginatedNames = filteredNames.slice(
+  startIndex,
+  startIndex + mgPageSize
+);
+
     if (!filteredNames.length) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -4336,7 +4447,7 @@ if (typeof window.createEmptyState === "function") {
       return;
     }
 
-    filteredNames.forEach(name => {
+paginatedNames.forEach(name => {
       const game = gameData[name];
       if (!game) return;
 
@@ -4450,19 +4561,21 @@ window.NewUI?.syncSearch?.(searchInput, {
       setTimeout(resolve, 250)
     );
 
-    if (!host.isConnected) return;
-    if (keyword !== searchInput.value) return;
+if (!host.isConnected) return;
+if (keyword !== searchInput.value) return;
 
-    renderRows(keyword);
+mgCurrentPage = 1;
+renderRows(keyword);
   }
 });
 
 
-
-/* ===== LIVE SEARCH ===== */
-
 searchInput.addEventListener("input", () => {
   stopManagerTableLoading();
+
+  // Reset ke page pertama setiap kali search berubah
+  mgCurrentPage = 1;
+
   renderRows(searchInput.value);
 });
 
