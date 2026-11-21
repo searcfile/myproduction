@@ -4164,7 +4164,7 @@ window.NewUI.pagination = function(target, config = {}) {
 
   // Gunakan searchable dropdown asal 5G88.
   const sizeDropdown = NewUI.dropdown(sizeSelect, {
-    placeholder: "Rows per page"
+    placeholder: "Select page"
   });
 
   if (!sizeDropdown) {
