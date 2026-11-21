@@ -1675,6 +1675,51 @@ select:focus-visible{
   margin: 0 !important;
   text-align: center !important;
 }
+      
+/* ==========================================
+   MEGA888 - MANAGE GAMES PAGINATION
+   ========================================== */
+
+.mg-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+/* Pagination di bawah table, rata kanan */
+.mg-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+/* Kekalkan fungsi hidden asal */
+.mg-manager-pagination[hidden] {
+  display: none !important;
+}
+
+/* Responsive phone */
+@media (max-width: 768px) {
+  .mg-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 <body>
 
@@ -4020,7 +4065,20 @@ toolbar.append(searchWrap, createBtn);
   table.append(thead, tbody);
   tableWrap.append(table);
 
-host.append(toolbar, tableWrap);
+
+/* ===== MEGA888 - MANAGE GAMES PAGINATION ===== */
+
+const paginationWrap = mgElement(
+  "div",
+  "mg-manager-pagination"
+);
+
+host.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   /* ===== SORT GAME ===== */
 
@@ -4039,6 +4097,30 @@ const modal = NewUI.modal.open({
 });
 
 
+/* ===== MEGA888 - CUSTOM PAGINATION INITIALIZATION ===== */
+
+let mgCurrentPage = 1;
+let mgPageSize = 10;
+
+const mgPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      mgCurrentPage = page;
+      mgPageSize = pageSize;
+
+      if (!host.isConnected) return;
+
+      renderRows(searchInput.value);
+    }
+  }
+);
+
 /* Initialize shared search with rotating icon */
 
 
@@ -4054,7 +4136,8 @@ window.NewUI?.syncSearch?.(searchInput, {
     if (!host.isConnected) return;
     if (keyword !== searchInput.value) return;
 
-    renderRows(keyword);
+    mgCurrentPage = 1;
+renderRows(keyword);
 
   }
 });
@@ -4144,6 +4227,39 @@ function stopManagerTableLoading() {
       )
     );
 
+/* ===== MEGA888 - PAGINATION DATA ===== */
+
+// Jumlah game selepas search/filter
+mgPagination.setTotal(filteredNames.length);
+
+// Pastikan current page tidak melebihi jumlah page
+const totalPages = Math.max(
+  1,
+  Math.ceil(filteredNames.length / mgPageSize)
+);
+
+mgCurrentPage = Math.min(
+  mgCurrentPage,
+  totalPages
+);
+
+// Sync nombor page pada pagination
+mgPagination.update({
+  page: mgCurrentPage
+});
+
+// Ambil game untuk halaman semasa sahaja
+const startIndex =
+  (mgCurrentPage - 1) * mgPageSize;
+
+const endIndex =
+  startIndex + mgPageSize;
+
+const paginatedNames = filteredNames.slice(
+  startIndex,
+  endIndex
+);
+
 /* ===== MANAGE GAMES - CUSTOM NO DATA ===== */
 if (!filteredNames.length) {
   const tr = document.createElement("tr");
@@ -4168,7 +4284,7 @@ if (!filteredNames.length) {
 
   return;
 }
-    filteredNames.forEach(name => {
+paginatedNames.forEach(name => {
 
       const game = gameData[name];
 
@@ -4328,12 +4444,17 @@ tr.append(
   }
 
 
-/* ===== LIVE SEARCH ===== */
+
+/* ===== LIVE SEARCH + PAGINATION RESET ===== */
 
 searchInput.addEventListener("input", () => {
   stopManagerTableLoading();
+
+  mgCurrentPage = 1;
+
   renderRows(searchInput.value);
 });
+
 
 
   /* ===== INITIAL RENDER ===== */
