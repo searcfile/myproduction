@@ -979,6 +979,50 @@ input[type="number"] {
   border-color: rgba(255, 77, 79, 0.35);
 }
 
+/* ==========================================
+   JILISLOT - MANAGE GAMES PAGINATION
+   ========================================== */
+
+.jili-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+/* Pagination bawah table, rata kanan */
+.jili-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+/* Kekalkan hidden asal */
+.jili-manager-pagination[hidden] {
+  display: none !important;
+}
+
+/* Responsive phone */
+@media (max-width: 768px) {
+  .jili-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 </style>
 </head>
 
@@ -2498,10 +2542,21 @@ function jiliOpenManager(query = "") {
 
   const tbody = document.createElement("tbody");
 
-  table.append(thead, tbody);
-  tableWrap.append(table);
 
-  host.append(toolbar, tableWrap);
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== JILISLOT - MANAGE GAMES PAGINATION ===== */
+
+const paginationWrap = document.createElement("div");
+paginationWrap.className = "jili-manager-pagination";
+
+host.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
 
 /* ===== MANAGE JILI GAMES - MODAL ===== */
@@ -2522,6 +2577,30 @@ const modal = window.NewUI.modal.open({
 });
 
 jiliModalInstance = modal;
+
+/* ===== JILISLOT - PAGINATION INITIALIZATION ===== */
+
+let jiliCurrentPage = 1;
+let jiliPageSize = 10;
+
+const jiliPagination = window.NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      jiliCurrentPage = page;
+      jiliPageSize = pageSize;
+
+      if (!host.isConnected) return;
+
+      renderRows(searchInput.value);
+    }
+  }
+);
 
 
   /* ===== FORMAT TIMESTAMP ===== */
@@ -2614,6 +2693,35 @@ function stopJiliManagerLoading() {
       String(record.name).toLowerCase().includes(term)
     );
 
+/* ===== JILISLOT - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(filtered.length / jiliPageSize)
+);
+
+// Pastikan current page tidak melebihi total pages
+jiliCurrentPage = Math.max(
+  1,
+  Math.min(jiliCurrentPage, totalPages)
+);
+
+// Update pagination berdasarkan hasil search
+jiliPagination.update({
+  total: filtered.length,
+  page: jiliCurrentPage,
+  pageSize: jiliPageSize
+});
+
+// Ambil game untuk halaman semasa sahaja
+const startIndex =
+  (jiliCurrentPage - 1) * jiliPageSize;
+
+const paginatedRecords = filtered.slice(
+  startIndex,
+  startIndex + jiliPageSize
+);
+
 /* ===== JILISLOT MANAGE GAMES - CUSTOM NO DATA ===== */
 if (!filtered.length) {
   const tr = document.createElement("tr");
@@ -2639,7 +2747,7 @@ td.colSpan = 7;
   return;
 }
 
-    filtered.forEach(([id, record]) => {
+paginatedRecords.forEach(([id, record]) => {
       const tr = document.createElement("tr");
 
       /* GAME NAME */
@@ -2795,7 +2903,7 @@ tr.append(
 if (typeof window.NewUI?.syncSearch === "function") {
   window.NewUI.syncSearch(searchInput, {
     onSearch: async keyword => {
-
+jiliCurrentPage = 1;
       stopJiliManagerLoading();
 
       await new Promise(resolve =>
@@ -2813,10 +2921,14 @@ if (typeof window.NewUI?.syncSearch === "function") {
 
 /* ===== LIVE SEARCH ===== */
 
+
 searchInput.addEventListener("input", () => {
+  jiliCurrentPage = 1;
+
   stopJiliManagerLoading();
   renderRows(searchInput.value);
 });
+
 
 /* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
 
