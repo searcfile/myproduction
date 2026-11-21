@@ -4110,13 +4110,24 @@ const modal = NewUI.modal.open({
 });
 
 
-  // Search custom + rotating icon
-  window.NewUI?.syncSearch?.(searchInput, {
-    onSearch: async keyword => {
-      await new Promise(resolve => setTimeout(resolve, 250));
-      renderRows(keyword);
-    }
-  });
+
+/* ===== SEARCH CUSTOM + ROTATING ICON ===== */
+
+window.NewUI?.syncSearch?.(searchInput, {
+  onSearch: async keyword => {
+
+    stopManagerTableLoading();
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 250)
+    );
+
+    if (!host.isConnected) return;
+
+    renderRows(searchInput.value);
+  }
+});
+
 
   function formatDate(value) {
     if (value == null || value === "") return "—";
@@ -4156,6 +4167,35 @@ const modal = NewUI.modal.open({
       `${get("day")}/${get("month")}/${get("year")}`
     );
   }
+
+/* ===== MANAGE GAMES - SHARED TABLE LOADING ===== */
+
+let mgTableLoadingTimer = null;
+
+function showManagerTableLoading() {
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  // Custom loading asal daripada new-ui.js
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+function stopManagerTableLoading() {
+  clearTimeout(mgTableLoadingTimer);
+  mgTableLoadingTimer = null;
+}
 
   function renderRows(keyword = "") {
     tbody.replaceChildren();
@@ -4296,12 +4336,28 @@ edit.onclick = () => {
     });
   }
 
-  searchInput.addEventListener("input", () => {
-    renderRows(searchInput.value);
-  });
 
-  renderRows();
+/* ===== LIVE SEARCH ===== */
+
+searchInput.addEventListener("input", () => {
+  stopManagerTableLoading();
+  renderRows(searchInput.value);
+});
+
+/* ===== INITIAL RENDER WITH CUSTOM LOADING ===== */
+
+showManagerTableLoading();
+
+mgTableLoadingTimer = setTimeout(() => {
+  mgTableLoadingTimer = null;
+
+  if (!host.isConnected) return;
+
+  renderRows(searchInput.value);
+}, 650);
+
 }
+
 
 Object.assign(window,{setNow,generateLog,deleteCents,copyGameLogImage,resetLog,addJackpot,addManualSetScore,setRandomWin});
 window.addEventListener('DOMContentLoaded',()=>{
