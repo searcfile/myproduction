@@ -1357,6 +1357,48 @@
   box-shadow: none !important;
 }
 
+/* ==========================================
+   MAYBANK2U - MANAGE BANKS PAGINATION
+   SAME AS MEGA888
+   ========================================== */
+
+.mainan-bank-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+.mainan-bank-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+.mainan-bank-manager-pagination[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mainan-bank-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
         </style>
         <body>
          <div class="wrap">
@@ -2889,9 +2931,21 @@ function mainanOpenManageBanks() {
 
   const tbody = document.createElement("tbody");
 
-  table.append(thead, tbody);
-  tableWrap.append(table);
-  content.append(toolbar, tableWrap);
+
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== MAYBANK2U - PAGINATION CONTAINER ===== */
+
+const paginationWrap = document.createElement("div");
+paginationWrap.className = "mainan-bank-manager-pagination";
+
+content.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   // ===== OPEN MODAL =====
   const modal = NewUI.modal.open({
@@ -2900,6 +2954,30 @@ function mainanOpenManageBanks() {
     width: 1100,
     stack: false
   });
+
+/* ===== MAYBANK2U - PAGINATION INITIALIZATION ===== */
+
+let mainanCurrentPage = 1;
+let mainanPageSize = 10;
+
+const mainanPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      mainanCurrentPage = page;
+      mainanPageSize = pageSize;
+
+      if (!content.isConnected) return;
+
+      renderList();
+    }
+  }
+);
 
 /* ===== MAYBANK2U MANAGE BANKS - TABLE LOADING ===== */
 
@@ -3011,6 +3089,34 @@ async function loadMainanManagerTable(options = {}) {
       });
 
 
+/* ===== MAYBANK2U - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(banks.length / mainanPageSize)
+);
+
+mainanCurrentPage = Math.max(
+  1,
+  Math.min(mainanCurrentPage, totalPages)
+);
+
+// Update jumlah data dan halaman aktif
+mainanPagination.update({
+  total: banks.length,
+  page: mainanCurrentPage,
+  pageSize: mainanPageSize
+});
+
+// Ambil data untuk halaman semasa sahaja
+const startIndex =
+  (mainanCurrentPage - 1) * mainanPageSize;
+
+const paginatedBanks = banks.slice(
+  startIndex,
+  startIndex + mainanPageSize
+);
+
 /* ===== MAYBANK2U MANAGE BANKS - CUSTOM NO DATA ===== */
 if (!banks.length) {
   const tr = document.createElement("tr");
@@ -3035,7 +3141,7 @@ if (!banks.length) {
 }
 
 
-    banks.forEach(bank => {
+paginatedBanks.forEach(bank => {
       const tr = document.createElement("tr");
 
       function addCell(value) {
@@ -3134,16 +3240,23 @@ editBtn.addEventListener("click", () => {
 
 /* ===== MAYBANK2U MANAGE BANKS - CUSTOM SEARCH ===== */
 
+
 search.addEventListener("input", () => {
+  mainanCurrentPage = 1;
+
   if (!mainanManagerLoading) {
     renderList();
   }
 });
 
 
+
+
 if (window.NewUI?.syncSearch) {
   NewUI.syncSearch(search, {
     onSearch: async () => {
+      mainanCurrentPage = 1;
+
       await loadMainanManagerTable({
         forceRefresh: true
       });
