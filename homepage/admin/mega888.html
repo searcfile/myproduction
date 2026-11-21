@@ -4210,38 +4210,37 @@ function stopManagerTableLoading() {
       )
     );
 
+
 /* ===== MEGA888 - PAGINATION DATA ===== */
 
-// Jumlah game selepas search/filter
-mgPagination.setTotal(filteredNames.length);
-
-// Pastikan current page tidak melebihi jumlah page
+// Kira jumlah page berdasarkan hasil search
 const totalPages = Math.max(
   1,
   Math.ceil(filteredNames.length / mgPageSize)
 );
 
-mgCurrentPage = Math.min(
-  mgCurrentPage,
-  totalPages
+// Pastikan current page masih sah
+mgCurrentPage = Math.max(
+  1,
+  Math.min(mgCurrentPage, totalPages)
 );
 
-// Sync nombor page pada pagination
+// Sync pagination asal NewUI
 mgPagination.update({
-  page: mgCurrentPage
+  total: filteredNames.length,
+  page: mgCurrentPage,
+  pageSize: mgPageSize
 });
 
-// Ambil game untuk halaman semasa sahaja
+// Ambil rekod untuk halaman semasa sahaja
 const startIndex =
   (mgCurrentPage - 1) * mgPageSize;
 
-const endIndex =
-  startIndex + mgPageSize;
-
 const paginatedNames = filteredNames.slice(
   startIndex,
-  endIndex
+  startIndex + mgPageSize
 );
+
 
 /* ===== MANAGE GAMES - CUSTOM NO DATA ===== */
 if (!filteredNames.length) {
