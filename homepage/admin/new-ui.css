@@ -31,7 +31,7 @@ html[data-admin-theme="light"] {
     --player-list-border:#e2e7ee;
     --player-list-surface:#f8fafc;
     --player-list-active:#e6f4ff;
-   
+    --ant-blue-7:#0958d9;
    --floating-border:#91caff;
    --loading-overlay-bg:rgba(255,255,255,.15);
     --panel2:#fafafa;
@@ -99,7 +99,7 @@ html[data-admin-theme="light"] {
     --player-list-border:#303640;
     --player-list-surface:#1d2129;
     --player-list-active:#112a45;
-   
+    --ant-blue-7:#3c89e8;
     --floating-border:#15325b;
    --loading-overlay-bg:rgba(0,0,0,.25);
   --panel2: #171e28;
