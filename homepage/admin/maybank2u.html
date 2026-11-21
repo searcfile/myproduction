@@ -1333,14 +1333,30 @@
   text-align: center !important;
 }
 
-/* Kekalkan background table ketika hover */
-.mainan-bank-manager-table
-tr:hover .mainan-bank-manager-empty {
-  background: var(--page-bg2) !important;
+
+/* ==========================================
+   MAYBANK2U - MANAGE BANKS NO DATA HOVER
+   SAME AS CIMB
+   ========================================== */
+
+/* Hover seluruh baris termasuk No Data */
+.mainan-bank-manager-table tbody tr:hover td {
+  background: var(
+    --list-hover,
+    rgba(128, 128, 128, 0.08)
+  ) !important;
+
+  transition: background-color 0.2s ease;
 }
-mainan-bank-manager-table tbody tr:hover tr{
-  background:var(--list-hover) !important;
+
+/* Icon custom tetap tanpa card */
+.mainan-bank-manager-empty .shared-empty,
+.mainan-bank-manager-empty .shared-empty:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
+
         </style>
         <body>
          <div class="wrap">
