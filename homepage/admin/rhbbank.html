@@ -2279,6 +2279,56 @@ function rhbManageBanksModal() {
     stack: false
   });
 
+/* ===== RHB MANAGE BANKS - SHARED TABLE LOADING ===== */
+
+let rhbManagerLoading = false;
+let rhbManagerRequestId = 0;
+
+function showRhbManagerLoading() {
+  rhbManagerLoading = true;
+  tbody.replaceChildren();
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 4;
+  td.className = "shared-loading-table-cell";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  window.showLoadingState(
+    td,
+    "Please wait while fetching...",
+    "small"
+  );
+}
+
+async function loadRhbManagerTable() {
+  const requestId = ++rhbManagerRequestId;
+
+  showRhbManagerLoading();
+
+  try {
+    await Promise.all([
+      rhbLoadBanks(),
+      new Promise(resolve => setTimeout(resolve, 650))
+    ]);
+  } catch (error) {
+    if (requestId === rhbManagerRequestId) {
+      rhbToast(error.message, "error");
+    }
+  } finally {
+    if (requestId !== rhbManagerRequestId) return;
+
+    rhbManagerLoading = false;
+
+    if (!content.isConnected) return;
+
+    renderList();
+  }
+}
+
   // ===== RENDER =====
   function renderList() {
     tbody.replaceChildren();
@@ -2433,21 +2483,22 @@ edit.addEventListener("click", () => {
     }
   }
 
-  // ===== SEARCH =====
-  search.addEventListener("input", renderList);
 
-  if (typeof NewUI.syncSearch === "function") {
-    NewUI.syncSearch(search, {
-      onSearch: async () => {
-        try {
-          await rhbLoadBanks();
-          renderList();
-        } catch (error) {
-          rhbToast(error.message, "error");
-        }
-      }
-    });
+/* ===== RHB MANAGE BANKS - SEARCH WITH LOADING ===== */
+
+search.addEventListener("input", () => {
+  if (!rhbManagerLoading) {
+    renderList();
   }
+});
+
+if (typeof NewUI.syncSearch === "function") {
+  NewUI.syncSearch(search, {
+    onSearch: async () => {
+      await loadRhbManagerTable();
+    }
+  });
+}
 
 
   // ===== CREATE BANK =====
@@ -2460,8 +2511,10 @@ edit.addEventListener("click", () => {
   });
 
 
-  // ===== INITIAL RENDER =====
-  renderList();
+
+/* ===== INITIAL RENDER WITH CUSTOM TABLE LOADING ===== */
+loadRhbManagerTable();
+
 }
 
 
