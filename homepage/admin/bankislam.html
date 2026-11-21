@@ -1456,6 +1456,48 @@ body {
 }
 
 
+/* ==========================================
+   BANK ISLAM - MANAGE BANKS PAGINATION
+   SAME AS MEGA888
+   ========================================== */
+
+.bi-bank-manager-pagination {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+.bi-bank-manager-pagination.new-ui-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 10px;
+  width: 100%;
+  min-height: 54px;
+
+  padding: 12px 0;
+  margin: 0;
+
+  border-top: 0;
+  background: transparent;
+}
+
+.bi-bank-manager-pagination[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .bi-bank-manager-pagination.new-ui-pagination {
+    justify-content: flex-end;
+    padding: 10px 0;
+    gap: 8px;
+  }
+}
+
 
 </style>
 </head>
@@ -2835,9 +2877,21 @@ function biOpenManageBanks() {
 
   const tbody = document.createElement("tbody");
 
-  table.append(thead, tbody);
-  tableWrap.append(table);
-  content.append(toolbar, tableWrap);
+
+table.append(thead, tbody);
+tableWrap.append(table);
+
+/* ===== BANK ISLAM - PAGINATION CONTAINER ===== */
+
+const paginationWrap = document.createElement("div");
+paginationWrap.className = "bi-bank-manager-pagination";
+
+content.append(
+  toolbar,
+  tableWrap,
+  paginationWrap
+);
+
 
   // ===== OPEN MODAL =====
   const modal = NewUI.modal.open({
@@ -2846,6 +2900,30 @@ function biOpenManageBanks() {
     width: 1100,
     stack: false
   });
+
+/* ===== BANK ISLAM - PAGINATION INITIALIZATION ===== */
+
+let biCurrentPage = 1;
+let biPageSize = 10;
+
+const biPagination = NewUI.pagination(
+  paginationWrap,
+  {
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+
+    onChange: ({ page, pageSize }) => {
+      biCurrentPage = page;
+      biPageSize = pageSize;
+
+      if (!content.isConnected) return;
+
+      renderList();
+    }
+  }
+);
 
 /* ===== BANK ISLAM - CUSTOM TABLE LOADING ===== */
 
@@ -2921,6 +2999,34 @@ async function loadBiManagerTable() {
       });
 
 
+/* ===== BANK ISLAM - PAGINATION DATA ===== */
+
+const totalPages = Math.max(
+  1,
+  Math.ceil(banks.length / biPageSize)
+);
+
+biCurrentPage = Math.max(
+  1,
+  Math.min(biCurrentPage, totalPages)
+);
+
+// Update pagination berdasarkan hasil Search
+biPagination.update({
+  total: banks.length,
+  page: biCurrentPage,
+  pageSize: biPageSize
+});
+
+// Ambil bank untuk page aktif sahaja
+const startIndex =
+  (biCurrentPage - 1) * biPageSize;
+
+const paginatedBanks = banks.slice(
+  startIndex,
+  startIndex + biPageSize
+);
+
 /* ===== BANK ISLAM MANAGE BANKS - CUSTOM NO DATA ===== */
 if (!banks.length) {
   const tr = document.createElement("tr");
@@ -2946,7 +3052,7 @@ if (!banks.length) {
 }
 
 
-    banks.forEach(bank => {
+paginatedBanks.forEach(bank => {
       const tr = document.createElement("tr");
 
       function addCell(value) {
@@ -3046,19 +3152,27 @@ editBtn.addEventListener("click", () => {
 
 /* ===== BANK ISLAM - SEARCH WITH TABLE LOADING ===== */
 
+
 search.addEventListener("input", () => {
+  biCurrentPage = 1;
+
   if (!biManagerLoading) {
     renderList();
   }
 });
 
+
+
 if (window.NewUI?.syncSearch) {
   NewUI.syncSearch(search, {
     onSearch: async () => {
+      biCurrentPage = 1;
+
       await loadBiManagerTable();
     }
   });
 }
+
 
 
 // ===== CREATE BANK =====
