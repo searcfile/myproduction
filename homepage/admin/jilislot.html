@@ -2442,13 +2442,29 @@ pecahan[jiliBetKey(bet)] = wins;
       body: JSON.stringify(payload)
     });
 
-    await jiliLoadGames();
 
-    await window.NewUI.setButtonLoading(saveButton, false, {
-      minDuration: 700
-    });
+/* ===== RELOAD LATEST JILISLOT GAME DATA ===== */
 
-    modal.close();
+const loaded = await jiliLoadGames();
+
+if (!loaded) {
+  throw new Error(
+    "Game saved, but refreshing the list failed"
+  );
+}
+
+/* ===== LIVE UPDATE MANAGE GAMES ===== */
+
+jiliRefreshManagerRows?.();
+
+/* ===== FINISH SAVE LOADING ===== */
+
+await window.NewUI.setButtonLoading(saveButton, false, {
+  minDuration: 700
+});
+
+modal.close();
+
     if (jiliModalInstance === modal) {
       jiliModalInstance = null;
     }
@@ -2469,13 +2485,19 @@ pecahan[jiliBetKey(bet)] = wins;
    JILISLOT - MANAGE GAMES TABLE + SEARCH
    ========================================== */
 
+/* ===== JILISLOT - LIVE MANAGE GAMES REFRESH ===== */
+
+let jiliRefreshManagerRows = null;
+
 function jiliOpenManager(query = "") {
 
-  const records = Object.entries(jiliDbRecords)
-    .filter(([, record]) => record?.name)
-    .sort((a, b) =>
-      String(a[1].name).localeCompare(String(b[1].name))
-    );
+
+let records = Object.entries(jiliDbRecords)
+  .filter(([, record]) => record?.name)
+  .sort((a, b) =>
+    String(a[1].name).localeCompare(String(b[1].name))
+  );
+
 
   const host = document.createElement("div");
   host.className = "jili-manager-table";
@@ -2897,6 +2919,29 @@ tr.append(
     });
   }
 
+
+/* ==========================================
+   JILISLOT - REFRESH MANAGE GAMES AFTER SAVE
+   ========================================== */
+
+jiliRefreshManagerRows = () => {
+  if (!host.isConnected) return;
+
+  // Ambil senarai game terbaru daripada database
+  records = Object.entries(jiliDbRecords)
+    .filter(([, record]) => record?.name)
+    .sort((a, b) =>
+      String(a[1].name).localeCompare(
+        String(b[1].name)
+      )
+    );
+
+  // Hentikan loading table lama
+  stopJiliManagerLoading();
+
+  // Render semula tanpa reset search dan pagination
+  renderRows(searchInput.value);
+};
 
 /* ===== CUSTOM SEARCH ===== */
 
