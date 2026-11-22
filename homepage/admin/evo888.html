@@ -1920,6 +1920,40 @@ body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
   border-color: rgba(255, 77, 79, 0.35);
 }
 
+/* ==========================================
+   EVO888 - MANAGE GAMES STATUS CHIPS
+   ========================================== */
+
+.mg-manager-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .mg-manager-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 </style>
 <body>
 
@@ -4162,7 +4196,47 @@ function mgManager() {
     mgEditor();
   });
 
-  toolbar.append(searchWrap, createBtn);
+
+/* ===== EVO888 - STATUS MULTI SELECT FILTER ===== */
+
+const statusFilterWrap = mgElement(
+  "div",
+  "mg-manager-status-filter"
+);
+
+let mgSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterWrap, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+
+  onChange: values => {
+    mgSelectedStatuses = values;
+
+    stopManagerTableLoading();
+
+    // Reset pagination ke page pertama
+    mgCurrentPage = 1;
+
+    if (!host.isConnected) return;
+
+    renderRows(searchInput.value);
+  }
+});
+
+toolbar.append(
+  searchWrap,
+  statusFilterWrap,
+  createBtn
+);
+
 
   // Table
   const tableWrap = mgElement("div", "mg-manager-table-wrap");
@@ -4360,11 +4434,55 @@ function stopManagerTableLoading() {
   function renderRows(keyword = "") {
     tbody.replaceChildren();
 
-    const filtered = names.filter(name =>
-      name.toLowerCase().includes(
-        String(keyword).trim().toLowerCase()
-      )
+
+/* ===== EVO888 - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = mgSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const filtered = names.filter(name => {
+
+  // Filter nama game
+  const matchSearch = name
+    .toLowerCase()
+    .includes(
+      String(keyword).trim().toLowerCase()
     );
+
+  if (!matchSearch) return false;
+
+  // Kosong atau All = semua game
+  if (showAll) return true;
+
+  // Ambil status daripada data EVO888
+  const record = mgRecords[name] || gameData[name] || {};
+
+  const isActive = record.active !== false;
+
+  if (
+    selectedStatuses.includes("active") &&
+    isActive
+  ) {
+    return true;
+  }
+
+  if (
+    selectedStatuses.includes("inactive") &&
+    !isActive
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
 
 /* ===== EVO888 - PAGINATION DATA ===== */
 
