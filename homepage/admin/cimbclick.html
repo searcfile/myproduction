@@ -959,13 +959,22 @@ html {
   color: var(--page-text);
 }
 
+
+/* CIMB MANAGE BANKS - TOOLBAR LIKE MEGA888 */
 .cimb-bank-manager-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
+
+/* Create Bank kekal di sebelah kanan */
+.cimb-bank-manager-toolbar > button {
+  margin-left: auto;
+}
+
 
 
 /* MANAGE BANKS - CUSTOM SYNC SEARCH */
