@@ -1157,6 +1157,41 @@ html {
   }
 }
 
+/* ==========================================
+   CIMB - MANAGE BANKS STATUS CHIPS FILTER
+   ========================================== */
+
+.cimb-bank-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.cimb-bank-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.cimb-bank-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.cimb-bank-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .cimb-bank-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 </style>
 <body>
   
@@ -2740,7 +2775,49 @@ const searchHost = document.createElement("div");
 searchHost.className = "cimb-bank-search-host";
 
 searchHost.append(search);
-toolbar.append(searchHost, addButton);
+
+/* ===== CIMB - STATUS MULTI SELECT CHIPS ===== */
+
+const statusFilterHost = document.createElement("div");
+statusFilterHost.className = "cimb-bank-status-filter";
+
+// Default kosong = tampilkan semua bank
+let cimbSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterHost, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+  multiple: true,
+
+  onChange: values => {
+    cimbSelectedStatuses = Array.isArray(values)
+      ? values
+      : [];
+
+    // Bila tukar filter, kembali ke page 1
+    cimbCurrentPage = 1;
+
+    stopCimbManagerLoading();
+
+    if (!content.isConnected) return;
+
+    renderList();
+  }
+});
+
+toolbar.append(
+  searchHost,
+  statusFilterHost,
+  addButton
+);
+
 
   // ===== TABLE WRAPPER =====
   const tableWrap = document.createElement("div");
@@ -2856,23 +2933,61 @@ function stopCimbManagerLoading() {
 
     const keyword = search.value.trim().toLowerCase();
 
-    const records = Object.entries(BANK_RECORDS)
-      .sort((a, b) =>
-        String(a[1].name || "").localeCompare(
-          String(b[1].name || "")
-        )
-      )
-      .filter(([, bank]) => {
-        const searchable = [
-          bank.name,
-          bank.len,
-          bank.rule,
-          bank.digits,
-          bank.active ? "Active" : "Inactive"
-        ].join(" ").toLowerCase();
 
-        return searchable.includes(keyword);
-      });
+/* ===== CIMB - SEARCH + STATUS CHIPS FILTER ===== */
+
+const selectedStatuses = cimbSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const records = Object.entries(BANK_RECORDS)
+  .sort((a, b) =>
+    String(a[1].name || "").localeCompare(
+      String(b[1].name || "")
+    )
+  )
+  .filter(([, bank]) => {
+
+    // Kekalkan fungsi Search asal CIMB
+    const searchable = [
+      bank.name,
+      bank.len,
+      bank.rule,
+      bank.digits,
+      bank.active ? "Active" : "Inactive"
+    ].join(" ").toLowerCase();
+
+    const matchSearch = searchable.includes(keyword);
+
+    if (!matchSearch) return false;
+
+    // Tiada pilihan atau All = semua bank
+    if (showAll) return true;
+
+    const isActive = bank.active !== false;
+
+    if (
+      selectedStatuses.includes("active") &&
+      isActive
+    ) {
+      return true;
+    }
+
+    if (
+      selectedStatuses.includes("inactive") &&
+      !isActive
+    ) {
+      return true;
+    }
+
+    return false;
+  });
 
 /* ===== CIMB - PAGINATION DATA ===== */
 
