@@ -1162,6 +1162,41 @@ body > .wrap > #preview {
   }
 }
 
+/* ==========================================
+   RHB BANK - MANAGE BANKS STATUS CHIPS
+   ========================================== */
+
+.rhb-bank-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.rhb-bank-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.rhb-bank-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.rhb-bank-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .rhb-bank-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2281,7 +2316,51 @@ function rhbManageBanksModal() {
   addButton.textContent = "+ Create Bank";
   addButton.hidden = !rhbCan("create");
 
-  toolbar.append(searchHost, addButton);
+
+/* ===== RHB BANK - STATUS MULTI SELECT CHIPS ===== */
+
+const statusFilterHost = document.createElement("div");
+statusFilterHost.className = "rhb-bank-status-filter";
+
+// Default kosong = semua bank
+let rhbSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterHost, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+  multiple: true,
+
+  onChange: values => {
+    rhbSelectedStatuses = Array.isArray(values)
+      ? values
+      : [];
+
+    // Reset pagination ke page 1
+    rhbCurrentPage = 1;
+
+    if (!content.isConnected) return;
+
+    // Jika loading sedang berjalan,
+    // renderList() akan dipanggil selepas loading selesai
+    if (!rhbManagerLoading) {
+      renderList();
+    }
+  }
+});
+
+toolbar.append(
+  searchHost,
+  statusFilterHost,
+  addButton
+);
+
 
   // ===== TABLE =====
   const tableWrap = document.createElement("div");
@@ -2413,21 +2492,60 @@ async function loadRhbManagerTable() {
 
     const keyword = search.value.trim().toLowerCase();
 
-    const records = Object.entries(RHB_BANK_RECORDS)
-      .sort((a, b) =>
-        String(a[1].name || "").localeCompare(
-          String(b[1].name || "")
-        )
-      )
-      .filter(([, bank]) => {
-        const searchable = [
-          bank.name,
-          bank.pattern,
-          bank.active ? "Active" : "Inactive"
-        ].join(" ").toLowerCase();
 
-        return searchable.includes(keyword);
-      });
+/* ===== RHB BANK - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = rhbSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const records = Object.entries(RHB_BANK_RECORDS)
+  .sort((a, b) =>
+    String(a[1].name || "").localeCompare(
+      String(b[1].name || "")
+    )
+  )
+  .filter(([, bank]) => {
+
+    // Kekalkan Search asal RHB BANK
+    const searchable = [
+      bank.name,
+      bank.pattern,
+      bank.active ? "Active" : "Inactive"
+    ].join(" ").toLowerCase();
+
+    const matchSearch = searchable.includes(keyword);
+
+    if (!matchSearch) return false;
+
+    // Kosong / All = semua bank
+    if (showAll) return true;
+
+    // Sama dengan status asal dalam table RHB
+    const isActive = bank.active === true;
+
+    if (
+      selectedStatuses.includes("active") &&
+      isActive
+    ) {
+      return true;
+    }
+
+    if (
+      selectedStatuses.includes("inactive") &&
+      !isActive
+    ) {
+      return true;
+    }
+
+    return false;
+  });
 
 
 /* ===== RHB BANK - PAGINATION DATA ===== */
