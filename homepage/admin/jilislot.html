@@ -1023,6 +1023,40 @@ input[type="number"] {
   }
 }
 
+/* ==========================================
+   JILISLOT - MANAGE GAMES STATUS CHIPS
+   ========================================== */
+
+.jili-manager-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.jili-manager-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.jili-manager-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.jili-manager-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .jili-manager-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 </style>
 </head>
 
@@ -2531,7 +2565,47 @@ let records = Object.entries(jiliDbRecords)
     jiliOpenEditor();
   });
 
-  toolbar.append(searchWrap, createBtn);
+
+/* ===== JILISLOT - STATUS MULTI SELECT FILTER ===== */
+
+const statusFilterWrap = document.createElement("div");
+statusFilterWrap.className = "jili-manager-status-filter";
+
+let jiliSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterWrap, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+  multiple: true,
+
+  onChange: values => {
+    jiliSelectedStatuses = Array.isArray(values)
+      ? values
+      : [];
+
+    jiliCurrentPage = 1;
+
+    stopJiliManagerLoading();
+
+    if (!host.isConnected) return;
+
+    renderRows(searchInput.value);
+  }
+});
+
+toolbar.append(
+  searchWrap,
+  statusFilterWrap,
+  createBtn
+);
+
 
   /* ===== TABLE ===== */
 
@@ -2711,9 +2785,53 @@ function stopJiliManagerLoading() {
 
     const term = String(keyword).trim().toLowerCase();
 
-    const filtered = records.filter(([, record]) =>
-      String(record.name).toLowerCase().includes(term)
-    );
+
+/* ===== JILISLOT - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = jiliSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const filtered = records.filter(([, record]) => {
+
+  // Search game name
+  const matchSearch = String(record.name || "")
+    .toLowerCase()
+    .includes(term);
+
+  if (!matchSearch) return false;
+
+  // Kosong / All = semua game
+  if (showAll) return true;
+
+  // Status game sebenar
+  const isActive = record.active !== false;
+
+  // Active sahaja
+  if (
+    selectedStatuses.includes("active") &&
+    isActive
+  ) {
+    return true;
+  }
+
+  // Inactive sahaja
+  if (
+    selectedStatuses.includes("inactive") &&
+    !isActive
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
 
 /* ===== JILISLOT - PAGINATION DATA ===== */
 
