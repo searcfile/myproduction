@@ -1399,6 +1399,41 @@
   }
 }
 
+/* ==========================================
+   MAYBANK2U - MANAGE BANKS STATUS CHIPS
+   ========================================== */
+
+.mainan-bank-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.mainan-bank-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.mainan-bank-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.mainan-bank-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .mainan-bank-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
         </style>
         <body>
          <div class="wrap">
@@ -2901,7 +2936,50 @@ function mainanOpenManageBanks() {
   addButton.textContent = "+ Create Bank";
   addButton.hidden = !mainanCan("create");
 
-  toolbar.append(searchHost, addButton);
+ 
+/* ===== MAYBANK2U - STATUS MULTI SELECT CHIPS ===== */
+
+const statusFilterHost = document.createElement("div");
+statusFilterHost.className = "mainan-bank-status-filter";
+
+// Default kosong = semua bank
+let mainanSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterHost, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+  multiple: true,
+
+  onChange: values => {
+    mainanSelectedStatuses = Array.isArray(values)
+      ? values
+      : [];
+
+    // Kembali ke page 1 bila filter berubah
+    mainanCurrentPage = 1;
+
+    if (!content.isConnected) return;
+
+    // Elak ganggu loading yang sedang berjalan
+    if (!mainanManagerLoading) {
+      renderList();
+    }
+  }
+});
+
+toolbar.append(
+  searchHost,
+  statusFilterHost,
+  addButton
+);
+
 
   // ===== TABLE =====
   const tableWrap = document.createElement("div");
@@ -3070,23 +3148,63 @@ async function loadMainanManagerTable(options = {}) {
 
     const keyword = search.value.trim().toLowerCase();
 
-    const banks = Object.values(MAINAN_BANK_RECORDS)
-      .sort((a, b) =>
-        String(a.name || "").localeCompare(
-          String(b.name || "")
-        )
-      )
-      .filter(bank => {
-        const searchable = [
-          bank.name,
-          bank.len,
-          bank.rule,
-          bank.digits,
-          bank.active !== false ? "Active" : "Inactive"
-        ].join(" ").toLowerCase();
 
-        return searchable.includes(keyword);
-      });
+/* ===== MAYBANK2U - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = mainanSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const banks = Object.values(MAINAN_BANK_RECORDS)
+  .sort((a, b) =>
+    String(a.name || "").localeCompare(
+      String(b.name || "")
+    )
+  )
+  .filter(bank => {
+
+    // Kekalkan Search asal Maybank2u
+    const searchable = [
+      bank.name,
+      bank.len,
+      bank.rule,
+      bank.digits,
+      bank.active !== false ? "Active" : "Inactive"
+    ].join(" ").toLowerCase();
+
+    const matchSearch = searchable.includes(keyword);
+
+    if (!matchSearch) return false;
+
+    // Kosong / All = semua bank
+    if (showAll) return true;
+
+    // Sama seperti status asal dalam table
+    const isActive = bank.active !== false;
+
+    if (
+      selectedStatuses.includes("active") &&
+      isActive
+    ) {
+      return true;
+    }
+
+    if (
+      selectedStatuses.includes("inactive") &&
+      !isActive
+    ) {
+      return true;
+    }
+
+    return false;
+  });
+
 
 
 /* ===== MAYBANK2U - PAGINATION DATA ===== */
