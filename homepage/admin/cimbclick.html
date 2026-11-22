@@ -960,21 +960,116 @@ html {
 }
 
 
-/* CIMB MANAGE BANKS - TOOLBAR LIKE MEGA888 */
+
+/* ==========================================
+   CIMB - RESPONSIVE MANAGE BANKS
+   SAME AS MEGA888
+   ========================================== */
+
+/* Jadikan modal sebagai container */
+.cimb-bank-manager {
+  container-type: inline-size;
+}
+
+/* DESKTOP */
 .cimb-bank-manager-toolbar {
-  display: flex;
-  justify-content: flex-start;
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 220px)
+    minmax(0, 1fr)
+    auto;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
+  min-width: 0;
 }
 
-/* Create Bank kekal di sebelah kanan */
+/* SEARCH BANK */
+.cimb-bank-manager-toolbar .cimb-bank-search-host {
+  grid-column: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.cimb-bank-manager-toolbar .shared-sync-search {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* SELECT STATUS */
+.cimb-bank-manager-toolbar .cimb-bank-status-filter {
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.cimb-bank-manager-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+/* CREATE BANK */
 .cimb-bank-manager-toolbar > button {
-  margin-left: auto;
+  grid-column: 4;
+  width: auto;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  padding: 0 15px;
+  white-space: nowrap;
+  justify-self: end;
 }
 
+.cimb-bank-manager-toolbar > button[hidden] {
+  display: none !important;
+}
+
+/* TABLET */
+@container (max-width: 760px) {
+  .cimb-bank-manager-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .cimb-bank-manager-toolbar .cimb-bank-search-host {
+    grid-column: 1;
+  }
+
+  .cimb-bank-manager-toolbar .cimb-bank-status-filter {
+    grid-column: 2;
+  }
+
+  .cimb-bank-manager-toolbar > button {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* PHONE */
+@container (max-width: 440px) {
+  .cimb-bank-manager-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cimb-bank-manager-toolbar .cimb-bank-search-host,
+  .cimb-bank-manager-toolbar .cimb-bank-status-filter,
+  .cimb-bank-manager-toolbar > button {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .cimb-bank-manager-toolbar > button {
+    justify-self: stretch;
+  }
+}
 
 
 /* MANAGE BANKS - CUSTOM SYNC SEARCH */
@@ -1068,19 +1163,7 @@ html {
   color: #ef4444;
 }
 
-@media (max-width: 600px) {
-  .cimb-bank-manager-toolbar {
-    align-items: stretch;
-  }
 
-  .cimb-bank-manager-search {
-    max-width: none;
-  }
-
-  .cimb-bank-manager-toolbar > button {
-    width: 100%;
-  }
-}
 /* ==========================================
    CIMB MANAGE BANKS - CUSTOM NO DATA
    SAME AS MEGA888 - WITHOUT CARD
@@ -1188,17 +1271,6 @@ html {
 
 .cimb-bank-status-filter .shared-chip-dropdown-panel {
   z-index: 10000;
-}
-
-/* MOBILE RESPONSIVE */
-
-@media (max-width: 600px) {
-  .cimb-bank-status-filter {
-    flex: 1 1 100%;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
 }
 
 </style>
