@@ -2012,6 +2012,40 @@ select:focus-visible{
   border-color: rgba(255, 77, 79, 0.35);
 }
 
+/* ==========================================
+   SCR888H5 - MANAGE GAMES STATUS CHIPS
+   ========================================== */
+
+.mg-manager-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 600px) {
+  .mg-manager-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 </style>
 <body>
 
@@ -4386,7 +4420,48 @@ function mgManager() {
     mgEditor();
   });
 
-  toolbar.append(searchWrap, createBtn);
+
+/* ===== SCR888H5 - STATUS MULTI SELECT FILTER ===== */
+
+const statusFilterWrap = mgElement(
+  "div",
+  "mg-manager-status-filter"
+);
+
+// Default kosong = semua game
+let mgSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterWrap, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+
+  onChange: values => {
+    mgSelectedStatuses = values;
+
+    stopManagerTableLoading();
+
+    // Reset pagination
+    mgCurrentPage = 1;
+
+    if (!host.isConnected) return;
+
+    renderRows(searchInput.value);
+  }
+});
+
+toolbar.append(
+  searchWrap,
+  statusFilterWrap,
+  createBtn
+);
+
 
   /* ===== TABLE ===== */
   const tableWrap = mgElement("div", "mg-manager-table-wrap");
@@ -4598,11 +4673,57 @@ function stopManagerTableLoading() {
   function renderRows(keyword = "") {
     tbody.replaceChildren();
 
-    const filteredNames = names.filter(name =>
-      name.toLowerCase().includes(
-        String(keyword).trim().toLowerCase()
-      )
+
+/* ===== SCR888H5 - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = mgSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const filteredNames = names.filter(name => {
+
+  // Filter Search
+  const matchSearch = name
+    .toLowerCase()
+    .includes(
+      String(keyword).trim().toLowerCase()
     );
+
+  if (!matchSearch) return false;
+
+  // Kosong / All = semua game
+  if (showAll) return true;
+
+  // Ambil status game SCR888H5
+  const record = mgRecords[name] || gameData[name] || {};
+
+  const isActive = record.active !== false;
+
+  // Active sahaja
+  if (
+    selectedStatuses.includes("active") &&
+    isActive
+  ) {
+    return true;
+  }
+
+  // Inactive sahaja
+  if (
+    selectedStatuses.includes("inactive") &&
+    !isActive
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
 
 /* ===== SCR888H5 - PAGINATION DATA ===== */
 
