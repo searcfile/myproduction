@@ -369,14 +369,6 @@ border-radius:4px;
   transition: all 0.3s;
 }
 
-.form-row-top #autoFreeGameBtn,
-.form-row-middle #autoAddScoreBtn{
-  width:98px !important;
-  min-width:98px !important;
-  max-width:98px !important;
-  padding:0 !important;
-}
-
 /* ===== BODY - AUTO VERTICAL SCROLL ===== */
 html,
 body {
@@ -436,107 +428,6 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
-}
-/* ===== TOP CONTROL ROW ===== */
-.form-row-top{
-  display: grid;
-  grid-template-columns: 1.7fr 0.9fr 0.9fr 1.35fr auto 0.9fr auto auto;
-  gap: 8px;
-  align-items: center;
-  margin: 16px 12px 10px;
-}
-
-.form-row-top .cs-wrap,
-.form-row-top select,
-.form-row-top .input-time,
-.form-row-top .input-small{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  text-align: left;
-}
-
-.form-row-top button{
-  width: 100%;
-  min-width: 0;
-  padding: 0px 15px;
-  white-space: nowrap;
-}
-
-.form-row-top .cs-display{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* desktop kecil / laptop kecil */
-@media (max-width: 1180px){
-  .form-row-top{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      "game bet win"
-      "time time now"
-      "rows free auto";
-  }
-
-  .form-row-top .cs-wrap-gameSelect{
-    grid-area: game;
-  }
-
-  .form-row-top .cs-wrap-betSelect{
-    grid-area: bet;
-  }
-
-  .form-row-top .cs-wrap-pecahanSelect{
-    grid-area: win;
-  }
-
-  .form-row-top #manualTime{
-    grid-area: time;
-  }
-
-  .form-row-top button[onclick="setNow()"]{
-    grid-area: now;
-  }
-
-  .form-row-top #freeGameInput{
-    grid-area: rows;
-  }
-
-  .form-row-top #setFreeGameBtn{
-    grid-area: free;
-  }
-
-  .form-row-top #autoFreeGameBtn{
-    grid-area: auto;
-  }
-}
-
-/* phone */
-@media (max-width: 640px){
-  .form-row-top{
-    gap: 8px;
-  }
-
-  .form-row-top button,
-  .form-row-top .input-time,
-  .form-row-top .input-small,
-  .form-row-top select,
-  .form-row-top .cs-display{
-    font-size: 14px;
-  }
-}
-.form-row-top button,
-.form-row-top .cs-display,
-.form-row-top input,
-.form-row-top select{
-  overflow: hidden;
-}
-
-.form-row-top #setFreeGameBtn,
-.form-row-top #autoFreeGameBtn,
-.form-row-top .btn-main{
-  max-width: 100%;
 }
 
 /* ===== MIDDLE CONTROL ROW FINAL ===== */
