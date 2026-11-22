@@ -1180,13 +1180,22 @@
   color: var(--page-text);
 }
 
+
+/* MAYBANK2U - MANAGE BANKS TOOLBAR LIKE MEGA888 */
 .mainan-bank-manager-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
+
+/* Create Bank kekal di sebelah kanan */
+.mainan-bank-manager-toolbar > button {
+  margin-left: auto;
+}
+
 
 .mainan-bank-search-host {
   width: 400px;
