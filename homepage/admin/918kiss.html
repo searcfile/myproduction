@@ -1710,6 +1710,40 @@ select:focus-visible{
   border-color: rgba(255, 77, 79, 0.35);
 }
 
+/* ==========================================
+   918KISS - MANAGE GAMES STATUS CHIPS
+   ========================================== */
+
+.mg-manager-status-filter {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-trigger {
+  min-height: 32px;
+}
+
+.mg-manager-status-filter .shared-chip-dropdown-panel {
+  z-index: 10000;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .mg-manager-status-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 </style>
 <body>
 
@@ -3927,7 +3961,48 @@ createBtn.addEventListener("click", () => {
   mgEditor();
 });
 
-toolbar.append(searchWrap, createBtn);
+
+/* ===== 918KISS - STATUS MULTI SELECT CHIPS ===== */
+
+const statusFilterWrap = mgElement(
+  "div",
+  "mg-manager-status-filter"
+);
+
+// Default kosong = semua game
+let mgSelectedStatuses = [];
+
+window.NewUI.chips(statusFilterWrap, {
+  placeholder: "Select status",
+
+  options: [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" }
+  ],
+
+  value: [],
+
+  onChange: values => {
+    mgSelectedStatuses = values;
+
+    stopManagerTableLoading();
+
+    // Reset pagination apabila filter berubah
+    mgCurrentPage = 1;
+
+    if (!host.isConnected) return;
+
+    renderRows(searchInput.value);
+  }
+});
+
+toolbar.append(
+  searchWrap,
+  statusFilterWrap,
+  createBtn
+);
+
 
 // TABLE
   const tableWrap = mgElement("div", "mg-manager-table-wrap");
@@ -4095,9 +4170,55 @@ function stopManagerTableLoading() {
   function renderRows(keyword = "") {
     tbody.replaceChildren();
 
-    const filteredNames = names.filter(name =>
-      name.toLowerCase().includes(keyword.trim().toLowerCase())
-    );
+
+/* ===== 918KISS - SEARCH + STATUS FILTER ===== */
+
+const selectedStatuses = mgSelectedStatuses;
+
+const showAll =
+  selectedStatuses.length === 0 ||
+  selectedStatuses.includes("all") ||
+  (
+    selectedStatuses.includes("active") &&
+    selectedStatuses.includes("inactive")
+  );
+
+const filteredNames = names.filter(name => {
+
+  // Filter Search
+  const matchSearch = name
+    .toLowerCase()
+    .includes(keyword.trim().toLowerCase());
+
+  if (!matchSearch) return false;
+
+  // Kosong / All = semua game
+  if (showAll) return true;
+
+  // Gunakan status asal daripada 918KISS
+  const record = mgRecords[name] || gameData[name];
+
+  const isActive = record?.active !== false;
+
+  // Active sahaja
+  if (
+    selectedStatuses.includes("active") &&
+    isActive
+  ) {
+    return true;
+  }
+
+  // Inactive sahaja
+  if (
+    selectedStatuses.includes("inactive") &&
+    !isActive
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
 
 /* ===== 918KISS - PAGINATION DATA ===== */
 
