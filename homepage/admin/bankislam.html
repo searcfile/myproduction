@@ -1296,20 +1296,114 @@ body {
   color: var(--page-text);
 }
 
+/* ==========================================
+   BANK ISLAM - RESPONSIVE MANAGE BANKS
+   SAME AS MEGA888
+   ========================================== */
 
-/* BANK ISLAM - MANAGE BANKS TOOLBAR LIKE MEGA888 */
-.bi-bank-manager-toolbar {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
+/* Responsive ikut lebar modal */
+.bi-bank-manager {
+  container-type: inline-size;
 }
 
-/* Create Bank kekal di sebelah kanan */
+/* DESKTOP */
+.bi-bank-manager-toolbar {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 220px)
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* SEARCH BANK */
+.bi-bank-manager-toolbar .bi-bank-search-host {
+  grid-column: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.bi-bank-manager-toolbar .shared-sync-search {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* SELECT STATUS */
+.bi-bank-manager-toolbar .bi-bank-status-filter {
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.bi-bank-manager-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+/* CREATE BANK DI SEBELAH KANAN */
 .bi-bank-manager-toolbar > button {
-  margin-left: auto;
+  grid-column: 4;
+  width: auto;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  padding: 0 15px;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.bi-bank-manager-toolbar > button[hidden] {
+  display: none !important;
+}
+
+/* TABLET */
+@container (max-width: 760px) {
+  .bi-bank-manager-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .bi-bank-manager-toolbar .bi-bank-search-host {
+    grid-column: 1;
+  }
+
+  .bi-bank-manager-toolbar .bi-bank-status-filter {
+    grid-column: 2;
+  }
+
+  .bi-bank-manager-toolbar > button {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* PHONE */
+@container (max-width: 440px) {
+  .bi-bank-manager-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bi-bank-manager-toolbar .bi-bank-search-host,
+  .bi-bank-manager-toolbar .bi-bank-status-filter,
+  .bi-bank-manager-toolbar > button {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .bi-bank-manager-toolbar > button {
+    justify-self: stretch;
+  }
 }
 
 
@@ -1405,16 +1499,7 @@ body {
   color: #ef4444;
 }
 
-@media (max-width: 600px) {
-  .bi-bank-search-host {
-    flex: 1 1 100%;
-    width: 100%;
-  }
 
-  .bi-bank-manager-toolbar > button {
-    width: 100%;
-  }
-}
 
 /* ==========================================
    BANK ISLAM MANAGE BANKS - CUSTOM NO DATA
@@ -1529,17 +1614,6 @@ body {
 
 .bi-bank-status-filter .shared-chip-dropdown-panel {
   z-index: 10000;
-}
-
-/* MOBILE RESPONSIVE */
-
-@media (max-width: 600px) {
-  .bi-bank-status-filter {
-    flex: 1 1 100%;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
 }
 
 
