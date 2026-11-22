@@ -371,14 +371,6 @@ border-radius:4px;
   transition: all 0.3s;
 }
 
-.form-row-top #autoFreeGameBtn,
-.form-row-middle #autoAddScoreBtn{
-  width:98px !important;
-  min-width:98px !important;
-  max-width:98px !important;
-  padding:0 !important;
-}
-
 /* ===== BODY - AUTO SCROLL ===== */
 html,
 body {
@@ -439,107 +431,6 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
-}
-/* ===== TOP CONTROL ROW ===== */
-.form-row-top{
-  display: grid;
-  grid-template-columns: 1.7fr 0.9fr 0.9fr 1.35fr auto 0.9fr auto auto;
-  gap: 8px;
-  align-items: center;
-  margin: 16px 12px 10px;
-}
-
-.form-row-top .cs-wrap,
-.form-row-top select,
-.form-row-top .input-time,
-.form-row-top .input-small{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  text-align: left;
-}
-
-.form-row-top button{
-  width: 100%;
-  min-width: 0;
-  padding: 0px 15px;
-  white-space: nowrap;
-}
-
-.form-row-top .cs-display{
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* desktop kecil / laptop kecil */
-@media (max-width: 1180px){
-  .form-row-top{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      "game bet win"
-      "time time now"
-      "rows free auto";
-  }
-
-  .form-row-top .cs-wrap-gameSelect{
-    grid-area: game;
-  }
-
-  .form-row-top .cs-wrap-betSelect{
-    grid-area: bet;
-  }
-
-  .form-row-top .cs-wrap-pecahanSelect{
-    grid-area: win;
-  }
-
-  .form-row-top #manualTime{
-    grid-area: time;
-  }
-
-  .form-row-top button[onclick="setNow()"]{
-    grid-area: now;
-  }
-
-  .form-row-top #freeGameInput{
-    grid-area: rows;
-  }
-
-  .form-row-top #setFreeGameBtn{
-    grid-area: free;
-  }
-
-  .form-row-top #autoFreeGameBtn{
-    grid-area: auto;
-  }
-}
-
-/* phone */
-@media (max-width: 640px){
-  .form-row-top{
-    gap: 8px;
-  }
-
-  .form-row-top button,
-  .form-row-top .input-time,
-  .form-row-top .input-small,
-  .form-row-top select,
-  .form-row-top .cs-display{
-    font-size: 14px;
-  }
-}
-.form-row-top button,
-.form-row-top .cs-display,
-.form-row-top input,
-.form-row-top select{
-  overflow: hidden;
-}
-
-.form-row-top #setFreeGameBtn,
-.form-row-top #autoFreeGameBtn,
-.form-row-top .btn-main{
-  max-width: 100%;
 }
 
 /* ===== MIDDLE CONTROL ROW FINAL ===== */
@@ -740,11 +631,17 @@ select:focus-visible{
 .mg-panel-title{font-size:14px;font-weight:700;margin:0 0 13px;opacity:.9}
 .mg-panel .form-row{margin:0;gap:10px;align-items:center;display:flex;flex-wrap:wrap}
 
+
 /* ==========================================
-   PUSSY888 - GAME SETTINGS RESPONSIVE FINAL
+   PUSSY888 - GAME SETTINGS RESPONSIVE
+   SAME GRID APPROACH AS MEGA888
    ========================================== */
 
-/* Responsive ikut lebar card / iframe */
+.mg-panel {
+  container-type: inline-size;
+}
+
+/* Grid auto ikut lebar panel */
 .mg-panel .form-row-top {
   display: grid !important;
   grid-template-columns: repeat(
@@ -758,20 +655,21 @@ select:focus-visible{
   margin: 0 !important;
 }
 
-/* Semua item ikut saiz kolum */
+/* Setiap item ikut saiz grid */
 .mg-panel .form-row-top > * {
+  grid-area: auto !important;
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
-  grid-area: auto !important;
   box-sizing: border-box !important;
 }
 
-/* Input, select, custom dropdown */
-.mg-panel .form-row-top input,
+/* Input dan dropdown */
+.mg-panel .form-row-top input:not([type="checkbox"]),
 .mg-panel .form-row-top select,
 .mg-panel .form-row-top .cs-wrap,
 .mg-panel .form-row-top .shared-dropdown,
+.mg-panel .form-row-top .new-ui-input-wrap,
 .mg-panel .form-row-top .cs-display {
   width: 100% !important;
   min-width: 0 !important;
@@ -779,25 +677,28 @@ select:focus-visible{
   box-sizing: border-box !important;
 }
 
-/* Semua button termasuk Set Free Game */
+/* Button */
 .mg-panel .form-row-top button {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
   height: 32px;
   padding: 0 10px;
-  box-sizing: border-box !important;
 }
 
-/* Buang fixed width lama pada toggle */
-.mg-panel .form-row-top #autoFreeGameBtn {
+/* Toggle Auto Free Game */
+.mg-panel .form-row-top > .shared-active-switch {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
+}
+
+/* Jangan ubah saiz checkbox dalaman */
+.mg-panel .form-row-top #autoFreeGameBtn {
   padding: 0 !important;
 }
 
-/* Pastikan text dropdown tidak bertindih */
+/* Dropdown text */
 .mg-panel .form-row-top .cs-label {
   min-width: 0;
   flex: 1;
@@ -806,18 +707,19 @@ select:focus-visible{
   text-overflow: ellipsis;
 }
 
-/* Input tarikh */
+/* Input masa */
 .mg-panel .form-row-top #manualTime {
   width: 100% !important;
   min-width: 0 !important;
 }
 
-/* Panel sangat sempit: satu kolum */
+/* Panel sangat kecil */
 @container (max-width: 240px) {
   .mg-panel .form-row-top {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 }
+
 
 .mg-panel .form-row-middle .inline-group input{min-width:0;width:100%}
 .mg-panel button{white-space:nowrap}.mg-panel input{max-width:100%}
