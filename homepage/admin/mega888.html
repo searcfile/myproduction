@@ -1463,47 +1463,6 @@ select.has-value {
   margin-top: 0 !important;
 }
 
-/* ===== MANAGE MEGA888 - SEARCH & CREATE ===== */
-
-.mg-manager-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-  min-width: 0;
-}
-
-.mg-manager-toolbar .mg-manager-search {
-  flex: 0 1 400px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 0;
-}
-
-.mg-manager-create {
-  flex: 0 0 auto;
-  height: 32px;
-  padding: 0 15px;
-  white-space: nowrap;
-  margin-left: auto;
-}
-
-.mg-manager-create[hidden] {
-  display: none !important;
-}
-
-@media (max-width: 600px) {
-  .mg-manager-toolbar .mg-manager-search {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .mg-manager-create {
-    margin-left: auto;
-  }
-}
 
 /* ===== MANAGE MEGA888 SYNC SEARCH ===== */
 
@@ -1763,13 +1722,115 @@ select.has-value {
   z-index: 10000;
 }
 
-@media (max-width: 600px) {
-  .mg-manager-status-filter {
-    flex: 1 1 100%;
-    width: 100%;
-    max-width: 100%;
+/* ==========================================
+   MEGA888 - RESPONSIVE MANAGE GAMES TOOLBAR
+   ========================================== */
+
+/* Ukur lebar modal, bukan browser */
+.mg-manager {
+  container-type: inline-size;
+}
+
+/* Desktop - Search | Status | Create */
+.mg-manager-toolbar {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 220px)
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Search */
+.mg-manager-toolbar .mg-manager-search {
+  grid-column: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.mg-manager-toolbar .shared-sync-search {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* Status dropdown */
+.mg-manager-toolbar .mg-manager-status-filter {
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.mg-manager-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Create Game di kanan */
+.mg-manager-toolbar .mg-manager-create {
+  grid-column: 4;
+  width: auto;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  padding: 0 15px;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.mg-manager-create[hidden] {
+  display: none !important;
+}
+
+/* Tablet / modal sederhana */
+@container (max-width: 760px) {
+  .mg-manager-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .mg-manager-toolbar .mg-manager-search {
+    grid-column: 1;
+  }
+
+  .mg-manager-toolbar .mg-manager-status-filter {
+    grid-column: 2;
+  }
+
+  .mg-manager-toolbar .mg-manager-create {
+    grid-column: 1 / -1;
+    justify-self: end;
   }
 }
+
+/* Phone / modal sempit */
+@container (max-width: 440px) {
+  .mg-manager-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mg-manager-toolbar .mg-manager-search,
+  .mg-manager-toolbar .mg-manager-status-filter,
+  .mg-manager-toolbar .mg-manager-create {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .mg-manager-toolbar .mg-manager-create {
+    justify-self: stretch;
+  }
+}
+
 
 </style>
 <body>
