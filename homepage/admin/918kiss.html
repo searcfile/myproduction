@@ -648,47 +648,116 @@ select.has-value {
   cursor: default;
 }
 
-  /* ===== 918KISS MANAGE GAMES TOOLBAR ===== */
 
+/* ==========================================
+   918KISS - RESPONSIVE MANAGE GAMES TOOLBAR
+   ========================================== */
+
+/* Responsive berdasarkan lebar modal */
+.mg-manager {
+  container-type: inline-size;
+}
+
+/* Desktop: Search | Status | Create */
 .mg-manager-toolbar {
-  display: flex;
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 400px)
+    minmax(0, 220px)
+    minmax(0, 1fr)
+    auto;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
   min-width: 0;
 }
 
+/* Search */
 .mg-manager-toolbar .mg-manager-search {
-  flex: 0 1 400px;
+  grid-column: 1;
   width: 100%;
-  max-width: 400px;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.mg-manager-toolbar .shared-sync-search {
+  width: 100%;
+  max-width: none;
   min-width: 0;
 }
 
-.mg-manager-create {
-  flex: 0 0 auto;
+/* Select Status */
+.mg-manager-toolbar .mg-manager-status-filter {
+  grid-column: 2;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: none;
+}
+
+.mg-manager-toolbar .shared-chip-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Create Game di kanan */
+.mg-manager-toolbar .mg-manager-create {
+  grid-column: 4;
+  width: auto;
+  min-width: 0;
   height: 32px;
+  margin: 0;
   padding: 0 15px;
   white-space: nowrap;
-  margin-left: auto;
+  justify-self: end;
 }
 
 .mg-manager-create[hidden] {
   display: none !important;
 }
 
-@media (max-width: 600px) {
-  .mg-manager-toolbar .mg-manager-search {
-    flex: 1 1 100%;
-    max-width: 100%;
+/* Tablet / modal sederhana */
+@container (max-width: 760px) {
+  .mg-manager-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
-  .mg-manager-create {
-    margin-left: auto;
+  .mg-manager-toolbar .mg-manager-search {
+    grid-column: 1;
+  }
+
+  .mg-manager-toolbar .mg-manager-status-filter {
+    grid-column: 2;
+  }
+
+  .mg-manager-toolbar .mg-manager-create {
+    grid-column: 1 / -1;
+    justify-self: end;
   }
 }
+
+/* Phone / modal sempit */
+@container (max-width: 440px) {
+  .mg-manager-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mg-manager-toolbar .mg-manager-search,
+  .mg-manager-toolbar .mg-manager-status-filter,
+  .mg-manager-toolbar .mg-manager-create {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .mg-manager-toolbar .mg-manager-create {
+    justify-self: stretch;
+  }
+}
+
 /* 918KISS management / responsive design; original screenshot table untouched */
 *{box-sizing:border-box}body{background:var(--page-bg);color:var(--page-text);padding:0;max-width:100%;}
 .mg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px}
@@ -1715,16 +1784,6 @@ select.has-value {
 
 .mg-manager-status-filter .shared-chip-dropdown-panel {
   z-index: 10000;
-}
-
-/* MOBILE */
-
-@media (max-width: 600px) {
-  .mg-manager-status-filter {
-    flex: 1 1 100%;
-    width: 100%;
-    max-width: 100%;
-  }
 }
 
 </style>
