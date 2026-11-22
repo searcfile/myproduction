@@ -960,14 +960,22 @@ body > .wrap > #preview {
   color: var(--page-text);
 }
 
+
+/* RHB BANK - MANAGE BANKS TOOLBAR LIKE MEGA888 */
 .rhb-bank-manager-toolbar {
   display: flex;
+  justify-content: flex-start;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
+
+/* Create Bank kekal di sebelah kanan */
+.rhb-bank-manager-toolbar > button {
+  margin-left: auto;
+}
+
 
 .rhb-bank-search-host {
   flex: 0 1 400px;
