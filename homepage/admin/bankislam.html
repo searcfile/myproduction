@@ -1296,13 +1296,22 @@ body {
   color: var(--page-text);
 }
 
+
+/* BANK ISLAM - MANAGE BANKS TOOLBAR LIKE MEGA888 */
 .bi-bank-manager-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
+
+/* Create Bank kekal di sebelah kanan */
+.bi-bank-manager-toolbar > button {
+  margin-left: auto;
+}
+
 
 .bi-bank-search-host {
   flex: 0 1 400px;
