@@ -656,35 +656,23 @@ margin:12px;
     height:auto;
   }
 
-
-.detail{
-  position:fixed;
-  left:10px;
-  right:10px;
-  top:12px;
-  bottom:10px;
-
-  width:auto;
-  height:auto;
-  max-height:none;
-  min-height:0;
-
-  display:flex;
-  flex-direction:column;
-
-  overflow-x:hidden;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-
-  border-radius:12px;
-
-  transform:translateY(110%);
-  transition:transform .28s ease;
-
-  z-index:1000;
-  box-shadow:0 -18px 40px rgba(0,0,0,.45);
-}
-
+  .detail{
+    position:fixed;
+    left:10px;
+    right:10px;
+    top:var(--flt-h);
+    bottom:10px;
+    height:auto;
+    max-height:none;
+    border-top-left-radius:12px;
+    border-top-right-radius:12px;
+    border-bottom-left-radius:12px;
+    border-bottom-right-radius:12px;
+    transform:translateY(110%);
+    transition:transform .28s ease;
+    z-index:1200;
+    box-shadow:0 -18px 40px rgba(0,0,0,.45);
+  }
 
   .detail.open{
     transform:translateY(0);
@@ -717,42 +705,7 @@ margin:12px;
     margin-top:10px;
   }
 }
-/* ==========================================
-   5G88 FIND GAME - MOBILE DETAIL FIX
-   ========================================== */
 
-@media (max-width:979px){
-
-  .detail{
-    position:fixed !important;
-    top:8px !important;
-    right:8px !important;
-    bottom:8px !important;
-    left:8px !important;
-
-    width:auto !important;
-    height:auto !important;
-    max-height:calc(100dvh - 16px) !important;
-
-    overflow-x:hidden !important;
-    overflow-y:auto !important;
-    overscroll-behavior:contain;
-
-    z-index:1000 !important;
-  }
-
-  .detail .art img{
-    width:100%;
-    height:auto !important;
-    max-height:42dvh;
-    object-fit:contain;
-  }
-
-  .detail .line{
-    flex-shrink:0;
-    padding-bottom:16px;
-  }
-}
 /* ===== PHONE ===== */
 @media (max-width:640px){
   :root{
@@ -917,7 +870,7 @@ margin:12px;
 }
 .fg-create:hover{background:var(--blue-hover)}
 .fg-create:active{background:var(--blue-active)}
-.wrap{padding:0 12px 12px;width:100%!important;min-height:0!important;height:auto!important}
+.wrap{padding:0 12px;width:100%!important;min-height:0!important;height:auto!important}
 .grid{gap:8px}
 .game.active{background:var(--page-input)}
 .fg-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
@@ -1023,7 +976,7 @@ margin:12px;
 .fg-detail-actions{display:flex;gap:7px;margin-left:auto}
 .fg-detail-actions button{padding:5px 10px;font-size:12px}
 .fg-detail-actions button.danger{color:#ff4d4f}
-
+@media(max-width:979px){.detail{top:12px!important}}
 @media (max-width:700px) {
   .fg-form {
     grid-template-columns: 1fr;
