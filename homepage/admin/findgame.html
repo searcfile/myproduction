@@ -717,7 +717,42 @@ margin:12px;
     margin-top:10px;
   }
 }
+/* ==========================================
+   5G88 FIND GAME - MOBILE DETAIL FIX
+   ========================================== */
 
+@media (max-width:979px){
+
+  .detail{
+    position:fixed !important;
+    top:8px !important;
+    right:8px !important;
+    bottom:8px !important;
+    left:8px !important;
+
+    width:auto !important;
+    height:auto !important;
+    max-height:calc(100dvh - 16px) !important;
+
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain;
+
+    z-index:1000 !important;
+  }
+
+  .detail .art img{
+    width:100%;
+    height:auto !important;
+    max-height:42dvh;
+    object-fit:contain;
+  }
+
+  .detail .line{
+    flex-shrink:0;
+    padding-bottom:16px;
+  }
+}
 /* ===== PHONE ===== */
 @media (max-width:640px){
   :root{
