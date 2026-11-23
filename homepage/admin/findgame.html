@@ -3142,7 +3142,7 @@ input.classList.add('shared-input');
 
 if (type === 'number') {
   input.min = '1';
-  input.max = '1000';
+  input.max = '5000';
 }
     div.append(lab,input);form.append(div);
   });
@@ -3377,7 +3377,7 @@ NewUI.setButtonLoading(save, true, {
       const type=form.querySelector('#fg-type').value.trim();
       const payline=Number(form.querySelector('#fg-payline').value);
       const tags=modalChips?.getValue()||[];
-      if(!name||!type||!Number.isInteger(payline)||payline<1||payline>1000)throw new Error('Enter valid game name, type and paylines');
+      if(!name||!type||!Number.isInteger(payline)||payline<1||payline>5000)throw new Error('Enter valid game name, type and paylines');
       if(!tags.length)throw new Error('Choose at least one platform');
       const bets=fgParseBets(form.querySelector('#fg-bets').value,payline);
       const image=await fgCloudUpload(fgImageUploader?.getFile(),fgImageUploader);
