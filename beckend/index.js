@@ -2719,10 +2719,11 @@ function fgServerValidate(body) {
     throw Error("Invalid game type");
   }
 
-  if (!Number.isInteger(payline) ||
-      payline < 1 || payline > 1000) {
-    throw Error("Invalid paylines");
-  }
+
+if (!Number.isInteger(payline) ||
+    payline < 1 || payline > 5000) {
+  throw Error("Invalid paylines");
+}
 
   if (!Array.isArray(tags) ||
       !tags.length || tags.length > 30 ||
