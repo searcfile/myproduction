@@ -847,6 +847,66 @@ overscroll-behavior:contain;
   background:transparent;
 }
 
+/* ==========================================
+   FIND GAME - EQUAL HEIGHT RESULTS & DETAIL
+   ========================================== */
+
+@media (min-width:980px){
+
+  .grid:not(.fg-no-results){
+    align-items:stretch;
+  }
+
+.grid:not(.fg-no-results) > .list,
+.grid:not(.fg-no-results) > .detail{
+  height:calc(100dvh - 204px);
+  min-height:0;
+  max-height:none;
+  box-sizing:border-box;
+}
+  /* RESULTS */
+  .grid:not(.fg-no-results) > .list{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .grid:not(.fg-no-results) .list-hdr{
+    flex:0 0 auto;
+  }
+
+  .grid:not(.fg-no-results) .list > #list{
+    flex:1 1 auto;
+    min-height:0;
+    height:auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+
+  /* DETAIL */
+  .grid:not(.fg-no-results) > .detail{
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+
+  .detail-hdr,
+  .detail .art,
+  .detail .info,
+  .detail .platforms,
+  .detail .bets,
+  .detail .line{
+    flex-shrink:0;
+  }
+
+  .detail .line{
+    margin-top:auto;
+  }
+
+}
 .fg-search .shared-sync-search{width:100%;height:32px}
 .fg-search input:not(.shared-sync-search-input){height:32px;width:100%;border:1px solid var(--border-input);border-radius:6px;background:var(--page-input);color:var(--page-text);padding:0 11px}
 .fg-create{  
@@ -1796,148 +1856,7 @@ overscroll-behavior:contain;
   text-align: center !important;
 }
 
-  
-/* ============================================================
-   FIND GAME · MODERN RESULTS / DETAIL UI 2026
-   Presentation-only: existing IDs, actions, Firebase, toolbar,
-   modals, loading, No Data and game data remain unchanged.
-   ============================================================ */
-:root{
-  --fg-panel-bg:#171a20;
-  --fg-panel-stroke:rgba(145,165,194,.22);
-  --fg-row-bg:#11151b;
-  --fg-row-hover:#1d2634;
-  --fg-row-active:#152c4c;
-  --fg-soft-text:#9eafc6;
-  --fg-panel-shadow:0 12px 34px rgba(0,0,0,.17);
-}
-body.light-theme,html[data-admin-theme="light"] body{
-  --fg-panel-bg:#fff;
-  --fg-panel-stroke:#dfe6f0;
-  --fg-row-bg:#f8fafc;
-  --fg-row-hover:#edf4ff;
-  --fg-row-active:#e8f2ff;
-  --fg-soft-text:#63748c;
-  --fg-panel-shadow:0 10px 30px rgba(20,42,78,.06);
-}
-#fgContentWrapper{padding:0 12px 12px;min-width:0;}
-#fgContentWrapper > .grid:not(.fg-no-results){
-  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,1fr);
-  align-items:stretch;gap:12px;min-width:0;
-}
-#fgContentWrapper .grid:not(.fg-no-results) > .list,
-#fgContentWrapper .grid:not(.fg-no-results) > .detail{
-  min-width:0;min-height:0;height:clamp(350px,calc(100dvh - 204px),1100px);
-  max-height:none;border:1px solid var(--fg-panel-stroke);
-  border-radius:16px;background:var(--fg-panel-bg);
-  box-shadow:var(--fg-panel-shadow);backdrop-filter:none;
-}
-#fgContentWrapper .grid:not(.fg-no-results) > .list{
-  display:flex;flex-direction:column;overflow:hidden;padding:0;
-}
-#fgContentWrapper .list-hdr{
-  flex:0 0 auto;min-height:60px;padding:16px 18px;
-  border-bottom:1px solid var(--fg-panel-stroke);
-  font-weight:650;font-size:15px;letter-spacing:-.01em;
-}
-#fgContentWrapper .list-hdr .count{
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:32px;height:26px;padding:0 9px;border-radius:9px;
-  background:rgba(22,104,220,.12);color:var(--blue);font-weight:700;font-size:12px;
-}
-#fgContentWrapper .grid:not(.fg-no-results) #list{
-  flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;
-  padding:12px;scrollbar-gutter:stable;
-  overscroll-behavior:contain;
-}
-#fgContentWrapper .game{
-  min-width:0;min-height:58px;padding:10px 12px;margin:0 0 8px;
-  border:1px solid var(--fg-panel-stroke);border-radius:12px;
-  background:var(--fg-row-bg);gap:12px;
-  transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease;
-}
-#fgContentWrapper .game:hover{
-  background:var(--fg-row-hover);border-color:rgba(22,104,220,.58);
-  transform:translateY(-1px);
-}
-#fgContentWrapper .game.active,
-#fgContentWrapper .game[aria-selected="true"]{
-  background:var(--fg-row-active);border-color:var(--blue);
-  box-shadow:inset 3px 0 0 var(--blue),0 2px 12px rgba(22,104,220,.12);
-}
-#fgContentWrapper .g-name{font-size:14px;font-weight:550;letter-spacing:0;line-height:1.4;}
-#fgContentWrapper .fg-row-actions{gap:7px;}
-#fgContentWrapper .fg-row-actions button{min-height:36px;border-radius:9px;transition:background .18s,border-color .18s,color .18s;}
-#fgContentWrapper .grid:not(.fg-no-results) > .detail{
-  display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;
-  padding:0 0 12px;overscroll-behavior:contain;scrollbar-gutter:stable;
-}
-#fgContentWrapper .detail-hdr{
-  position:sticky;top:0;z-index:5;flex-shrink:0;
-  min-height:60px;padding:12px 16px;
-  background:var(--fg-panel-bg);border-bottom:1px solid var(--fg-panel-stroke);
-}
-#fgContentWrapper .detail-title{font-size:15px;font-weight:650;letter-spacing:-.01em;overflow-wrap:anywhere;}
-#fgContentWrapper .detail .art{flex-shrink:0;padding-top:16px;}
-#fgContentWrapper .detail .art img{object-fit:contain;max-width:100%;}
-#fgContentWrapper .detail .info,
-#fgContentWrapper .detail .platforms,
-#fgContentWrapper .detail .bets{flex-shrink:0;min-width:0;}
-#fgContentWrapper .detail .line{
-  flex-shrink:0;margin-top:auto;position:sticky;bottom:-12px;z-index:4;
-  background:var(--fg-panel-bg);border-top:1px solid var(--fg-panel-stroke);
-  padding-bottom:max(12px,env(safe-area-inset-bottom));
-}
-#fgContentWrapper .detail .info .row{min-width:0;}
-#fgContentWrapper .detail .info .v{min-width:0;overflow-wrap:anywhere;}
-#fgContentWrapper .detail .bet-grid{min-width:0;}
-#fgContentWrapper .grid.fg-no-results{display:grid;}
-#fgContentWrapper .grid.fg-no-results .list,
-#fgContentWrapper .grid.fg-no-results #list{height:auto!important;}
-@media (min-width:980px) and (max-width:1180px){
-  #fgContentWrapper > .grid:not(.fg-no-results){grid-template-columns:minmax(0,1fr) minmax(320px,1fr);}
-  #fgContentWrapper .game{gap:8px;padding:9px;}
-}
-@media (max-width:979px){
-  #fgContentWrapper > .grid:not(.fg-no-results){display:grid;grid-template-columns:minmax(0,1fr);gap:12px;}
-  #fgContentWrapper .grid:not(.fg-no-results) > .list{
-    height:auto;min-height:min(58dvh,520px);max-height:none;
-  }
-  #fgContentWrapper .grid:not(.fg-no-results) #list{
-    max-height:none;overflow:visible;scrollbar-gutter:auto;
-  }
-  #fgContentWrapper .grid:not(.fg-no-results) > .detail{
-    position:fixed;inset:10px 10px max(10px,env(safe-area-inset-bottom));
-    width:auto;height:auto;max-height:none;min-height:0;
-    border-radius:16px;transform:translateY(calc(100% + 32px));
-    transition:transform .3s cubic-bezier(.2,.8,.2,1);
-    z-index:242424200;box-shadow:0 20px 70px rgba(0,0,0,.5);
-  }
-  #fgContentWrapper .grid:not(.fg-no-results) > .detail.open{transform:translateY(0);}
-  #fgContentWrapper .detail-hdr{padding-top:24px;}
-  #fgContentWrapper .detail .line{bottom:-12px;}
-}
-@media (max-width:640px){
-  #fgContentWrapper{padding:0 10px 12px;}
-  #fgContentWrapper .list-hdr{min-height:54px;padding:13px 14px;}
-  #fgContentWrapper .grid:not(.fg-no-results) #list{padding:9px;}
-  #fgContentWrapper .game{min-height:56px;padding:9px;gap:8px;}
-  #fgContentWrapper .g-name{font-size:13px;}
-  #fgContentWrapper .fg-row-actions{gap:5px;}
-  #fgContentWrapper .fg-row-actions button{min-height:34px;padding:5px 9px;font-size:12px;}
-  #fgContentWrapper .grid:not(.fg-no-results) > .detail{inset:8px 8px max(8px,env(safe-area-inset-bottom));border-radius:14px;}
-}
-@media (max-width:380px){
-  #fgContentWrapper .game{grid-template-columns:minmax(0,1fr) auto;}
-  #fgContentWrapper .fg-row-actions button{padding:5px 7px;}
-}
-@media (prefers-reduced-motion:reduce){
-  #fgContentWrapper .game,
-  #fgContentWrapper .grid:not(.fg-no-results) > .detail{transition:none!important;}
-  #fgContentWrapper .game:hover{transform:none;}
-}
-
-</style>
+  </style>
 <body>
   <!-- ===== Filters (fixed) ===== -->
   <section class="filters" aria-label="Filters">
