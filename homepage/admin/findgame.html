@@ -1783,7 +1783,7 @@ margin:12px;
 }
 
 /* Satu card No Data sahaja */
-.grid.fg-no-results #list >{
+.grid.fg-no-results #list > * {
   display: flex !important;
   flex-direction: column;
   align-items: center;
@@ -1806,6 +1806,57 @@ margin:12px;
   margin-right: auto !important;
   text-align: center !important;
 }
+
+
+/* ==========================================================
+   FIND GAME UI POLISH v2026.11.23
+   Visual-only: keeps all original inputs, IDs and workflows.
+   ========================================================== */
+:root { --fg-ease: cubic-bezier(.2,.8,.2,1); }
+.filters-inner { border-radius: 14px; box-shadow: 0 5px 24px rgba(0,0,0,.08); }
+.list, .detail { border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,.11); }
+.list-hdr, .detail-hdr { min-height: 50px; padding: 12px 14px; border-bottom: 1px solid var(--tx-border, var(--border-input)); }
+.detail-hdr { position: sticky; top: 0; z-index: 4; background: var(--page-bg2); }
+.detail-title { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game { transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.game:focus-visible, .fg-art-preview:focus-visible, .btn:focus-visible, .close:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.game:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+.art { padding: 12px 12px 8px; }
+.fg-art-preview { border-radius: 11px; }
+.art img { height: auto; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 11px; }
+.info { padding: 0 12px; gap: 7px; }
+.info .row { height: auto; min-height: 36px; padding: 7px 11px; }
+.info .row .v { min-width: 0; }
+.platforms { padding: 10px 12px; }
+.bets { padding: 0 12px 14px; }
+.bet-grid { gap: 5px; }
+.bet { min-height: 29px; }
+.line { position: sticky; bottom: 0; z-index: 3; margin-top: auto; padding: 12px 14px; background: var(--page-bg2); }
+.line .btn { min-width: 36px; min-height: 34px; }
+.fg-image-preview { background: rgba(0,0,0,.84) !important; backdrop-filter: blur(9px) !important; }
+.fg-preview-toolbar { background: rgba(20,22,29,.84) !important; border: 1px solid rgba(255,255,255,.18) !important; box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+.fg-preview-toolbar button { min-width: 30px; min-height: 30px; border-radius: 8px; }
+.fg-preview-close { background: rgba(25,27,32,.65) !important; border: 1px solid rgba(255,255,255,.16) !important; border-radius: 10px !important; }
+.fg-preview-stage img { max-width: calc(100% - 32px) !important; max-height: calc(100% - 94px) !important; object-fit: contain !important; }
+/* Full viewport only when a preview or mobile detail is open. */
+html.fg-viewport-mode, html.fg-viewport-mode body { width: 100% !important; height: 100% !important; overflow: hidden !important; }
+body.fg-detail-mode .detail.open { position: fixed !important; inset: 12px !important; width: auto !important; height: auto !important; max-height: none !important; transform: none !important; z-index: 15000 !important; overflow-y: auto !important; }
+body.fg-detail-mode .detail.open .detail-hdr { top: 0; }
+body.fg-detail-mode .fg-image-preview.open { z-index: 2147483001 !important; }
+body.fg-detail-mode .filters, body.fg-detail-mode #fgContentWrapper > .grid > .list { visibility: hidden; }
+@media (max-width: 979px) {
+  .list { min-height: min(60vh, 460px); }
+  .detail:not(.open) { pointer-events: none; }
+  .detail.open { box-shadow: 0 24px 70px rgba(0,0,0,.6); }
+  .art img { max-height: 38dvh; }
+}
+@media (max-width: 640px) {
+  .filters-inner { padding: 10px; }
+  .detail-hdr { padding: 12px; }
+  .info .row { padding: 8px 10px; border-radius: 8px; }
+  .fg-preview-toolbar { max-width: calc(100vw - 20px); padding: 6px !important; gap: 3px !important; }
+}
+@media (prefers-reduced-motion: reduce) { .game, .fg-preview-stage img, .detail { transition: none !important; } }
 
   </style>
 <body>
@@ -2430,6 +2481,72 @@ function updateDetailEmpty() {
    FIND GAME - ADVANCED IMAGE PREVIEW
    ========================================== */
 
+
+/* ==========================================================
+   FIND GAME VIEWPORT LAYER v2026.11.23
+   The admin header lives OUTSIDE the Find Game iframe.
+   Promote iframe + its stacking ancestors temporarily.
+   All original inline styles are restored on close.
+   ========================================================== */
+let fgViewportReasons = new Set();
+let fgViewportSnapshot = [];
+function fgViewportEnter(reason) {
+  if (fgViewportReasons.has(reason)) return;
+  fgViewportReasons.add(reason);
+  document.documentElement.classList.add('fg-viewport-mode');
+  document.body.classList.toggle('fg-detail-mode', fgViewportReasons.has('detail'));
+  if (fgViewportReasons.size > 1) return;
+  try {
+    const frame = window.frameElement;
+    if (!frame || !window.parent || window.parent === window) return;
+    const doc = window.parent.document; // same-origin admin only
+    let node = frame;
+    while (node && node !== doc.documentElement) {
+      const style = node.style;
+      fgViewportSnapshot.push({node, style: node.getAttribute('style')});
+      if (node === frame) {
+        style.setProperty('position','fixed','important');
+        style.setProperty('inset','0','important');
+        style.setProperty('width','100vw','important');
+        style.setProperty('height','100dvh','important');
+        style.setProperty('max-width','none','important');
+        style.setProperty('max-height','none','important');
+        style.setProperty('margin','0','important');
+        style.setProperty('z-index','2147483000','important');
+        style.setProperty('background','var(--page-bg, #000)','important');
+      } else {
+        // Lift any ancestor stacking context above the admin header.
+        if (doc.defaultView.getComputedStyle(node).position === 'static') {
+          style.setProperty('position','relative','important');
+        }
+        style.setProperty('z-index','2147482000','important');
+        style.setProperty('overflow','visible','important');
+      }
+      node = node.parentElement;
+    }
+  } catch (err) {
+    // Cross-origin / sandboxed frames cannot alter the admin host.
+    console.warn('[Find Game] Full viewport requires same-origin admin iframe.', err);
+    fgViewportSnapshot.forEach(({node,style}) => { if (style === null) node.removeAttribute('style'); else node.setAttribute('style',style); });
+    fgViewportSnapshot = [];
+  }
+}
+function fgViewportLeave(reason) {
+  fgViewportReasons.delete(reason);
+  document.body.classList.toggle('fg-detail-mode', fgViewportReasons.has('detail'));
+  if (fgViewportReasons.size) return;
+  document.documentElement.classList.remove('fg-viewport-mode');
+  for (const {node,style} of fgViewportSnapshot.reverse()) {
+    if (style === null) node.removeAttribute('style');
+    else node.setAttribute('style',style);
+  }
+  fgViewportSnapshot = [];
+}
+window.addEventListener('pagehide', () => {
+  fgViewportReasons.clear();
+  fgViewportLeave('pagehide');
+});
+
 const fgPreview = document.getElementById('fgImagePreview');
 const fgPreviewImg = document.getElementById('fgPreviewImg');
 const fgPreviewClose = document.getElementById('fgPreviewClose');
@@ -2495,6 +2612,7 @@ fgFlipX = 1;
 fgFlipY = 1;
 fgUpdateZoom();
 
+  fgViewportEnter('preview');
   fgPreview.classList.add('open');
   fgPreview.setAttribute('aria-hidden', 'false');
 
@@ -2509,6 +2627,7 @@ function fgCloseImagePreview() {
   fgPreviewStage.classList.remove('dragging');
 
   fgPreview.classList.remove('open');
+  fgViewportLeave('preview');
   fgPreview.setAttribute('aria-hidden', 'true');
 
   fgPreviewImg.removeAttribute('src');
@@ -2712,7 +2831,7 @@ function openDetail(game, rowEl){
   const lines = Object.keys(game.bets||{}).map(Number);
   selectedLine = lines.length ? Math.max(...lines) : 1;
   updateDetail();
-  if (matchMedia('(max-width: 979px)').matches){ elDetail.classList.add('open'); }
+  if (matchMedia('(max-width: 979px)').matches){ fgViewportEnter('detail'); elDetail.classList.add('open'); elDetail.scrollTop = 0; }
   [...elList.children].forEach(c=>c.classList.remove('active'));
   rowEl && rowEl.classList.add('active');
   rowEl && rowEl.scrollIntoView({block:'nearest', behavior:'smooth'});
@@ -2789,7 +2908,7 @@ elQ.addEventListener('change', () => {
 document.getElementById('btnMinus').addEventListener('click', ()=>changeLine(-1));
 document.getElementById('btnPlus').addEventListener('click', ()=>changeLine(1));
 document.getElementById('btnClose').addEventListener('click', ()=>{
-  if (matchMedia('(max-width: 979px)').matches){ elDetail.classList.remove('open'); }
+  if (matchMedia('(max-width: 979px)').matches){ elDetail.classList.remove('open'); fgViewportLeave('detail'); }
 });
 
 // Keyboard nav in list
@@ -3010,6 +3129,7 @@ function fgRebuild(){
     else {
   selectedGame = null;
   elDetail.classList.remove('open');
+  fgViewportLeave('detail');
   updateDetail();
 }
   }
