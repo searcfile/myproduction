@@ -857,14 +857,13 @@ overscroll-behavior:contain;
     align-items:stretch;
   }
 
-  .grid:not(.fg-no-results) > .list,
-  .grid:not(.fg-no-results) > .detail{
-    height:calc(100dvh - 192px);
-    min-height:400px;
-    max-height:none;
-    box-sizing:border-box;
-  }
-
+.grid:not(.fg-no-results) > .list,
+.grid:not(.fg-no-results) > .detail{
+  height:calc(100dvh - 204px);
+  min-height:0;
+  max-height:none;
+  box-sizing:border-box;
+}
   /* RESULTS */
   .grid:not(.fg-no-results) > .list{
     display:flex;
@@ -1736,7 +1735,9 @@ overscroll-behavior:contain;
 
 #fgContentWrapper {
   position: relative;
-  min-height: max(320px, calc(100dvh - 160px));
+  min-height: 0;
+  padding: 0 12px 12px;
+  box-sizing: border-box;
   isolation: isolate;
 }
 
