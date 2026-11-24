@@ -1741,6 +1741,13 @@ overscroll-behavior:contain;
   isolation: isolate;
 }
 
+/* FIND GAME - MOBILE DETAIL ABOVE ADMIN SHELL */
+@media (max-width: 979px) {
+  #fgContentWrapper:has(#detail.open) {
+    isolation: auto;
+  }
+}
+
 /* Tutup Results dan Detail ketika refresh */
 #fgContentWrapper > .newui-refresh-overlay.is-container {
   position: absolute !important;
