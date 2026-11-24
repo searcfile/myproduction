@@ -132,11 +132,33 @@ body * {
 }
 
 
-:where(button, a, .btn, [tabindex]):focus-visible{
-  outline: 3px solid #15325b;
-  outline-offset: 1px;
-  transition: outline-offset 0s, outline 0s;
+
+/* ==========================================================
+   GLOBAL KEYBOARD FOCUS - NO WHITE FLASH
+   ========================================================== */
+
+:where(button, a, .btn, [tabindex]):focus-visible {
+  outline: 3px solid var(--btnfocus) !important;
+  outline-offset: 1px !important;
 }
+
+/* BUTTON - PREVENT FOCUS TRANSITION FLASH */
+
+:where(button, a, .btn, [role="button"], [role="tab"]) {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    opacity,
+    transform !important;
+}
+
+/* INSTANT KEYBOARD FOCUS */
+
+:where(button, a, .btn, [role="button"], [role="tab"]):focus-visible {
+  transition: none !important;
+}
+
 :where(.input, input:not(.shared-input), textarea):focus{
   border-color: #1668dc !important;
   outline: 0 !important;
