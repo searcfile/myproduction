@@ -2169,7 +2169,7 @@ bottom: 0;
    cursor:pointer;
    color: #1668dc;
    border:1px solid #1668dc;
-   background: #141414;
+   background: var(--input);
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 .btn-edit-new:hover {
@@ -2189,7 +2189,7 @@ bottom: 0;
    cursor:pointer;
    color: #dc4446;
    border:1px solid #dc4446;
-   background: #141414;
+   background: var(--input);
    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 .btn-delete-new:hover {
