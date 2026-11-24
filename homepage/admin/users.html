@@ -1263,6 +1263,37 @@
 }
 
 /* ==========================================
+   PERMISSION - ALLOW ALL MODULES SWITCH
+   ========================================== */
+
+.auth-permission-allow-all {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.auth-permission-allow-all-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.auth-permission-allow-all .shared-active-switch {
+  flex-shrink: 0;
+  margin: 0 !important;
+}
+
+@media (max-width: 550px) {
+  .auth-permission-allow-all {
+    flex: 0 0 100%;
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
+}
+
+/* ==========================================
    AUTH USERS - SINGLE OUTER SCROLL
    ========================================== */
 
@@ -5853,6 +5884,91 @@ function getPermissionModules(){
  return pages.filter(p=>p?.file&&!SUPERADMIN_ONLY_PAGES.has(p.file)).map(p=>[p.file,p.name||p.file]);
 }
 function permissionActions(key){return PERMISSION_DEFINITIONS[key]||PERMISSION_DEFINITIONS.default}
+/* ==========================================
+   PERMISSION - ALLOW ALL MODULES
+   ========================================== */
+
+
+function getBulkPermissionModules() {
+return getPermissionModules().filter(([key]) => {
+const actions = permissionActions(key);
+
+return (
+key !== 'config.html' &&
+actions.includes('show') &&
+actions.includes('view')
+);
+});
+}
+
+/* SYNC SWITCH STATUS */
+
+function syncPermissionAllowAll() {
+
+const toggle = document.getElementById(
+'permissionAllowAll'
+);
+
+if (!toggle) return;
+
+const modules = getBulkPermissionModules();
+
+const allAllowed =
+modules.length > 0 &&
+modules.every(([key]) => {
+
+const actions = permissionDraft[key];
+
+return (
+actions instanceof Set &&
+actions.has('show') &&
+actions.has('view')
+);
+
+});
+
+toggle.checked = allAllowed;
+
+window.SharedActiveSwitch?.sync(toggle);
+}
+
+/* APPLY ALL MODULE PERMISSIONS */
+
+function applyPermissionAllowAll(enabled) {
+
+for (const [key] of getBulkPermissionModules()) {
+
+const actions = new Set(
+permissionDraft[key] || []
+);
+
+if (enabled) {
+
+// Tambahkan permission asas sahaja.
+actions.add('show');
+actions.add('view');
+
+} else {
+
+// Revoke module access dan dependent permissions.
+actions.delete('show');
+actions.delete('view');
+actions.delete('create');
+actions.delete('edit');
+actions.delete('delete');
+actions.delete('block');
+
+}
+
+permissionDraft[key] = actions;
+}
+
+// Refresh Given Permissions pada tab aktif.
+renderPermissionPanel();
+
+// Sync custom switch.
+syncPermissionAllowAll();
+}
 function destroyPermissionChips(){for(const a of [siteChipApi,availableChipApi,givenChipApi]){try{a?.destroy?.()}catch(e){console.warn(e)}}siteChipApi=availableChipApi=givenChipApi=null}
 
 /* ==========================================
@@ -6177,14 +6293,120 @@ more.onfocusout = e => {
 
 
 
-function renderPermissionPanel(){
- const title=document.getElementById('permissionModuleTitle'),a=document.getElementById('permissionAvailable'),g=document.getElementById('permissionGiven');
- if(!title||!a||!g)return;
- availableChipApi?.destroy?.();givenChipApi?.destroy?.();availableChipApi=givenChipApi=null;a.replaceChildren();g.replaceChildren();
- const key=activePermissionModule,mod=getPermissionModules().find(m=>m[0]===key);title.textContent=mod?.[1]||'No modules';if(!key)return;
- const actions=permissionActions(key),options=actions.map(v=>({value:v,label:ACTION_LABELS[v]||v}));
- availableChipApi=NewUI.chips(a,{placeholder:'Available Functions',options,value:actions});
- givenChipApi=NewUI.chips(g,{placeholder:'Select Permissions',options,value:[...(permissionDraft[key]||new Set())],onChange(v){permissionDraft[key]=new Set(v)}});
+function renderPermissionPanel() {
+
+
+const title = document.getElementById(
+'permissionModuleTitle'
+);
+
+const a = document.getElementById(
+'permissionAvailable'
+);
+
+const g = document.getElementById(
+'permissionGiven'
+);
+
+if (!title || !a || !g) return;
+
+availableChipApi?.destroy?.();
+givenChipApi?.destroy?.();
+
+availableChipApi = null;
+givenChipApi = null;
+
+a.replaceChildren();
+g.replaceChildren();
+
+const key = activePermissionModule;
+
+const mod = getPermissionModules().find(
+m => m[0] === key
+);
+
+title.textContent = mod?.[1] || 'No modules';
+
+if (!key) {
+syncPermissionAllowAll();
+return;
+}
+
+const actions = permissionActions(key);
+
+const options = actions.map(v => ({
+value: v,
+label: ACTION_LABELS[v] || v
+}));
+
+availableChipApi = NewUI.chips(a, {
+placeholder: 'Available Functions',
+options,
+value: actions
+});
+
+givenChipApi = NewUI.chips(g, {
+
+placeholder: 'Select Permissions',
+
+options,
+
+value: [
+...(permissionDraft[key] || new Set())
+],
+
+onChange(v) {
+
+const previous = permissionDraft[key] || new Set();
+const next = new Set(v);
+
+const dependentActions = [
+'create',
+'edit',
+'delete',
+'block'
+];
+
+// Jika View dibuang secara manual,
+// buang permission yang memerlukan View.
+if (
+previous.has('view') &&
+!next.has('view')
+) {
+
+dependentActions.forEach(action => {
+next.delete(action);
+});
+
+} else if (
+dependentActions.some(action =>
+next.has(action)
+)
+) {
+
+// Create/Edit/Delete/Block memerlukan View.
+next.add('view');
+
+}
+
+permissionDraft[key] = next;
+
+// Refresh chips jika permission diselaraskan.
+const changed =
+next.size !== v.length ||
+v.some(action => !next.has(action));
+
+if (changed) {
+renderPermissionPanel();
+}
+
+// Auto ON/OFF berdasarkan semua module.
+syncPermissionAllowAll();
+}
+
+});
+
+syncPermissionAllowAll();
 }
 async function openPermissionEditor(u,container){
  if(!window.NewUI?.chips||!window.NewUI?.modal?.open){toast('Custom components unavailable','error');return}
@@ -6239,16 +6461,82 @@ async function openPermissionEditor(u,container){
  <div><label>Given Permissions</label><div id="permissionGiven"></div></div></div>
 <p class="auth-permission-note">Permissions must also be enforced by the backend and database rules.</p>
 </div>
+
 <div class="auth-permission-footer">
-  <button type="button" class="btn-cancel-new" id="permissionCancel">Cancel</button>
-  <button type="submit" class="btn-primary-new" id="permissionSave">Save Permissions</button>
+
+  <div class="auth-permission-allow-all">
+
+    <label class="shared-active-switch">
+
+      <input
+        id="permissionAllowAll"
+        type="checkbox"
+        data-active-label="Active"
+        data-inactive-label="Inactive"
+        disabled
+      >
+
+      <span class="shared-active-track">
+
+        <span class="shared-active-text">
+          Inactive
+        </span>
+
+        <span
+          class="shared-active-knob"
+          aria-hidden="true"
+        ></span>
+
+      </span>
+
+    </label>
+
+    <span class="auth-permission-allow-all-label">
+      Allow All Modules
+    </span>
+
+  </div>
+
+  <button
+    type="button"
+    class="btn-cancel-new"
+    id="permissionCancel"
+  >Cancel</button>
+
+  <button
+    type="submit"
+    class="btn-primary-new"
+    id="permissionSave"
+  >Save Permissions</button>
+
 </div>`;
+
  container.replaceChildren(root);
  root.querySelector('#permissionUsername').value=u.username;
  root.querySelector('#permissionUid').value=u.uid;
  root.querySelector('#permissionDisplayName').value=u.displayName||u.username;
  NewUI.init?.(root);
+/* ==========================================
+   ALLOW ALL MODULES - SWITCH EVENT
+   ========================================== */
 
+
+const permissionAllowAll = root.querySelector(
+'#permissionAllowAll'
+);
+
+window.SharedActiveSwitch?.sync(
+permissionAllowAll
+);
+
+permissionAllowAll.addEventListener(
+'change',
+function () {
+
+applyPermissionAllowAll(this.checked);
+
+}
+);
 /* ==========================================
    MODULE PERMISSIONS - LIVE CUSTOM SEARCH
    ========================================== */
@@ -6304,7 +6592,18 @@ siteChipApi=NewUI.chips(root.querySelector('#permissionSiteChoices'),{
 });
   permissionDraft={};const modules=getPermissionModules();
   for(const [key] of modules){const saved=u.permissions?.[key]||u.permissions?.[key.replace(/\.html$/,'_html')]||[];permissionDraft[key]=new Set(Array.isArray(saved)?saved.filter(x=>permissionActions(key).includes(x)):[])}
-  activePermissionModule=modules[0]?.[0]||'';renderPermissionTabs();renderPermissionPanel();
+  activePermissionModule = modules[0]?.[0] || '';
+
+
+renderPermissionTabs();
+renderPermissionPanel();
+
+/* ENABLE & SYNC ALLOW ALL SWITCH */
+
+permissionAllowAll.disabled =
+getBulkPermissionModules().length === 0;
+
+syncPermissionAllowAll();
  }catch(err){toast('Cannot load sites: '+err.message,'error')}
  root.addEventListener('submit',async e=>{
   e.preventDefault();if(!permissionUser||!siteChipApi)return;
