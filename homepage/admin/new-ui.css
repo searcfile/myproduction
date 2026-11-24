@@ -2247,20 +2247,18 @@ bottom: 0;
 
   width: 300px;
   max-width: calc(100vw - 20px);
-  padding: 16px;
+  padding: 10px;
 
   background: #1f1f1f;
   color: rgba(255,255,255,.88);
   border: 1px solid #424242;
   border-radius: 10px;
-
   box-shadow:
     0 6px 16px rgba(0,0,0,.18),
     0 12px 32px rgba(0,0,0,.22);
 
   font-family: inherit;
-  font-size: 13px;
-
+  font-size: 12px;
   opacity: 0;
   transform: translateY(5px) scale(.98);
   transition:
