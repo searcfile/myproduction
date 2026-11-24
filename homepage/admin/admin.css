@@ -159,17 +159,37 @@ body * {
   transition: none !important;
 }
 
-:where(.input, input:not(.shared-input), textarea):focus{
-  border-color: #1668dc !important;
-  outline: 0 !important;
-  transition: all .2s ease;
+
+/* ==========================================================
+   GLOBAL INPUT FOCUS - NO WHITE FLASH
+   ========================================================== */
+
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  textarea,
+  select,
+  .input,
+  .shared-input
+) {
+  transition-property: border-color !important;
+  transition-duration: .2s !important;
+  transition-timing-function: ease !important;
 }
-select:focus,
-select:focus-visible{
+
+/* INSTANT INPUT FOCUS */
+
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  textarea,
+  select,
+  .input,
+  .shared-input
+):is(:focus, :focus-visible) {
   border-color: #1668dc !important;
   outline: none !important;
-  transition: all .2s ease;
+  transition: none !important;
 }
+
 /* ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ */
 .snow-layer {
   position: fixed;
