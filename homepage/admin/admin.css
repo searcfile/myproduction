@@ -106,7 +106,7 @@ input::placeholder{
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: #555 #242424;
+  scrollbar-color: rgb(75, 85, 99) #242424;
 }
 /* ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ */
 .snow-layer {
