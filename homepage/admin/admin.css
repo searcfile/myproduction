@@ -132,62 +132,22 @@ body * {
 }
 
 
-/* ==========================================================
-   GLOBAL FOCUS RING - KEYBOARD TAB
-   ========================================================== */
-
-:root {
-  --admin-focus-color: #1677ff;
-  --admin-focus-shadow: rgba(22, 119, 255, 0.18);
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
 }
-
-/* BUTTON / LINK / TAB / FORM CONTROL */
-
-:where(
-  button,
-  a[href],
-  input,
-  textarea,
-  select,
-  .btn,
-  [role="button"],
-  [role="tab"],
-  [tabindex]
-):focus-visible {
-  outline: 1px solid var(--admin-focus-color) !important;
-  outline-offset: 1px !important;
-
-  box-shadow:
-    0 0 0 3px var(--admin-focus-shadow) !important;
+:where(.input, input:not(.shared-input), textarea):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  transition: all .2s ease;
 }
-
-/* INPUT / TEXTAREA / SELECT */
-
-:where(
-  input:not([type="checkbox"]):not([type="radio"]),
-  textarea,
-  select
-):focus-visible {
-  outline-offset: 0 !important;
-  border-color: var(--admin-focus-color) !important;
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  transition: all .2s ease;
 }
-
-/* ==========================================================
-   CUSTOM NEW UI - KEYBOARD FOCUS RING
-   ========================================================== */
-
-:where(
-  .shared-sync-search,
-  .shared-dropdown,
-  .shared-chip-dropdown
-):has(:focus-visible) {
-  outline: 1px solid var(--admin-focus-color) !important;
-  outline-offset: 0 !important;
-
-  box-shadow:
-    0 0 0 3px var(--admin-focus-shadow) !important;
-}
-
 /* ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ */
 .snow-layer {
   position: fixed;
