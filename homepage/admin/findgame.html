@@ -1912,24 +1912,27 @@ overscroll-behavior:contain;
     overflow:hidden;
   }
 
-  /* Results dan Detail sama tinggi */
-  #fgContentWrapper > .grid:not(.fg-no-results){
-    display:grid;
-    flex:1 1 0;
-    height:auto;
-    min-height:0;
-    min-width:0;
-    grid-template-rows:minmax(0,1fr);
-    align-items:stretch;
-  }
+#fgContentWrapper > .grid:not(.fg-no-results){
+  display:grid;
+  flex:0 1 auto;
+  height:auto;
+  max-height:100%;
+  min-height:0;
+  min-width:0;
+  grid-template-rows:minmax(0,1fr);
+  align-items:stretch;
+}
 
-  #fgContentWrapper > .grid:not(.fg-no-results) > .list,
-  #fgContentWrapper > .grid:not(.fg-no-results) > .detail{
-    height:100%;
-    min-height:0;
-    min-width:0;
-    max-height:none;
-  }
+#fgContentWrapper > .grid:not(.fg-no-results) > .list{
+  contain:size;
+}
+
+#fgContentWrapper > .grid:not(.fg-no-results) > .list,
+#fgContentWrapper > .grid:not(.fg-no-results) > .detail{
+  height:auto;
+}
+
+
 
   /* Scroll hanya di dalam Results */
   .grid:not(.fg-no-results) > .list{
@@ -1938,13 +1941,16 @@ overscroll-behavior:contain;
     overflow:hidden;
   }
 
-  .grid:not(.fg-no-results) .list > #list{
-    flex:1 1 0;
-    min-height:0;
-    overflow-x:hidden;
-    overflow-y:auto;
-    overscroll-behavior:contain;
-  }
+.grid:not(.fg-no-results) .list > #list{
+  flex:1 1 0;
+  width:100%;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
 
   /* Scroll hanya di dalam Detail */
   .grid:not(.fg-no-results) > .detail{
@@ -2437,26 +2443,12 @@ paylineFilter = NewUI.chips(
 
 }
 
-/* ========== NEW: kunci tinggi list ke 10 baris ========== */
-function applyListMaxHeight(visibleRows = 10){
-  const scroller = elList;
-  if(!scroller) return;
+/* ========== DYNAMIC RESPONSIVE LIST HEIGHT ========== */
+function applyListMaxHeight(){
+  if(!elList) return;
 
-  const row = scroller.querySelector('.game');
-  if(!row){
-    scroller.style.removeProperty('max-height');
-    return;
-  }
-
-  // tinggi 1 baris termasuk margin
-  const cs = getComputedStyle(row);
-  const rowH = row.getBoundingClientRect().height +
-               parseFloat(cs.marginTop||0) +
-               parseFloat(cs.marginBottom||0);
-
-  const maxH = Math.max(0, Math.round(rowH * visibleRows));
-  scroller.style.maxHeight = maxH + 'px';             // langsung set
-  // atau kalau kamu pakai CSS var: document.documentElement.style.setProperty('--list-max', maxH+'px');
+  elList.style.removeProperty('max-height');
+  elList.style.removeProperty('height');
 }
 /* ======================================================== */
 
