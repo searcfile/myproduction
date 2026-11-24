@@ -201,6 +201,7 @@ const SUPERADMIN_ONLY_PAGES = new Set([
   "livechat-support.html",
   "notice.html",
   "config.html"
+  "users-history.html"
 ]);
   let currentAdminProfile = null;
 
