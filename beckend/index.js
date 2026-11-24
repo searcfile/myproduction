@@ -1382,6 +1382,8 @@ const SUPERADMIN_ONLY_PAGES = new Set([
   "admin-users.html",
   "livechat-support.html",
   "notice.html"
+  "config.html",
+  "users-history.html"
 ]);
 
 function isAllowedModule(moduleName) {
