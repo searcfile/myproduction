@@ -3511,3 +3511,98 @@ input::placeholder{
     height: 31px;
   }
 }
+
+/* =========================================================
+   SHARED CHIP DROPDOWN - SEARCHABLE INPUT
+========================================================= */
+
+.shared-chip-dropdown:not(#headerSiteCustom)
+.shared-chip-dropdown-trigger {
+  cursor: text;
+}
+
+.shared-chip-dropdown-search-input {
+  display: block;
+  flex: 1 1 40px;
+  width: 40px;
+  min-width: 20px;
+  max-width: 100%;
+  height: 26px;
+
+  padding: 0 4px;
+  margin: 0;
+
+  border: 0 !important;
+  outline: none !important;
+  border-radius: 0;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: var(--text);
+  caret-color: var(--caret-color);
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+
+  cursor: text;
+  appearance: none;
+  -webkit-appearance: none;
+
+  transition: none !important;
+}
+
+.shared-chip-dropdown-search-input:focus,
+.shared-chip-dropdown-search-input:focus-visible {
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.shared-chip-dropdown-search-input::placeholder {
+  color: var(--ant-color-text-quaternary);
+  opacity: 1;
+}
+
+/* Hide original placeholder for searchable chips */
+
+.shared-chip-dropdown:not(#headerSiteCustom)
+.shared-chip-dropdown-placeholder {
+  display: none !important;
+}
+
+/* Input without selected chips */
+
+.shared-chip-dropdown:not(#headerSiteCustom):not(.has-value)
+.shared-chip-dropdown-search-input {
+  width: 100%;
+  padding-left: 8px;
+}
+
+/* Keep focus border */
+
+.shared-chip-dropdown:not(#headerSiteCustom)
+.shared-chip-dropdown-trigger:focus-within {
+  border-color: var(--input-line-focus);
+}
+
+/* Hide unmatched search results */
+
+.shared-chip-dropdown-option[hidden] {
+  display: none !important;
+}
+
+/* Empty search result */
+
+.shared-chip-dropdown-search-empty {
+  padding: 15px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.shared-chip-dropdown-search-empty[hidden] {
+  display: none !important;
+}
