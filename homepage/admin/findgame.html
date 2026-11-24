@@ -407,7 +407,11 @@ color: var(--main-tab-primary) !important;
   text-overflow:ellipsis;
   font-size:14px;
 }
-
+/* ===== GAME NAME ACTIVE ===== */
+.game.active .g-name,
+.game[aria-selected="true"] .g-name{
+    color:var(--main-tab-primary) !important;
+}
 .g-pill{
   font-size:.72rem;
   white-space:nowrap;
