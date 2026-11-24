@@ -867,19 +867,41 @@ margin-top: var(--admin-header-height, 64px) !important;
   box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
 }
 
-.notice-head{
+
+.notice-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 20px 24px;
   background: var(--backgrounddrop);
+  border-bottom: 1px solid var(--border4);
 }
 
-.notice-title{
-  color: #ff3b30;
-  font-weight: 700;
-  font-size: 14px;
+.notice-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--colorbtn);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
 }
+
+.notice-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-hover);
+  flex-shrink: 0;
+}
+
+.notice-title-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 
 .notice-close-btn{
   background: transparent;
@@ -899,32 +921,102 @@ margin-top: var(--admin-header-height, 64px) !important;
   color: var(--gold-active);
 }
 
-.notice-body{
-  padding: 16px 14px 12px;
+
+/* ==========================================
+   NOTICE BODY - PREMIUM MINIMAL
+   ========================================== */
+
+.notice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--backgroundbtn);
 }
 
-.notice-message-text{
+/* SYSTEM NOTICE LABEL */
+
+.notice-label {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 4px 9px;
+  border-radius: 4px;
+  background: #15325b;
+  color: #91caff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .3px;
+}
+
+body.light-theme .notice-label,
+html[data-admin-theme="light"] .notice-label {
+  background: #e6f4ff;
+  color: #0958d9;
+}
+
+/* NOTICE CONTENT WITH BLUE ACCENT */
+
+.notice-message-text {
+  min-height: 85px;
+  max-height: min(320px, 40vh);
+  padding: 8px 0 8px 14px;
+
+  border-left: 3px solid var(--gold);
+
   color: var(--colorbtn);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
+
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
+  overflow-y: auto;
 }
 
-.notice-message-time{
-  margin-top: 14px;
-  text-align: right;
-  font-size: 12px;
-  color: var(--blur);
-}
+/* TIME AND DATE - SINGLE ROW */
 
-.notice-foot{
+.notice-message-time {
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+
+  margin: 0;
+  color: var(--text-dim);
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+
+  white-space: nowrap;
+}
+
+.notice-message-time svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.notice-message-time[hidden] {
+  display: none !important;
+}
+
+
+
+.notice-foot {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--backgrounddrop);
+  border-top: 1px solid var(--border4);
 }
+
 
 .notice-ok-btn{
   min-width: 88px;
@@ -945,6 +1037,40 @@ margin-top: var(--admin-header-height, 64px) !important;
 .notice-ok-btn:active{
   background: var(--gold-active);
 }
+
+/* NOTICE MODAL - MOBILE RESPONSIVE */
+
+@media (max-width: 550px) {
+
+  .notice-head {
+    padding: 16px;
+  }
+
+  .notice-body {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .notice-title {
+    font-size: 15px;
+  }
+
+  .notice-message-text {
+    min-height: 70px;
+    padding-left: 12px;
+    font-size: 14px;
+  }
+
+  .notice-message-time {
+    font-size: 11px;
+  }
+
+  .notice-foot {
+    padding: 12px;
+  }
+
+}
+
 /* default icon notice */
 #notifButton svg{
   transition: fill 0.2s ease, color 0.2s ease;
