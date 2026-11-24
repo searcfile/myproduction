@@ -1761,6 +1761,152 @@ const isHeaderSite =
   container.id === "headerSiteCustom";
 
 let headerSiteSearch = null;
+   
+/* =====================================================
+   GENERAL CHIP DROPDOWN - SEARCH INPUT
+===================================================== */
+
+let chipSearchInput = null;
+
+function filterChipOptions() {
+  if (!chipSearchInput) return;
+
+  const keyword = chipSearchInput.value
+    .trim()
+    .toLowerCase();
+
+  let visibleCount = 0;
+
+  panel.querySelectorAll(
+    ".shared-chip-dropdown-option"
+  ).forEach(option => {
+
+    const label = option.textContent
+      .trim()
+      .toLowerCase();
+
+    const matched = label.includes(keyword);
+
+    option.hidden = !matched;
+
+    if (matched) visibleCount++;
+  });
+
+  let empty = panel.querySelector(
+    ".shared-chip-dropdown-search-empty"
+  );
+
+  if (!empty) {
+    empty = document.createElement("div");
+
+    empty.className =
+      "shared-chip-dropdown-search-empty";
+
+    empty.textContent = "No data";
+
+    panel.appendChild(empty);
+  }
+
+  empty.hidden = visibleCount > 0;
+}
+
+if (!isHeaderSite) {
+
+  chipSearchInput = document.createElement("input");
+
+  chipSearchInput.type = "text";
+
+  chipSearchInput.className =
+    "shared-chip-dropdown-search-input";
+
+  chipSearchInput.placeholder = config.placeholder;
+
+  chipSearchInput.autocomplete = "off";
+  chipSearchInput.spellcheck = false;
+
+  chipSearchInput.setAttribute(
+    "aria-label",
+    config.placeholder
+  );
+
+  chipSearchInput.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+  chipSearchInput.setAttribute(
+    "aria-haspopup",
+    "listbox"
+  );
+
+  chipSearchInput.setAttribute(
+    "data-lpignore",
+    "true"
+  );
+
+  chipSearchInput.setAttribute(
+    "data-1p-ignore",
+    "true"
+  );
+
+  trigger.removeAttribute("tabindex");
+
+  valuesBox.appendChild(chipSearchInput);
+
+  chipSearchInput.addEventListener("focus", () => {
+    open();
+  });
+
+  chipSearchInput.addEventListener("click", event => {
+    event.stopPropagation();
+    open();
+  });
+
+  chipSearchInput.addEventListener("input", () => {
+    open();
+    filterChipOptions();
+  });
+
+  chipSearchInput.addEventListener("keydown", event => {
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+
+      const firstOption = panel.querySelector(
+        ".shared-chip-dropdown-option:not([hidden])"
+      );
+
+      if (container.classList.contains("open")) {
+        firstOption?.click();
+      } else {
+        open();
+      }
+    }
+  });
+
+  container.addEventListener("focusout", () => {
+    requestAnimationFrame(() => {
+      if (!container.contains(document.activeElement)) {
+        close();
+      }
+    });
+  });
+
+  panel.addEventListener("mousedown", event => {
+    if (event.target.closest(
+      ".shared-chip-dropdown-option"
+    )) {
+      event.preventDefault();
+    }
+  });
+}
+
 
 if (isHeaderSite) {
   headerSiteSearch = document.createElement("input");
@@ -1890,7 +2036,9 @@ headerSiteSearch.addEventListener("input", () => {
   ===================================================== */
 
 function render() {
-
+const restoreSearchFocus =
+  chipSearchInput &&
+  document.activeElement === chipSearchInput;
   const selected =
     Array.from(selectedValues)
       .map(value => {
@@ -2081,6 +2229,26 @@ if (
       })
       .join("");
 
+/* RESTORE SEARCH INPUT AFTER RENDER */
+
+if (chipSearchInput) {
+
+  chipSearchInput.placeholder =
+    selectedValues.size > 0
+      ? ""
+      : config.placeholder;
+
+  valuesBox.appendChild(chipSearchInput);
+
+  filterChipOptions();
+
+  if (restoreSearchFocus) {
+    chipSearchInput.focus({
+      preventScroll: true
+    });
+  }
+}
+
 }
 
 
@@ -2088,22 +2256,39 @@ if (
      OPEN / CLOSE
   ===================================================== */
 
-  function open() {
 
-    container.classList.add(
-      "open"
+function open() {
+
+  container.classList.add("open");
+
+  if (chipSearchInput) {
+
+    chipSearchInput.setAttribute(
+      "aria-expanded",
+      "true"
     );
 
+    filterChipOptions();
   }
+}
 
+function close() {
 
-  function close() {
+  container.classList.remove("open");
 
-    container.classList.remove(
-      "open"
+  if (chipSearchInput) {
+
+    chipSearchInput.value = "";
+
+    chipSearchInput.setAttribute(
+      "aria-expanded",
+      "false"
     );
 
+    filterChipOptions();
   }
+}
+
 
 
   function toggle() {
@@ -2149,6 +2334,19 @@ trigger.addEventListener("click", event => {
 
   event.stopPropagation();
 
+
+/* GENERAL SEARCHABLE CHIP DROPDOWN */
+
+if (chipSearchInput) {
+
+  open();
+
+  chipSearchInput.focus({
+    preventScroll: true
+  });
+
+  return;
+}
 
 if (isHeaderSite && headerSiteSearch) {
   headerSiteSearch.readOnly = false;
@@ -2232,9 +2430,24 @@ if (isHeaderSite && headerSiteSearch) {
       }
 
 
-      render();
 
-      notifyChange();
+if (chipSearchInput) {
+  chipSearchInput.value = "";
+}
+
+render();
+
+notifyChange();
+
+if (chipSearchInput) {
+
+  open();
+
+  chipSearchInput.focus({
+    preventScroll: true
+  });
+}
+
 
     }
   );
@@ -2371,6 +2584,20 @@ iconButton.addEventListener("click", event => {
   event.preventDefault();
   event.stopPropagation();
 
+/* SEARCH ICON WHILE DROPDOWN IS OPEN */
+
+if (
+  chipSearchInput &&
+  container.classList.contains("open")
+) {
+
+  chipSearchInput.focus({
+    preventScroll: true
+  });
+
+  return;
+}
+
   const shouldClear =
     selectedValues.size > 0 &&
     container.matches(":hover");
@@ -2390,7 +2617,14 @@ iconButton.addEventListener("click", event => {
 
   toggle();
 
-
+if (
+  chipSearchInput &&
+  container.classList.contains("open")
+) {
+  chipSearchInput.focus({
+    preventScroll: true
+  });
+}
 if (
   headerSiteSearch &&
   container.classList.contains("open")
