@@ -1095,10 +1095,12 @@ overscroll-behavior:contain;
 .fg-toolbar {
   display: grid;
   grid-template-columns:
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(0, 400px)
+    minmax(0, 350px)
+    minmax(0, 350px)
+    minmax(0, 350px)
+    minmax(0, 350px)
     minmax(max-content, 1fr);
+
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -1106,11 +1108,12 @@ overscroll-behavior:contain;
 }
 
 .fg-toolbar .fg-search,
+.fg-toolbar .fg-payline-chips,
 .fg-toolbar .fg-platform-chips,
 .fg-toolbar .fg-type-chips {
   width: 100%;
   min-width: 0;
-  max-width: 400px;
+  max-width: 350px;
 }
 
 .fg-toolbar .fg-search .shared-sync-search {
@@ -1139,6 +1142,7 @@ overscroll-behavior:contain;
   }
 
   .fg-toolbar .fg-search,
+  .fg-toolbar .fg-payline-chips,
   .fg-toolbar .fg-platform-chips,
   .fg-toolbar .fg-type-chips {
     grid-column: 1;
@@ -1152,14 +1156,19 @@ overscroll-behavior:contain;
     grid-row: 1;
   }
 
-  .fg-toolbar .fg-platform-chips {
+  .fg-toolbar .fg-payline-chips {
     grid-row: 2;
   }
 
-  .fg-toolbar .fg-type-chips {
+  .fg-toolbar .fg-platform-chips {
     grid-row: 3;
   }
 
+  .fg-toolbar .fg-type-chips {
+    grid-row: 4;
+  }
+
+  .fg-toolbar .fg-payline-chips > *,
   .fg-toolbar .fg-platform-chips > *,
   .fg-toolbar .fg-type-chips > * {
     width: 100% !important;
@@ -1169,8 +1178,6 @@ overscroll-behavior:contain;
   }
 
   .fg-toolbar #fgCreate {
-    grid-column: 1;
-    grid-row: 4;
     justify-self: end;
     width: max-content !important;
   }
@@ -1650,7 +1657,7 @@ overscroll-behavior:contain;
    ========================================== */
 
 .fg-toolbar .fg-toolbar-actions {
-  grid-column: 4;
+  grid-column: 5;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1688,9 +1695,10 @@ overscroll-behavior:contain;
 }
 
 /* Desktop sederhana */
-@media (max-width: 1200px) {
+@media (max-width: 1500px) {
   .fg-toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(4, minmax(0, 350px));
   }
 
   .fg-toolbar .fg-toolbar-actions {
@@ -1707,7 +1715,7 @@ overscroll-behavior:contain;
 
   .fg-toolbar .fg-toolbar-actions {
     grid-column: 1;
-    grid-row: 4;
+    grid-row: 5;
     justify-self: end;
     width: auto;
   }
@@ -1870,6 +1878,10 @@ overscroll-behavior:contain;
     <div class="filters-inner">
       <div class="fg-toolbar">
         <div class="fg-search"><input id="q" type="text" placeholder="Search" autocomplete="off" aria-label="Search games" /></div>
+        <div id="fgPaylineFilter"
+     class="fg-payline-chips"
+     aria-label="Filter paylines">
+</div>
         <div id="tags" class="fg-platform-chips" aria-label="Filter platforms"></div>
         <div id="fgTypeFilter"class="fg-type-chips" aria-label="Game types"></div>
         <div class="fg-toolbar-actions">
@@ -2098,7 +2110,7 @@ elQ.value = "";
 const platformOptions = ['918kiss','mega888','pussy888'];
 let platformFilter = null;
 let gameTypeFilter = null;
-
+let paylineFilter = null;
 /* ==========================================
    FIND GAME - SAVE / RESTORE FILTER
    ========================================== */
@@ -2135,11 +2147,12 @@ function fgSaveFilters() {
   if (!keys) return;
 
   try {
-    localStorage.setItem(keys.state, JSON.stringify({
-      search: elQ.value,
-      platforms: platformFilter?.getValue?.() || [],
-      types: gameTypeFilter?.getValue?.() || []
-    }));
+localStorage.setItem(keys.state, JSON.stringify({
+  search: elQ.value,
+  platforms: platformFilter?.getValue?.() || [],
+  types: gameTypeFilter?.getValue?.() || [],
+  paylines: paylineFilter?.getValue?.() || []
+}));
   } catch (error) {
     console.warn("[Find Game] Save filter failed:", error);
   }
@@ -2164,7 +2177,7 @@ function fgRestoreFilters() {
     gameTypeFilter?.setValue?.(
       gameTypeOptions.map(option => option.value)
     );
-
+    paylineFilter?.setValue?.([], false);
     fgFilterReady = true;
     sessionStorage.removeItem(keys.reset);
 
@@ -2209,6 +2222,13 @@ function fgRestoreFilters() {
         )
       );
     }
+      /* Restore selected paylines */
+if (Array.isArray(saved.paylines)) {
+  paylineFilter?.setValue?.(
+    saved.paylines.map(String),
+    false
+  );
+}
   }
 
   fgFilterReady = true;
@@ -2220,7 +2240,30 @@ const gameTypeOptions = [
   { value: 'live game', label: 'Live Game' },
   { value: 'table', label: 'Table' }
 ];
+/* ==========================================
+   FIND GAME - DYNAMIC PAYLINE FILTER
+   ========================================== */
 
+function updatePaylineOptions() {
+  if (!paylineFilter) return;
+
+  const paylines = [
+    ...new Set(
+      games
+        .map(game => Number(game.payline))
+        .filter(value =>
+          Number.isInteger(value) && value > 0
+        )
+    )
+  ].sort((a, b) => a - b);
+
+  const options = paylines.map(value => ({
+    value: String(value),
+    label: `${value} Line`
+  }));
+
+  paylineFilter.setOptions(options);
+}
 function updatePlatformOptions() {
   const names = [
     ...new Set(
@@ -2280,6 +2323,20 @@ if (window.NewUI) {
 gameTypeFilter.setValue(
   gameTypeOptions.map(option => option.value)
 );
+
+/* PAYLINE MULTI SELECT */
+paylineFilter = NewUI.chips(
+  document.getElementById('fgPaylineFilter'),
+  {
+    placeholder: 'Paylines',
+    options: [],
+    onChange: () => {
+      renderList();
+      fgSaveFilters();
+    }
+  }
+);
+
 }
 
 /* ========== NEW: kunci tinggi list ke 10 baris ========== */
@@ -2335,7 +2392,18 @@ const typeOK =
   !chosenTypes.length ||
   chosenTypes.includes(gameType);
 
-return kw && platOK && typeOK;
+/* PAYLINE FILTER */
+const chosenPaylines =
+  paylineFilter?.getValue() || [];
+
+const gamePayline =
+  String(Number(g.payline));
+
+const paylineOK =
+  !chosenPaylines.length ||
+  chosenPaylines.includes(gamePayline);
+
+return kw && platOK && typeOK && paylineOK;
   });
 
 
@@ -3058,8 +3126,11 @@ function fgRebuild(){
   // Firebase records override matching legacy names; new records append.
   const byName=new Map(legacyGames.map(g=>[String(g.name).toLowerCase(),g]));
   firebaseGames.forEach(g=>byName.set(String(g.name).toLowerCase(),g));
-  games=[...byName.values()];
-  updatePlatformOptions();renderList();
+games = [...byName.values()];
+
+updatePlatformOptions();
+updatePaylineOptions();
+renderList();
   if(selectedGame){
     const replacement=games.find(g=>g._id===selectedGame._id && g._id || g.name===selectedGame.name);
     if(replacement){selectedGame=replacement;updateDetail();}
