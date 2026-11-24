@@ -393,12 +393,10 @@ margin:12px;
 
 .game.active,
 .game[aria-selected="true"]{
-  border-color:var(--blue);
-  background:
-    linear-gradient(180deg, rgba(22,104,220,.15), rgba(22,104,220,.06)),
-    #10151f;
-  box-shadow:var(--shadow-blue);
-  color:var(--page-text);
+color: var(--main-tab-primary) !important;
+    background: var(--main-tab-active-bg) !important;
+    border-color: var(--main-tab-active-border) !important;
+    box-shadow: inset 3px 0 0 var(--main-tab-primary) !important;
 }
 
 .g-name{
