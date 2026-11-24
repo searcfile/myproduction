@@ -3802,7 +3802,7 @@ function sharedConfirm(options = {}) {
         </button>
 
         <button type="button"
-                class="shared-confirm-accept">
+                class="btn-delete-new">
           Delete
         </button>
       </div>
@@ -3815,7 +3815,7 @@ function sharedConfirm(options = {}) {
       options.message || 'This action cannot be undone.';
 
     const cancel = pop.querySelector('.btn-cancel-new');
-    const accept = pop.querySelector('.shared-confirm-accept');
+    const accept = pop.querySelector('.btn-delete-new');
     const closeBtn = pop.querySelector('.shared-confirm-close');
 
     cancel.textContent = options.cancelText || 'Cancel';
