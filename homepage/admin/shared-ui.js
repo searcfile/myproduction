@@ -2309,7 +2309,29 @@ aria-label="Search tabs"
 <div id="noticeModal" class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
   <div id="noticeDialog" class="notice-dialog">
     <div class="notice-head">
-      <div id="noticeTitle" class="notice-title">📢 Announcement!</div>
+      
+<div id="noticeTitle" class="notice-title">
+
+  <span class="notice-title-icon">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m3 11 18-5v12L3 14v-3z"/>
+      <path d="M11.6 16.4 13 21H8l-1.5-6"/>
+      <path d="M3 11H2v3h1"/>
+    </svg>
+  </span>
+
+  <span>Announcement!</span>
+
+</div>
+
       <button id="noticeClose" class="notice-close-btn" aria-label="Close">
         <svg viewBox="64 64 896 896" aria-hidden="true">
   <path fill="currentColor" d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"/>
@@ -2317,10 +2339,39 @@ aria-label="Search tabs"
       </button>
     </div>
 
-    <div class="notice-body">
-      <div id="noticeMessageText" class="notice-message-text"></div>
-      <div id="noticeMessageTime" class="notice-message-time"></div>
-    </div>
+
+<div class="notice-body">
+
+  <div class="notice-label">
+    SYSTEM NOTICE
+  </div>
+
+  <div
+    id="noticeMessageText"
+    class="notice-message-text"
+  ></div>
+
+  <div class="notice-message-time" hidden>
+
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </svg>
+
+    <span id="noticeMessageTime"></span>
+
+  </div>
+
+</div>
+
 
     <div class="notice-foot">
       <button id="noticeOkBtn" class="notice-ok-btn">OK</button>
@@ -7730,33 +7781,71 @@ function syncMenuNotifDot() {
     if (modal) modal.style.display = "none";
   }
 
+
 function openNoticeModal(message, timestamp) {
+
   const modal = document.getElementById("noticeModal");
+
   const text = document.getElementById("noticeMessageText");
+
   const time = document.getElementById("noticeMessageTime");
 
   if (!modal || !text || !time) return false;
 
+  const timeRow = time.closest(".notice-message-time");
+
+  /* NOTICE MESSAGE */
+
   text.textContent = message || "";
+
+  /* RESET TIMESTAMP */
+
+  time.textContent = "";
+
+  if (timeRow) {
+    timeRow.hidden = true;
+  }
+
+  /* FORMAT TIME AND DATE */
 
   if (timestamp) {
 
     const dateObj = new Date(Number(timestamp));
 
-    time.textContent =
-      !Number.isNaN(dateObj.getTime())
-        ? `${String(dateObj.getDate()).padStart(2,"0")}/${String(dateObj.getMonth()+1).padStart(2,"0")}/${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2,"0")}:${String(dateObj.getMinutes()).padStart(2,"0")}:${String(dateObj.getSeconds()).padStart(2,"0")}`
-        : "";
+    if (!Number.isNaN(dateObj.getTime())) {
 
-  } else {
+      const pad = value =>
+        String(value).padStart(2, "0");
 
-    time.textContent = "";
+      const formattedTime =
+        `${pad(dateObj.getHours())}:` +
+        `${pad(dateObj.getMinutes())}:` +
+        `${pad(dateObj.getSeconds())}`;
+
+      const formattedDate =
+        `${pad(dateObj.getDate())}-` +
+        `${pad(dateObj.getMonth() + 1)}-` +
+        `${dateObj.getFullYear()}`;
+
+      time.textContent =
+        `${formattedTime}  ${formattedDate}`;
+
+      if (timeRow) {
+        timeRow.hidden = false;
+      }
+
+    }
 
   }
 
+  /* OPEN ORIGINAL CUSTOM MODAL */
+
   modal.style.display = "flex";
+
   return true;
+
 }
+
 
 /* ==========================================
    NOTICE - FIREBASE READ STATE PER UID
