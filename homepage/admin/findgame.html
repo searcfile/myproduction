@@ -1095,9 +1095,9 @@ overscroll-behavior:contain;
 .fg-toolbar {
   display: grid;
   grid-template-columns:
-    minmax(0, 400px)
-    minmax(0, 400px)
-    minmax(0, 400px)
+    minmax(0, 350px)
+    minmax(0, 350px)
+    minmax(0, 350px)
     minmax(max-content, 1fr);
   align-items: center;
   gap: 10px;
@@ -1110,7 +1110,7 @@ overscroll-behavior:contain;
 .fg-toolbar .fg-type-chips {
   width: 100%;
   min-width: 0;
-  max-width: 400px;
+  max-width: 350px;
 }
 
 .fg-toolbar .fg-search .shared-sync-search {
@@ -1690,7 +1690,7 @@ overscroll-behavior:contain;
 /* Desktop sederhana */
 @media (max-width: 1200px) {
   .fg-toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 350px));
   }
 
   .fg-toolbar .fg-toolbar-actions {
