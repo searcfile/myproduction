@@ -93,17 +93,30 @@ input::placeholder{
    GLOBAL SCROLLBAR - ALL ADMIN PAGES
    ========================================================== */
 
-/* HTML - NATIVE BROWSER SCROLLBAR */
-html {
-  scrollbar-width: thin !important;
-  scrollbar-color: auto !important;
+/* DARK THEME */
+:root {
+  --scrollbar-thumb: #4b5563;
+  --scrollbar-track: #242424;
 }
 
-/* INTERNAL SCROLLBAR - FIXED COLOR */
-body,
-body * {
+/* LIGHT THEME */
+body.light-theme {
+  --scrollbar-thumb: #bfbfbf;
+  --scrollbar-track: #f0f0f0;
+}
+
+/* HTML SCROLLBAR - FIXED COLOR */
+html {
   scrollbar-width: thin !important;
   scrollbar-color: rgb(75, 85, 99) #242424 !important;
+}
+
+/* INTERNAL SCROLLBAR - FOLLOW THEME */
+body * {
+  scrollbar-width: thin !important;
+  scrollbar-color:
+    var(--scrollbar-thumb)
+    var(--scrollbar-track) !important;
 }
 
 /* KEEP WORKSPACE TAB SCROLLBAR HIDDEN */
