@@ -87,6 +87,22 @@ body.light-theme{
 input::placeholder{
   color:var(--blur)
 }
+:where(button, a, .btn, [tabindex]):focus-visible{
+  outline: 3px solid #15325b;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+:where(.input, input:not(.shared-input), textarea):focus{
+  border-color: #1668dc !important;
+  outline: 0 !important;
+  transition: all .2s ease;
+}
+select:focus,
+select:focus-visible{
+  border-color: #1668dc !important;
+  outline: none !important;
+  transition: all .2s ease;
+}
 ::-webkit-scrollbar {
   width: 6px;
 }
