@@ -1912,25 +1912,24 @@ overscroll-behavior:contain;
     overflow:hidden;
   }
 
-#fgContentWrapper > .grid:not(.fg-no-results){
-  display:grid;
-  flex:0 1 auto;
-  height:auto;
-  max-height:100%;
-  min-height:0;
-  min-width:0;
-  grid-template-rows:minmax(0,1fr);
-  align-items:stretch;
-}
+  /* Results dan Detail sama tinggi */
+  #fgContentWrapper > .grid:not(.fg-no-results){
+    display:grid;
+    flex:1 1 0;
+    height:auto;
+    min-height:0;
+    min-width:0;
+    grid-template-rows:minmax(0,1fr);
+    align-items:stretch;
+  }
 
-#fgContentWrapper > .grid:not(.fg-no-results) > .list{
-  contain:size;
-}
-
-#fgContentWrapper > .grid:not(.fg-no-results) > .list,
-#fgContentWrapper > .grid:not(.fg-no-results) > .detail{
-  height:auto;
-}
+  #fgContentWrapper > .grid:not(.fg-no-results) > .list,
+  #fgContentWrapper > .grid:not(.fg-no-results) > .detail{
+    height:100%;
+    min-height:0;
+    min-width:0;
+    max-height:none;
+  }
 
 
 
