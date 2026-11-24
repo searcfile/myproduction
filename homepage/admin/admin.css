@@ -87,6 +87,46 @@ body.light-theme{
 input::placeholder{
   color:var(--blur)
 }
+
+/* ==========================================================
+   GLOBAL SCROLLBAR - ALL ADMIN PAGES
+   ========================================================== */
+
+/* DARK THEME */
+:root {
+  --admin-scrollbar-thumb: rgb(75, 85, 99);
+  --admin-scrollbar-track: #242424;
+}
+
+/* LIGHT THEME */
+html[data-admin-theme="light"],
+body.light-theme {
+  --admin-scrollbar-thumb: #b8bfc9;
+  --admin-scrollbar-track: #f0f0f0;
+}
+
+/* GLOBAL NATIVE SCROLLBAR */
+html,
+body,
+body * {
+  scrollbar-width: thin !important;
+  scrollbar-color:
+    var(--admin-scrollbar-thumb)
+    var(--admin-scrollbar-track) !important;
+}
+
+/* KEEP WORKSPACE TAB SCROLLBAR HIDDEN */
+.tab-bar,
+.admin-workspace-tabs-list {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.tab-bar::-webkit-scrollbar,
+.admin-workspace-tabs-list::-webkit-scrollbar {
+  display: none !important;
+}
+
 :where(button, a, .btn, [tabindex]):focus-visible{
   outline: 3px solid #15325b;
   outline-offset: 1px;
