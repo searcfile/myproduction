@@ -1901,17 +1901,26 @@ overscroll-behavior:contain;
   }
 
   /* Content mengambil baki ruang viewport */
+#fgContentWrapper.wrap{
+  display:flex;
+  flex-direction:column;
+  flex:1 1 0;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  padding:0 12px !important;
+  margin-bottom:12px !important;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+/* ===== FIND GAME - MOBILE BOTTOM SPACING ===== */
+@media (max-width:979px){
   #fgContentWrapper.wrap{
-    display:flex;
-    flex-direction:column;
-    flex:1 1 0;
-    width:100% !important;
-    height:auto !important;
-    min-height:0 !important;
-    padding:0 12px 12px !important;
-    overflow:hidden;
+    padding:0 12px !important;
+    margin-bottom:12px !important;
+    box-sizing:border-box;
   }
-
+}
   /* Results dan Detail sama tinggi */
   #fgContentWrapper > .grid:not(.fg-no-results){
     display:grid;
