@@ -3797,7 +3797,7 @@ function sharedConfirm(options = {}) {
 
       <div class="shared-confirm-actions">
         <button type="button"
-                class="shared-confirm-cancel">
+                class="btn-cancel-new">
           Cancel
         </button>
 
