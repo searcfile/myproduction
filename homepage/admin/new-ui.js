@@ -3814,7 +3814,7 @@ function sharedConfirm(options = {}) {
     pop.querySelector('.shared-confirm-message').textContent =
       options.message || 'This action cannot be undone.';
 
-    const cancel = pop.querySelector('.shared-confirm-cancel');
+    const cancel = pop.querySelector('.btn-cancel-new');
     const accept = pop.querySelector('.shared-confirm-accept');
     const closeBtn = pop.querySelector('.shared-confirm-close');
 
