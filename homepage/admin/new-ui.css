@@ -1103,8 +1103,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 
 
 .shared-chip-dropdown-chip-remove:hover {
-  color:
-    rgba(255,255,255,.85);
+  color:var(--text);
 }
 
 
