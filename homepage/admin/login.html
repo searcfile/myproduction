@@ -3289,7 +3289,7 @@ if (response.status === 429) {
   const seconds =
     Number.isFinite(retryAfter) && retryAfter > 0
       ? retryAfter
-      : 60;
+      : 15;
 
   startLoginRateLimit(seconds);
 
