@@ -8018,13 +8018,78 @@ function stopNoticeSound() {
 
 }
 
-/* NOTICE - BROWSER AUDIO UNLOCK */
+/* ==========================================
+   NOTICE - SMART BROWSER AUDIO UNLOCK
+========================================== */
 
-["pointerdown", "keydown", "click"].forEach(eventName => {
+let noticeAudioUnlocked = false;
+let noticeAudioUnlocking = false;
+
+async function unlockNoticeAudio(event) {
+
+  if (window.self !== window.top) return;
+
+  if (!event.isTrusted) return;
+
+  if (noticeSoundUnread) {
+    playNoticeSound();
+    return;
+  }
+
+  if (noticeAudioUnlocked || noticeAudioUnlocking) return;
+
+  const audio = initNoticeLoopAudio();
+
+  if (!audio) return;
+
+  noticeAudioUnlocking = true;
+
+  try {
+
+    audio.muted = false;
+    audio.volume = 0;
+
+    await audio.play();
+
+    if (!noticeSoundUnread) {
+
+      audio.pause();
+      audio.currentTime = 0;
+
+    }
+
+    audio.volume = 1;
+
+    noticeAudioUnlocked = true;
+
+    console.info("[Notice Audio] Unlocked");
+
+    if (noticeSoundUnread) {
+      playNoticeSound();
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "[Notice Audio] Unlock failed:",
+      error.name,
+      error.message
+    );
+
+  } finally {
+
+    audio.volume = 1;
+    noticeAudioUnlocking = false;
+
+  }
+
+}
+
+["pointerdown", "keydown", "click", "touchend"].forEach(eventName => {
 
   document.addEventListener(
     eventName,
-    playNoticeSound,
+    unlockNoticeAudio,
     {
       capture: true,
       passive: true
