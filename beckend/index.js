@@ -452,7 +452,16 @@ app.post('/api/login/start', loginPasswordLimiter, async(req,res)=>{
 }
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(process.env.FIREBASE_WEB_API_KEY)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:profile.email,password,returnSecureToken:true})});
   const data=await r.json();
- 
+ /* ==========================================
+   FIREBASE LOGIN - ERROR DEBUG
+   ========================================== */
+
+if (!r.ok) {
+  console.warn("[FIREBASE LOGIN ERROR]", {
+    status: r.status,
+    code: String(data?.error?.message || "UNKNOWN").split(" : ")[0]
+  });
+}
 if (!r.ok || data.localId !== idx.uid) {
 
   // Rekod kegagalan password untuk username
