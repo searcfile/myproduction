@@ -18,7 +18,7 @@ initializeApp({credential:cert(sa), databaseURL:process.env.FIREBASE_DATABASE_UR
 const auth = getAuth(), db = getDatabase(); 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', 1);
+app.set('trust proxy', 1); 
 // DEBUG: Periksa sama ada request sampai ke Express
 app.use((req, res, next) => {
   const startedAt = Date.now();
