@@ -3123,7 +3123,42 @@ function setupTwofaInputs(){
 /* ==========================================
    LOGIN RATE LIMIT - LIVE COUNTDOWN
    ========================================== */
+/* ==========================================
+   LOGIN - AUTO RESET TURNSTILE
+   ========================================== */
 
+function resetLoginTurnstile() {
+  const btn = document.getElementById("btnUserpass");
+
+  const widgetEl = document.querySelector(
+    "#form-userpass .cf-turnstile"
+  );
+
+  if (!window.turnstile || !widgetEl) {
+    if (btn) {
+      btn.disabled = !turnstileVerifiedUser;
+    }
+    return;
+  }
+
+  turnstileVerifiedUser = false;
+
+  if (btn) {
+    btn.disabled = true;
+  }
+
+  try {
+    const widgetId = widgetEl.getAttribute("data-widget-id");
+
+    window.turnstile.reset(widgetId || widgetEl);
+
+  } catch (error) {
+    console.warn(
+      "[LOGIN] Turnstile reset failed:",
+      error
+    );
+  }
+}
 function renderLoginRateLimit() {
   const seconds = Math.max(
     0,
@@ -3133,6 +3168,8 @@ function renderLoginRateLimit() {
   );
 
   const btn = document.getElementById("btnUserpass");
+
+  /* COUNTDOWN STILL RUNNING */
 
   if (seconds > 0) {
     showLoginError(
@@ -3146,7 +3183,10 @@ function renderLoginRateLimit() {
     return;
   }
 
+  /* COUNTDOWN COMPLETED */
+
   clearInterval(loginRateLimitTimer);
+
   loginRateLimitTimer = null;
   loginRateLimitUntil = 0;
 
@@ -3156,9 +3196,9 @@ function renderLoginRateLimit() {
 
   clearLoginErrors();
 
-  if (btn) {
-    btn.disabled = !turnstileVerifiedUser;
-  }
+  /* AUTO RESET CLOUDFLARE VERIFICATION */
+
+  resetLoginTurnstile();
 }
 
 function startLoginRateLimit(seconds) {
