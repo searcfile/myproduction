@@ -3323,6 +3323,26 @@ if (contentType.includes("application/json")) {
    LOGIN - HANDLE RATE LIMIT RESPONSE
    ========================================== */
 
+/* ==========================================
+   LOGIN - HANDLE FIREBASE RATE LIMIT
+   ========================================== */
+
+if (
+  response.status === 429 &&
+  data.code === "FIREBASE_RATE_LIMIT"
+) {
+  showLoginError(
+    "password",
+    "Login temporarily restricted. Please try again later."
+  );
+
+  return;
+}
+
+/* ==========================================
+   LOGIN - HANDLE BACKEND RATE LIMIT
+   ========================================== */
+
 if (response.status === 429) {
   const retryAfter = Number(data.retryAfter);
 
