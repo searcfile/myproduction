@@ -3158,7 +3158,7 @@ if (contentType.includes("application/json")) {
 
 if (response.status === 429) {
   throw new Error(
-    "Too many login attempts. Please wait 15 minutes before trying again."
+    "Too many login attempts. Please try again shortly."
   );
 }
 
