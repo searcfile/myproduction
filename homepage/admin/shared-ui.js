@@ -7527,6 +7527,17 @@ function updateFloatingFabBadges() {
     mainDot,
     floatingLivechatUnread + floatingNoticeUnread
   );
+  /* FLOATING FAB - NOTICE BLINKING */
+
+noticeDot?.classList.toggle(
+  "notice-unread-blink",
+  floatingNoticeUnread > 0
+);
+
+mainDot?.classList.toggle(
+  "notice-unread-blink",
+  floatingNoticeUnread > 0
+);
 }
 
 window.updateFloatingFabNoticeDot = function(count) {
@@ -7737,8 +7748,12 @@ function initLivechatUnreadListener() {
 
 
 function syncMenuNotifDot() {
-  const notifDot = document.getElementById("notifDot");
-  const menuDot = document.getElementById("menuNotifDot");
+
+  const notifDot =
+    document.getElementById("notifDot");
+
+  const menuDot =
+    document.getElementById("menuNotifDot");
 
   if (!notifDot || !menuDot) return;
 
@@ -7749,14 +7764,28 @@ function syncMenuNotifDot() {
   const isMobile = window.innerWidth <= 815;
 
   if (isMobile && hasNotice) {
+
     menuDot.textContent =
       (notifDot.textContent || "1").trim() || "1";
 
     menuDot.style.display = "flex";
+
+    menuDot.classList.add(
+      "notice-unread-blink"
+    );
+
   } else {
+
     menuDot.textContent = "";
+
     menuDot.style.display = "none";
+
+    menuDot.classList.remove(
+      "notice-unread-blink"
+    );
+
   }
+
 }
 
 
@@ -7857,16 +7886,126 @@ let noticeReadUid = null;
 let noticeReadTimestamp = 0;
 let noticeReadReady = false;
 let latestNoticeData = null;
+/* ==========================================
+   NOTICE - NOTIFICATION SOUND SYSTEM
+========================================== */
 
+let noticeSoundTimer = null;
+let noticeSoundUnread = false;
+
+const NOTICE_SOUND_INTERVAL = 5000;
+const NOTICE_SOUND_VOLUME = 0.7;
+
+function playNoticeSound() {
+
+  // Jangan mainkan sound dari dalam iframe.
+  if (window.self !== window.top) return;
+
+  if (!noticeSoundUnread) return;
+
+  const user = firebase.auth().currentUser;
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    noticeReadUid !== user.uid ||
+    sessionStorage.getItem("5g88.adminSession") !== user.uid ||
+    Number(sessionStorage.getItem("autoLogout.expireAt")) <= Date.now() ||
+    !Number.isFinite(Number(sessionStorage.getItem("autoLogout.expireAt")))
+  ) {
+    stopNoticeSound();
+    return;
+  }
+
+  const audio = document.getElementById("noticeSound");
+
+  if (!audio || !audio.paused) return;
+
+  audio.volume = NOTICE_SOUND_VOLUME;
+  audio.loop = false;
+  audio.currentTime = 0;
+
+  audio.play().catch(() => {
+    // Browser mungkin belum membenarkan autoplay.
+  });
+
+}
+
+function startNoticeSound() {
+
+  if (window.self !== window.top) return;
+
+  noticeSoundUnread = true;
+
+  // Elakkan duplicate interval.
+  if (noticeSoundTimer !== null) return;
+
+  playNoticeSound();
+
+  noticeSoundTimer = setInterval(
+    playNoticeSound,
+    NOTICE_SOUND_INTERVAL
+  );
+
+}
+
+function stopNoticeSound() {
+
+  noticeSoundUnread = false;
+
+  if (noticeSoundTimer !== null) {
+
+    clearInterval(noticeSoundTimer);
+    noticeSoundTimer = null;
+
+  }
+
+  const audio = document.getElementById("noticeSound");
+
+  if (audio) {
+
+    audio.pause();
+    audio.currentTime = 0;
+
+  }
+
+}
+
+/* NOTICE - BROWSER AUDIO UNLOCK */
+
+["pointerdown", "keydown"].forEach(eventName => {
+
+  document.addEventListener(
+    eventName,
+    playNoticeSound,
+    {
+      capture: true,
+      passive: true
+    }
+  );
+
+});
+
+/* STOP AUDIO WHEN LEAVING PAGE */
+
+window.addEventListener(
+  "pagehide",
+  stopNoticeSound
+);
 function renderNoticeReadState() {
+
   const button = document.getElementById("notifButton");
   const dot = document.getElementById("notifDot");
 
   const data = latestNoticeData;
 
   if (button) {
+
     button.dataset.message = data?.message || "";
-    button.dataset.timestamp = String(data?.timestamp || 0);
+
+    button.dataset.timestamp =
+      String(data?.timestamp || 0);
+
   }
 
   const isUnread =
@@ -7874,16 +8013,45 @@ function renderNoticeReadState() {
     !!data?.message &&
     Number(data.timestamp) > noticeReadTimestamp;
 
+  /* NOTICE - HEADER BADGE */
+
   if (dot) {
-    dot.style.display = isUnread ? "flex" : "none";
-    dot.textContent = isUnread ? "1" : "";
+
+    dot.style.display =
+      isUnread ? "flex" : "none";
+
+    dot.textContent =
+      isUnread ? "1" : "";
+
+    dot.classList.toggle(
+      "notice-unread-blink",
+      isUnread
+    );
+
   }
 
+  /* NOTICE - MOBILE BADGE */
+
   syncMenuNotifDot();
+
+  /* NOTICE - FLOATING FAB BADGE */
 
   window.updateFloatingFabNoticeDot?.(
     isUnread ? 1 : 0
   );
+
+  /* NOTICE - SOUND CONTROL */
+
+  if (isUnread) {
+
+    startNoticeSound();
+
+  } else {
+
+    stopNoticeSound();
+
+  }
+
 }
 
 function stopNoticeReadListener() {
