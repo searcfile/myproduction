@@ -2059,6 +2059,21 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 let turnstileVerifiedUser = false;
+  /* ==========================================
+   LOGIN RATE LIMIT - COUNTDOWN STATE
+   ========================================== */
+
+let loginRateLimitTimer = null;
+
+let loginRateLimitUntil = Number(
+  sessionStorage.getItem(
+    "5g88.loginRateLimitUntil"
+  ) || 0
+);
+
+function isLoginRateLimited() {
+  return Date.now() < loginRateLimitUntil;
+}
 let turnstileVerifiedGoogle = false;
 let pending2FA = null;
 
@@ -2147,7 +2162,9 @@ window.onTurnstileSuccess = function(token){
   const btn = document.getElementById('btnUserpass');
 
   if (btn) {
-    btn.disabled = !turnstileVerifiedUser;
+    btn.disabled =
+      !turnstileVerifiedUser ||
+      isLoginRateLimited();
   }
 
   console.log("Turnstile USER success:", turnstileVerifiedUser);
@@ -2652,10 +2669,14 @@ function setLoading(state, which='both'){
     if (btnG) btnG.disabled = !!state;
   }
 
-  if (which === 'userpass' || which === 'both'){
-    if (btnU) btnU.disabled = !!state;
+if (which === 'userpass' || which === 'both'){
+  if (btnU) {
+    btnU.disabled =
+      !!state ||
+      !turnstileVerifiedUser ||
+      isLoginRateLimited();
   }
-
+}
   if (state) showLoginLoading();
   else hideLoginLoading();
 }
@@ -3099,14 +3120,116 @@ function setupTwofaInputs(){
   document.getElementById('twofaVerify')?.addEventListener('click', verifyTwofa);
   document.getElementById('twofaChange')?.addEventListener('click', closeTwofaPage);
 }
+/* ==========================================
+   LOGIN RATE LIMIT - LIVE COUNTDOWN
+   ========================================== */
+
+function renderLoginRateLimit() {
+  const seconds = Math.max(
+    0,
+    Math.ceil(
+      (loginRateLimitUntil - Date.now()) / 1000
+    )
+  );
+
+  const btn = document.getElementById("btnUserpass");
+
+  if (seconds > 0) {
+    showLoginError(
+      "password",
+      `Too many login attempts. Please try again in ${seconds}s.`,
+      false
+    );
+
+    if (btn) btn.disabled = true;
+
+    return;
+  }
+
+  clearInterval(loginRateLimitTimer);
+  loginRateLimitTimer = null;
+  loginRateLimitUntil = 0;
+
+  sessionStorage.removeItem(
+    "5g88.loginRateLimitUntil"
+  );
+
+  clearLoginErrors();
+
+  if (btn) {
+    btn.disabled = !turnstileVerifiedUser;
+  }
+}
+
+function startLoginRateLimit(seconds) {
+  if (!isLoginRateLimited()) {
+    loginRateLimitUntil =
+      Date.now() + Math.max(1, seconds) * 1000;
+
+    sessionStorage.setItem(
+      "5g88.loginRateLimitUntil",
+      String(loginRateLimitUntil)
+    );
+  }
+
+  clearInterval(loginRateLimitTimer);
+
+  loginRateLimitTimer = setInterval(
+    renderLoginRateLimit,
+    250
+  );
+
+  renderLoginRateLimit();
+}
+
+/* RESTORE COUNTDOWN AFTER REFRESH */
+
+function restoreLoginRateLimit() {
+  if (isLoginRateLimited()) {
+    startLoginRateLimit(
+      Math.ceil(
+        (loginRateLimitUntil - Date.now()) / 1000
+      )
+    );
+  } else {
+    sessionStorage.removeItem(
+      "5g88.loginRateLimitUntil"
+    );
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    restoreLoginRateLimit,
+    { once: true }
+  );
+} else {
+  restoreLoginRateLimit();
+}
+
+/* KEEP COUNTDOWN WHILE TYPING */
+
 ["username", "password"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", () => {
+
+    if (isLoginRateLimited()) {
+      renderLoginRateLimit();
+      return;
+    }
+
     clearLoginErrors();
   });
 });
+
 // --- LOGIN VIA REALTIME DB ---
 
 async function loginWithUsername() {
+
+  if (isLoginRateLimited()) {
+    renderLoginRateLimit();
+    return;
+  }
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
 
@@ -3156,10 +3279,25 @@ if (contentType.includes("application/json")) {
   });
 }
 
+/* ==========================================
+   LOGIN - HANDLE RATE LIMIT RESPONSE
+   ========================================== */
+
 if (response.status === 429) {
-  throw new Error(
-    "Too many login attempts. Please try again shortly."
+  const retryAfter = Number(data.retryAfter);
+
+  const seconds =
+    Number.isFinite(retryAfter) && retryAfter > 0
+      ? retryAfter
+      : 60;
+
+  startLoginRateLimit(seconds);
+
+  loginErrorToast(
+    `Too many login attempts. Please try again in ${seconds}s.`
   );
+
+  return;
 }
 
 if (!response.ok || !data.ok || !data.challenge) {
