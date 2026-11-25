@@ -40,7 +40,175 @@ const unreadCounts = {
   agent: 0,
   site: 0
 };
+/* ==========================================
+   AGENT SUPPORT - LIVECHAT AUDIO CONTROLLER
+   ========================================== */
 
+let agentSupportAudio = null;
+let agentSupportAudioPending = false;
+let agentSupportAudioUnlocked = false;
+
+function initAgentSupportAudio() {
+  if (agentSupportAudio) {
+    return agentSupportAudio;
+  }
+
+  agentSupportAudio = new Audio(
+    new URL("./audio.wav", location.href).href
+  );
+
+  agentSupportAudio.preload = "auto";
+  agentSupportAudio.loop = true;
+  agentSupportAudio.volume = 1;
+
+  return agentSupportAudio;
+}
+
+function isAgentSupportSoundAllowed() {
+  return (
+    canAccess("agent") &&
+    unreadCounts.agent > 0
+  );
+}
+
+function stopAgentSupportLoopSound() {
+  if (!agentSupportAudio) return;
+
+  agentSupportAudio.pause();
+
+  try {
+    agentSupportAudio.currentTime = 0;
+  } catch (_) {}
+}
+
+async function playAgentSupportLoopSound() {
+  if (!isAgentSupportSoundAllowed()) {
+    stopAgentSupportLoopSound();
+    return;
+  }
+
+  if (agentSupportAudioPending) return;
+
+  const audio = initAgentSupportAudio();
+
+  audio.loop = true;
+  audio.muted = false;
+  audio.volume = 1;
+
+  if (!audio.paused) return;
+
+  agentSupportAudioPending = true;
+
+  try {
+    await audio.play();
+
+    agentSupportAudioUnlocked = true;
+
+    if (!isAgentSupportSoundAllowed()) {
+      stopAgentSupportLoopSound();
+      return;
+    }
+
+    console.info("[Agent Support Audio] Playing");
+
+  } catch (error) {
+    console.warn(
+      "[Agent Support Audio] Playback blocked:",
+      error.name,
+      error.message
+    );
+
+  } finally {
+    agentSupportAudioPending = false;
+  }
+}
+
+function syncAgentSupportSound() {
+  if (isAgentSupportSoundAllowed()) {
+    playAgentSupportLoopSound();
+  } else {
+    stopAgentSupportLoopSound();
+  }
+}
+
+/* ==========================================
+   AGENT SUPPORT - SMART AUDIO UNLOCK
+   ========================================== */
+
+async function unlockAgentSupportAudio(event) {
+  if (!event.isTrusted) return;
+  if (!canAccess("agent")) return;
+
+  if (isAgentSupportSoundAllowed()) {
+    playAgentSupportLoopSound();
+    return;
+  }
+
+  if (
+    agentSupportAudioUnlocked ||
+    agentSupportAudioPending
+  ) return;
+
+  const audio = initAgentSupportAudio();
+
+  agentSupportAudioPending = true;
+
+  try {
+    audio.muted = false;
+    audio.volume = 0;
+
+    await audio.play();
+
+    agentSupportAudioUnlocked = true;
+
+    if (!isAgentSupportSoundAllowed()) {
+      stopAgentSupportLoopSound();
+    }
+
+    console.info("[Agent Support Audio] Unlocked");
+
+  } catch (error) {
+    console.warn(
+      "[Agent Support Audio] Unlock failed:",
+      error.name
+    );
+
+  } finally {
+    audio.volume = 1;
+    agentSupportAudioPending = false;
+
+    if (isAgentSupportSoundAllowed()) {
+      playAgentSupportLoopSound();
+    }
+  }
+}
+
+["pointerdown", "keydown", "click", "touchend"]
+  .forEach(eventName => {
+    document.addEventListener(
+      eventName,
+      unlockAgentSupportAudio,
+      {
+        capture: true,
+        passive: true
+      }
+    );
+  });
+
+/* Resume apabila kembali ke browser tab */
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    syncAgentSupportSound();
+  }
+});
+
+/* Stop apabila meninggalkan halaman utama */
+
+window.addEventListener(
+  "pagehide",
+  stopAgentSupportLoopSound
+);
 /* ==========================================
    FLOATING BUTTON - AUTO HIDE WHEN TAB OPEN
    ========================================== */
@@ -227,6 +395,12 @@ function startAnimation(inst) {
 
 
 function updateBadge(type) {
+
+  // Sync audio walaupun floating button tiada.
+  if (type === 'agent') {
+    syncAgentSupportSound();
+  }
+
   const inst = instances[type];
   if (!inst) return;
 
@@ -235,9 +409,16 @@ function updateBadge(type) {
 
   const count = Math.max(0, unreadCounts[type] || 0);
 
-  badge.textContent = count > 99 ? '99+' : String(count);
+  badge.textContent = count > 99
+    ? '99+'
+    : String(count);
 
   badge.hidden = count === 0 || !!inst.panel;
+
+  badge.classList.toggle(
+    'asf-badge-blinking',
+    type === 'agent' && count > 0
+  );
 }
 
 function closePanel(inst) {
