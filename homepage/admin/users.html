@@ -875,12 +875,17 @@
   overflow: visible !important;
 }
 
-/* DESKTOP - 4 COLUMNS */
+/* DESKTOP - 5 COLUMNS */
 #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
   display: grid !important;
+
   grid-template-columns:
-    repeat(3, minmax(0, 400px))
+    minmax(0, 400px)
+    minmax(0, 400px)
+    minmax(0, 200px)
+    minmax(0, 200px)
     minmax(max-content, 1fr);
+
   align-items: center !important;
   gap: 8px !important;
   width: 100% !important;
@@ -889,10 +894,12 @@
   padding: 0 !important;
 }
 
+
 /* ALL FILTERS */
 #manageUsersPane .auth-top-toolbar > .auth-search-holder,
 #manageUsersPane .auth-top-toolbar > .auth-date-filter,
-#manageUsersPane .auth-top-toolbar > .auth-status-filter {
+#manageUsersPane .auth-top-toolbar > .auth-status-filter,
+#manageUsersPane .auth-top-toolbar > .auth-role-filter {
   width: 100% !important;
   max-width: none !important;
   min-width: 0 !important;
@@ -933,7 +940,26 @@
 #manageUsersPane .auth-status-filter .shared-chip-dropdown-panel {
   z-index: 1000 !important;
 }
+/* ==========================================
+   AUTH USERS - CUSTOM ROLE DROPDOWN
+   ========================================== */
 
+#manageUsersPane .auth-role-filter {
+  position: relative;
+  z-index: 20;
+  min-width: 0;
+}
+
+#manageUsersPane .auth-role-filter #roleFilterChips,
+#manageUsersPane .auth-role-filter .shared-chip-dropdown,
+#manageUsersPane .auth-role-filter .shared-chip-dropdown-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#manageUsersPane .auth-role-filter .shared-chip-dropdown-panel {
+  z-index: 1000 !important;
+}
 /* ACTION BUTTONS */
 #manageUsersPane .auth-toolbar-actions {
   display: flex !important;
@@ -984,33 +1010,50 @@
 
 /* MEDIUM DESKTOP */
 @media (min-width: 1101px) and (max-width: 1450px) {
+
   #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
     grid-template-columns:
-      repeat(3, minmax(0, 1fr))
+      minmax(0, 400px)
+      minmax(0, 400px)
+      minmax(0, 200px)
+      minmax(0, 200px)
       max-content;
   }
+
 }
 
-/* TABLET / PHONE / BROWSER ZOOM */
-@media (max-width: 1100px) {
+/* TABLET / BROWSER ZOOM */
+@media (min-width: 621px) and (max-width: 1100px) {
+
   #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px !important;
   }
 
-  #manageUsersPane .auth-top-toolbar > .auth-search-holder,
-  #manageUsersPane .auth-top-toolbar > .auth-date-filter,
-  #manageUsersPane .auth-top-toolbar > .auth-status-filter {
+  #manageUsersPane .auth-toolbar-actions {
+    grid-column: 1 / -1;
     width: 100% !important;
-    max-width: none !important;
+    justify-content: flex-end !important;
+  }
+
+}
+
+/* PHONE */
+@media (max-width: 620px) {
+
+  #manageUsersPane .auth-toolbar-card .auth-top-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px !important;
   }
 
   #manageUsersPane .auth-toolbar-actions {
     width: 100% !important;
     justify-content: flex-end !important;
   }
-}
 
+}
 /* SMALL PHONE */
 @media (max-width: 380px) {
   #manageUsersPane .auth-toolbar-actions {
@@ -3441,6 +3484,10 @@ body.light-theme #createRoleHint {
 <div class="auth-status-filter">
   <div id="statusFilterChips"></div>
 </div>
+<!-- AUTH USERS - CUSTOM ROLE FILTER -->
+<div class="auth-role-filter">
+  <div id="roleFilterChips"></div>
+</div>
 <!-- AUTH USERS - ACTION BUTTONS -->
 <div class="auth-toolbar-actions">
 
@@ -4153,6 +4200,47 @@ render();
     }
   }
 );
+
+    /* ==========================================
+   AUTH USERS - ROLE FILTER
+   ========================================== */
+
+let selectedRoles = [];
+
+const roleFilter = NewUI.chips(
+  '#roleFilterChips',
+  {
+    placeholder: 'All Roles',
+
+    options: [
+      {
+        value: 'superadmin',
+        label: 'Super Admin'
+      },
+      {
+        value: 'siteadmin',
+        label: 'Site Admin'
+      }
+    ],
+
+    value: [],
+
+    onChange(values) {
+
+      selectedRoles = Array.isArray(values)
+        ? values
+        : roleFilter.getValue();
+
+      // Reset pagination ke halaman pertama
+      authCurrentPage = 1;
+
+      // Render semula table
+      render();
+
+    }
+  }
+);
+    
 function status(msg, error = false) {
   if (error) {
     console.error('[Auth Users]', msg);
@@ -5672,7 +5760,12 @@ function render(){
       u.enabled ? 'active' : 'inactive'
     );
 
-
+// Filter role Super Admin / Site Admin
+const matchRole =
+  selectedRoles.length === 0 ||
+  selectedRoles.includes(
+    String(u.role || '').trim().toLowerCase()
+  );
   // Filter by account registration date
   const rawCreatedAt = u.createdAt;
 
@@ -5711,7 +5804,12 @@ function render(){
         (!authDateStart || createdDay >= authDateStart) &&
         (!authDateEnd || createdDay <= authDateEnd);
 
-  return matchSearch && matchStatus && matchDate;
+ return (
+  matchSearch &&
+  matchStatus &&
+  matchRole &&
+  matchDate
+);
 
 }).sort((a, b) => {
   const getTime = user => {
