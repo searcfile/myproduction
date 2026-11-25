@@ -428,7 +428,7 @@ function getLoginRateLimitKey(username) {
 
 const loginPasswordLimiter = rateLimit({
   windowMs: 15_000,
-  limit: 12,
+  limit: 5,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
 
@@ -460,6 +460,24 @@ if (!r.ok) {
   console.warn("[FIREBASE LOGIN ERROR]", {
     status: r.status,
     code: String(data?.error?.message || "UNKNOWN").split(" : ")[0]
+  });
+}
+   /* ==========================================
+   FIREBASE LOGIN - SECURITY RATE LIMIT
+   ========================================== */
+
+const firebaseErrorCode = String(
+  data?.error?.message || ""
+).split(" : ")[0].trim();
+
+if (
+  !r.ok &&
+  firebaseErrorCode === "TOO_MANY_ATTEMPTS_TRY_LATER"
+) {
+  return res.status(429).json({
+    ok: false,
+    code: "FIREBASE_RATE_LIMIT",
+    message: "Login temporarily restricted. Please try again later."
   });
 }
 if (!r.ok || data.localId !== idx.uid) {
