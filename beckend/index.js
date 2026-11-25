@@ -427,7 +427,7 @@ function getLoginRateLimitKey(username) {
 }
 
 const loginPasswordLimiter = rateLimit({
-  windowMs: 60_000,
+  windowMs: 15_000,
   limit: 12,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
