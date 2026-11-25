@@ -1381,7 +1381,7 @@ const SUPERADMIN_ONLY_PAGES = new Set([
   "site-management.html",
   "admin-users.html",
   "livechat-support.html",
-  "notice.html"
+  "notice.html",
   "config.html",
   "users-history.html"
 ]);
