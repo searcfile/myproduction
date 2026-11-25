@@ -4130,6 +4130,19 @@ function canManageSupportUser(u) {
   );
 }
 /* ==========================================
+   AUTH USERS - MANAGE ACCOUNT ACCESS
+   ========================================== */
+
+function canManageAccount(u) {
+  return Boolean(
+    u &&
+    (
+      u.role === 'siteadmin' ||
+      canManageSupportUser(u)
+    )
+  );
+}
+/* ==========================================
    AUTH USERS - ACCOUNT CREATION NUMBER
    ========================================== */
 
@@ -4863,13 +4876,14 @@ shell.innerHTML = `
       Profile
     </button>
 
-    <button type="button"
-            class="auth-unified-tab"
-            role="tab"
-            aria-selected="false"
-            data-view="permissions">
-      Edit Permissions
-    </button>
+<button type="button"
+        class="auth-unified-tab"
+        role="tab"
+        aria-selected="false"
+        data-view="permissions"
+        ${u.role === 'superadmin' ? 'disabled' : ''}>
+  Edit Permissions
+</button>
 
     <button type="button"
             class="auth-unified-tab"
@@ -4895,6 +4909,16 @@ shell.innerHTML = `
     shell.querySelector('#authManagePane').append(form);
 
 const switchView = async view => {
+
+  /* SUPER ADMIN - NO SITE PERMISSIONS */
+
+  if (
+    view === 'permissions' &&
+    u.role !== 'siteadmin'
+  ) {
+    return;
+  }
+
   const managePane = shell.querySelector('#authManagePane');
   const permissionPane = shell.querySelector('#authPermissionPane');
   const riskPane = shell.querySelector('#authRiskPane');
@@ -4931,7 +4955,10 @@ const playerSiteIds = Array.isArray(u.siteIds)
   ? u.siteIds.filter(Boolean)
   : [];
 
-const playerSiteLabel = playerSiteIds.join(', ');
+const playerSiteLabel =
+  u.role === 'superadmin'
+    ? 'Super Admin'
+    : playerSiteIds.join(', ');
 
 const playerTitle = document.createElement('div');
 playerTitle.className = 'auth-player-modal-title';
@@ -5011,11 +5038,16 @@ function closeModal(){if(formModal)formModal.close();}
 let resetPasswordModal = null;
 
 function openUserResetPassword() {
+
   if (!editing?.uid) {
     toast('Please select a user first.', 'error');
     return;
   }
 
+  if (!canManageAccount(editing)) {
+    toast('This account is protected.', 'error');
+    return;
+  }
   if (resetPasswordModal) return;
 
   if (!window.NewUI?.modal?.open) {
@@ -5963,7 +5995,7 @@ cell(
 
     const td=document.createElement('td'),wrap=document.createElement('div');wrap.className='actions-cell';
 
-if (u.role === 'siteadmin') {
+if (canManageAccount(u)) {
   tr.classList.add('auth-clickable');
   tr.tabIndex = 0;
 
@@ -6027,87 +6059,9 @@ authIconButton(
   )
 );
 
-
-}
-    /* ==========================================
-   ACTION - ADDITIONAL SUPER ADMIN
-   ========================================== */
-
-else if (canManageSupportUser(u)) {
-
-  const statusBtn = document.createElement('button');
-
-  statusBtn.type = 'button';
-
-  statusBtn.className =
-    'auth-icon-btn auth-support-status ' +
-    (u.enabled ? 'is-active' : 'is-inactive');
-
-  statusBtn.title = u.enabled
-    ? 'Deactivate ' + u.username
-    : 'Activate ' + u.username;
-
-  statusBtn.setAttribute(
-    'aria-label',
-    statusBtn.title
-  );
-
-  statusBtn.innerHTML = `
-    <svg
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M12 2v10"/>
-      <path d="M18.36 6.64a9 9 0 1 1-12.72 0"/>
-    </svg>
-  `;
-
-  statusBtn.addEventListener('click', e => {
-    e.stopPropagation();
-
-    toggleSupportStatus(
-      u,
-      e.currentTarget
-    );
-  });
-
-  wrap.append(
-
-    statusBtn,
-
-    authIconButton(
-      'logout',
-      'auth-kick',
-      e => {
-        e.stopPropagation();
-        forceLogoutUser(u, e.currentTarget);
-      },
-      'Logout ' + u.username
-    ),
-
-    authIconButton(
-      'delete',
-      'auth-delete',
-      e => {
-        e.stopPropagation();
-        removeUser(u, e.currentTarget);
-      },
-      'Delete ' + u.username
-    )
-
-  );
-
-}
-
 /* PROTECTED ACCOUNTS */
 
-else {
+}else {
 
   const protectedLabel =
     document.createElement('span');
@@ -6337,7 +6291,7 @@ function destroyPermissionChips(){for(const a of [siteChipApi,availableChipApi,g
 let authOpeningAccount = false;
 
 async function openAccount(u) {
-  if (u.role !== 'siteadmin') return;
+  if (!canManageAccount(u)) return;
   if (authOpeningAccount) return;
 
   authOpeningAccount = true;
@@ -6768,6 +6722,7 @@ syncPermissionAllowAll();
 syncPermissionAllowAll();
 }
 async function openPermissionEditor(u,container){
+      if (!u || u.role !== 'siteadmin') return;
  if(!window.NewUI?.chips||!window.NewUI?.modal?.open){toast('Custom components unavailable','error');return}
  permissionUser=u;destroyPermissionChips();
  const root=document.createElement('form');root.className='auth-permission-form';root.id='permissionProfileForm';
@@ -6996,8 +6951,29 @@ function refreshPlayerSite(u) {
   const wrap = $('playerSiteWrap');
   if (!wrap) return;
 
-  wrap.hidden = u?.role !== 'siteadmin';
-  if (wrap.hidden) return;
+  const isSiteAdmin = u?.role === 'siteadmin';
+
+  wrap.hidden = !isSiteAdmin;
+
+  wrap.querySelectorAll('input, select, textarea, button')
+    .forEach(element => {
+      element.disabled = !isSiteAdmin;
+    });
+
+  if (!isSiteAdmin) {
+
+    $('playerSiteEnabled').checked = false;
+
+    $('playerSiteName').value = '';
+    $('playerSiteId').value = '';
+    $('playerSiteWallet').value = '';
+    $('playerSiteCreated').value = '';
+    $('playerSiteEdited').value = '';
+
+    updatePlayerSiteSwitch();
+
+    return;
+  }
 
   const id = String(u.username || '').trim().toLowerCase();
   const site = findUserSite(u);
@@ -7132,6 +7108,9 @@ function create() {
 }
 
 function manage(u, options = {}) {
+
+  if (!canManageAccount(u)) return;
+
   editing = u;
   $('modalFields').classList.add('is-editing');
   $('userForm').reset();
@@ -7467,6 +7446,11 @@ $('userForm').addEventListener('submit',async e=>{
     if(pin&&!/^[0-9]{6}$/.test(pin))throw Error('PIN must contain exactly 6 digits');
 
 if (editing) {
+
+  if (!canManageAccount(editing)) {
+    throw Error('This account is protected');
+  }
+
   const body = {
     enabled: $('enabled').checked,
     remark: $('playerRemark').value.trim()
@@ -7488,7 +7472,11 @@ if (editing) {
       body: JSON.stringify(body)
     }
   );
+/* SAVE SITE - SITE ADMIN ONLY */
+
+if (editing.role === 'siteadmin') {
   await savePlayerSite(editing);
+}
 }
 else {
   if (!password || !pin) {
