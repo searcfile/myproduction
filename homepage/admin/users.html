@@ -3375,6 +3375,46 @@ td:nth-child(2)::after {
   margin-left: auto !important;
   margin-right: auto !important;
 }
+    /* ==========================================
+   CREATE USERNAME - ADMIN ROLE
+   ========================================== */
+
+#createRoleWrap[hidden],
+#createRoleHint[hidden] {
+  display: none !important;
+}
+
+#createRoleWrap {
+  width: 100%;
+  min-width: 0;
+}
+
+#createRole {
+  width: 100%;
+}
+
+#createRoleHint {
+  margin-top: 8px;
+  padding: 10px 12px;
+
+  border: 1px solid rgba(250, 173, 20, 0.25);
+  border-radius: 8px;
+
+  background: rgba(250, 173, 20, 0.08);
+  color: #d89614;
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+body.light-theme #createRoleHint {
+  color: #ad6800;
+  background: rgba(250, 173, 20, 0.06);
+}
+
+#modalFields.is-editing #createRoleWrap {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -3890,7 +3930,31 @@ td:nth-child(2)::after {
   </section>
 
 </div>
+<!-- CREATE USERNAME - ADMIN ROLE -->
 
+<div class="field full" id="createRoleWrap" hidden>
+  <label for="createRole">Role</label>
+
+  <select
+    id="createRole"
+    data-shared-dropdown
+    data-placeholder="Select role"
+    aria-label="Admin role"
+  >
+    <option value="siteadmin" selected>
+      Site Admin
+    </option>
+
+    <option value="superadmin">
+      Super Admin
+    </option>
+  </select>
+
+  <div class="hint" id="createRoleHint" hidden>
+    This account will have full Super Admin access.
+    Site assignment is not required.
+  </div>
+</div>
 <div class="field full" id="usernameWrap">
   <label for="username">Username</label>
   <input
@@ -3959,7 +4023,9 @@ td:nth-child(2)::after {
 const BACKEND='https://fiveg88-admin-backend-v2.onrender.com';
 const $=id=>document.getElementById(id);
 let users=[],editing=null,ready=false,formModal=null,loading=false,sites=[],permissionModal=null,accountModal=null;
+/* CREATE USERNAME - ROLE CAPABILITIES */
 
+let canCreateSuperAdmin = false;
 /* ==========================================
    AUTH USERS - ACCOUNT CREATION NUMBER
    ========================================== */
@@ -5110,8 +5176,38 @@ async function check(){
   if(token.claims.secondVerified!==true||!Number.isSafeInteger(token.claims.pinVersion)){
     status('Please complete 2nd password verification.',true);return false;
   }
-  try{await api('/api/admin-users');return true}
-  catch(error){status('Superadmin verification failed: '+error.message,true);return false;}
+try {
+  await api('/api/admin-users');
+
+  canCreateSuperAdmin = false;
+
+  try {
+    const capabilities = await api(
+      '/api/admin-users/create-capabilities'
+    );
+
+    canCreateSuperAdmin =
+      capabilities.canCreateSuperAdmin === true;
+
+  } catch (error) {
+    console.warn(
+      '[Create Role] Cannot load capabilities:',
+      error.message
+    );
+  }
+
+  return true;
+
+} catch (error) {
+  canCreateSuperAdmin = false;
+
+  status(
+    'Superadmin verification failed: ' + error.message,
+    true
+  );
+
+  return false;
+}
 }
 function cell(tr,value,cls=''){const td=document.createElement('td');td.textContent=String(value??'-');if(cls)td.className=cls;tr.append(td);return td;}
 function btn(label,cls,fn,title=''){const b=document.createElement('button');b.type='button';b.className='auth-mini-btn '+cls;b.textContent=label;if(title)b.title=title;b.addEventListener('click',fn);return b;}
@@ -6699,11 +6795,55 @@ if (!siteName) {
   await api('/api/sites/'+encodeURIComponent(existing.id),{method:'PATCH',body:JSON.stringify({name:siteName,walletGroupId,active})});
  }
 }
+    /* ==========================================
+   CREATE USERNAME - ROLE DROPDOWN
+   ========================================== */
+
+function syncCreateRole() {
+  const select = $('createRole');
+
+  if (!select) return;
+
+  if (
+    select.value === 'superadmin' &&
+    !canCreateSuperAdmin
+  ) {
+    select.value = 'siteadmin';
+  }
+
+  const isSuperAdmin =
+    !editing &&
+    canCreateSuperAdmin &&
+    select.value === 'superadmin';
+
+  $('createRoleHint').hidden = !isSuperAdmin;
+
+  if (!editing) {
+    $('save').textContent = isSuperAdmin
+      ? 'Create Super Admin'
+      : 'Create Username';
+  }
+}
+
+function prepareCreateRole() {
+  const select = $('createRole');
+
+  select.value = 'siteadmin';
+
+  select.disabled = !canCreateSuperAdmin;
+
+  $('createRoleWrap').hidden = false;
+  $('createRoleHint').hidden = true;
+
+  syncCreateRole();
+}
 function create() {
   editing = null;
   $('modalFields').classList.remove('is-editing');
   $('userForm').reset();
-  
+    
+  prepareCreateRole();
+    
   $('playerRemark').value = '';
   $('playerSiteWrap').hidden = true;
 
@@ -6733,7 +6873,11 @@ function manage(u, options = {}) {
   editing = u;
   $('modalFields').classList.add('is-editing');
   $('userForm').reset();
-
+    
+  $('createRoleWrap').hidden = true;
+  $('createRoleHint').hidden = true;
+  $('createRole').value = 'siteadmin';
+    
   $('resetPasswordWrap').hidden = false;
   $('uidWrap').hidden = false;
 
@@ -6947,13 +7091,39 @@ if (editing) {
   );
   await savePlayerSite(editing);
 }
-else{
-      if(!password||!pin)throw Error('Password and PIN required');
-      await api('/api/admin-users',{method:'POST',body:JSON.stringify({
-        username:$('username').value.trim().toLowerCase(),password,secondPassword:pin,
-        enabled:$('enabled').checked,siteIds:[]
-      })});
-    }
+else {
+  if (!password || !pin) {
+    throw Error('Password and PIN required');
+  }
+
+  const role = $('createRole').value;
+
+  if (!['siteadmin', 'superadmin'].includes(role)) {
+    throw Error('Invalid admin role');
+  }
+
+  if (
+    role === 'superadmin' &&
+    !canCreateSuperAdmin
+  ) {
+    throw Error(
+      'Only Primary Super Admin can create Super Admin accounts'
+    );
+  }
+
+  await api('/api/admin-users', {
+    method: 'POST',
+
+    body: JSON.stringify({
+      username: $('username').value.trim().toLowerCase(),
+      password,
+      secondPassword: pin,
+      enabled: $('enabled').checked,
+      role,
+      siteIds: []
+    })
+  });
+}
     await NewUI.setButtonLoading(save,false,{minDuration:850});
 
 await load();
@@ -6978,9 +7148,15 @@ if (wasEdit) {
 
   toast('Account updated successfully.');
 } else {
-  // Create Username masih tutup modal seperti biasa.
+  const createdRole = $('createRole').value;
+
   closeModal();
-  toast('Username created successfully.');
+
+  toast(
+    createdRole === 'superadmin'
+      ? 'Super Admin created successfully.'
+      : 'Username created successfully.'
+  );
 }
 
 }catch(err){toast('Save failed: '+err.message,'error')}
@@ -6991,6 +7167,12 @@ searchInput.addEventListener('input', () => {
   render();
 });
 $('create').addEventListener('click',create);
+/* CREATE USERNAME - ROLE CHANGE */
+
+$('createRole').addEventListener(
+  'change',
+  syncCreateRole
+);
 /* LOGOUT ALL BUTTON */
 
 $('logoutAllUsers').addEventListener('click', e => {
