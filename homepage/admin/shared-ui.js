@@ -7887,47 +7887,90 @@ let noticeReadTimestamp = 0;
 let noticeReadReady = false;
 let latestNoticeData = null;
 /* ==========================================
-   NOTICE - NOTIFICATION SOUND SYSTEM
+   NOTICE - NOTIFICATION SOUND SYSTEM V2
 ========================================== */
 
-let noticeSoundTimer = null;
 let noticeSoundUnread = false;
+let noticeLoopAudio = null;
+let noticeSoundTimer = null;
 
-const NOTICE_SOUND_INTERVAL = 5000;
-const NOTICE_SOUND_VOLUME = 0.7;
+function initNoticeLoopAudio() {
 
-function playNoticeSound() {
+  if (noticeLoopAudio) return noticeLoopAudio;
 
-  // Jangan mainkan sound dari dalam iframe.
-  if (window.self !== window.top) return;
+  const existing =
+    document.getElementById("noticeSound");
 
-  if (!noticeSoundUnread) return;
+  noticeLoopAudio =
+    existing || new Audio("./notice.mp3");
+
+  noticeLoopAudio.preload = "auto";
+  noticeLoopAudio.loop = true;
+  noticeLoopAudio.muted = false;
+  noticeLoopAudio.volume = 1;
+
+  return noticeLoopAudio;
+
+}
+
+function isNoticeSoundAllowed() {
+
+  if (window.self !== window.top) return false;
+
+  if (!noticeSoundUnread) return false;
 
   const user = firebase.auth().currentUser;
 
-  if (
-    !user ||
-    user.isAnonymous ||
-    noticeReadUid !== user.uid ||
-    sessionStorage.getItem("5g88.adminSession") !== user.uid ||
-    Number(sessionStorage.getItem("autoLogout.expireAt")) <= Date.now() ||
-    !Number.isFinite(Number(sessionStorage.getItem("autoLogout.expireAt")))
-  ) {
-    stopNoticeSound();
-    return;
-  }
+  const expireAt = Number(
+    sessionStorage.getItem("autoLogout.expireAt")
+  );
 
-  const audio = document.getElementById("noticeSound");
+  return !!(
+    user &&
+    !user.isAnonymous &&
+    noticeReadReady &&
+    noticeReadUid === user.uid &&
+    sessionStorage.getItem("5g88.adminSession") === user.uid &&
+    Number.isFinite(expireAt) &&
+    expireAt > Date.now()
+  );
 
-  if (!audio || !audio.paused) return;
+}
 
-  audio.volume = NOTICE_SOUND_VOLUME;
-  audio.loop = false;
-  audio.currentTime = 0;
+function playNoticeSound() {
 
-  audio.play().catch(() => {
-    // Browser mungkin belum membenarkan autoplay.
-  });
+  if (!isNoticeSoundAllowed()) return;
+
+  const audio = initNoticeLoopAudio();
+
+  if (!audio) return;
+
+  audio.loop = true;
+  audio.muted = false;
+  audio.volume = 1;
+
+  if (!audio.paused) return;
+
+  audio.play()
+    .then(() => {
+
+      if (!isNoticeSoundAllowed()) {
+        stopNoticeSound();
+        return;
+      }
+
+      console.info("[Notice Audio] Playing");
+
+    })
+    .catch(error => {
+
+      console.warn(
+        "[Notice Audio] Playback failed:",
+        error.name,
+        error.message
+      );
+
+    });
 
 }
 
@@ -7937,15 +7980,16 @@ function startNoticeSound() {
 
   noticeSoundUnread = true;
 
-  // Elakkan duplicate interval.
-  if (noticeSoundTimer !== null) return;
-
   playNoticeSound();
 
-  noticeSoundTimer = setInterval(
-    playNoticeSound,
-    NOTICE_SOUND_INTERVAL
-  );
+  if (noticeSoundTimer === null) {
+
+    noticeSoundTimer = setInterval(
+      playNoticeSound,
+      3000
+    );
+
+  }
 
 }
 
@@ -7960,20 +8004,23 @@ function stopNoticeSound() {
 
   }
 
-  const audio = document.getElementById("noticeSound");
+  const audio =
+    noticeLoopAudio ||
+    document.getElementById("noticeSound");
 
-  if (audio) {
+  if (!audio) return;
 
-    audio.pause();
+  audio.pause();
+
+  try {
     audio.currentTime = 0;
-
-  }
+  } catch (_) {}
 
 }
 
 /* NOTICE - BROWSER AUDIO UNLOCK */
 
-["pointerdown", "keydown"].forEach(eventName => {
+["pointerdown", "keydown", "click"].forEach(eventName => {
 
   document.addEventListener(
     eventName,
@@ -7986,7 +8033,19 @@ function stopNoticeSound() {
 
 });
 
-/* STOP AUDIO WHEN LEAVING PAGE */
+/* NOTICE - RESUME WHEN RETURNING TO TAB */
+
+document.addEventListener("visibilitychange", () => {
+
+  if (!document.hidden) {
+
+    playNoticeSound();
+
+  }
+
+});
+
+/* NOTICE - STOP WHEN LEAVING PAGE */
 
 window.addEventListener(
   "pagehide",
