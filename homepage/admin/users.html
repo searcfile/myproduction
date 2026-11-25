@@ -404,6 +404,15 @@
 .auth-uid-inline{display:flex;align-items:center;gap:8px;min-width:0}
 .auth-uid-inline .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;color:#8cb7ff;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .auth-role-cell{text-transform:capitalize}
+    /* ==========================================
+   AUTH USERS - STATUS COLUMN CENTER
+   ========================================== */
+
+.auth-list .auth-table thead th:nth-child(6),
+.auth-list .auth-table tbody td:nth-child(6) {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
 .auth-status{
     display:inline-flex;
              align-items:center;
@@ -413,7 +422,7 @@
              border-radius:6px;
              padding:4px 10px;
              white-space:nowrap;    
-             min-width: 75px;
+             min-width: 50px;
              border:1px solid transparent;
     height: 25px;
             }
