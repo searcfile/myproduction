@@ -871,7 +871,22 @@ app.get(
       if (!selected) {
         return fail(res, 404, 'User not found');
       }
+/* PROTECT SUPER ADMIN RISK ASSESSMENT */
 
+if (
+  selected.role !== 'siteadmin' &&
+  !canManageSupportAdmin(
+    req.admin,
+    uid,
+    selected
+  )
+) {
+  return fail(
+    res,
+    403,
+    'This account is protected'
+  );
+}
 
 
 const getIpHistory = profile => {
@@ -1398,11 +1413,35 @@ app.patch(
   }
 );
 app.patch('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
- const uid=req.params.uid;
- try{
-  const p=await adminProfile(uid);
-  if(!p||p.role!=='siteadmin')return fail(res,403,'Only Site Admin accounts may be modified here');
-  const updates={updatedAt:now()},authUpdates={};
+  const uid = req.params.uid;
+
+  try {
+
+    const p = await adminProfile(uid);
+
+    /* ==========================================
+       SITE ADMIN + MANAGED SUPPORT ADMIN
+       ========================================== */
+
+    if (
+      !p ||
+      (
+        p.role !== 'siteadmin' &&
+        !canManageSupportAdmin(req.admin, uid, p)
+      )
+    ) {
+      return fail(
+        res,
+        403,
+        'This account is protected'
+      );
+    }
+
+    const updates = {
+      updatedAt: now()
+    };
+
+    const authUpdates = {};
           
 /* ==========================================
    PLAYER INFO - SAVE REMARK
@@ -1439,10 +1478,59 @@ if (!passwordOK(req.body.password)) {
   if(Object.hasOwn(req.body,'secondPassword')){
    if(!pinOK(String(req.body.secondPassword)))return fail(res,400,'PIN must be exactly 6 digits');
   }
-  if(Object.keys(authUpdates).length)await auth.updateUser(uid,authUpdates);
-  await db.ref(`adminUsers/${uid}`).update(updates);
-  if(Object.hasOwn(req.body,'secondPassword'))await setPin(uid,String(req.body.secondPassword));
-  return res.json({ok:true,message:'Site Admin updated'});
+/* ==========================================
+   ACCOUNT UPDATE
+   ========================================== */
+
+if (Object.keys(authUpdates).length) {
+  await auth.updateUser(uid, authUpdates);
+}
+
+await db.ref(`adminUsers/${uid}`).update(updates);
+
+if (Object.hasOwn(req.body, 'secondPassword')) {
+  await setPin(
+    uid,
+    String(req.body.secondPassword)
+  );
+}
+
+/* ==========================================
+   SUPPORT ADMIN - INVALIDATE OLD SESSIONS
+   ========================================== */
+
+const shouldRevokeSupportSession =
+  p.role === 'superadmin' &&
+  (
+    req.body.enabled === false ||
+    Object.hasOwn(req.body, 'password') ||
+    Object.hasOwn(req.body, 'secondPassword')
+  );
+
+if (shouldRevokeSupportSession) {
+
+  const result = await db
+    .ref(`adminUsers/${uid}/forceLogoutVersion`)
+    .transaction(current =>
+      Number(current || 0) + 1
+    );
+
+  if (!result.committed) {
+    return fail(
+      res,
+      503,
+      'Account updated but session revocation failed'
+    );
+  }
+
+  await auth.revokeRefreshTokens(uid);
+
+}
+
+return res.json({
+  ok: true,
+  message: 'Account updated successfully'
+});
  }catch(e){console.error('Update user',e.message);return fail(res,500,'Cannot update user');}
 });
 
