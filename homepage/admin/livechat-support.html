@@ -4248,7 +4248,23 @@ function seedUnreadFlagOnce(sid){
       });
   }).catch(()=>{});
 }
+/* ==========================================
+   LAST MESSAGE PREVIEW - TEXT & IMAGE
+   ========================================== */
 
+function getLastMessagePreview(m) {
+  if (!m) return "";
+
+  const hasImage =
+    !!m.image ||
+    (Array.isArray(m.images) && m.images.length > 0);
+
+  if (hasImage) {
+    return "Image";
+  }
+
+  return String(m.text ?? m.message ?? "").trim();
+}
 /* ======================= META LISTENER (REALTIME + AUTO FLAG UNREAD) ======================= */
 function ensureChatMetaListener(sanitized){
   if (chatMeta[sanitized]?.listening) return;
@@ -4264,9 +4280,9 @@ function ensureChatMetaListener(sanitized){
     const t = Number(m.time) || Date.now();
     chatMeta[sanitized].lastChatTime = t;
 
-    // Simpan preview mesej terbaru untuk senarai conversation
-    chatMeta[sanitized].lastMessageText =
-      String(m.text ?? m.message ?? "").trim();
+// Simpan preview mesej terbaru untuk senarai conversation
+chatMeta[sanitized].lastMessageText =
+  getLastMessagePreview(m);
 
     chatMeta[sanitized].lastMessageTime = t;
 
@@ -4375,9 +4391,9 @@ wasBooted &&
     const t = Number(m.time) || chatMeta[sanitized].lastChatTime || Date.now();
     chatMeta[sanitized].lastChatTime = t;
 
-    // Kemaskini preview jika mesej terakhir berubah
-    chatMeta[sanitized].lastMessageText =
-      String(m.text ?? m.message ?? "").trim();
+// Kemaskini preview jika mesej terakhir berubah
+chatMeta[sanitized].lastMessageText =
+  getLastMessagePreview(m);
 
     chatMeta[sanitized].lastMessageTime = t;
 
