@@ -4273,7 +4273,23 @@ render();
     /* ==========================================
    AUTH USERS - ROLE FILTER
    ========================================== */
+/* ==========================================
+   AUTH USERS - ROLE DISPLAY LABEL
+   ========================================== */
 
+function getUserRoleLabel(u) {
+
+  if (u?.role === 'superadmin') {
+
+    return String(u.username || '')
+      .trim().toLowerCase() === 'admin33'
+        ? 'Super Admin'
+        : 'Support';
+
+  }
+
+  return u?.role || '-';
+}
 let selectedRoles = [];
 
 const roleFilter = NewUI.chips(
@@ -4281,16 +4297,16 @@ const roleFilter = NewUI.chips(
   {
     placeholder: 'All Roles',
 
-    options: [
-      {
-        value: 'superadmin',
-        label: 'Super Admin'
-      },
-      {
-        value: 'siteadmin',
-        label: 'Site Admin'
-      }
-    ],
+options: [
+  {
+    value: 'superadmin',
+    label: 'Support'
+  },
+  {
+    value: 'siteadmin',
+    label: 'Site Admin'
+  }
+],
 
     value: [],
 
@@ -5837,8 +5853,19 @@ function render(){
 
   // Filter search username, UID dan role
   const linkedSite = findUserSite(u);
-  const matchSearch = [u.username,u.uid,u.role,linkedSite?.name,linkedSite?.id,linkedSite?.walletGroupId]
-    .filter(Boolean).join(' ').toLowerCase().includes(q);
+const matchSearch = [
+  u.username,
+  u.uid,
+  u.role,
+  getUserRoleLabel(u),
+  linkedSite?.name,
+  linkedSite?.id,
+  linkedSite?.walletGroupId
+]
+  .filter(Boolean)
+  .join(' ')
+  .toLowerCase()
+  .includes(q);
 
   // Filter status Active / Inactive
   const matchStatus =
@@ -5848,11 +5875,18 @@ function render(){
       u.enabled ? 'active' : 'inactive'
     );
 
-// Filter role Super Admin / Site Admin
+/* FILTER ROLE - SUPPORT / SITE ADMIN */
+
 const matchRole =
   selectedRoles.length === 0 ||
-  selectedRoles.includes(
-    String(u.role || '').trim().toLowerCase()
+  (
+    selectedRoles.includes('superadmin') &&
+    u.role === 'superadmin' &&
+    String(u.username || '').trim().toLowerCase() !== 'admin33'
+  ) ||
+  (
+    selectedRoles.includes('siteadmin') &&
+    u.role === 'siteadmin'
   );
   // Filter by account registration date
   const rawCreatedAt = u.createdAt;
@@ -5975,7 +6009,8 @@ tr.append(userTd);
     const code=document.createElement('span');code.className='mono';code.textContent=u.uid;
     uidWrap.append(code,btn('⧉','auth-copy',()=>copy(u.uid),'Copy UID'));uidTd.append(uidWrap);tr.append(uidTd);
     cell(tr, linkedSite?.walletGroupId || '-');
-    const roleTd=cell(tr,u.role);roleTd.className='auth-role-cell';
+    const roleTd = cell(tr, getUserRoleLabel(u));
+roleTd.className = 'auth-role-cell';
     const s=cell(tr,'');const statusBadge=document.createElement('span');statusBadge.className='auth-status '+(u.enabled?'is-active':'is-inactive');statusBadge.textContent=u.enabled?'Active':'Inactive';s.append(statusBadge);
     cell(tr,date(u.createdAt),'auth-date');
       
