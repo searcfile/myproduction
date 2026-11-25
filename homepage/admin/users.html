@@ -5825,7 +5825,10 @@ async function load() {
     const [d, siteResponse] = await Promise.all([
       api('/api/admin-users'),api('/api/sites')
     ]);
-    users = d.users || [];
+    /* AUTH USERS - EXCLUDE SUPER ADMIN */
+users = (d.users || []).filter(u =>
+  String(u.role || '').trim().toLowerCase() !== 'superadmin'
+);
     sites = normalizeSiteRecords(siteResponse);
     render();
 
