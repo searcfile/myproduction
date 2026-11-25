@@ -3891,8 +3891,12 @@ if (queued > 0) {
     return false;
   }
 }
-
 function beep() {
+
+  // Audio dikawal oleh dashboard utama
+  // apabila Agent Support berada dalam iframe.
+  if (window.self !== window.top) return;
+
   const a = document.getElementById("notifSound");
   if (!a) return;
 
