@@ -385,9 +385,16 @@ totalLoginCount: p.totalLoginCount ?? 0
   };
 }
 
-// Login: username+password checked server-side with Firebase Identity Toolkit.
-// Browser receives only a short-lived opaque challenge, never the Firebase first-factor token.
-app.post('/api/login/start',rateLimit({windowMs:15*60_000,limit:12}),async(req,res)=>{
+app.post('/api/login/start', rateLimit({
+  windowMs: 60_000,
+  limit: 12,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    ok: false,
+    message: 'Too many login attempts. Please try again shortly.'
+  }
+}), async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(), password=req.body?.password;
  if(!usernameOK(username)||typeof password!=='string')return fail(res,401,'Invalid credentials');
  try{
