@@ -40,7 +40,37 @@ app.use((req, res, next) => {
 const origins = process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim());
 app.use(cors({origin(origin,cb){ if(!origin || origins.includes(origin)) return cb(null,true); cb(new Error('Origin not allowed')); }, methods:['GET','POST','PATCH','DELETE'], allowedHeaders:['Content-Type','Authorization']}));
 app.use(express.json({limit:'1mb'}));
-app.use('/api',rateLimit({windowMs:60_000,limit:45,standardHeaders:'draft-8',legacyHeaders:false}));
+/* ==========================================
+   GLOBAL API - RATE LIMIT
+   ========================================== */
+
+function sendRateLimitResponse(req, res) {
+  const resetTime = req.rateLimit?.resetTime?.getTime();
+
+  const retryAfter = Math.max(
+    1,
+    Math.ceil(
+      ((resetTime || Date.now() + 60_000) - Date.now()) / 1000
+    )
+  );
+
+  res.setHeader('Retry-After', String(retryAfter));
+
+  return res.status(429).json({
+    ok: false,
+    code: 'RATE_LIMIT',
+    message: 'Too many login attempts.',
+    retryAfter
+  });
+}
+
+app.use('/api', rateLimit({
+  windowMs: 60_000,
+  limit: 45,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: sendRateLimitResponse
+}));
 app.get('/health',(req,res)=>res.json({ok:true,service:'5g88-admin-backend'}));
 const usernameOK = s => /^[a-z0-9._-]{3,40}$/.test(s);
 const pinOK = s => /^\d{6}$/.test(s);
@@ -385,16 +415,31 @@ totalLoginCount: p.totalLoginCount ?? 0
   };
 }
 
-app.post('/api/login/start', rateLimit({
+/* ==========================================
+   LOGIN PASSWORD - ACCOUNT RATE LIMIT
+   ========================================== */
+
+function getLoginRateLimitKey(username) {
+  return 'login:' + String(username || '')
+    .trim()
+    .toLowerCase()
+    .slice(0, 40);
+}
+
+const loginPasswordLimiter = rateLimit({
   windowMs: 60_000,
   limit: 12,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  message: {
-    ok: false,
-    message: 'Too many login attempts. Please try again shortly.'
-  }
-}), async(req,res)=>{
+
+  keyGenerator: (req) => {
+    return getLoginRateLimitKey(req.body?.username);
+  },
+
+  handler: sendRateLimitResponse
+});
+
+app.post('/api/login/start', loginPasswordLimiter, async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(), password=req.body?.password;
  if(!usernameOK(username)||typeof password!=='string')return fail(res,401,'Invalid credentials');
  try{
@@ -600,7 +645,22 @@ const customToken = await auth.createCustomToken(uid, {
   forceLogoutVersion: Number(current.forceLogoutVersion || 0)
 });
 
-  return res.json({ok:true,customToken});
+/* ==========================================
+   LOGIN SUCCESS - RESET PASSWORD RATE LIMIT
+   ========================================== */
+
+try {
+  await loginPasswordLimiter.resetKey(
+    getLoginRateLimitKey(current.username)
+  );
+} catch (resetError) {
+  console.error(
+    'Login rate limit reset error:',
+    resetError
+  );
+}
+
+return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
 });
 
