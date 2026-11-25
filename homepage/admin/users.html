@@ -4840,7 +4840,24 @@ if (options.riskMode) {
   }
   NewUI.init?.(form);
   NewUI.activeSwitch?.init?.(form);
+
+  /* CREATE USERNAME - SYNC DEFAULT ROLE */
+  if (!editing) {
+    const roleSelect = $('createRole');
+
+    roleSelect.value = 'siteadmin';
+
+    roleSelect._sharedDropdown?.setValue(
+      'siteadmin',
+      false
+    );
+
+    roleSelect._sharedDropdown?.refresh();
+
+    syncCreateRole();
+  }
 }
+
 function closeModal(){if(formModal)formModal.close();}
     
 /* ==========================================
@@ -5921,10 +5938,7 @@ async function load() {
     const [d, siteResponse] = await Promise.all([
       api('/api/admin-users'),api('/api/sites')
     ]);
-    /* AUTH USERS - EXCLUDE SUPER ADMIN */
-users = (d.users || []).filter(u =>
-  String(u.role || '').trim().toLowerCase() !== 'superadmin'
-);
+    users = d.users || [];
     sites = normalizeSiteRecords(siteResponse);
     render();
 
@@ -6828,12 +6842,18 @@ function syncCreateRole() {
 function prepareCreateRole() {
   const select = $('createRole');
 
+  // DEFAULT ROLE - SITE ADMIN
   select.value = 'siteadmin';
 
+  // Hanya Primary Super Admin boleh memilih role lain
   select.disabled = !canCreateSuperAdmin;
 
   $('createRoleWrap').hidden = false;
   $('createRoleHint').hidden = true;
+
+  // Sync custom dropdown
+  select._sharedDropdown?.setValue('siteadmin', false);
+  select._sharedDropdown?.refresh();
 
   syncCreateRole();
 }
