@@ -263,6 +263,26 @@ function isPrimarySuperAdmin(admin) {
   );
 }
 /* ==========================================
+   PRIMARY SUPER ADMIN - MANAGE SUPPORT
+   ========================================== */
+
+function canManageSupportAdmin(admin, uid, profile) {
+  const primaryUid = String(
+    process.env.PRIMARY_SUPERADMIN_UID || ''
+  ).trim();
+
+  return Boolean(
+    isPrimarySuperAdmin(admin) &&
+    primaryUid &&
+    uid &&
+    uid !== primaryUid &&
+    uid !== admin.uid &&
+    profile &&
+    profile.role === 'superadmin' &&
+    String(profile.username || '').toLowerCase() !== 'admin33'
+  );
+}
+/* ==========================================
    ADMIN - CREATE ROLE CAPABILITIES
    ========================================== */
 
@@ -1052,9 +1072,21 @@ app.post(
 
       const profile = await adminProfile(uid);
 
-      if (!profile || profile.role !== 'siteadmin') {
-        return fail(res, 403, 'Only Site Admin can be logged out');
-      }
+/* SITE ADMIN + MANAGED SUPPORT ADMIN */
+
+if (
+  !profile ||
+  (
+    profile.role !== 'siteadmin' &&
+    !canManageSupportAdmin(req.admin, uid, profile)
+  )
+) {
+  return fail(
+    res,
+    403,
+    'This account is protected'
+  );
+}
 
       // Naikkan versi sesi secara atomic.
       const versionRef = db.ref(
@@ -1267,6 +1299,104 @@ await db.ref(`adminUsers/${created.uid}`).set({
   }catch(e){if(created){await auth.deleteUser(created.uid).catch(()=>{});await db.ref(`adminUsers/${created.uid}`).remove().catch(()=>{});await db.ref(`privateSecondFactors/${created.uid}`).remove().catch(()=>{});}await indexRef.remove().catch(()=>{});throw e;}
  }catch(e){console.error('Create user',e.message);return fail(res,500,'Cannot create user; check email uniqueness and backend logs');}
 });
+/* ==========================================
+   PRIMARY SUPER ADMIN - SUPPORT STATUS
+   ========================================== */
+
+app.patch(
+  '/api/admin-users/:uid/support-status',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+      const uid = String(req.params.uid || '');
+      const profile = await adminProfile(uid);
+
+      if (!canManageSupportAdmin(
+        req.admin,
+        uid,
+        profile
+      )) {
+        return fail(
+          res,
+          403,
+          'This account is protected'
+        );
+      }
+
+      const enabled = req.body?.enabled;
+
+      if (typeof enabled !== 'boolean') {
+        return fail(
+          res,
+          400,
+          'enabled must be boolean'
+        );
+      }
+
+      const userRef = db.ref(`adminUsers/${uid}`);
+
+      if (!enabled) {
+
+        // Block access
+        await userRef.update({
+          active: false,
+          updatedAt: now()
+        });
+
+        // Invalidate existing sessions
+        await userRef
+          .child('forceLogoutVersion')
+          .transaction(current =>
+            Number(current || 0) + 1
+          );
+
+        await auth.updateUser(uid, {
+          disabled: true
+        });
+
+        await auth.revokeRefreshTokens(uid);
+
+      } else {
+
+        // Enable Firebase account
+        await auth.updateUser(uid, {
+          disabled: false
+        });
+
+        // Restore admin access
+        await userRef.update({
+          active: true,
+          updatedAt: now()
+        });
+
+      }
+
+      return res.json({
+        ok: true,
+        enabled,
+        message: enabled
+          ? 'Support account activated'
+          : 'Support account deactivated'
+      });
+
+    } catch (error) {
+
+      console.error(
+        '[SUPPORT ADMIN STATUS]',
+        error
+      );
+
+      return fail(
+        res,
+        500,
+        'Cannot update support account'
+      );
+
+    }
+  }
+);
 app.patch('/api/admin-users/:uid',requireAdmin,superOnly,async(req,res)=>{
  const uid=req.params.uid;
  try{
@@ -1328,9 +1458,103 @@ app.delete(
     try {
       const profile = await adminProfile(uid);
 
-      if (!profile || profile.role !== 'siteadmin') {
-        return fail(res, 403, 'Only Site Admin may be deleted');
-      }
+/* ==========================================
+   DELETE ADDITIONAL SUPER ADMIN
+   ========================================== */
+
+if (
+  !profile ||
+  uid === req.admin.uid ||
+  uid === String(
+    process.env.PRIMARY_SUPERADMIN_UID || ''
+  ).trim() ||
+  String(profile.username || '').toLowerCase() === 'admin33'
+) {
+  return fail(
+    res,
+    403,
+    'This account is protected'
+  );
+}
+
+if (profile.role === 'superadmin') {
+
+  if (!canManageSupportAdmin(
+    req.admin,
+    uid,
+    profile
+  )) {
+    return fail(
+      res,
+      403,
+      'Primary Super Admin only'
+    );
+  }
+
+  const supportUsername = String(
+    profile.username || ''
+  ).trim().toLowerCase();
+
+  if (!usernameOK(supportUsername)) {
+    return fail(
+      res,
+      409,
+      'Invalid username record'
+    );
+  }
+
+  const supportIndex = await db
+    .ref(`adminUsernameIndex/${supportUsername}`)
+    .once('value');
+
+  if (supportIndex.val()?.uid !== uid) {
+    return fail(
+      res,
+      409,
+      'Username index mismatch'
+    );
+  }
+
+  // Block access before deletion
+  await db.ref(`adminUsers/${uid}`).update({
+    active: false,
+    updatedAt: now()
+  });
+
+  // Permanently delete Firebase Auth account
+  try {
+    await auth.deleteUser(uid);
+  } catch (error) {
+    if (error.code !== 'auth/user-not-found') {
+      throw error;
+    }
+  }
+
+  // Remove account records only
+  await db.ref().update({
+    [`adminUsers/${uid}`]: null,
+    [`privateSecondFactors/${uid}`]: null,
+    [`adminUsernameIndex/${supportUsername}`]: null
+  });
+
+  return res.json({
+    ok: true,
+    deletedUsername: supportUsername,
+    deletedSite: null,
+    message: 'Support account deleted'
+  });
+
+}
+
+/* EXISTING SITE ADMIN DELETE */
+
+if (profile.role !== 'siteadmin') {
+  return fail(
+    res,
+    403,
+    'Invalid account role'
+  );
+}
 
       const username = String(profile.username || '')
         .trim()
