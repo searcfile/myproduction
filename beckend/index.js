@@ -419,6 +419,16 @@ totalLoginCount: p.totalLoginCount ?? 0
    LOGIN PASSWORD - ACCOUNT RATE LIMIT
    ========================================== */
 
+/* ==========================================
+   LOGIN PASSWORD - ACCOUNT COOLDOWN
+   ========================================== */
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_COOLDOWN_MS = 15_000;
+const LOGIN_ATTEMPT_EXPIRY_MS = 15 * 60_000;
+
+const loginPasswordAttempts = new Map();
+
 function getLoginRateLimitKey(username) {
   return 'login:' + String(username || '')
     .trim()
@@ -426,27 +436,134 @@ function getLoginRateLimitKey(username) {
     .slice(0, 40);
 }
 
-const loginPasswordLimiter = rateLimit({
-  windowMs: 15_000,
-  limit: 5,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
+function getLoginAttemptState(username) {
+  const key = getLoginRateLimitKey(username);
+  const timestamp = Date.now();
 
-  keyGenerator: (req) => {
-    return getLoginRateLimitKey(req.body?.username);
-  },
+  let state = loginPasswordAttempts.get(key);
 
-  handler: sendRateLimitResponse
-});
+  if (
+    !state ||
+    (state.lockedUntil > 0 &&
+      state.lockedUntil <= timestamp) ||
+    (state.lockedUntil === 0 &&
+      timestamp - state.updatedAt >= LOGIN_ATTEMPT_EXPIRY_MS)
+  ) {
+    state = {
+      attempts: 0,
+      lockedUntil: 0,
+      updatedAt: timestamp
+    };
+
+    loginPasswordAttempts.set(key, state);
+  }
+
+  return state;
+}
+
+/* SEND COOLDOWN RESPONSE */
+
+function sendLoginCooldown(res, state) {
+  const retryAfter = Math.max(
+    1,
+    Math.ceil(
+      (state.lockedUntil - Date.now()) / 1000
+    )
+  );
+
+  res.setHeader(
+    'Retry-After',
+    String(retryAfter)
+  );
+
+  return res.status(429).json({
+    ok: false,
+    code: 'LOGIN_RATE_LIMIT',
+    message: 'Too many login attempts.',
+    retryAfter,
+    resetAt: state.lockedUntil
+  });
+}
+
+/* CHECK ACTIVE COOLDOWN */
+
+function loginPasswordLimiter(req, res, next) {
+  const state = getLoginAttemptState(
+    req.body?.username
+  );
+
+  if (state.lockedUntil > Date.now()) {
+    return sendLoginCooldown(res, state);
+  }
+
+  return next();
+}
+
+/* REGISTER FAILED LOGIN */
+
+function registerFailedLogin(username, res) {
+  const state = getLoginAttemptState(username);
+
+  if (state.lockedUntil > Date.now()) {
+    return sendLoginCooldown(res, state);
+  }
+
+  state.attempts += 1;
+  state.updatedAt = Date.now();
+
+  if (state.attempts >= LOGIN_MAX_ATTEMPTS) {
+    state.lockedUntil =
+      Date.now() + LOGIN_COOLDOWN_MS;
+
+    return sendLoginCooldown(res, state);
+  }
+
+  return fail(res, 401, 'Invalid credentials');
+}
+
+/* RESET AFTER SUCCESSFUL LOGIN */
+
+function resetLoginPasswordAttempts(username) {
+  loginPasswordAttempts.delete(
+    getLoginRateLimitKey(username)
+  );
+}
+
+/* CLEANUP EXPIRED ATTEMPTS */
+
+setInterval(() => {
+  const timestamp = Date.now();
+
+  for (const [key, state] of loginPasswordAttempts) {
+    if (
+      (state.lockedUntil > 0 &&
+        state.lockedUntil <= timestamp) ||
+      (state.lockedUntil === 0 &&
+        timestamp - state.updatedAt >= LOGIN_ATTEMPT_EXPIRY_MS)
+    ) {
+      loginPasswordAttempts.delete(key);
+    }
+  }
+}, 60_000).unref();
 
 app.post('/api/login/start', loginPasswordLimiter, async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(), password=req.body?.password;
  if(!usernameOK(username)||typeof password!=='string')return fail(res,401,'Invalid credentials');
  try{
   const idx=(await db.ref(`adminUsernameIndex/${username}`).once('value')).val();
-  if(!idx?.uid) return fail(res,401,'Invalid credentials');
-  const profile=await adminProfile(idx.uid);
-  if(!profile||profile.active!==true||profile.secondPasswordEnabled!==true||!['superadmin','siteadmin'].includes(profile.role))return fail(res,401,'Invalid credentials');
+if (!idx?.uid) {
+  return registerFailedLogin(username, res);
+}
+const profile = await adminProfile(idx.uid);
+
+if (
+  !profile ||
+  profile.active !== true ||
+  profile.secondPasswordEnabled !== true ||
+  !['superadmin', 'siteadmin'].includes(profile.role)
+) {
+  return registerFailedLogin(username, res);
+}
   if (!(await hasActiveAssignedSite(profile))) {
   return fail(res, 403, "SITE_INACTIVE");
 }
@@ -499,6 +616,16 @@ if (!r.ok || data.localId !== idx.uid) {
         counterError
       );
     }
+  }
+
+  if (
+    !r.ok &&
+    (
+      firebaseErrorCode === 'INVALID_PASSWORD' ||
+      firebaseErrorCode === 'INVALID_LOGIN_CREDENTIALS'
+    )
+  ) {
+    return registerFailedLogin(username, res);
   }
 
   return fail(res, 401, 'Invalid credentials');
@@ -673,19 +800,10 @@ const customToken = await auth.createCustomToken(uid, {
 });
 
 /* ==========================================
-   LOGIN SUCCESS - RESET PASSWORD RATE LIMIT
+   LOGIN SUCCESS - RESET PASSWORD ATTEMPTS
    ========================================== */
 
-try {
-  await loginPasswordLimiter.resetKey(
-    getLoginRateLimitKey(current.username)
-  );
-} catch (resetError) {
-  console.error(
-    'Login rate limit reset error:',
-    resetError
-  );
-}
+resetLoginPasswordAttempts(current.username);
 
 return res.json({ok:true,customToken});
  }catch(e){console.error('Login finish error',e.message);return fail(res,503,'Verification unavailable');}
