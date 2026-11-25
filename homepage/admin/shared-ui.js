@@ -6878,7 +6878,7 @@ function initMobileSidebarAccount() {
 
 function applyTheme() {
   const saved =
-    localStorage.getItem("adminTheme") || "dark";
+    localStorage.getItem("adminTheme") || "light";
 
   const isLight = saved === "light";
 
@@ -6919,7 +6919,7 @@ function applyTheme() {
 
 function toggleTheme() {
   const currentTheme =
-    localStorage.getItem("adminTheme") || "dark";
+    localStorage.getItem("adminTheme") || "light";
 
   const nextTheme =
     currentTheme === "dark" ? "light" : "dark";
