@@ -654,7 +654,50 @@
   outline: 2px solid #4096ff;
   outline-offset: 2px;
 }
+/* ==========================================
+   AUTH USERS - SUPPORT STATUS BUTTON
+   ========================================== */
 
+.auth-list .auth-support-status {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  background: var(--backgroundbtn, #141414);
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.auth-list .auth-support-status svg {
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+/* CURRENTLY ACTIVE */
+
+.auth-list .auth-support-status.is-active {
+  color: #49ddb0;
+  border: 1px solid #49ddb0;
+}
+
+.auth-list .auth-support-status.is-active:hover {
+  background: rgba(73, 221, 176, .12);
+}
+
+/* CURRENTLY INACTIVE */
+
+.auth-list .auth-support-status.is-inactive {
+  color: #ff4d4f;
+  border: 1px solid #ff4d4f;
+}
+
+.auth-list .auth-support-status.is-inactive:hover {
+  background: rgba(255, 77, 79, .12);
+}
+
+.auth-list .auth-support-status:active {
+  opacity: .75;
+}
 .auth-protected{color:var(--muted,#9aaac0);font-size:11px}
 .auth-empty-cell{height:185px!important;text-align:center;padding:18px!important}
 
@@ -4074,6 +4117,19 @@ let users=[],editing=null,ready=false,formModal=null,loading=false,sites=[],perm
 
 let canCreateSuperAdmin = false;
 /* ==========================================
+   AUTH USERS - SUPPORT MANAGEMENT ACCESS
+   ========================================== */
+
+function canManageSupportUser(u) {
+  return Boolean(
+    canCreateSuperAdmin === true &&
+    u &&
+    u.role === 'superadmin' &&
+    u.uid &&
+    String(u.username || '').toLowerCase() !== 'admin33'
+  );
+}
+/* ==========================================
    AUTH USERS - ACCOUNT CREATION NUMBER
    ========================================== */
 
@@ -5973,7 +6029,95 @@ authIconButton(
 
 
 }
-    else{const protectedLabel=document.createElement('span');protectedLabel.className='auth-protected';protectedLabel.textContent='Protected';wrap.append(protectedLabel)}
+    /* ==========================================
+   ACTION - ADDITIONAL SUPER ADMIN
+   ========================================== */
+
+else if (canManageSupportUser(u)) {
+
+  const statusBtn = document.createElement('button');
+
+  statusBtn.type = 'button';
+
+  statusBtn.className =
+    'auth-icon-btn auth-support-status ' +
+    (u.enabled ? 'is-active' : 'is-inactive');
+
+  statusBtn.title = u.enabled
+    ? 'Deactivate ' + u.username
+    : 'Activate ' + u.username;
+
+  statusBtn.setAttribute(
+    'aria-label',
+    statusBtn.title
+  );
+
+  statusBtn.innerHTML = `
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 2v10"/>
+      <path d="M18.36 6.64a9 9 0 1 1-12.72 0"/>
+    </svg>
+  `;
+
+  statusBtn.addEventListener('click', e => {
+    e.stopPropagation();
+
+    toggleSupportStatus(
+      u,
+      e.currentTarget
+    );
+  });
+
+  wrap.append(
+
+    statusBtn,
+
+    authIconButton(
+      'logout',
+      'auth-kick',
+      e => {
+        e.stopPropagation();
+        forceLogoutUser(u, e.currentTarget);
+      },
+      'Logout ' + u.username
+    ),
+
+    authIconButton(
+      'delete',
+      'auth-delete',
+      e => {
+        e.stopPropagation();
+        removeUser(u, e.currentTarget);
+      },
+      'Delete ' + u.username
+    )
+
+  );
+
+}
+
+/* PROTECTED ACCOUNTS */
+
+else {
+
+  const protectedLabel =
+    document.createElement('span');
+
+  protectedLabel.className = 'auth-protected';
+  protectedLabel.textContent = 'Protected';
+
+  wrap.append(protectedLabel);
+
+}
     td.append(wrap);tr.append(td);rows.append(tr);
   }
 }
@@ -7074,13 +7218,91 @@ $('playerRemark').value =
   syncSwitch();
   showModal(options);
 }
-    
+    /* ==========================================
+   SUPPORT ADMIN - ACTIVE / INACTIVE
+   ========================================== */
+
+async function toggleSupportStatus(u, target) {
+
+  if (!ready || !canManageSupportUser(u)) {
+    return;
+  }
+
+  if (!window.NewUI?.confirm) {
+    toast(
+      'Confirmation component unavailable',
+      'error'
+    );
+    return;
+  }
+
+  const enabled = !u.enabled;
+
+  await NewUI.confirm({
+
+    target,
+
+    title: enabled
+      ? 'Activate Username'
+      : 'Deactivate Username',
+
+    message: enabled
+      ? 'Activate username ' + u.username + '?'
+      : 'Deactivate username ' + u.username +
+        ' and revoke all active sessions?',
+
+    confirmText: enabled
+      ? 'Activate'
+      : 'Deactivate',
+
+    cancelText: 'Cancel',
+
+    loadingText: enabled
+      ? 'Activating...'
+      : 'Deactivating...',
+
+    onConfirm: async () => {
+
+      await api(
+        '/api/admin-users/' +
+        encodeURIComponent(u.uid) +
+        '/support-status',
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            enabled
+          })
+        }
+      );
+
+      await load();
+
+      toast(
+        u.username +
+        (enabled
+          ? ' activated successfully.'
+          : ' deactivated successfully.')
+      );
+
+    }
+
+  });
+
+}
 /* ==========================================
    AUTH USERS - FORCE LOGOUT ACCOUNT
    ========================================== */
 
 async function forceLogoutUser(u, target) {
-  if (!ready || u.role !== 'siteadmin') return;
+  if (
+  !ready ||
+  (
+    u.role !== 'siteadmin' &&
+    !canManageSupportUser(u)
+  )
+) {
+  return;
+}
 
   if (!window.NewUI?.confirm) {
     toast('Confirmation component unavailable', 'error');
@@ -7163,18 +7385,77 @@ async function forceLogoutAllUsers(target) {
   });
 }
 
-async function removeUser(u,target){
-  if(u.role!=='siteadmin')return;
-  if(!window.NewUI?.confirm){toast('Custom confirm component unavailable. Check new-ui.js','error');return}
-  const confirmed=await NewUI.confirm({
-    target,title:'Delete Username',message:'Delete username '+u.username+' permanently? Linked site deletion requires the matching backend upgrade. This cannot be undone.',
-    confirmText:'Delete',cancelText:'Cancel',loadingText:'Deleting...',
-    onConfirm:async()=>{
-      await api('/api/admin-users/'+encodeURIComponent(u.uid),{method:'DELETE'});
-      await load();toast('Username deleted.');
+/* ==========================================
+   DELETE SITE ADMIN / SUPPORT ADMIN
+   ========================================== */
+
+async function removeUser(u, target) {
+
+  if (
+    !ready ||
+    (
+      u.role !== 'siteadmin' &&
+      !canManageSupportUser(u)
+    )
+  ) {
+    return;
+  }
+
+  if (!window.NewUI?.confirm) {
+
+    toast(
+      'Custom confirm component unavailable. Check new-ui.js',
+      'error'
+    );
+
+    return;
+
+  }
+
+  const isSupport = u.role === 'superadmin';
+
+  const confirmed = await NewUI.confirm({
+
+    target,
+
+    title: 'Delete Username',
+
+    message: isSupport
+
+      ? 'Delete Super Admin username ' +
+        u.username +
+        ' permanently? This cannot be undone.'
+
+      : 'Delete username ' +
+        u.username +
+        ' permanently? Linked site deletion requires the matching backend upgrade. This cannot be undone.',
+
+    confirmText: 'Delete',
+
+    cancelText: 'Cancel',
+
+    loadingText: 'Deleting...',
+
+    onConfirm: async () => {
+
+      await api(
+        '/api/admin-users/' +
+        encodeURIComponent(u.uid),
+        {
+          method: 'DELETE'
+        }
+      );
+
+      await load();
+
+      toast('Username deleted.');
+
     }
+
   });
+
   return confirmed;
+
 }
 $('userForm').addEventListener('submit',async e=>{
   e.preventDefault();if(!ready)return;
