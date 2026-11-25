@@ -245,7 +245,39 @@ if (Number(token.forceLogoutVersion || 0) !== sessionVersion) {
  }catch(e){return fail(res,401,'Invalid or expired session');}
 }
 function superOnly(req,res,next){if(req.admin.profile.role!=='superadmin')return fail(res,403,'Superadmin only');next();}
+/* ==========================================
+   PRIMARY SUPER ADMIN - OWNER ACCESS
+   ========================================== */
 
+function isPrimarySuperAdmin(admin) {
+  const primaryUid = String(
+    process.env.PRIMARY_SUPERADMIN_UID || ''
+  ).trim();
+
+  return Boolean(
+    primaryUid &&
+    admin &&
+    admin.uid === primaryUid &&
+    admin.profile?.role === 'superadmin' &&
+    admin.profile?.username === 'admin33'
+  );
+}
+/* ==========================================
+   ADMIN - CREATE ROLE CAPABILITIES
+   ========================================== */
+
+app.get(
+  '/api/admin-users/create-capabilities',
+  requireAdmin,
+  superOnly,
+  (req, res) => {
+    return res.json({
+      ok: true,
+      canCreateSiteAdmin: true,
+      canCreateSuperAdmin: isPrimarySuperAdmin(req.admin)
+    });
+  }
+);
 /* =====================================================
    SITE ADMIN PERMISSION MIDDLEWARE
    ===================================================== */
@@ -1140,8 +1172,34 @@ app.post(
 
 app.post('/api/admin-users',requireAdmin,superOnly,async(req,res)=>{
  const username=String(req.body?.username||'').trim().toLowerCase(),password=req.body?.password,pin=String(req.body?.secondPassword||''),enabled=req.body?.enabled!==false;
- const email=`${username}@accounts.myproduction-v2.example`;
-const siteIds = req.body?.siteIds;
+const email = `${username}@accounts.myproduction-v2.example`;
+
+/* CREATE USERNAME - ROLE VALIDATION */
+
+const role = req.body?.role ?? 'siteadmin';
+
+if (!['siteadmin', 'superadmin'].includes(role)) {
+  return fail(res, 400, 'Invalid admin role');
+}
+
+/* PRIMARY SUPER ADMIN ONLY */
+
+if (
+  role === 'superadmin' &&
+  !isPrimarySuperAdmin(req.admin)
+) {
+  return fail(
+    res,
+    403,
+    'Only Primary Super Admin can create Super Admin accounts'
+  );
+}
+
+/* SUPER ADMIN DOES NOT REQUIRE SITE ASSIGNMENT */
+
+const siteIds = role === 'superadmin'
+  ? []
+  : req.body?.siteIds;
 
 if (
   !Array.isArray(siteIds) ||
@@ -1181,12 +1239,12 @@ if (!usernameOK(username) || !passwordOK(password) || !pinOK(pin)) {
   try{
    created=await auth.createUser({email,password,disabled:!enabled,displayName:username});
    const t=now();
- await db.ref(`adminUsers/${created.uid}`).set({
+await db.ref(`adminUsers/${created.uid}`).set({
   username,
   email,
   passwordMatchTag: passwordMatchTag(password),
   displayName: username,
-  role: "siteadmin",
+  role: role,
   siteIds,
   active: enabled,
   secondPasswordEnabled: false,
@@ -1196,7 +1254,16 @@ if (!usernameOK(username) || !passwordOK(password) || !pinOK(pin)) {
 });
    await setPin(created.uid,pin);
    await indexRef.set({uid:created.uid});
-   return res.status(201).json({ok:true,user:{uid:created.uid,username,email,enabled}});
+   return res.status(201).json({
+  ok: true,
+  user: {
+    uid: created.uid,
+    username,
+    email,
+    enabled,
+    role
+  }
+});
   }catch(e){if(created){await auth.deleteUser(created.uid).catch(()=>{});await db.ref(`adminUsers/${created.uid}`).remove().catch(()=>{});await db.ref(`privateSecondFactors/${created.uid}`).remove().catch(()=>{});}await indexRef.remove().catch(()=>{});throw e;}
  }catch(e){console.error('Create user',e.message);return fail(res,500,'Cannot create user; check email uniqueness and backend logs');}
 });
