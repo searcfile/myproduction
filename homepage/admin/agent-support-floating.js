@@ -415,10 +415,6 @@ function updateBadge(type) {
 
   badge.hidden = count === 0 || !!inst.panel;
 
-  badge.classList.toggle(
-    'asf-badge-blinking',
-    type === 'agent' && count > 0
-  );
 }
 
 function closePanel(inst) {
