@@ -8496,5 +8496,540 @@ app.get(
    END LIVECHAT IDENTITY MIGRATION - DRY RUN V2
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT LEGACY OWNERSHIP VERIFICATION V3
+   READ ONLY - NO DATABASE MODIFICATION
+   ===================================================== */
+
+app.get(
+  "/api/admin/livechat-migration/ownership-v3",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    res.setHeader("Cache-Control", "no-store");
+
+    if (!isPrimarySuperAdmin(req.admin)) {
+      return fail(res, 403, "Primary Super Admin only");
+    }
+
+    try {
+
+      const [
+        adminSnap,
+        usersSnap,
+        chatsSnap,
+        notificationsSnap,
+        indexSnap
+      ] = await Promise.all([
+        db.ref("adminUsers").once("value"),
+        db.ref("users").once("value"),
+        db.ref("chats").once("value"),
+        db.ref("notifications").once("value"),
+        db.ref("adminUsernameIndex").once("value")
+      ]);
+
+      const admins = adminSnap.val() || {};
+      const users = usersSnap.val() || {};
+      const chats = chatsSnap.val() || {};
+      const notifications = notificationsSnap.val() || {};
+      const usernameIndex = indexSnap.val() || {};
+
+      const authUsers = new Map();
+      const knownIds = new Set();
+      const reviews = [];
+      const orphanRecords = [];
+
+      let pageToken;
+
+      /* LOAD FIREBASE AUTH USERS */
+
+      do {
+
+        const page = await auth.listUsers(
+          1000,
+          pageToken
+        );
+
+        for (const user of page.users) {
+          authUsers.set(user.uid, user);
+        }
+
+        pageToken = page.pageToken;
+
+      } while (pageToken);
+
+      /* NORMALIZE EMAIL */
+
+      const normalizeEmail = value =>
+        String(value || "").trim().toLowerCase();
+
+      const emailToKey = email =>
+        normalizeEmail(email)
+          .replace(/[.#$\[\]\/\s]/g, "_");
+
+      const hasRecord = (data, key) =>
+        Object.hasOwn(data, key);
+
+      const validTimestamp = value =>
+        typeof value === "number" &&
+        Number.isSafeInteger(value) &&
+        value > 0 &&
+        value <= Date.now();
+
+      const toISO = value =>
+        validTimestamp(value)
+          ? new Date(value).toISOString()
+          : null;
+
+      /* ANALYZE CHAT TIMESTAMPS */
+
+      function inspectChatTimeline(sid, createdAt) {
+
+        const data = chats[sid];
+
+        const messages =
+          data &&
+          typeof data === "object"
+            ? Object.values(data)
+            : [];
+
+        let earliest = null;
+        let latest = null;
+        let beforeAccountCreation = 0;
+        let invalidTimestamps = 0;
+
+        for (const message of messages) {
+
+          const time = message?.time;
+
+          if (!validTimestamp(time)) {
+            invalidTimestamps++;
+            continue;
+          }
+
+          if (earliest === null || time < earliest) {
+            earliest = time;
+          }
+
+          if (latest === null || time > latest) {
+            latest = time;
+          }
+
+          if (
+            validTimestamp(createdAt) &&
+            time < createdAt
+          ) {
+            beforeAccountCreation++;
+          }
+
+        }
+
+        return {
+          messageCount: messages.length,
+          earliestMessageAt: toISO(earliest),
+          latestMessageAt: toISO(latest),
+          beforeAccountCreation,
+          invalidTimestamps
+        };
+
+      }
+
+      /* VERIFY EXISTING ADMIN ACCOUNTS */
+
+      for (const [uid, profile] of Object.entries(admins)) {
+
+        const username = String(
+          profile?.username || ""
+        ).trim().toLowerCase();
+
+        const authUser = authUsers.get(uid);
+
+        const authEmail = normalizeEmail(
+          authUser?.email
+        );
+
+        const profileEmail = normalizeEmail(
+          profile?.email
+        );
+
+        const legacyAdminId = `admin_${uid}`;
+        const legacyEmailId = emailToKey(authEmail);
+
+        let targetId = null;
+
+        const issues = [];
+
+        try {
+
+          targetId = profile?.livechatId
+            ? resolveLiveChatId(uid, profile)
+            : buildLiveChatId(username, uid);
+
+        } catch (error) {
+
+          issues.push("INVALID_TARGET_ID");
+
+        }
+
+        for (const sid of [
+          legacyAdminId,
+          legacyEmailId,
+          targetId
+        ]) {
+          if (sid) knownIds.add(sid);
+        }
+
+        const authCreatedAt = Date.parse(
+          authUser?.metadata?.creationTime || ""
+        );
+
+        const profileCreatedAt =
+          profile?.createdAt;
+
+        const authExists = Boolean(authUser);
+
+        const emailMatches =
+          Boolean(authEmail) &&
+          authEmail === profileEmail;
+
+        const usernameIndexMatches =
+          usernameIndex[username]?.uid === uid;
+
+        if (!authExists) {
+          issues.push("AUTH_ACCOUNT_NOT_FOUND");
+        }
+
+        if (!emailMatches) {
+          issues.push("AUTH_EMAIL_MISMATCH");
+        }
+
+        if (!usernameIndexMatches) {
+          issues.push("USERNAME_INDEX_MISMATCH");
+        }
+
+        if (!usernameOK(username)) {
+          issues.push("INVALID_USERNAME");
+        }
+
+        if (
+          !["superadmin", "siteadmin"]
+            .includes(profile?.role)
+        ) {
+          issues.push("INVALID_ADMIN_ROLE");
+        }
+
+        if (!validTimestamp(authCreatedAt)) {
+          issues.push("AUTH_CREATION_TIME_UNKNOWN");
+        }
+
+        const legacyEmailExists =
+          Boolean(legacyEmailId) &&
+          (
+            hasRecord(users, legacyEmailId) ||
+            hasRecord(chats, legacyEmailId) ||
+            hasRecord(notifications, legacyEmailId)
+          );
+
+        const legacyProfile =
+          users[legacyEmailId] || {};
+
+        const legacyProfileEmail = normalizeEmail(
+          legacyProfile.email
+        );
+
+        const legacyProfileEmailMatches =
+          Boolean(legacyProfileEmail) &&
+          legacyProfileEmail === authEmail;
+
+        const legacyTimeline = inspectChatTimeline(
+          legacyEmailId,
+          authCreatedAt
+        );
+
+        const adminTimeline = inspectChatTimeline(
+          legacyAdminId,
+          authCreatedAt
+        );
+
+        if (
+          legacyEmailExists &&
+          legacyProfileEmail &&
+          !legacyProfileEmailMatches
+        ) {
+          issues.push(
+            "LEGACY_PROFILE_EMAIL_MISMATCH"
+          );
+        }
+
+        if (
+          legacyTimeline.beforeAccountCreation > 0
+        ) {
+          issues.push(
+            "LEGACY_CHAT_PREDATES_AUTH_ACCOUNT"
+          );
+        }
+
+        if (
+          adminTimeline.beforeAccountCreation > 0
+        ) {
+          issues.push(
+            "UID_CHAT_PREDATES_AUTH_ACCOUNT"
+          );
+        }
+
+        if (
+          legacyTimeline.invalidTimestamps > 0 ||
+          adminTimeline.invalidTimestamps > 0
+        ) {
+          issues.push(
+            "INVALID_MESSAGE_TIMESTAMPS"
+          );
+        }
+
+        if (
+          legacyEmailExists &&
+          !legacyProfileEmailMatches
+        ) {
+          issues.push(
+            "LEGACY_PROFILE_EVIDENCE_MISSING"
+          );
+        }
+
+        let status;
+
+        if (issues.length > 0) {
+
+          status = "REVIEW_BLOCKED";
+
+        } else if (legacyEmailExists) {
+
+          status = "MANUAL_OWNERSHIP_REVIEW";
+
+        } else {
+
+          status = "NO_LEGACY_EMAIL_DATA";
+
+        }
+
+        reviews.push({
+          uid,
+          username,
+          role: profile?.role || null,
+
+          status,
+          issues: [...new Set(issues)],
+
+          evidence: {
+            authExists,
+            emailMatches,
+            usernameIndexMatches,
+            legacyProfileEmailMatches,
+            legacyEmailExists,
+
+            authCreatedAt:
+              toISO(authCreatedAt),
+
+            profileCreatedAt:
+              toISO(profileCreatedAt),
+
+            legacyEmailTimeline:
+              legacyTimeline,
+
+            legacyAdminTimeline:
+              adminTimeline
+          },
+
+          ownershipApproved: false,
+          executionAuthorized: false
+        });
+
+      }
+
+      /* CLASSIFY ORPHAN RECORDS */
+
+      const allIds = new Set([
+        ...Object.keys(users),
+        ...Object.keys(chats),
+        ...Object.keys(notifications)
+      ]);
+
+      let guestRecordCount = 0;
+
+      for (const sid of allIds) {
+
+        if (knownIds.has(sid)) {
+          continue;
+        }
+
+        if (sid.startsWith("g_")) {
+          guestRecordCount++;
+          continue;
+        }
+
+        let type = "UNKNOWN_IDENTITY";
+        let classification = "MANUAL_REVIEW";
+        let authAccountExists = null;
+        let adminProfileExists = null;
+
+        if (sid.startsWith("admin_")) {
+
+          type = "LEGACY_ADMIN_ID";
+
+          const oldUid = sid.slice(6);
+
+          authAccountExists =
+            authUsers.has(oldUid);
+
+          adminProfileExists =
+            hasRecord(admins, oldUid);
+
+          if (
+            !authAccountExists &&
+            !adminProfileExists
+          ) {
+
+            classification =
+              "POSSIBLE_DELETED_ACCOUNT";
+
+          } else {
+
+            classification =
+              "UNMAPPED_EXISTING_ACCOUNT";
+
+          }
+
+        } else if (sid.includes("@")) {
+
+          type = "LEGACY_EMAIL_ID";
+
+          const matches = [...authUsers.values()]
+            .filter(user =>
+              emailToKey(user.email) === sid
+            );
+
+          authAccountExists = matches.length > 0;
+
+          if (matches.length === 0) {
+
+            classification =
+              "NO_CURRENT_AUTH_EMAIL_MATCH";
+
+          } else {
+
+            classification =
+              "UNMAPPED_EMAIL_ACCOUNT";
+
+          }
+
+        }
+
+        orphanRecords.push({
+          sid,
+          type,
+          classification,
+
+          authAccountExists,
+          adminProfileExists,
+
+          hasProfile: hasRecord(users, sid),
+          hasChat: hasRecord(chats, sid),
+          hasNotification:
+            hasRecord(notifications, sid),
+
+          timeline: inspectChatTimeline(sid, null),
+
+          deletionAuthorized: false,
+          migrationAuthorized: false
+        });
+
+      }
+
+      /* GENERATE SUMMARY */
+
+      const countStatus = status =>
+        reviews.filter(
+          account => account.status === status
+        ).length;
+
+      const issueCounts = {};
+
+      for (const account of reviews) {
+
+        for (const issue of account.issues) {
+
+          issueCounts[issue] =
+            (issueCounts[issue] || 0) + 1;
+
+        }
+
+      }
+
+      return res.json({
+        ok: true,
+        version: 3,
+        mode: "OWNERSHIP_REVIEW",
+
+        databaseModified: false,
+        executionAuthorized: false,
+
+        generatedAt: Date.now(),
+
+        summary: {
+
+          totalAccounts: reviews.length,
+
+          reviewBlocked:
+            countStatus("REVIEW_BLOCKED"),
+
+          manualOwnershipReview:
+            countStatus("MANUAL_OWNERSHIP_REVIEW"),
+
+          noLegacyEmailData:
+            countStatus("NO_LEGACY_EMAIL_DATA"),
+
+          orphanRecordCount:
+            orphanRecords.length,
+
+          possibleDeletedAccounts:
+            orphanRecords.filter(record =>
+              record.classification ===
+              "POSSIBLE_DELETED_ACCOUNT"
+            ).length,
+
+          guestRecordCount,
+
+          ownershipApproved: 0
+
+        },
+
+        issueCounts,
+        accounts: reviews,
+        orphanRecords
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Ownership Verification V3]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to verify legacy ownership"
+      );
+
+    }
+
+  }
+);
+
+/* =====================================================
+   END LIVECHAT LEGACY OWNERSHIP VERIFICATION V3
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
