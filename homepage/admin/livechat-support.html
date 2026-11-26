@@ -2805,12 +2805,12 @@ const LIVECHAT_IDENTITY_API =
 
 let verifiedIdentityBySid = new Map();
 let verifiedIdentityReady = false;
-
+let verifiedIdentitySessionUid = null;
 async function loadVerifiedLivechatIdentities() {
 
   verifiedIdentityReady = false;
   verifiedIdentityBySid.clear();
-
+  verifiedIdentitySessionUid = null;
   const user = firebase.auth().currentUser;
 
   if (
@@ -2833,11 +2833,15 @@ async function loadVerifiedLivechatIdentities() {
 
   const result = await response.json();
 
-  if (
-    !response.ok ||
-    result.ok !== true ||
-    !Array.isArray(result.identities)
-  ) {
+
+if (
+  !response.ok ||
+  result.ok !== true ||
+  result.version !== 2 ||
+  result.identityPolicy !== "UID_ONLY" ||
+  !Array.isArray(result.identities)
+)
+ {
     throw new Error(
       result.message || "Unable to verify LiveChat identities"
     );
@@ -2857,6 +2861,18 @@ async function loadVerifiedLivechatIdentities() {
 
     for (const sid of identity.memberIds) {
 
+if (
+  typeof sid !== "string" ||
+  !sid.endsWith(`_${identity.uid}`) ||
+  /[.#$\[\]\/\s\u0000-\u001F\u007F]/.test(sid) ||
+  (
+    sid !== identity.livechatId &&
+    sid !== `admin_${identity.uid}`
+  )
+) {
+  throw new Error("Unsafe LiveChat member identity");
+}
+
       const existing = nextMap.get(sid);
 
       if (existing && existing.uid !== identity.uid) {
@@ -2874,20 +2890,33 @@ async function loadVerifiedLivechatIdentities() {
     throw new Error("Admin session changed");
   }
 
-  verifiedIdentityBySid = nextMap;
-  verifiedIdentityReady = true;
+verifiedIdentityBySid = nextMap;
+verifiedIdentitySessionUid = user.uid;
+verifiedIdentityReady = true;
 
   return true;
 }
 
+
 function getVerifiedChatIdentity(sid) {
 
-  if (!verifiedIdentityReady) return null;
+  const user = firebase.auth().currentUser;
+
+  if (
+    !verifiedIdentityReady ||
+    !user ||
+    user.isAnonymous ||
+    user.uid !== verifiedIdentitySessionUid ||
+    sessionStorage.getItem("5g88.adminSession") !== user.uid
+  ) {
+    return null;
+  }
 
   return verifiedIdentityBySid.get(
     String(sid || "")
   ) || null;
 }
+
 
 /* ==========================================
    LIVECHAT IDENTITY COMPATIBILITY
@@ -2935,6 +2964,7 @@ function getInboxEmail(sid, userData = {}) {
 }
 
 
+
 function getMemberIdsForSid(sid) {
 
   const identity = getVerifiedChatIdentity(sid);
@@ -2943,11 +2973,18 @@ function getMemberIdsForSid(sid) {
     return [sid];
   }
 
+  const existingIds = new Set(
+    allUsersData.map(([id]) => id)
+  );
+
   return [...new Set([
-    identity.livechatId,
-    ...identity.memberIds
+    sid,
+    ...identity.memberIds.filter(
+      id => existingIds.has(id)
+    )
   ])];
 }
+
 
 
 function isSelectedMember(sid) {
@@ -3702,6 +3739,24 @@ siteAdminActivityRef.on("value", snapshot => {
 }
 
 firebase.auth().onAuthStateChanged(user => {
+    
+if (
+  !user ||
+  user.isAnonymous ||
+  (
+    verifiedIdentitySessionUid &&
+    verifiedIdentitySessionUid !== user.uid
+  )
+) {
+
+  verifiedIdentityReady = false;
+  verifiedIdentitySessionUid = null;
+  verifiedIdentityBySid.clear();
+
+  detachMergedChatListeners();
+
+}
+
   if (siteAdminActivityRef) {
     siteAdminActivityRef.off();
     siteAdminActivityRef = null;
