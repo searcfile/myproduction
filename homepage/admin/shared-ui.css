@@ -2369,7 +2369,7 @@ body.tab-dragging-active *{
   border:1px solid #ffffff29;
   border-radius:8px;
   background:#ffffff1a;
-  color:#fff;
+  color:red;
   font-size:14px;
   outline:none;
   transition:.2s;
@@ -3901,7 +3901,7 @@ max-width: 170px;
   color: inherit;
   caret-color: currentColor;
   font: inherit;
-  font-size: 14px;
+  font-size: 12px;
   text-align: left;
 }
 
