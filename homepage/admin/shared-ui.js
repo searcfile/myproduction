@@ -1458,7 +1458,7 @@ function createShell() {
   class="header-tab-search-input"
   type="search"
   name="site_filter_query"
-  placeholder="🏢 🔍 Search"
+  placeholder="🏢 Select Site or Search"
   autocomplete="off"
   autocorrect="off"
   autocapitalize="off"
@@ -5565,7 +5565,7 @@ function setSiteSyncLoading(isLoading) {
 
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
-    placeholder: "🏢 🔍 Search",
+    placeholder: "🏢 Select Site or Search",
     options: [],
     value: [],
 
@@ -5589,8 +5589,8 @@ onChange(values) {
   form?.addEventListener("submit", e => e.preventDefault());
 
   // Tukar label sahaja, bukan struktur input.
-input.placeholder = "🏢 🔍 Search";
-mobileInput.placeholder = "🏢 🔍 Search";
+input.placeholder = "🏢 Select Site or Search";
+mobileInput.placeholder = "🏢 Select Site or Search";
 mobileBtn?.setAttribute("aria-label", "Select Site");
 mobileBtn?.setAttribute("title", "Select Site");
 
@@ -5680,13 +5680,13 @@ function updateInput() {
 
   input.placeholder = selected.length
     ? ""
-    : "🏢 🔍 Search";
+    : "🏢 Select Site or Search";
 
   input.title = selected
     .map(site => site.name)
     .join(", ");
 
-mobileInput.placeholder = "🏢 🔍 Search";
+mobileInput.placeholder = "🏢 Select Site or Search";
 updateMobileChips();
 }
 
