@@ -1415,14 +1415,17 @@ function escapeHTML(s){
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[m]));
 }
+
 let chatInitialized = false;
 let currentUserEmail = null;
 let currentActiveId  = null;
 let currentIsGuest   = false;
 let currentAdminUsername = "";
+let currentAdminUid = null;
 let presenceBoundFor = null;
 let forceOpenBottom = true;
 let hideBottomBtnTimer = null;
+
 
 let pendingImages = [];
 let isUploadingImage = false;
@@ -1476,13 +1479,7 @@ async function getVisitorId(){
   localStorage.setItem("deviceId", fallbackId);
   return fallbackId;
 }
-function sanitizeEmail(email){
-  return String(email || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\./g, "_")
-    .replace(/[#$\[\]/]/g,"_");
-}
+
 function getChatPath(){ return currentActiveId ? 'chats/' + currentActiveId : null; }
 function getUserPath(){ return currentActiveId ? 'users/' + currentActiveId : null; }
 function getNotifPath(){ return currentActiveId ? 'notifications/' + currentActiveId : null; }
@@ -1818,10 +1815,34 @@ async function restoreAdminLivechatIdentity() {
     return false;
   }
 
-  currentActiveId = "admin_" + user.uid;
-  currentAdminUsername = username;
-  currentUserEmail = user.email || null;
-  currentIsGuest = false;
+
+// ==========================================
+// PERMANENT LIVECHAT IDENTITY
+// ==========================================
+
+const savedLivechatId = String(
+  profile.livechatId || ""
+).trim();
+
+// Akaun lama kekal menggunakan path lama
+// sehingga database migration selesai.
+const resolvedLivechatId =
+  savedLivechatId || `admin_${user.uid}`;
+
+if (
+  /[.#$\[\]\/\u0000-\u001F\u007F]/.test(resolvedLivechatId) ||
+  !resolvedLivechatId.endsWith(`_${user.uid}`)
+) {
+  console.error("[LiveChat] Invalid permanent identity.");
+  return false;
+}
+
+currentActiveId = resolvedLivechatId;
+currentAdminUid = user.uid;
+currentAdminUsername = username;
+currentUserEmail = user.email || null;
+currentIsGuest = false;
+
 
   localStorage.setItem("username", username);
   localStorage.setItem("adminName", username);
@@ -2582,19 +2603,50 @@ async function sendMessage() {
   ? (localStorage.getItem("guest.name") || "Guest")
   : currentAdminUsername;
 
+
 if (!currentIsGuest) {
   const activeAuthUser = auth.currentUser;
 
   if (
     !activeAuthUser ||
-    currentActiveId !== "admin_" + activeAuthUser.uid ||
+    activeAuthUser.isAnonymous ||
+    !currentAdminUid ||
+    activeAuthUser.uid !== currentAdminUid ||
     !currentAdminUsername
   ) {
     console.warn("LiveChat identity changed. Please reload.");
     alert("Login session changed. Please reload LiveChat.");
     return;
   }
+
+  // Semak permanent identity terkini sebelum send.
+  try {
+    const profileSnap = await db
+      .ref("adminUsers/" + activeAuthUser.uid)
+      .once("value");
+
+    const profile = profileSnap.val();
+
+    const expectedId = String(
+      profile?.livechatId || `admin_${activeAuthUser.uid}`
+    ).trim();
+
+    if (
+      !profile ||
+      profile.active !== true ||
+      profile.secondPasswordEnabled !== true ||
+      currentActiveId !== expectedId
+    ) {
+      alert("LiveChat identity changed. Please reload LiveChat.");
+      return;
+    }
+  } catch (error) {
+    console.error("[LiveChat] Identity verification failed:", error);
+    alert("Unable to verify LiveChat identity. Please try again.");
+    return;
+  }
 }
+
   const userPhoto = localStorage.getItem("userphoto") || "";
   const time = Date.now();
 
@@ -3098,22 +3150,12 @@ if (!adminRestored) {
     return;
   }
 
-  const email = localStorage.getItem("useremail");
 
-  if (!currentActiveId && email) {
-    currentIsGuest = false;
-    currentUserEmail = email;
-    currentActiveId = sanitizeEmail(email);
-  }
+// Jangan gunakan email sebagai LiveChat database key.
+if (!currentActiveId) {
+  await ensureGuestLocalIdentity();
+}
 
-  if (!currentActiveId) {
-    await ensureGuestLocalIdentity();
-  } else {
-    await writeUserProfile();
-    bindPresenceAndNotif();
-    initChatWithUserData();
-    notifyRead();
-  }
 }
 
 });
