@@ -3853,8 +3853,8 @@ max-width: 170px;
 
   #headerSiteCustom .shared-chip-dropdown-trigger {
     width: 100%;
-    min-width: 208px;
-    max-width: 150px;
+    min-width: 150px;
+    max-width: 210px;
     padding-left: 3px;
     padding-right: 22px;
   }
