@@ -1012,7 +1012,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
   min-width:150px;
   max-width:190px;
   flex:0 1 auto;
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .admin-site-selector
