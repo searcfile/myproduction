@@ -7606,7 +7606,7 @@ function stopLivechatUnreadListener() {
   renderLivechatUnreadBadge(0);
 }
 
-function startLivechatUnreadListener(user) {
+async function startLivechatUnreadListener(user) {
   if (!user || user.isAnonymous) {
     stopLivechatUnreadListener();
     return;
@@ -7634,8 +7634,36 @@ function startLivechatUnreadListener(user) {
     return;
   }
 
-  const uid = user.uid;
-  const chatId = `admin_${uid}`;
+
+const uid = user.uid;
+
+let chatId;
+
+try {
+  chatId = await window.G88LiveChatIdentity.getCurrentId();
+
+  // Pastikan session masih milik pengguna yang sama
+  // selepas menunggu Firebase.
+  if (
+    firebase.auth().currentUser?.uid !== uid ||
+    sessionStorage.getItem("5g88.adminSession") !== uid
+  ) {
+    return;
+  }
+
+} catch (error) {
+  console.error(
+    "[LiveChat Unread] Identity resolution failed:",
+    error
+  );
+  return;
+}
+
+// Elakkan duplicate listener selepas async resolution.
+if (livechatUnreadUid === uid && livechatUnreadRef) {
+  return;
+}
+
 
   livechatUnreadUid = uid;
   livechatUnreadRef = database.ref(`chats/${chatId}`);
