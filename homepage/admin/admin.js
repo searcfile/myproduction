@@ -726,6 +726,13 @@ const chatRef = db.ref(`chats/${livechatId}`);
 
   try {
     const snapshot = await chatRef.once("value");
+     if (
+  auth.currentUser?.uid !== currentUser.uid ||
+  sessionStorage.getItem("5g88.adminSession") !== currentUser.uid ||
+  !window.isLivechatTabActive?.()
+) {
+  return;
+}
     const updates = {};
     const now = Date.now();
 
