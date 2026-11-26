@@ -2797,41 +2797,128 @@ let selectedMergedEmail = "";
 let selectedChatGeneration = 0;
 
 /* ==========================================
+   LIVECHAT - VERIFIED BACKEND IDENTITIES
+   ========================================== */
+
+const LIVECHAT_IDENTITY_API =
+  "https://fiveg88-admin-backend-v2.onrender.com/api/admin/livechat-identities";
+
+let verifiedIdentityBySid = new Map();
+let verifiedIdentityReady = false;
+
+async function loadVerifiedLivechatIdentities() {
+
+  verifiedIdentityReady = false;
+  verifiedIdentityBySid.clear();
+
+  const user = firebase.auth().currentUser;
+
+  if (
+    !user ||
+    user.isAnonymous ||
+    sessionStorage.getItem("5g88.adminSession") !== user.uid
+  ) {
+    throw new Error("Invalid admin session");
+  }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(LIVECHAT_IDENTITY_API, {
+    method: "GET",
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const result = await response.json();
+
+  if (
+    !response.ok ||
+    result.ok !== true ||
+    !Array.isArray(result.identities)
+  ) {
+    throw new Error(
+      result.message || "Unable to verify LiveChat identities"
+    );
+  }
+
+  const nextMap = new Map();
+
+  for (const identity of result.identities) {
+
+    if (
+      !identity.uid ||
+      !identity.livechatId ||
+      !Array.isArray(identity.memberIds)
+    ) {
+      throw new Error("Invalid identity response");
+    }
+
+    for (const sid of identity.memberIds) {
+
+      const existing = nextMap.get(sid);
+
+      if (existing && existing.uid !== identity.uid) {
+        throw new Error("Conflicting LiveChat identities");
+      }
+
+      nextMap.set(sid, identity);
+    }
+  }
+
+  if (
+    firebase.auth().currentUser?.uid !== user.uid ||
+    sessionStorage.getItem("5g88.adminSession") !== user.uid
+  ) {
+    throw new Error("Admin session changed");
+  }
+
+  verifiedIdentityBySid = nextMap;
+  verifiedIdentityReady = true;
+
+  return true;
+}
+
+function getVerifiedChatIdentity(sid) {
+
+  if (!verifiedIdentityReady) return null;
+
+  return verifiedIdentityBySid.get(
+    String(sid || "")
+  ) || null;
+}
+
+/* ==========================================
    LIVECHAT IDENTITY COMPATIBILITY
    ========================================== */
 
+
 function getAdminUidFromChatSid(sid) {
-  const id = String(sid || "").trim();
-
-  // Guest dan legacy email bukan Admin UID.
-  if (!id || id.startsWith("g_") || id.includes("@")) {
-    return null;
-  }
-
-  // Support format lama admin_UID
-  // dan format baru username_UID.
-  const match = id.match(
-    /^.+_([a-zA-Z0-9]{28})$/
-  );
-
-  return match ? match[1] : null;
+  return getVerifiedChatIdentity(sid)?.uid || null;
 }
 
 function isAdminChatSid(sid) {
-  return !!getAdminUidFromChatSid(sid);
+  return !!getVerifiedChatIdentity(sid);
 }
 
 function getChatIdentityPriority(sid) {
-  if (!isAdminChatSid(sid)) return 0;
 
-  // Legacy admin_UID.
-  if (String(sid).startsWith("admin_")) {
-    return 1;
+  const identity = getVerifiedChatIdentity(sid);
+
+  if (!identity) return 0;
+
+  if (sid === identity.livechatId) {
+    return 3;
   }
 
-  // Permanent username_UID.
-  return 2;
+  if (sid === `admin_${identity.uid}`) {
+    return 2;
+  }
+
+  return 1;
 }
+
 
 function getInboxEmail(sid, userData = {}) {
   const raw = String(
@@ -2847,16 +2934,21 @@ function getInboxEmail(sid, userData = {}) {
     : "";
 }
 
+
 function getMemberIdsForSid(sid) {
-  const row = allUsersData.find(([key]) => key === sid);
-  const email = row ? getInboxEmail(sid, row[1]) : "";
 
-  if (!email) return [sid];
+  const identity = getVerifiedChatIdentity(sid);
 
-  return allUsersData
-    .filter(([key, data]) => getInboxEmail(key, data) === email)
-    .map(([key]) => key);
+  if (!identity) {
+    return [sid];
+  }
+
+  return [...new Set([
+    identity.livechatId,
+    ...identity.memberIds
+  ])];
 }
+
 
 function isSelectedMember(sid) {
   return selectedChatMemberIds.includes(sid) ||
@@ -2882,50 +2974,50 @@ function detachMergedChatListeners() {
 // Admin login menggunakan chats/admin_<firebaseUid>.
 // Channel lama tetap boleh dibaca oleh Merged Inbox.
 
+
 function resolveAgentReplySid(memberIds = []) {
+
+  if (!verifiedIdentityReady) return null;
+
   const ids = [...new Set(memberIds)].filter(Boolean);
 
   if (!ids.length) return null;
 
-  const getData = sid =>
-    allUsersData.find(([id]) => id === sid)?.[1] || {};
+  const identities = ids.map(
+    sid => getVerifiedChatIdentity(sid)
+  );
 
-  ids.sort((a, b) => {
-const adminA = getChatIdentityPriority(a);
-const adminB = getChatIdentityPriority(b);
+  if (identities.some(identity => !identity)) {
+    return null;
+  }
 
-    // Paling penting: pilih channel admin UID dahulu.
-    if (adminA !== adminB) return adminB - adminA;
+  const uniqueUids = new Set(
+    identities.map(identity => identity.uid)
+  );
 
-    const dataA = getData(a);
-    const dataB = getData(b);
+  if (uniqueUids.size !== 1) {
+    console.error("[LiveChat] Conflicting reply identities");
+    return null;
+  }
 
-    const onlineA = dataA.online === true ? 1 : 0;
-    const onlineB = dataB.online === true ? 1 : 0;
+  const identity = identities[0];
 
-    if (onlineA !== onlineB) return onlineB - onlineA;
+  if (identity.active !== true) {
+    return null;
+  }
 
-    const timeA = Math.max(
-      Number(dataA.pageLoginTime || 0),
-      Number(dataA.lastLoginAt || 0)
-    );
-
-    const timeB = Math.max(
-      Number(dataB.pageLoginTime || 0),
-      Number(dataB.lastLoginAt || 0)
-    );
-
-    return timeB - timeA;
-  });
-
-  return ids[0];
+  return identity.livechatId;
 }
+
 function buildMergedInboxRows() {
   const groups = new Map();
 
   for (const [sid, data, activity] of allUsersData) {
-    const email = getInboxEmail(sid, data);
-    const key = email ? `email:${email}` : `sid:${sid}`;
+const identity = getVerifiedChatIdentity(sid);
+
+const key = identity
+  ? `uid:${identity.uid}`
+  : `sid:${sid}`;
 
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push([sid, data || {}, activity || 0]);
@@ -2941,7 +3033,7 @@ const preferred = [...rows].sort((a, b) =>
 
 
     const [sid, data] = preferred;
-    const members = rows.map(row => row[0]);
+   const members = getMemberIdsForSid(sid);
 
     const unread = rows.reduce((sum, [, d]) =>
       sum + Math.max(
@@ -5118,9 +5210,19 @@ let agentSendInProgress = false;
 async function sendMessage() {
   if (!selectedUserId || agentSendInProgress) return;
 
-  const targetSid =
-  resolveAgentReplySid(selectedChatMemberIds) ||
-  selectedUserId;
+if (!verifiedIdentityReady) {
+  alert("LiveChat identity is not verified. Please refresh.");
+  return;
+}
+
+const targetSid = resolveAgentReplySid(
+  selectedChatMemberIds
+);
+
+if (!targetSid) {
+  alert("Unable to verify message destination.");
+  return;
+}
 
 console.log("[Agent Support] Message destination:", {
   targetSid,
@@ -5149,7 +5251,12 @@ console.log("[Agent Support] Message destination:", {
     if (firebase.auth().currentUser?.uid !== admin.uid) {
       throw new Error("Firebase login changed before sending.");
     }
-
+if (
+  !verifiedIdentityReady ||
+  resolveAgentReplySid(selectedChatMemberIds) !== targetSid
+) {
+  throw new Error("LiveChat destination changed");
+}
     const time = Date.now();
 
     await db.ref(`chats/${targetSid}`).push({
@@ -5396,7 +5503,7 @@ function autoResizeMsgBox() {
   msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + "px";
 }
 /* ======================= BOOTSTRAP ======================= */
-window.onload = ()=>{
+window.onload = async ()=>{
   selectedUserId = null;
   activeUserIdSanitized = "";
   
@@ -5664,6 +5771,52 @@ btnOnline?.addEventListener("click", ()=>{
   // Pastikan senarai dikemas kini.
   scheduleRender();
 })();
+
+/* ==========================================
+   INITIALIZE VERIFIED LIVECHAT IDENTITIES
+   ========================================== */
+
+try {
+
+  await new Promise((resolve, reject) => {
+
+    const unsubscribe = firebase.auth()
+      .onAuthStateChanged(user => {
+
+        unsubscribe();
+
+        if (!user || user.isAnonymous) {
+          reject(new Error("Admin login required"));
+          return;
+        }
+
+        resolve(user);
+      }, reject);
+  });
+
+  await loadVerifiedLivechatIdentities();
+
+  console.log(
+    "[LiveChat] Verified identities loaded:",
+    verifiedIdentityBySid.size
+  );
+
+} catch (error) {
+
+  verifiedIdentityReady = false;
+  verifiedIdentityBySid.clear();
+
+  console.error(
+    "[LiveChat] Identity initialization failed:",
+    error
+  );
+
+  alert(
+    "Unable to verify LiveChat identities. Please refresh."
+  );
+
+  return;
+}
 
 db.ref("users").on("child_added", snap=>{
   const sanitized = snap.key;
