@@ -81,6 +81,49 @@ const passwordOK = s =>
 const now = () => Date.now();
 
 /* ==========================================
+   CENTRALIZED LIVECHAT IDENTITY
+   ========================================== */
+
+function buildLiveChatId(username, uid) {
+  const safeUsername = String(username || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.#$\[\]\/\s]/g, "_");
+
+  const safeUid = String(uid || "").trim();
+
+  if (
+    !safeUsername ||
+    !safeUid ||
+    /[.#$\[\]\/\s]/.test(safeUid)
+  ) {
+    throw new Error("Invalid LiveChat identity");
+  }
+
+  return `${safeUsername}_${safeUid}`;
+}
+
+function resolveLiveChatId(uid, profile) {
+  const savedId = String(
+    profile?.livechatId || ""
+  ).trim();
+
+  if (savedId) {
+    if (
+      /[.#$\[\]\/\s]/.test(savedId) ||
+      !savedId.endsWith(`_${uid}`)
+    ) {
+      throw new Error("Invalid saved LiveChat ID");
+    }
+
+    return savedId;
+  }
+
+  // Backward compatibility untuk akaun lama
+  return `admin_${uid}`;
+}
+
+/* ==========================================
    RISK ASSESSMENT - PUBLIC IP HISTORY
    ========================================== */
 
@@ -378,6 +421,7 @@ function publicUser(u, p) {
   return {
     uid: u.uid,
     username: p.username,
+    livechatId: resolveLiveChatId(u.uid, p),
     displayName: p.displayName || p.username,
     role: p.role,
     siteIds: Array.isArray(p.siteIds) ? p.siteIds : [],
@@ -1496,11 +1540,20 @@ if (!usernameOK(username) || !passwordOK(password) || !pinOK(pin)) {
   const reserved=await indexRef.transaction(v=>v===null?{reserved:true,at:now()}:undefined,undefined,false);
   if(!reserved.committed)return fail(res,409,'Username already exists');
   try{
-   created=await auth.createUser({email,password,disabled:!enabled,displayName:username});
-   const t=now();
+
+created=await auth.createUser({email,password,disabled:!enabled,displayName:username});
+const t=now();
+
+// PERMANENT LIVECHAT ID
+const livechatId = buildLiveChatId(
+  username,
+  created.uid
+);
+
 await db.ref(`adminUsers/${created.uid}`).set({
   username,
   email,
+  livechatId,
   passwordMatchTag: passwordMatchTag(password),
   displayName: username,
   role: role,
@@ -1511,18 +1564,22 @@ await db.ref(`adminUsers/${created.uid}`).set({
   updatedAt: t,
   createdBy: req.admin.uid
 });
+
    await setPin(created.uid,pin);
    await indexRef.set({uid:created.uid});
-   return res.status(201).json({
+
+return res.status(201).json({
   ok: true,
   user: {
     uid: created.uid,
     username,
     email,
+    livechatId,
     enabled,
     role
   }
 });
+
   }catch(e){if(created){await auth.deleteUser(created.uid).catch(()=>{});await db.ref(`adminUsers/${created.uid}`).remove().catch(()=>{});await db.ref(`privateSecondFactors/${created.uid}`).remove().catch(()=>{});}await indexRef.remove().catch(()=>{});throw e;}
  }catch(e){console.error('Create user',e.message);return fail(res,500,'Cannot create user; check email uniqueness and backend logs');}
 });
