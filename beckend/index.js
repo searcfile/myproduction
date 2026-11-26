@@ -71,7 +71,15 @@ app.use('/api', rateLimit({
   legacyHeaders: false,
   handler: sendRateLimitResponse
 }));
-app.get('/health',(req,res)=>res.json({ok:true,service:'5g88-admin-backend'}));
+app.get('/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+
+  return res.json({
+    ok: true,
+    service: '5g88-admin-backend',
+    version: 'livechat-migration-v4'
+  });
+});
 const usernameOK = s => /^[a-z0-9._-]{3,40}$/.test(s);
 const pinOK = s => /^\d{6}$/.test(s);
 const passwordOK = s =>
