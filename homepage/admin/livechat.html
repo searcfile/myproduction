@@ -1415,17 +1415,14 @@ function escapeHTML(s){
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[m]));
 }
-
 let chatInitialized = false;
 let currentUserEmail = null;
 let currentActiveId  = null;
 let currentIsGuest   = false;
 let currentAdminUsername = "";
-let currentAdminUid = null;
 let presenceBoundFor = null;
 let forceOpenBottom = true;
 let hideBottomBtnTimer = null;
-
 
 let pendingImages = [];
 let isUploadingImage = false;
@@ -1479,7 +1476,13 @@ async function getVisitorId(){
   localStorage.setItem("deviceId", fallbackId);
   return fallbackId;
 }
-
+function sanitizeEmail(email){
+  return String(email || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\./g, "_")
+    .replace(/[#$\[\]/]/g,"_");
+}
 function getChatPath(){ return currentActiveId ? 'chats/' + currentActiveId : null; }
 function getUserPath(){ return currentActiveId ? 'users/' + currentActiveId : null; }
 function getNotifPath(){ return currentActiveId ? 'notifications/' + currentActiveId : null; }
@@ -1511,20 +1514,10 @@ function stopUserPresence(forceOffline = true){
   } catch {}
 
   try {
-if (userRefForPresence) {
-
-  if (window.self === window.top) {
-    userRefForPresence.onDisconnect().cancel()
-      .catch(error => {
-        console.error(
-          "[LiveChat] Presence cleanup failed:",
-          error
-        );
-      });
-  }
-
-  userRefForPresence = null;
-}
+    if (userRefForPresence) {
+      userRefForPresence.onDisconnect().cancel();
+      userRefForPresence = null;
+    }
   } catch {}
 
   const userPath = getUserPath();
@@ -1825,59 +1818,17 @@ async function restoreAdminLivechatIdentity() {
     return false;
   }
 
-
-// ==========================================
-// PERMANENT LIVECHAT IDENTITY
-// ==========================================
-
-
-let resolvedLivechatId;
-
-try {
-  resolvedLivechatId =
-    window.G88LiveChatIdentity.resolve(
-      user.uid,
-      profile
-    );
-
-  if (
-    /[\u0000-\u001F\u007F]/.test(resolvedLivechatId)
-  ) {
-    throw new Error("Invalid LiveChat identity");
-  }
-
-} catch (error) {
-  console.error(
-    "[LiveChat] Identity resolution failed:",
-    error
-  );
-
-  return false;
-}
-
-currentActiveId = resolvedLivechatId;
-
-currentAdminUid = user.uid;
-currentAdminUsername = username;
-currentUserEmail = user.email || null;
-currentIsGuest = false;
-
+  currentActiveId = "admin_" + user.uid;
+  currentAdminUsername = username;
+  currentUserEmail = user.email || null;
+  currentIsGuest = false;
 
   localStorage.setItem("username", username);
   localStorage.setItem("adminName", username);
   localStorage.setItem("livechat.adminRole", profile.role);
 
-const profileSaved = await writeUserProfile();
-
-if (profileSaved !== true) {
-  console.error(
-    "[LiveChat] Unable to initialize user profile"
-  );
-
-  return false;
-}
-
-bindPresenceAndNotif();
+  await writeUserProfile();
+  bindPresenceAndNotif();
   initChatWithUserData();
   notifyRead();
   // Pastikan identiti chat sudah tersedia sebelum mark read.
@@ -1950,20 +1901,11 @@ function bindPresenceAndNotif(){
     if (snap.val() === true) {
       touchUserPresence({ typing: false });
 
-if (window.self === window.top) {
-
-  userRefForPresence.onDisconnect().update({
-    online: false,
-    typing: false,
-    lastLoginTime: firebase.database.ServerValue.TIMESTAMP
-  }).catch(error => {
-    console.error(
-      "[LiveChat] Disconnect registration failed:",
-      error
-    );
-  });
-
-}
+      userRefForPresence.onDisconnect().update({
+        online: false,
+        typing: false,
+        lastLoginTime: Date.now()
+      });
 
       clearInterval(userPresenceHeartbeat);
       userPresenceHeartbeat = setInterval(() => {
@@ -2024,18 +1966,9 @@ if (!currentIsGuest && !currentAdminUsername) return;
     lastLoginAt: now
   };
 
-try {
-  await db.ref(upath).update(data);
-  return true;
-
-} catch (error) {
-  console.error(
-    "[LiveChat] Profile update failed:",
-    error
-  );
-
-  return false;
-}
+  db.ref(upath).update(data).catch((err) => {
+    console.warn("writeUserProfile failed:", err?.message || err);
+  });
 }
 
 
@@ -2649,49 +2582,19 @@ async function sendMessage() {
   ? (localStorage.getItem("guest.name") || "Guest")
   : currentAdminUsername;
 
-
 if (!currentIsGuest) {
   const activeAuthUser = auth.currentUser;
 
   if (
     !activeAuthUser ||
-    activeAuthUser.isAnonymous ||
-    !currentAdminUid ||
-    activeAuthUser.uid !== currentAdminUid ||
+    currentActiveId !== "admin_" + activeAuthUser.uid ||
     !currentAdminUsername
   ) {
     console.warn("LiveChat identity changed. Please reload.");
     alert("Login session changed. Please reload LiveChat.");
     return;
   }
-
-  // Semak permanent identity terkini sebelum send.
-  try {
-    const profileSnap = await db
-      .ref("adminUsers/" + activeAuthUser.uid)
-      .once("value");
-
-    const profile = profileSnap.val();
-
-const expectedId =
-  await window.G88LiveChatIdentity.getCurrentId();
-
-    if (
-      !profile ||
-      profile.active !== true ||
-      profile.secondPasswordEnabled !== true ||
-      currentActiveId !== expectedId
-    ) {
-      alert("LiveChat identity changed. Please reload LiveChat.");
-      return;
-    }
-  } catch (error) {
-    console.error("[LiveChat] Identity verification failed:", error);
-    alert("Unable to verify LiveChat identity. Please try again.");
-    return;
-  }
 }
-
   const userPhoto = localStorage.getItem("userphoto") || "";
   const time = Date.now();
 
@@ -3148,9 +3051,7 @@ function playNotificationSound() {
   }
 }
 window.addEventListener("beforeunload", () => {
-  stopUserPresence(
-  window.self === window.top
-);
+  stopUserPresence(true);
 });
 window.addEventListener("DOMContentLoaded", async () => {
   initFingerprint();
@@ -3197,12 +3098,22 @@ if (!adminRestored) {
     return;
   }
 
+  const email = localStorage.getItem("useremail");
 
-// Jangan gunakan email sebagai LiveChat database key.
-if (!currentActiveId) {
-  await ensureGuestLocalIdentity();
-}
+  if (!currentActiveId && email) {
+    currentIsGuest = false;
+    currentUserEmail = email;
+    currentActiveId = sanitizeEmail(email);
+  }
 
+  if (!currentActiveId) {
+    await ensureGuestLocalIdentity();
+  } else {
+    await writeUserProfile();
+    bindPresenceAndNotif();
+    initChatWithUserData();
+    notifyRead();
+  }
 }
 
 });
