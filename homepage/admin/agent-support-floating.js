@@ -269,8 +269,29 @@ const safeUrl=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.
 const positionKey=type=>`5g88.floating.position.v2:${type}:${uid}`;
 function savedY(type){try{let value=localStorage.getItem(positionKey(type));if(!value&&type==='agent'){value=localStorage.getItem(`5g88.agentSupportFloat.position.v1:${uid}`);}const parsed=JSON.parse(value);return Number.isFinite(parsed?.y)?parsed.y:null;}catch{return null;}}
 function saveY(type,y){if(uid)localStorage.setItem(positionKey(type),JSON.stringify({y}));}
-function eligible(){return !!uid&&!!profile&&profile.active===true&&profile.secondPasswordEnabled===true&&sessionStorage.getItem('5g88.adminSession')===uid;}
+function eligible() {
 
+  const user = firebase.auth().currentUser;
+
+  const expireAt = Number(
+    sessionStorage.getItem("autoLogout.expireAt")
+  );
+
+  return (
+    !!uid &&
+    !!profile &&
+    !!user &&
+    !user.isAnonymous &&
+    user.uid === uid &&
+    profile.active === true &&
+    profile.secondPasswordEnabled === true &&
+    ["superadmin", "siteadmin"].includes(profile.role) &&
+    sessionStorage.getItem("5g88.adminSession") === uid &&
+    Number.isFinite(expireAt) &&
+    expireAt > Date.now()
+  );
+
+}
 function canAccess(type) {
   if (!eligible()) return false;
 
@@ -506,9 +527,17 @@ function startUnread() {
       updateBadge('agent');
     };
 
-    ref.on('value', handler, error => {
-      console.error('Agent unread error:', error);
-    });
+ref.on('value', handler, error => {
+
+  unreadCounts.agent = 0;
+  updateBadge('agent');
+
+  console.error(
+    '[Agent Support] Unread listener failed:',
+    error
+  );
+
+});
 
     unreadCleanup.agent = () => {
       ref.off('value', handler);
@@ -558,9 +587,17 @@ if (canAccess('site')) {
       updateBadge('site');
     };
 
-    ref.on('value', handler, error => {
-      console.error('Site LiveChat unread error:', error);
-    });
+ref.on('value', handler, error => {
+
+  unreadCounts.site = 0;
+  updateBadge('site');
+
+  console.error(
+    '[Site LiveChat] Unread listener failed:',
+    error
+  );
+
+});
 
     unreadCleanup.site = () => {
       ref.off('value', handler);
