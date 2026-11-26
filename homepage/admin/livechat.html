@@ -1820,24 +1820,33 @@ async function restoreAdminLivechatIdentity() {
 // PERMANENT LIVECHAT IDENTITY
 // ==========================================
 
-const savedLivechatId = String(
-  profile.livechatId || ""
-).trim();
 
-// Akaun lama kekal menggunakan path lama
-// sehingga database migration selesai.
-const resolvedLivechatId =
-  savedLivechatId || `admin_${user.uid}`;
+let resolvedLivechatId;
 
-if (
-  /[.#$\[\]\/\u0000-\u001F\u007F]/.test(resolvedLivechatId) ||
-  !resolvedLivechatId.endsWith(`_${user.uid}`)
-) {
-  console.error("[LiveChat] Invalid permanent identity.");
+try {
+  resolvedLivechatId =
+    window.G88LiveChatIdentity.resolve(
+      user.uid,
+      profile
+    );
+
+  if (
+    /[\u0000-\u001F\u007F]/.test(resolvedLivechatId)
+  ) {
+    throw new Error("Invalid LiveChat identity");
+  }
+
+} catch (error) {
+  console.error(
+    "[LiveChat] Identity resolution failed:",
+    error
+  );
+
   return false;
 }
 
 currentActiveId = resolvedLivechatId;
+
 currentAdminUid = user.uid;
 currentAdminUsername = username;
 currentUserEmail = user.email || null;
@@ -1848,8 +1857,17 @@ currentIsGuest = false;
   localStorage.setItem("adminName", username);
   localStorage.setItem("livechat.adminRole", profile.role);
 
-  await writeUserProfile();
-  bindPresenceAndNotif();
+const profileSaved = await writeUserProfile();
+
+if (profileSaved !== true) {
+  console.error(
+    "[LiveChat] Unable to initialize user profile"
+  );
+
+  return false;
+}
+
+bindPresenceAndNotif();
   initChatWithUserData();
   notifyRead();
   // Pastikan identiti chat sudah tersedia sebelum mark read.
@@ -1987,9 +2005,18 @@ if (!currentIsGuest && !currentAdminUsername) return;
     lastLoginAt: now
   };
 
-  db.ref(upath).update(data).catch((err) => {
-    console.warn("writeUserProfile failed:", err?.message || err);
-  });
+try {
+  await db.ref(upath).update(data);
+  return true;
+
+} catch (error) {
+  console.error(
+    "[LiveChat] Profile update failed:",
+    error
+  );
+
+  return false;
+}
 }
 
 
@@ -2627,9 +2654,8 @@ if (!currentIsGuest) {
 
     const profile = profileSnap.val();
 
-    const expectedId = String(
-      profile?.livechatId || `admin_${activeAuthUser.uid}`
-    ).trim();
+const expectedId =
+  await window.G88LiveChatIdentity.getCurrentId();
 
     if (
       !profile ||
