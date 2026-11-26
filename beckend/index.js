@@ -9111,26 +9111,30 @@ app.get(
 
     try {
 
-      const [
-        adminSnap,
-        usersSnap,
-        chatsSnap,
-        notificationsSnap,
-        indexSnap
-      ] = await Promise.all([
-        db.ref("adminUsers").once("value"),
-        db.ref("users").once("value"),
-        db.ref("chats").once("value"),
-        db.ref("notifications").once("value"),
-        db.ref("adminUsernameIndex").once("value")
-      ]);
+const [
+  adminSnap,
+  usersSnap,
+  chatsSnap,
+  notificationsSnap,
+  indexSnap,
+  approvalsSnap
+] = await Promise.all([
+  db.ref("adminUsers").once("value"),
+  db.ref("users").once("value"),
+  db.ref("chats").once("value"),
+  db.ref("notifications").once("value"),
+  db.ref("adminUsernameIndex").once("value"),
+  db.ref(LIVECHAT_REVIEW_PATH).once("value")
+]);
 
       const admins = adminSnap.val() || {};
       const users = usersSnap.val() || {};
       const chats = chatsSnap.val() || {};
       const notifications = notificationsSnap.val() || {};
       const usernameIndex = indexSnap.val() || {};
-
+const ownershipApprovals =
+  approvalsSnap.val() || {};
+      
       const authUsers = new Map();
       const owners = new Map();
       const accounts = [];
@@ -9263,7 +9267,12 @@ app.get(
         if (!authUser) {
           issues.push("AUTH_ACCOUNT_NOT_FOUND");
         }
-
+if (
+  profile?.active !== true ||
+  authUser?.disabled === true
+) {
+  issues.push("ACCOUNT_INACTIVE");
+}
         if (!authEmail || authEmail !== profileEmail) {
           issues.push("AUTH_EMAIL_MISMATCH");
         }
@@ -9389,12 +9398,13 @@ app.get(
 
           currentId: profile?.livechatId || legacyAdminId,
 
-          targetId,
-          sourceIds,
-          records,
+targetId,
+sourceIds,
+records,
 
-          legacyEmailExists,
-          messagesBeforeAccount,
+legacyEmailId,
+legacyEmailExists,
+messagesBeforeAccount,
 
           issues: [...new Set(issues)],
 
@@ -9425,28 +9435,170 @@ app.get(
           ...new Set(account.issues)
         ];
 
-        if (account.issues.length > 0) {
+/* ==========================================
+   OWNERSHIP APPROVAL INTEGRATION
+   READ ONLY - NO MIGRATION EXECUTION
+   ========================================== */
 
-          account.status = "HOLD_FOR_REVIEW";
+const approval =
+  ownershipApprovals[account.uid] || null;
 
-          account.recommendedAction =
-            "KEEP_ALL_SOURCE_DATA_UNCHANGED";
+account.ownershipApproved = false;
+account.migrationAuthorized = false;
+account.approvalStatus = "NOT_REVIEWED";
+account.approvalFingerprintMatched = false;
+account.reviewedAt = null;
 
-        } else if (account.legacyEmailExists) {
+if (account.issues.length > 0) {
 
-          account.status = "MANUAL_APPROVAL_REQUIRED";
+  account.status = "HOLD_FOR_REVIEW";
 
-          account.recommendedAction =
-            "VERIFY_LEGACY_EMAIL_OWNERSHIP";
+  account.approvalStatus =
+    "BLOCKED_BY_ACCOUNT_ISSUES";
 
-        } else {
+  account.recommendedAction =
+    "KEEP_ALL_SOURCE_DATA_UNCHANGED";
 
-          account.status = "IDENTITY_PLAN_REVIEW";
+} else if (!account.legacyEmailExists) {
 
-          account.recommendedAction =
-            "REVIEW_UID_AND_TARGET_BEFORE_ASSIGNMENT";
+  account.status = "IDENTITY_PLAN_REVIEW";
 
-        }
+  account.approvalStatus = "NOT_REQUIRED";
+
+  account.recommendedAction =
+    "REVIEW_UID_AND_TARGET_BEFORE_ASSIGNMENT";
+
+} else {
+
+  account.status = "MANUAL_APPROVAL_REQUIRED";
+
+  account.recommendedAction =
+    "VERIFY_LEGACY_EMAIL_OWNERSHIP";
+
+  if (approval) {
+
+    try {
+
+      const evidence =
+        await getLivechatOwnershipEvidence(
+          account.uid
+        );
+
+      const expectedReviewer = String(
+        process.env.PRIMARY_SUPERADMIN_UID || ""
+      ).trim();
+
+      const validDecision = [
+        "APPROVED",
+        "REJECTED",
+        "HOLD"
+      ].includes(approval.decision);
+
+      const identityMatched =
+        approval.uid === account.uid &&
+        approval.username === account.username &&
+        approval.legacyEmailId ===
+          account.legacyEmailId &&
+        approval.targetId === account.targetId &&
+        evidence.legacyEmailId ===
+          account.legacyEmailId &&
+        evidence.targetId === account.targetId;
+
+      const reviewerMatched =
+        Boolean(expectedReviewer) &&
+        approval.reviewedBy === expectedReviewer;
+
+      const fingerprintMatched =
+        typeof approval.fingerprint === "string" &&
+        approval.fingerprint === evidence.fingerprint;
+
+      account.approvalFingerprintMatched =
+        fingerprintMatched;
+
+      account.reviewedAt =
+        approval.reviewedAt || null;
+
+      if (
+        !validDecision ||
+        !identityMatched ||
+        !reviewerMatched ||
+        !fingerprintMatched ||
+        !evidence.legacyExists ||
+        evidence.issues.length > 0
+      ) {
+
+        account.status = "HOLD_FOR_REVIEW";
+
+        account.approvalStatus =
+          "STALE_OR_INVALID";
+
+        account.recommendedAction =
+          "REVIEW_OWNERSHIP_EVIDENCE_AGAIN";
+
+      } else if (
+        approval.decision === "APPROVED"
+      ) {
+
+        account.ownershipApproved = true;
+
+        account.approvalStatus =
+          "VERIFIED_APPROVAL";
+
+        account.status =
+          "OWNERSHIP_APPROVED";
+
+        account.recommendedAction =
+          "REVIEW_SAFE_MIGRATION_PLAN";
+
+      } else if (
+        approval.decision === "REJECTED"
+      ) {
+
+        account.approvalStatus = "REJECTED";
+
+        account.status =
+          "OWNERSHIP_REJECTED";
+
+        account.recommendedAction =
+          "KEEP_LEGACY_DATA_UNCHANGED";
+
+      } else {
+
+        account.approvalStatus = "HOLD";
+
+        account.status = "HOLD_FOR_REVIEW";
+
+        account.recommendedAction =
+          "KEEP_ALL_SOURCE_DATA_UNCHANGED";
+
+      }
+
+    } catch (error) {
+
+      account.ownershipApproved = false;
+
+      account.status = "HOLD_FOR_REVIEW";
+
+      account.approvalStatus =
+        "VERIFICATION_FAILED";
+
+      account.recommendedAction =
+        "REVIEW_OWNERSHIP_EVIDENCE_AGAIN";
+
+      console.error(
+        "[Migration Approval Verification]",
+        error.message
+      );
+
+    }
+
+  }
+
+}
+
+/* EXECUTION MUST REMAIN DISABLED */
+
+account.migrationAuthorized = false;  
 
       }
 
@@ -9572,8 +9724,25 @@ app.get(
 
           guestRecords: guestRecords.length,
 
-          ownershipApproved: 0,
-          migrationAuthorized: 0
+ownershipApproved: accounts.filter(
+  account =>
+    account.ownershipApproved === true
+).length,
+
+ownershipRejected:
+  countStatus("OWNERSHIP_REJECTED"),
+
+staleApprovals: accounts.filter(
+  account =>
+    account.approvalStatus === "STALE_OR_INVALID"
+).length,
+
+approvalVerificationFailed: accounts.filter(
+  account =>
+    account.approvalStatus === "VERIFICATION_FAILED"
+).length,
+
+migrationAuthorized: 0
 
         },
 
