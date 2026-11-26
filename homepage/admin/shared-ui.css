@@ -3839,7 +3839,7 @@ max-width: 170px;
 @media (min-width: 816px) {
   #headerTabSearch {
     width: fit-content;
-    min-width: 208px;
+    min-width: 150px;
     max-width: 210px;
     flex: 0 0 auto;
   }
@@ -3847,14 +3847,14 @@ max-width: 170px;
   #headerSiteCustom,
   #headerSiteCustom .shared-chip-dropdown {
     width: fit-content;
-    min-width: 208px;
+    min-width: 150px;
     max-width: 210px;
   }
 
   #headerSiteCustom .shared-chip-dropdown-trigger {
     width: 100%;
     min-width: 208px;
-    max-width: 210px;
+    max-width: 150px;
     padding-left: 3px;
     padding-right: 22px;
   }
