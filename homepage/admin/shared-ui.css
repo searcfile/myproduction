@@ -3839,21 +3839,21 @@ max-width: 170px;
 @media (min-width: 816px) {
   #headerTabSearch {
     width: fit-content;
-    min-width: 150px;
-    max-width: 210px;
+    min-width: 208px;
+    max-width: 100%;
     flex: 0 0 auto;
   }
 
   #headerSiteCustom,
   #headerSiteCustom .shared-chip-dropdown {
     width: fit-content;
-    min-width: 150px;
+    min-width: 208px;
     max-width: 210px;
   }
 
   #headerSiteCustom .shared-chip-dropdown-trigger {
     width: 100%;
-    min-width: 150px;
+    min-width: 208px;
     max-width: 210px;
     padding-left: 3px;
     padding-right: 22px;
