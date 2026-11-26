@@ -7825,6 +7825,25 @@ app.get(
       const identities = [];
       const owners = new Map();
 
+const authAccounts = new Map();
+
+let pageToken;
+
+do {
+
+  const page = await auth.listUsers(
+    1000,
+    pageToken
+  );
+
+  for (const account of page.users) {
+    authAccounts.set(account.uid, account);
+  }
+
+  pageToken = page.pageToken;
+
+} while (pageToken);
+
       for (const [uid, profile] of Object.entries(profiles)) {
 
         if (
@@ -7850,6 +7869,24 @@ app.get(
           profile.email || ""
         ).trim().toLowerCase();
 
+const authAccount = authAccounts.get(uid);
+
+if (!authAccount) {
+  continue;
+}
+
+const authEmail = String(
+  authAccount.email || ""
+).trim().toLowerCase();
+
+if (!authEmail || authEmail !== email) {
+  console.warn(
+    "[LiveChat Security] Account identity mismatch"
+  );
+
+  continue;
+}
+
         // Gunakan identity yang sedang aktif.
         // Akaun lama masih menggunakan admin_UID
         // sehingga migration selesai.
@@ -7858,16 +7895,20 @@ app.get(
           profile
         );
 
-        const legacyAdminId = `admin_${uid}`;
 
-        const legacyEmailId = email
-          .replace(/[.#$\[\]\/\s]/g, "_");
+const legacyAdminId = `admin_${uid}`;
 
-        const memberIds = [...new Set([
-          livechatId,
-          legacyAdminId,
-          legacyEmailId
-        ].filter(Boolean))];
+// SECURITY:
+// Jangan gunakan legacy email sebagai bukti
+// pemilikan akaun Firebase Auth semasa.
+
+const memberIds = [...new Set([
+  livechatId,
+  legacyAdminId
+].filter(Boolean))];
+
+const identityPolicy = "UID_ONLY";
+
 
         // Jangan benarkan satu LiveChat ID
         // dimiliki oleh dua akaun berlainan.
@@ -7887,15 +7928,23 @@ app.get(
           owners.set(sid, uid);
         }
 
-        identities.push({
-          uid,
-          username,
-          email,
-          role: profile.role,
-          active: profile.active === true,
-          livechatId,
-          memberIds
-        });
+
+identities.push({
+  uid,
+  username,
+  email,
+  role: profile.role,
+
+  active:
+    profile.active === true &&
+    profile.secondPasswordEnabled === true &&
+    authAccount.disabled !== true,
+
+  livechatId,
+  memberIds,
+  identityPolicy
+});
+
       }
 
       res.setHeader(
@@ -7903,11 +7952,15 @@ app.get(
         "no-store"
       );
 
-      return res.json({
-        ok: true,
-        generatedAt: Date.now(),
-        identities
-      });
+
+return res.json({
+  ok: true,
+  version: 2,
+  identityPolicy: "UID_ONLY",
+  generatedAt: Date.now(),
+  identities
+});
+
 
     } catch (error) {
 
