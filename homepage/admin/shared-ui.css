@@ -3867,8 +3867,8 @@ max-width: 170px;
    ========================================== */
 
 #headerSiteCustom .shared-chip-dropdown-trigger {
-  height: 36px;
-  min-height: 36px;
+  height: 40px;
+  min-height: 40px;
   flex-wrap: nowrap;
   overflow: hidden;
   cursor: text;
