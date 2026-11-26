@@ -7921,5 +7921,580 @@ app.get(
    END LIVECHAT - VERIFIED ADMIN IDENTITY API
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT IDENTITY MIGRATION - DRY RUN V2
+   ADVANCED SAFETY VERIFICATION
+   READ ONLY - NO DATABASE MODIFICATION
+   ===================================================== */
+
+const { isDeepStrictEqual } = require("node:util");
+
+app.get(
+  "/api/admin/livechat-migration/preview-v2",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    res.setHeader("Cache-Control", "no-store");
+
+    if (!isPrimarySuperAdmin(req.admin)) {
+      return fail(res, 403, "Primary Super Admin only");
+    }
+
+    try {
+
+      const startedAt = Date.now();
+
+      const [
+        adminSnap,
+        usersSnap,
+        chatsSnap,
+        notificationsSnap
+      ] = await Promise.all([
+        db.ref("adminUsers").once("value"),
+        db.ref("users").once("value"),
+        db.ref("chats").once("value"),
+        db.ref("notifications").once("value")
+      ]);
+
+      const admins = adminSnap.val() || {};
+      const users = usersSnap.val() || {};
+      const chats = chatsSnap.val() || {};
+      const notifications = notificationsSnap.val() || {};
+
+      const authUsers = new Map();
+      const identityOwners = new Map();
+      const accounts = [];
+
+      let pageToken;
+
+      /* LOAD FIREBASE AUTH ACCOUNTS */
+
+      do {
+
+        const page = await auth.listUsers(
+          1000,
+          pageToken
+        );
+
+        for (const user of page.users) {
+          authUsers.set(user.uid, user);
+        }
+
+        pageToken = page.pageToken;
+
+      } while (pageToken);
+
+      const normalizeEmail = value =>
+        String(value || "").trim().toLowerCase();
+
+      const validKey = value =>
+        typeof value === "string" &&
+        value.length > 0 &&
+        Buffer.byteLength(value, "utf8") <= 768 &&
+        !/[.#$\[\]\/\u0000-\u001F\u007F]/.test(value);
+
+      const hasRecord = (data, key) =>
+        Object.hasOwn(data, key);
+
+      /* BUILD ACCOUNT IDENTITIES */
+
+      for (const [uid, profile] of Object.entries(admins)) {
+
+        const issues = [];
+        const warnings = [];
+
+        const username = String(
+          profile?.username || ""
+        ).trim().toLowerCase();
+
+        const authUser = authUsers.get(uid);
+
+        const profileEmail = normalizeEmail(
+          profile?.email
+        );
+
+        const authEmail = normalizeEmail(
+          authUser?.email
+        );
+
+        if (!usernameOK(username)) {
+          issues.push("INVALID_USERNAME");
+        }
+
+        if (!validKey(uid)) {
+          issues.push("INVALID_UID");
+        }
+
+        if (!authUser) {
+          issues.push("AUTH_ACCOUNT_NOT_FOUND");
+        }
+
+        if (!profileEmail || !authEmail ||
+            profileEmail !== authEmail) {
+          issues.push("AUTH_EMAIL_MISMATCH");
+        }
+
+        if (
+          !["superadmin", "siteadmin"].includes(
+            profile?.role
+          )
+        ) {
+          issues.push("INVALID_ADMIN_ROLE");
+        }
+
+        if (authUser?.disabled === true) {
+          warnings.push("AUTH_ACCOUNT_DISABLED");
+        }
+
+        if (profile?.active !== true) {
+          warnings.push("ADMIN_ACCOUNT_INACTIVE");
+        }
+
+        let targetId = null;
+
+        try {
+
+          if (usernameOK(username) && validKey(uid)) {
+
+            targetId = profile?.livechatId
+              ? resolveLiveChatId(uid, profile)
+              : buildLiveChatId(username, uid);
+
+            if (!validKey(targetId)) {
+              throw new Error("Invalid target ID");
+            }
+
+          }
+
+        } catch (error) {
+
+          targetId = null;
+          issues.push("INVALID_TARGET_ID");
+
+        }
+
+        const oldAdminId = `admin_${uid}`;
+
+        const oldEmailId = authEmail
+          ? authEmail.replace(/[.#$\[\]\/\s]/g, "_")
+          : "";
+
+        const sourceIds = [...new Set([
+          oldAdminId,
+          oldEmailId,
+          targetId
+        ].filter(validKey))];
+
+        for (const sid of sourceIds) {
+
+          if (!identityOwners.has(sid)) {
+            identityOwners.set(sid, new Set());
+          }
+
+          identityOwners.get(sid).add(uid);
+
+        }
+
+        accounts.push({
+          uid,
+          username,
+          role: profile?.role || null,
+          active: profile?.active === true,
+          currentLivechatId: profile?.livechatId || null,
+          targetLivechatId: targetId,
+          oldEmailId,
+          authEmail,
+          sourceIds,
+          issues,
+          warnings
+        });
+
+      }
+
+      /* CHECK DUPLICATE OWNERSHIP */
+
+      const identityConflicts = [];
+
+      for (const [sid, owners] of identityOwners) {
+
+        if (owners.size > 1) {
+
+          identityConflicts.push({
+            sid,
+            ownerUids: [...owners]
+          });
+
+        }
+
+      }
+
+      /* CHECK CHAT DATA AND MESSAGE CONFLICTS */
+
+      const results = [];
+
+      for (const account of accounts) {
+
+        const issues = [...account.issues];
+        const warnings = [...account.warnings];
+
+        const messages = new Map();
+        const messageConflicts = [];
+        const paths = [];
+
+        let duplicateMessages = 0;
+
+        for (const sid of account.sourceIds) {
+
+          const owners = identityOwners.get(sid);
+
+          if (owners?.size > 1) {
+            issues.push("IDENTITY_OWNERSHIP_CONFLICT");
+          }
+
+          const userData = users[sid];
+          const chatData = chats[sid];
+          const notificationData = notifications[sid];
+
+          const hasProfile = hasRecord(users, sid);
+          const hasChat = hasRecord(chats, sid);
+          const hasNotification = hasRecord(
+            notifications,
+            sid
+          );
+
+          const hasData =
+            hasProfile || hasChat || hasNotification;
+
+          /* CHECK PROFILE EMAIL */
+
+          const recordedEmail = normalizeEmail(
+            userData?.email
+          );
+
+          if (
+            recordedEmail &&
+            recordedEmail !== account.authEmail
+          ) {
+            issues.push("LEGACY_PROFILE_EMAIL_MISMATCH");
+          }
+
+          if (
+            sid === account.oldEmailId &&
+            sid !== account.targetLivechatId &&
+            hasData
+          ) {
+
+            // Email key alone cannot prove historical
+            // ownership, especially after account recreation.
+
+            issues.push("LEGACY_EMAIL_REVIEW_REQUIRED");
+
+          }
+
+          if (
+            chatData != null &&
+            (
+              typeof chatData !== "object" ||
+              Array.isArray(chatData)
+            )
+          ) {
+            issues.push("INVALID_CHAT_DATA");
+          }
+
+          const entries =
+            chatData &&
+            typeof chatData === "object" &&
+            !Array.isArray(chatData)
+              ? Object.entries(chatData)
+              : [];
+
+          for (const [messageId, message] of entries) {
+
+            if (
+              !message ||
+              typeof message !== "object" ||
+              Array.isArray(message)
+            ) {
+              issues.push("INVALID_MESSAGE_DATA");
+              continue;
+            }
+
+            if (!["user", "admin"].includes(message.from)) {
+              issues.push("UNKNOWN_MESSAGE_SENDER");
+            }
+
+            if (messages.has(messageId)) {
+
+              const previous = messages.get(messageId);
+
+              if (
+                isDeepStrictEqual(
+                  previous.message,
+                  message
+                )
+              ) {
+
+                duplicateMessages++;
+
+              } else {
+
+                messageConflicts.push({
+                  messageId,
+                  firstSource: previous.sid,
+                  secondSource: sid
+                });
+
+              }
+
+            } else {
+
+              messages.set(messageId, {
+                sid,
+                message
+              });
+
+            }
+
+          }
+
+          paths.push({
+            sid,
+            isTarget: sid === account.targetLivechatId,
+            hasProfile,
+            hasChat,
+            hasNotification,
+            messageCount: entries.length
+          });
+
+        }
+
+        if (messageConflicts.length > 0) {
+          issues.push("MESSAGE_ID_CONFLICT");
+        }
+
+        const legacyPaths = paths.filter(item =>
+          !item.isTarget &&
+          (
+            item.hasProfile ||
+            item.hasChat ||
+            item.hasNotification
+          )
+        );
+
+        const target = paths.find(
+          item => item.isTarget
+        );
+
+        if (
+          legacyPaths.some(item => item.hasNotification) ||
+          (
+            legacyPaths.length > 0 &&
+            target?.hasNotification
+          )
+        ) {
+          warnings.push("NOTIFICATION_MERGE_REVIEW");
+        }
+
+        /* ESTIMATED UNREAD COUNTS */
+
+        let unreadForAdmin = 0;
+        let unreadForUser = 0;
+
+        for (const { message } of messages.values()) {
+
+          if (
+            message.from === "user" &&
+            message.readByAdmin !== true
+          ) {
+            unreadForAdmin++;
+          }
+
+          if (
+            message.from === "admin" &&
+            message.readByUser !== true
+          ) {
+            unreadForUser++;
+          }
+
+        }
+
+        const uniqueIssues = [...new Set(issues)];
+        const uniqueWarnings = [...new Set(warnings)];
+
+        let status;
+
+        if (uniqueIssues.length > 0) {
+
+          status = "BLOCKED";
+
+        } else if (legacyPaths.length > 0) {
+
+          status = "MIGRATION_CANDIDATE";
+
+        } else if (
+          account.currentLivechatId ===
+          account.targetLivechatId
+        ) {
+
+          status = "IDENTITY_ASSIGNED";
+
+        } else {
+
+          status = "IDENTITY_ASSIGNMENT_REQUIRED";
+
+        }
+
+        results.push({
+          uid: account.uid,
+          username: account.username,
+          role: account.role,
+          active: account.active,
+          currentLivechatId: account.currentLivechatId,
+          targetLivechatId: account.targetLivechatId,
+          status,
+          issues: uniqueIssues,
+          warnings: uniqueWarnings,
+          legacyPathCount: legacyPaths.length,
+          targetExists: Boolean(
+            target?.hasProfile ||
+            target?.hasChat ||
+            target?.hasNotification
+          ),
+          uniqueMessageCount: messages.size,
+          duplicateMessages,
+          messageConflictCount: messageConflicts.length,
+          messageConflicts,
+          estimatedUnread: {
+            forAdmin: unreadForAdmin,
+            forUser: unreadForUser,
+            reliable: uniqueIssues.length === 0
+          },
+          paths
+        });
+
+      }
+
+      /* DETECT UNMAPPED RECORDS */
+
+      const allLivechatIds = new Set([
+        ...Object.keys(users),
+        ...Object.keys(chats),
+        ...Object.keys(notifications)
+      ]);
+
+      const orphanRecords = [];
+      const guestRecords = [];
+
+      for (const sid of allLivechatIds) {
+
+        if (identityOwners.has(sid)) {
+          continue;
+        }
+
+        const record = {
+          sid,
+          hasProfile: hasRecord(users, sid),
+          hasChat: hasRecord(chats, sid),
+          hasNotification: hasRecord(notifications, sid)
+        };
+
+        if (sid.startsWith("g_")) {
+          guestRecords.push(record);
+        } else {
+          orphanRecords.push(record);
+        }
+
+      }
+
+      const blockedAccounts = results.filter(
+        item => item.status === "BLOCKED"
+      ).length;
+
+      const warningAccounts = results.filter(
+        item => item.warnings.length > 0
+      ).length;
+
+      /* RETURN READ-ONLY REPORT */
+
+      return res.json({
+        ok: true,
+        version: 2,
+        mode: "DRY_RUN",
+        databaseModified: false,
+        executionAuthorized: false,
+        generatedAt: Date.now(),
+        durationMs: Date.now() - startedAt,
+
+        summary: {
+          totalAccounts: results.length,
+
+          migrationCandidates: results.filter(
+            item => item.status === "MIGRATION_CANDIDATE"
+          ).length,
+
+          identityAssigned: results.filter(
+            item => item.status === "IDENTITY_ASSIGNED"
+          ).length,
+
+          identityAssignmentRequired: results.filter(
+            item =>
+              item.status === "IDENTITY_ASSIGNMENT_REQUIRED"
+          ).length,
+
+          blockedAccounts,
+          warningAccounts,
+
+          identityConflictCount: identityConflicts.length,
+
+          messageConflictCount: results.reduce(
+            (total, item) =>
+              total + item.messageConflictCount,
+            0
+          ),
+
+          duplicateMessageCount: results.reduce(
+            (total, item) =>
+              total + item.duplicateMessages,
+            0
+          ),
+
+          orphanRecordCount: orphanRecords.length,
+          guestRecordCount: guestRecords.length,
+
+          requiresManualReview:
+            blockedAccounts > 0 ||
+            warningAccounts > 0 ||
+            identityConflicts.length > 0 ||
+            orphanRecords.length > 0
+        },
+
+        identityConflicts,
+        orphanRecords,
+        guestRecords,
+        accounts: results
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Migration Preview V2]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to preview LiveChat migration V2"
+      );
+
+    }
+  }
+);
+
+/* =====================================================
+   END LIVECHAT IDENTITY MIGRATION - DRY RUN V2
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
