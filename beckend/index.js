@@ -9606,5 +9606,595 @@ app.get(
    END LIVECHAT MIGRATION V4 - MANUAL REVIEW & ARCHIVE PLAN
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT MIGRATION - MANUAL OWNERSHIP REVIEW
+   ===================================================== */
+
+const LIVECHAT_REVIEW_PATH =
+  "livechatMigrationApprovals";
+
+const LIVECHAT_REVIEW_AUDIT_PATH =
+  "livechatMigrationAudit";
+
+function validMigrationUid(uid) {
+
+  return (
+    typeof uid === "string" &&
+    uid.length > 0 &&
+    uid.length <= 128 &&
+    !/[.#$\[\]\/\s\u0000-\u001F\u007F]/.test(uid)
+  );
+
+}
+
+function requirePrimaryMigrationAdmin(req, res, next) {
+
+  if (!isPrimarySuperAdmin(req.admin)) {
+    return fail(
+      res,
+      403,
+      "Primary Super Admin only"
+    );
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+
+  return next();
+
+}
+
+function stableMigrationValue(value) {
+
+  if (Array.isArray(value)) {
+    return value.map(stableMigrationValue);
+  }
+
+  if (value !== null && typeof value === "object") {
+
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map(key => [
+          key,
+          stableMigrationValue(value[key])
+        ])
+    );
+
+  }
+
+  return value;
+
+}
+
+function migrationFingerprint(value) {
+
+  return crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify(
+        stableMigrationValue(value)
+      )
+    )
+    .digest("hex");
+
+}
+
+async function getLivechatOwnershipEvidence(uid) {
+
+  const profile = await adminProfile(uid);
+
+  if (!profile) {
+    throw new Error("Admin profile not found");
+  }
+
+  const authUser = await auth.getUser(uid);
+
+  const username = String(
+    profile.username || ""
+  ).trim().toLowerCase();
+
+  const email = String(
+    authUser.email || ""
+  ).trim().toLowerCase();
+
+  const profileEmail = String(
+    profile.email || ""
+  ).trim().toLowerCase();
+
+  if (
+    !usernameOK(username) ||
+    !email ||
+    email !== profileEmail ||
+    !["superadmin", "siteadmin"].includes(profile.role)
+  ) {
+    throw new Error("Account identity mismatch");
+  }
+
+  const indexSnapshot = await db
+    .ref(`adminUsernameIndex/${username}`)
+    .once("value");
+
+  if (indexSnapshot.val()?.uid !== uid) {
+    throw new Error("Username index mismatch");
+  }
+
+  const legacyEmailId = email.replace(
+    /[.#$\[\]\/\s]/g,
+    "_"
+  );
+
+  const targetId = profile.livechatId
+    ? resolveLiveChatId(uid, profile)
+    : buildLiveChatId(username, uid);
+
+  const validKey = key =>
+    typeof key === "string" &&
+    key.length > 0 &&
+    Buffer.byteLength(key, "utf8") <= 768 &&
+    !/[.#$\[\]\/\u0000-\u001F\u007F]/.test(key);
+
+  if (
+    !validKey(legacyEmailId) ||
+    !validKey(targetId)
+  ) {
+    throw new Error("Invalid migration identity");
+  }
+
+  const createdAt = Date.parse(
+    authUser.metadata.creationTime
+  );
+
+  if (
+    !Number.isFinite(createdAt) ||
+    createdAt <= 0 ||
+    createdAt > Date.now()
+  ) {
+    throw new Error("Invalid account creation time");
+  }
+
+  const [
+    userSnapshot,
+    chatSnapshot,
+    notificationSnapshot
+  ] = await Promise.all([
+
+    db.ref(`users/${legacyEmailId}`)
+      .once("value"),
+
+    db.ref(`chats/${legacyEmailId}`)
+      .once("value"),
+
+    db.ref(`notifications/${legacyEmailId}`)
+      .once("value")
+
+  ]);
+
+  const legacyProfile = userSnapshot.val();
+  const legacyChat = chatSnapshot.val();
+  const legacyNotifications = notificationSnapshot.val();
+
+  const messages = Object.values(
+    legacyChat || {}
+  );
+
+  const issues = [];
+
+  const legacyExists =
+    userSnapshot.exists() ||
+    chatSnapshot.exists() ||
+    notificationSnapshot.exists();
+
+  const legacyProfileEmail = String(
+    legacyProfile?.email || ""
+  ).trim().toLowerCase();
+
+  if (
+    legacyExists &&
+    legacyProfileEmail !== email
+  ) {
+    issues.push("LEGACY_PROFILE_EMAIL_MISMATCH");
+  }
+
+  let messagesBeforeAccount = 0;
+
+  for (const message of messages) {
+
+    const time = message?.time;
+
+    if (
+      !Number.isSafeInteger(time) ||
+      time <= 0 ||
+      time > Date.now()
+    ) {
+
+      issues.push("INVALID_MESSAGE_TIMESTAMP");
+
+      continue;
+
+    }
+
+    if (time < createdAt) {
+      messagesBeforeAccount++;
+    }
+
+  }
+
+  if (messagesBeforeAccount > 0) {
+    issues.push("CHAT_PREDATES_AUTH_ACCOUNT");
+  }
+
+  if (
+    authUser.disabled === true ||
+    profile.active !== true
+  ) {
+    issues.push("ACCOUNT_INACTIVE");
+  }
+
+  const fingerprint = migrationFingerprint({
+
+    uid,
+    username,
+    email,
+    createdAt,
+    targetId,
+
+    legacyProfile,
+    legacyChat,
+    legacyNotifications
+
+  });
+
+  return {
+
+    uid,
+    username,
+    legacyEmailId,
+    targetId,
+    createdAt,
+
+    legacyExists,
+
+    messageCount: messages.length,
+
+    messagesBeforeAccount,
+
+    issues: [...new Set(issues)],
+
+    fingerprint
+
+  };
+
+}
+
+
+/* GET OWNERSHIP EVIDENCE */
+
+app.get(
+  "/api/admin/livechat-migration/ownership-evidence/:uid",
+
+  requireAdmin,
+  superOnly,
+  requirePrimaryMigrationAdmin,
+
+  async (req, res) => {
+
+    const uid = req.params.uid;
+
+    if (!validMigrationUid(uid)) {
+      return fail(res, 400, "Invalid UID");
+    }
+
+    try {
+
+      const evidence =
+        await getLivechatOwnershipEvidence(uid);
+
+      return res.json({
+
+        ok: true,
+
+        evidence,
+
+        databaseModified: false,
+
+        executionAuthorized: false
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Ownership Evidence]",
+        error.message
+      );
+
+      return fail(
+        res,
+        409,
+        "Unable to verify ownership evidence"
+      );
+
+    }
+
+  }
+
+);
+
+/* SAVE MANUAL OWNERSHIP DECISION */
+
+app.post(
+  "/api/admin/livechat-migration/ownership-decision",
+
+  requireAdmin,
+  superOnly,
+  requirePrimaryMigrationAdmin,
+
+  async (req, res) => {
+
+    try {
+
+      const uid = req.body?.uid;
+
+      const decision = req.body?.decision;
+
+      const fingerprint = req.body?.fingerprint;
+
+      const reason = typeof req.body?.reason === "string"
+        ? req.body.reason.trim()
+        : "";
+
+      if (!validMigrationUid(uid)) {
+        return fail(res, 400, "Invalid UID");
+      }
+
+      if (![
+        "APPROVED",
+        "REJECTED",
+        "HOLD"
+      ].includes(decision)) {
+        return fail(res, 400, "Invalid decision");
+      }
+
+      if (
+        reason.length < 20 ||
+        reason.length > 1000
+      ) {
+        return fail(
+          res,
+          400,
+          "Review reason must contain 20-1000 characters"
+        );
+      }
+
+      if (
+        typeof fingerprint !== "string" ||
+        !/^[a-f0-9]{64}$/.test(fingerprint)
+      ) {
+        return fail(
+          res,
+          400,
+          "Invalid evidence fingerprint"
+        );
+      }
+
+      const evidence =
+        await getLivechatOwnershipEvidence(uid);
+
+      if (evidence.fingerprint !== fingerprint) {
+
+        return fail(
+          res,
+          409,
+          "Evidence changed. Review again."
+        );
+
+      }
+
+      if (decision === "APPROVED") {
+
+        if (!evidence.legacyExists) {
+
+          return fail(
+            res,
+            409,
+            "No legacy record to approve"
+          );
+
+        }
+
+        if (evidence.issues.length > 0) {
+
+          return fail(
+            res,
+            409,
+            "Account has unresolved ownership issues"
+          );
+
+        }
+
+        if (req.body?.ownershipConfirmed !== true) {
+
+          return fail(
+            res,
+            400,
+            "Manual ownership confirmation required"
+          );
+
+        }
+
+      }
+
+      const timestamp = Date.now();
+
+      const auditId = db
+        .ref(LIVECHAT_REVIEW_AUDIT_PATH)
+        .push().key;
+
+      const record = {
+
+        uid,
+
+        username: evidence.username,
+
+        legacyEmailId: evidence.legacyEmailId,
+
+        targetId: evidence.targetId,
+
+        fingerprint: evidence.fingerprint,
+
+        decision,
+
+        reason,
+
+        messageCount: evidence.messageCount,
+
+        messagesBeforeAccount:
+          evidence.messagesBeforeAccount,
+
+        issues: evidence.issues,
+
+        reviewedBy: req.admin.uid,
+
+        reviewedAt: timestamp,
+
+        auditId,
+
+        migrationAuthorized: false,
+
+        deletionAuthorized: false
+
+      };
+
+      const updates = {};
+
+      updates[
+        `${LIVECHAT_REVIEW_PATH}/${uid}`
+      ] = record;
+
+      updates[
+        `${LIVECHAT_REVIEW_AUDIT_PATH}/${auditId}`
+      ] = record;
+
+      await db.ref().update(updates);
+
+      return res.json({
+
+        ok: true,
+
+        decision,
+
+        approvalRecorded: true,
+
+        reviewDatabaseModified: true,
+
+        livechatDataModified: false,
+
+        executionAuthorized: false,
+
+        deletionAuthorized: false
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Ownership Decision]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to save ownership decision"
+      );
+
+    }
+
+  }
+
+);
+
+/* GET OWNERSHIP REVIEW STATUS */
+
+app.get(
+  "/api/admin/livechat-migration/ownership-status",
+
+  requireAdmin,
+  superOnly,
+  requirePrimaryMigrationAdmin,
+
+  async (req, res) => {
+
+    try {
+
+      const snapshot = await db
+        .ref(LIVECHAT_REVIEW_PATH)
+        .once("value");
+
+      const reviews = Object.values(
+        snapshot.val() || {}
+      );
+
+      return res.json({
+
+        ok: true,
+
+        version: 1,
+
+        mode: "MANUAL_OWNERSHIP_REVIEW",
+
+        summary: {
+
+          totalReviewed: reviews.length,
+
+          approved: reviews.filter(
+            item => item.decision === "APPROVED"
+          ).length,
+
+          rejected: reviews.filter(
+            item => item.decision === "REJECTED"
+          ).length,
+
+          hold: reviews.filter(
+            item => item.decision === "HOLD"
+          ).length
+
+        },
+
+        reviews,
+
+        databaseModified: false,
+
+        executionAuthorized: false,
+
+        archiveAuthorized: false,
+
+        deletionAuthorized: false
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Ownership Status]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to load ownership review status"
+      );
+
+    }
+
+  }
+
+);
+
+/* =====================================================
+   END LIVECHAT MIGRATION - MANUAL OWNERSHIP REVIEW
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
