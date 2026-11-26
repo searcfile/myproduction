@@ -7624,5 +7624,179 @@ return res.json({ ok: true });
 /* =====================================================
    END STICKY NOTES API
    ===================================================== */
+
+/* =====================================================
+   LIVECHAT IDENTITY MIGRATION - DRY RUN V1
+   READ ONLY - NO DATABASE MODIFICATION
+   ===================================================== */
+
+app.get(
+  "/api/admin/livechat-migration/preview",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    // Primary Super Admin sahaja.
+    if (!isPrimarySuperAdmin(req.admin)) {
+      return fail(res, 403, "Primary Super Admin only");
+    }
+
+    try {
+      const adminSnap = await db
+        .ref("adminUsers")
+        .once("value");
+
+      const admins = adminSnap.val() || {};
+
+      const results = [];
+
+      for (const [uid, profile] of Object.entries(admins)) {
+
+        const username = String(
+          profile.username || ""
+        ).trim().toLowerCase();
+
+        if (!usernameOK(username)) {
+          results.push({
+            uid,
+            username,
+            status: "INVALID_USERNAME"
+          });
+          continue;
+        }
+
+        const oldAdminId = `admin_${uid}`;
+
+        const oldEmailId = String(profile.email || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[.#$\[\]\/\s]/g, "_");
+
+        const targetId = profile.livechatId
+          ? resolveLiveChatId(uid, profile)
+          : buildLiveChatId(username, uid);
+
+        const sourceIds = [...new Set([
+          oldAdminId,
+          oldEmailId,
+          targetId
+        ].filter(Boolean))];
+
+        const paths = [];
+
+        for (const sid of sourceIds) {
+
+          const [
+            userSnap,
+            chatSnap,
+            notificationSnap
+          ] = await Promise.all([
+            db.ref(`users/${sid}`).once("value"),
+            db.ref(`chats/${sid}`).once("value"),
+            db.ref(`notifications/${sid}`).once("value")
+          ]);
+
+          paths.push({
+            sid,
+            isTarget: sid === targetId,
+            hasProfile: userSnap.exists(),
+            hasChat: chatSnap.exists(),
+            messageCount: chatSnap.numChildren(),
+            hasNotification: notificationSnap.exists()
+          });
+        }
+
+        const legacyPaths = paths.filter(item =>
+          !item.isTarget &&
+          (
+            item.hasProfile ||
+            item.hasChat ||
+            item.hasNotification
+          )
+        );
+
+        const target = paths.find(
+          item => item.isTarget
+        );
+
+        let status = "READY";
+
+        if (
+          profile.livechatId === targetId &&
+          legacyPaths.length === 0
+        ) {
+          status = "IDENTITY_ASSIGNED";
+        } else if (legacyPaths.length > 0) {
+          status = "MIGRATION_REQUIRED";
+        } else {
+          status = "NO_LEGACY_DATA";
+        }
+
+        results.push({
+          uid,
+          username,
+          role: profile.role,
+          active: profile.active === true,
+          currentLivechatId: profile.livechatId || null,
+          targetLivechatId: targetId,
+          legacyPathCount: legacyPaths.length,
+          targetExists: !!(
+            target?.hasProfile ||
+            target?.hasChat ||
+            target?.hasNotification
+          ),
+          status,
+          paths
+        });
+      }
+
+      return res.json({
+        ok: true,
+        mode: "DRY_RUN",
+        databaseModified: false,
+        generatedAt: Date.now(),
+
+        summary: {
+          totalAccounts: results.length,
+
+          migrationRequired: results.filter(
+            item => item.status === "MIGRATION_REQUIRED"
+          ).length,
+
+          identityAssigned: results.filter(
+            item => item.status === "IDENTITY_ASSIGNED"
+          ).length,
+
+          noLegacyData: results.filter(
+            item => item.status === "NO_LEGACY_DATA"
+          ).length,
+
+          invalidAccounts: results.filter(
+            item => item.status === "INVALID_USERNAME"
+          ).length
+        },
+
+        accounts: results
+      });
+
+    } catch (error) {
+      console.error(
+        "[LiveChat Migration Preview]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to preview LiveChat migration"
+      );
+    }
+  }
+);
+
+/* =====================================================
+   END LIVECHAT IDENTITY MIGRATION - DRY RUN V1
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
