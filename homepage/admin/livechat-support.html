@@ -3874,20 +3874,30 @@ async function openSelectedUserMainPage(e) {
   }
 
 
-const userKey =
-  resolveAgentReplySid(selectedChatMemberIds) ||
-  activeUserIdSanitized;
 
-if (!userKey) {
-  alert("Unable to resolve user identity.");
+const identity = getVerifiedChatIdentity(
+  activeUserIdSanitized
+);
+
+if (
+  !verifiedIdentityReady ||
+  !identity ||
+  identity.active !== true
+) {
+  alert("Unable to verify user identity.");
   return;
 }
+
+const uid = identity.uid;
+
 
   let syncedTabs = [];
   let syncedActiveTabUrl = "";
 
   try {
-    const snap = await db.ref(`users/${userKey}/mainOpenTabs`).once("value");
+const snap = await db
+  .ref(`adminWorkspaceTabs/${uid}`)
+  .once("value");
     const v = snap.val() || {};
 
     if (Array.isArray(v.tabs)) {
@@ -3897,9 +3907,11 @@ if (!userKey) {
     if (v.activeTabUrl) {
       syncedActiveTabUrl = String(v.activeTabUrl);
     }
-  } catch (err) {
-    console.warn("[ADMIN] gagal ambil mainOpenTabs:", err);
-  }
+} catch (err) {
+  console.warn("[ADMIN] Failed to load workspace:", err);
+  alert("Unable to load user workspace.");
+  return;
+}
 
   const qs = new URLSearchParams({
     name: payload.name || "",
