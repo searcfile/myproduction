@@ -10365,5 +10365,328 @@ app.get(
    END LIVECHAT MIGRATION - MANUAL OWNERSHIP REVIEW
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT - SAFE MIGRATION EXECUTION PREVIEW V1
+   READ ONLY - NO DATABASE MODIFICATION
+   ===================================================== */
+
+app.get(
+  "/api/admin/livechat-migration/execution-preview/:uid",
+
+  requireAdmin,
+  superOnly,
+  requirePrimaryMigrationAdmin,
+
+  async (req, res) => {
+
+    try {
+
+      const uid = req.params.uid;
+
+      if (!validMigrationUid(uid)) {
+        return fail(res, 400, "Invalid UID");
+      }
+
+      const evidence =
+        await getLivechatOwnershipEvidence(uid);
+
+      const legacyAdminId = `admin_${uid}`;
+
+      const targetId = evidence.targetId;
+
+      const issues = [...evidence.issues];
+
+      const [
+        approvalSnapshot,
+        usersSnapshot,
+        chatsSnapshot,
+        notificationsSnapshot
+      ] = await Promise.all([
+
+        db.ref(`${LIVECHAT_REVIEW_PATH}/${uid}`)
+          .once("value"),
+
+        db.ref("users").once("value"),
+
+        db.ref("chats").once("value"),
+
+        db.ref("notifications").once("value")
+
+      ]);
+
+      const approval = approvalSnapshot.val();
+
+      const users = usersSnapshot.val() || {};
+      const chats = chatsSnapshot.val() || {};
+      const notifications =
+        notificationsSnapshot.val() || {};
+
+      const currentEvidence =
+        await getLivechatOwnershipEvidence(uid);
+
+      if (
+        currentEvidence.fingerprint !==
+        evidence.fingerprint
+      ) {
+        issues.push("EVIDENCE_CHANGED");
+      }
+
+      /* VERIFY MANUAL OWNERSHIP APPROVAL */
+
+      const approvalVerified = Boolean(
+
+        approval &&
+        approval.decision === "APPROVED" &&
+        approval.uid === uid &&
+        approval.username === evidence.username &&
+        approval.legacyEmailId ===
+          evidence.legacyEmailId &&
+        approval.targetId === targetId &&
+        approval.reviewedBy === req.admin.uid &&
+        approval.fingerprint ===
+          currentEvidence.fingerprint
+
+      );
+
+      if (
+        evidence.legacyExists &&
+        !approvalVerified
+      ) {
+        issues.push("OWNERSHIP_APPROVAL_REQUIRED");
+      }
+
+      /* BUILD SOURCE PLAN */
+
+      const sourceIds = [...new Set([
+
+        legacyAdminId,
+        targetId,
+
+        ...(evidence.legacyExists
+          ? [evidence.legacyEmailId]
+          : [])
+
+      ])];
+
+      const sources = [];
+
+      const messageMap = new Map();
+
+      const conflicts = [];
+
+      let duplicateMessages = 0;
+
+      let totalSourceMessages = 0;
+
+      /* INSPECT MESSAGE COLLISIONS */
+
+      for (const sid of sourceIds) {
+
+        const chat = Object.hasOwn(chats, sid)
+          ? chats[sid]
+          : {};
+
+        const entries = Object.entries(chat || {});
+
+        totalSourceMessages += entries.length;
+
+        sources.push({
+
+          sid,
+
+          hasProfile:
+            Object.hasOwn(users, sid),
+
+          hasChat:
+            Object.hasOwn(chats, sid),
+
+          hasNotification:
+            Object.hasOwn(notifications, sid),
+
+          messageCount: entries.length
+
+        });
+
+        for (const [messageId, message] of entries) {
+
+          if (
+            !message ||
+            typeof message !== "object" ||
+            !Number.isSafeInteger(message.time) ||
+            message.time <= 0 ||
+            message.time > Date.now()
+          ) {
+
+            issues.push("INVALID_MESSAGE_DATA");
+
+            continue;
+
+          }
+
+          if (message.time < evidence.createdAt) {
+            issues.push("CHAT_PREDATES_AUTH_ACCOUNT");
+          }
+
+          const fingerprint =
+            migrationFingerprint(message);
+
+          const existing =
+            messageMap.get(messageId);
+
+          if (existing) {
+
+            if (
+              existing.fingerprint === fingerprint
+            ) {
+
+              duplicateMessages++;
+
+            } else {
+
+              conflicts.push({
+
+                messageId,
+
+                firstSource: existing.sid,
+
+                secondSource: sid
+
+              });
+
+            }
+
+            continue;
+
+          }
+
+          messageMap.set(messageId, {
+
+            sid,
+            fingerprint,
+            message
+
+          });
+
+        }
+
+      }
+
+      if (conflicts.length > 0) {
+        issues.push("MESSAGE_ID_CONFLICT");
+      }
+
+      /* PREVIEW UNREAD COUNTERS */
+
+      let unreadForAdmin = 0;
+      let unreadForUser = 0;
+
+      for (const item of messageMap.values()) {
+
+        const message = item.message;
+
+        if (
+          message.from === "user" &&
+          message.readByAdmin !== true
+        ) {
+          unreadForAdmin++;
+        }
+
+        if (
+          message.from === "admin" &&
+          message.readByUser !== true
+        ) {
+          unreadForUser++;
+        }
+
+      }
+
+      const uniqueIssues = [...new Set(issues)];
+
+      const previewPassed =
+        uniqueIssues.length === 0;
+
+      return res.json({
+
+        ok: true,
+
+        version: 1,
+
+        mode: "EXECUTION_PREVIEW_ONLY",
+
+        uid,
+
+        username: evidence.username,
+
+        targetId,
+
+        approvalVerified,
+
+        previewPassed,
+
+        status: previewPassed
+          ? "PREVIEW_PASSED"
+          : "PREVIEW_BLOCKED",
+
+        summary: {
+
+          totalSources: sources.length,
+
+          totalSourceMessages,
+
+          uniqueMessages: messageMap.size,
+
+          duplicateMessages,
+
+          conflictingMessages: conflicts.length,
+
+          unreadForAdmin,
+
+          unreadForUser,
+
+          issueCount: uniqueIssues.length
+
+        },
+
+        sources,
+
+        conflicts,
+
+        issues: uniqueIssues,
+
+        databaseModified: false,
+
+        migrationAuthorized: false,
+
+        executionAuthorized: false,
+
+        archiveAuthorized: false,
+
+        deletionAuthorized: false
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Execution Preview]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to generate execution preview"
+      );
+
+    }
+
+  }
+
+);
+
+/* =====================================================
+   END LIVECHAT - SAFE MIGRATION EXECUTION PREVIEW V1
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
