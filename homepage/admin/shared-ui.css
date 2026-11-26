@@ -5396,3 +5396,26 @@ body .header {
   }
 
 }
+/* ==========================================
+   HEADER SELECT SITE - AUTO CONTENT WIDTH
+   ========================================== */
+
+@media (min-width: 816px) {
+
+  #headerSiteCustom:not(.has-value)
+  .header-site-search-input {
+    field-sizing: content;
+    width: auto !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  #headerSiteCustom.has-value
+  .header-site-search-input {
+    field-sizing: fixed;
+    width: 0 !important;
+    flex: 1 1 0px !important;
+    min-width: 0 !important;
+  }
+
+}
