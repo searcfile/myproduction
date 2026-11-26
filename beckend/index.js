@@ -9031,5 +9031,519 @@ app.get(
    END LIVECHAT LEGACY OWNERSHIP VERIFICATION V3
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT MIGRATION V4 - MANUAL REVIEW & ARCHIVE PLAN
+   READ ONLY - NO DATABASE MODIFICATION
+   ===================================================== */
+
+app.get(
+  "/api/admin/livechat-migration/plan-v4",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    res.setHeader("Cache-Control", "no-store");
+
+    if (!isPrimarySuperAdmin(req.admin)) {
+      return fail(res, 403, "Primary Super Admin only");
+    }
+
+    try {
+
+      const [
+        adminSnap,
+        usersSnap,
+        chatsSnap,
+        notificationsSnap,
+        indexSnap
+      ] = await Promise.all([
+        db.ref("adminUsers").once("value"),
+        db.ref("users").once("value"),
+        db.ref("chats").once("value"),
+        db.ref("notifications").once("value"),
+        db.ref("adminUsernameIndex").once("value")
+      ]);
+
+      const admins = adminSnap.val() || {};
+      const users = usersSnap.val() || {};
+      const chats = chatsSnap.val() || {};
+      const notifications = notificationsSnap.val() || {};
+      const usernameIndex = indexSnap.val() || {};
+
+      const authUsers = new Map();
+      const owners = new Map();
+      const accounts = [];
+      const archivePlan = [];
+      const guestRecords = [];
+
+      let pageToken;
+
+      /* LOAD FIREBASE AUTH ACCOUNTS */
+
+      do {
+
+        const page = await auth.listUsers(
+          1000,
+          pageToken
+        );
+
+        for (const user of page.users) {
+          authUsers.set(user.uid, user);
+        }
+
+        pageToken = page.pageToken;
+
+      } while (pageToken);
+
+      /* IDENTITY HELPERS */
+
+      const normalizeEmail = value =>
+        String(value || "").trim().toLowerCase();
+
+      const emailToKey = value =>
+        normalizeEmail(value)
+          .replace(/[.#$\[\]\/\s]/g, "_");
+
+      const validKey = value =>
+        typeof value === "string" &&
+        value.length > 0 &&
+        Buffer.byteLength(value, "utf8") <= 768 &&
+        !/[.#$\[\]\/\u0000-\u001F\u007F]/.test(value);
+
+      const hasRecord = (data, sid) =>
+        Boolean(sid) && Object.hasOwn(data, sid);
+
+      function inspectRecord(sid) {
+
+        const messages = hasRecord(chats, sid)
+          ? Object.values(chats[sid] || {})
+          : [];
+
+        return {
+          sid,
+          hasProfile: hasRecord(users, sid),
+          hasChat: hasRecord(chats, sid),
+          hasNotification:
+            hasRecord(notifications, sid),
+          messageCount: messages.length
+        };
+
+      }
+
+      function recordExists(record) {
+
+        return (
+          record.hasProfile ||
+          record.hasChat ||
+          record.hasNotification
+        );
+
+      }
+
+      function registerOwner(sid, uid) {
+
+        if (!validKey(sid)) return;
+
+        if (!owners.has(sid)) {
+          owners.set(sid, new Set());
+        }
+
+        owners.get(sid).add(uid);
+
+      }
+
+      /* BUILD ACCOUNT IDENTITY PLAN */
+
+      for (const [uid, profile] of Object.entries(admins)) {
+
+        const username = String(
+          profile?.username || ""
+        ).trim().toLowerCase();
+
+        const authUser = authUsers.get(uid);
+
+        const authEmail = normalizeEmail(
+          authUser?.email
+        );
+
+        const profileEmail = normalizeEmail(
+          profile?.email
+        );
+
+        const legacyAdminId = `admin_${uid}`;
+
+        const legacyEmailId =
+          emailToKey(authEmail);
+
+        const profileEmailId =
+          emailToKey(profileEmail);
+
+        const issues = [];
+
+        let targetId = null;
+
+        try {
+
+          targetId = profile?.livechatId
+            ? resolveLiveChatId(uid, profile)
+            : buildLiveChatId(username, uid);
+
+          if (!validKey(targetId)) {
+            throw new Error("Invalid target");
+          }
+
+        } catch (error) {
+
+          targetId = null;
+          issues.push("INVALID_TARGET_ID");
+
+        }
+
+        if (!authUser) {
+          issues.push("AUTH_ACCOUNT_NOT_FOUND");
+        }
+
+        if (!authEmail || authEmail !== profileEmail) {
+          issues.push("AUTH_EMAIL_MISMATCH");
+        }
+
+        if (!usernameOK(username)) {
+          issues.push("INVALID_USERNAME");
+        }
+
+        if (usernameIndex[username]?.uid !== uid) {
+          issues.push("USERNAME_INDEX_MISMATCH");
+        }
+
+        if (
+          !["superadmin", "siteadmin"]
+            .includes(profile?.role)
+        ) {
+          issues.push("INVALID_ADMIN_ROLE");
+        }
+
+        const authCreatedAt = Date.parse(
+          authUser?.metadata?.creationTime || ""
+        );
+
+        if (
+          !Number.isFinite(authCreatedAt) ||
+          authCreatedAt <= 0 ||
+          authCreatedAt > Date.now()
+        ) {
+          issues.push("INVALID_AUTH_CREATION_TIME");
+        }
+
+        const sourceIds = [...new Set([
+          legacyAdminId,
+          legacyEmailId,
+          profileEmailId,
+          targetId
+        ].filter(validKey))];
+
+        for (const sid of sourceIds) {
+          registerOwner(sid, uid);
+        }
+
+        const records = sourceIds
+          .map(inspectRecord)
+          .filter(recordExists);
+
+        const emailRecord =
+          inspectRecord(legacyEmailId);
+
+        const legacyEmailExists =
+          recordExists(emailRecord);
+
+        if (legacyEmailExists) {
+
+          const oldEmail = normalizeEmail(
+            users[legacyEmailId]?.email
+          );
+
+          if (!oldEmail) {
+            issues.push(
+              "LEGACY_PROFILE_EVIDENCE_MISSING"
+            );
+          } else if (oldEmail !== authEmail) {
+            issues.push(
+              "LEGACY_PROFILE_EMAIL_MISMATCH"
+            );
+          }
+
+        }
+
+        let messagesBeforeAccount = 0;
+
+        /* CHECK ALL SOURCE TIMESTAMPS */
+
+        for (const record of records) {
+
+          const messages = Object.values(
+            chats[record.sid] || {}
+          );
+
+          for (const message of messages) {
+
+            const time = message?.time;
+
+            if (
+              !Number.isSafeInteger(time) ||
+              time <= 0 ||
+              time > Date.now()
+            ) {
+
+              issues.push(
+                "INVALID_MESSAGE_TIMESTAMP"
+              );
+
+              continue;
+
+            }
+
+            if (
+              Number.isFinite(authCreatedAt) &&
+              time < authCreatedAt
+            ) {
+
+              messagesBeforeAccount++;
+
+              issues.push(
+                "CHAT_PREDATES_AUTH_ACCOUNT"
+              );
+
+            }
+
+          }
+
+        }
+
+        accounts.push({
+
+          uid,
+          username,
+
+          active: profile?.active === true,
+          authDisabled: authUser?.disabled === true,
+
+          currentId: profile?.livechatId || legacyAdminId,
+
+          targetId,
+          sourceIds,
+          records,
+
+          legacyEmailExists,
+          messagesBeforeAccount,
+
+          issues: [...new Set(issues)],
+
+          ownershipApproved: false,
+          migrationAuthorized: false
+
+        });
+
+      }
+
+      /* DETECT IDENTITY OWNERSHIP CONFLICTS */
+
+      for (const account of accounts) {
+
+        for (const sid of account.sourceIds) {
+
+          if ((owners.get(sid)?.size || 0) > 1) {
+
+            account.issues.push(
+              "IDENTITY_OWNERSHIP_CONFLICT"
+            );
+
+          }
+
+        }
+
+        account.issues = [
+          ...new Set(account.issues)
+        ];
+
+        if (account.issues.length > 0) {
+
+          account.status = "HOLD_FOR_REVIEW";
+
+          account.recommendedAction =
+            "KEEP_ALL_SOURCE_DATA_UNCHANGED";
+
+        } else if (account.legacyEmailExists) {
+
+          account.status = "MANUAL_APPROVAL_REQUIRED";
+
+          account.recommendedAction =
+            "VERIFY_LEGACY_EMAIL_OWNERSHIP";
+
+        } else {
+
+          account.status = "IDENTITY_PLAN_REVIEW";
+
+          account.recommendedAction =
+            "REVIEW_UID_AND_TARGET_BEFORE_ASSIGNMENT";
+
+        }
+
+      }
+
+      /* BUILD ORPHAN ARCHIVE PLAN */
+
+      const allIds = new Set([
+        ...Object.keys(users),
+        ...Object.keys(chats),
+        ...Object.keys(notifications)
+      ]);
+
+      for (const sid of allIds) {
+
+        if (owners.has(sid)) continue;
+
+        const record = inspectRecord(sid);
+
+        if (sid.startsWith("g_")) {
+
+          guestRecords.push({
+            ...record,
+            recommendedAction: "KEEP_UNCHANGED"
+          });
+
+          continue;
+
+        }
+
+        let classification = "UNKNOWN_IDENTITY";
+
+        if (sid.startsWith("admin_")) {
+
+          const oldUid = sid.slice(6);
+
+          classification =
+            !authUsers.has(oldUid) &&
+            !Object.hasOwn(admins, oldUid)
+              ? "POSSIBLE_DELETED_ACCOUNT"
+              : "UNMAPPED_EXISTING_ACCOUNT";
+
+        } else if (sid.includes("@")) {
+
+          const matches = [...authUsers.values()]
+            .filter(user =>
+              emailToKey(user.email) === sid
+            );
+
+          classification = matches.length === 0
+            ? "NO_CURRENT_AUTH_EMAIL_MATCH"
+            : "UNMAPPED_EMAIL_ACCOUNT";
+
+        }
+
+        archivePlan.push({
+
+          ...record,
+
+          classification,
+
+          recommendedAction:
+            "RETAIN_PENDING_PRIVATE_ARCHIVE_REVIEW",
+
+          archiveAuthorized: false,
+          deletionAuthorized: false
+
+        });
+
+      }
+
+      /* GENERATE FINAL PLAN SUMMARY */
+
+      const countStatus = status =>
+        accounts.filter(
+          account => account.status === status
+        ).length;
+
+      const issueCounts = {};
+
+      for (const account of accounts) {
+
+        for (const issue of account.issues) {
+
+          issueCounts[issue] =
+            (issueCounts[issue] || 0) + 1;
+
+        }
+
+      }
+
+      return res.json({
+
+        ok: true,
+        version: 4,
+        mode: "MIGRATION_PLAN_ONLY",
+
+        generatedAt: Date.now(),
+
+        databaseModified: false,
+        executionAuthorized: false,
+        archiveAuthorized: false,
+        deletionAuthorized: false,
+
+        summary: {
+
+          totalAccounts: accounts.length,
+
+          manualApprovalRequired:
+            countStatus("MANUAL_APPROVAL_REQUIRED"),
+
+          identityPlanReview:
+            countStatus("IDENTITY_PLAN_REVIEW"),
+
+          holdForReview:
+            countStatus("HOLD_FOR_REVIEW"),
+
+          orphanRecords: archivePlan.length,
+
+          orphanMessages: archivePlan.reduce(
+            (total, record) =>
+              total + record.messageCount,
+            0
+          ),
+
+          guestRecords: guestRecords.length,
+
+          ownershipApproved: 0,
+          migrationAuthorized: 0
+
+        },
+
+        issueCounts,
+        accounts,
+        archivePlan,
+        guestRecords
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Migration Plan V4]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to generate migration plan"
+      );
+
+    }
+
+  }
+);
+
+/* =====================================================
+   END LIVECHAT MIGRATION V4 - MANUAL REVIEW & ARCHIVE PLAN
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
