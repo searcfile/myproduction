@@ -3,7 +3,7 @@
    5G88 CENTRAL HISTORY V1 — uses existing tabHistory schema.
    Does not store form values, passwords, generated numbers or URLs.
    ============================================================ */
-(function () {
+(function () { 
   "use strict";
   if (window.G88History) return;
   const skipPages = new Set(["login.html"]);
