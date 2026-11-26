@@ -7798,5 +7798,128 @@ app.get(
    END LIVECHAT IDENTITY MIGRATION - DRY RUN V1
    ===================================================== */
 
+/* =====================================================
+   LIVECHAT - VERIFIED ADMIN IDENTITY API
+   ===================================================== */
+
+app.get(
+  "/api/admin/livechat-identities",
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+      const snapshot = await db
+        .ref("adminUsers")
+        .once("value");
+
+      const profiles = snapshot.val() || {};
+      const identities = [];
+      const owners = new Map();
+
+      for (const [uid, profile] of Object.entries(profiles)) {
+
+        if (
+          !profile ||
+          !["superadmin", "siteadmin"].includes(profile.role)
+        ) {
+          continue;
+        }
+
+        const username = String(
+          profile.username || ""
+        ).trim().toLowerCase();
+
+        if (!usernameOK(username)) {
+          return fail(
+            res,
+            409,
+            "Invalid admin identity"
+          );
+        }
+
+        const email = String(
+          profile.email || ""
+        ).trim().toLowerCase();
+
+        // Gunakan identity yang sedang aktif.
+        // Akaun lama masih menggunakan admin_UID
+        // sehingga migration selesai.
+        const livechatId = resolveLiveChatId(
+          uid,
+          profile
+        );
+
+        const legacyAdminId = `admin_${uid}`;
+
+        const legacyEmailId = email
+          .replace(/[.#$\[\]\/\s]/g, "_");
+
+        const memberIds = [...new Set([
+          livechatId,
+          legacyAdminId,
+          legacyEmailId
+        ].filter(Boolean))];
+
+        // Jangan benarkan satu LiveChat ID
+        // dimiliki oleh dua akaun berlainan.
+        for (const sid of memberIds) {
+
+          if (
+            owners.has(sid) &&
+            owners.get(sid) !== uid
+          ) {
+            return fail(
+              res,
+              409,
+              "Conflicting LiveChat identities"
+            );
+          }
+
+          owners.set(sid, uid);
+        }
+
+        identities.push({
+          uid,
+          username,
+          email,
+          role: profile.role,
+          active: profile.active === true,
+          livechatId,
+          memberIds
+        });
+      }
+
+      res.setHeader(
+        "Cache-Control",
+        "no-store"
+      );
+
+      return res.json({
+        ok: true,
+        generatedAt: Date.now(),
+        identities
+      });
+
+    } catch (error) {
+
+      console.error(
+        "[LiveChat Verified Identities]",
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        "Unable to load LiveChat identities"
+      );
+    }
+  }
+);
+
+/* =====================================================
+   END LIVECHAT - VERIFIED ADMIN IDENTITY API
+   ===================================================== */
+
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
