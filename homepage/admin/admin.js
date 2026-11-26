@@ -687,66 +687,42 @@ function checkLogin() {
   );
 }
 
-function initLivechatNotifListener(userIdParam) {
+async function markLivechatAsRead() {
+
 const currentUser = auth.currentUser;
 
 if (
   !currentUser ||
   currentUser.isAnonymous ||
   !window.currentAdmin ||
-  !userIdParam
+  currentUser.uid !== window.currentAdmin.uid ||
+  sessionStorage.getItem("5g88.adminSession") !== currentUser.uid
 ) {
   return;
 }
 
-  db.ref("chats/" + userIdParam).on("value", (snapshot) => {
-    let unreadCount = 0;
+// Jangan mark read ketika tab LiveChat tidak aktif.
+if (!window.isLivechatTabActive?.()) return;
 
-    snapshot.forEach((child) => {
-      const msg = child.val() || {};
-      const from = String(msg.from || "").trim().toLowerCase();
+let livechatId;
 
-if (from === "admin" && msg.readByUser !== true) {
-  unreadCount++;
-}
-    });
-
-    const livechatDot = document.getElementById("livechatDot");
-if (livechatDot) {
-  if (unreadCount > 0) {
-    livechatDot.style.display = "flex";
-    livechatDot.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
-  } else {
-    livechatDot.style.display = "none";
-    livechatDot.textContent = "";
-  }
+try {
+  livechatId = await window.G88LiveChatIdentity.getCurrentId();
+} catch (error) {
+  console.error("[LiveChat] Identity verification failed:", error);
+  return;
 }
 
-syncLivechatAlertState(unreadCount);
-
-    if (window.updateFloatingFabLivechatDot) {
-      window.updateFloatingFabLivechatDot(unreadCount);
-    }
-  });
+// Semak semula selepas async resolution.
+if (
+  auth.currentUser?.uid !== currentUser.uid ||
+  !window.isLivechatTabActive?.()
+) {
+  return;
 }
 
+const chatRef = db.ref(`chats/${livechatId}`);
 
-async function markLivechatAsRead() {
-  const currentUser = auth.currentUser;
-
-  if (
-    !currentUser ||
-    currentUser.isAnonymous ||
-    !window.currentAdmin ||
-    !userId
-  ) {
-    return;
-  }
-
-  // Jangan mark read ketika tab LiveChat tidak aktif.
-  if (!window.isLivechatTabActive?.()) return;
-
-  const chatRef = db.ref("chats/" + userId);
 
   try {
     const snapshot = await chatRef.once("value");
@@ -913,13 +889,21 @@ if (
     return null;
   }
 
+
 window.currentAdmin = {
   uid: user.uid,
   username: profile.username,
   email: profile.email,
   name: profile.displayName || profile.username,
-  role: profile.role
+  role: profile.role,
+
+  // CENTRALIZED LIVECHAT IDENTITY
+  livechatId: window.G88LiveChatIdentity.resolve(
+    user.uid,
+    profile
+  )
 };
+
 
 // Selepas auth selesai, semak semula unread
 // dan cuba sambung bunyi jika Site Admin.
@@ -957,14 +941,17 @@ document.documentElement.classList.remove("admin-auth-pending");
 refreshSidebarVersionFromStorage();
 initAppUpdatePopup();
 
- const sessionData = {
+const sessionData = {
   uid: adminSession.uid,
   username: adminSession.username,
   email: adminSession.email,
   name: adminSession.name,
   role: adminSession.role,
+  livechatId: adminSession.livechatId,
   photo: ""
 };
+
+
 try {
   await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 } catch (error) {
@@ -1017,41 +1004,78 @@ myOverrideRef.on('value', async (snap) => {
     }
   });
 
-// Simpan info user di blurphp + status online
-const sanitizedEmail = sessionData.email.toLowerCase().replace(/\./g, '_');
 
-db.ref('users/' + sanitizedEmail).update({
+/* ==========================================
+   CENTRALIZED LIVECHAT PROFILE & PRESENCE
+   ========================================== */
+
+const livechatUserId = sessionData.livechatId;
+
+const livechatUserRef = db.ref(
+  `users/${livechatUserId}`
+);
+
+// Simpan profile menggunakan permanent LiveChat ID.
+livechatUserRef.update({
   name: sessionData.name,
-  email: sessionData.email,
-  photoURL: sessionData.photo || '',
+  displayName: sessionData.name,
+  email: sessionData.email || "",
+  isGuest: false,
   lastLoginTime: Date.now(),
   pageLoginTime: Date.now()
+}).catch(error => {
+  console.error("[LiveChat] Profile update failed:", error);
 });
 
-  const connectedRef = db.ref(".info/connected");
-  const onlineRef = db.ref("users/" + sanitizedEmail + "/online");
-  connectedRef.on("value", (snap) => {
-    if (snap.val() === true) {
-      onlineRef.set(true);
-      onlineRef.onDisconnect().set(false);
-    }
-  });
+// Kekalkan status Online / Offline.
+const connectedRef = db.ref(".info/connected");
+const onlineRef = livechatUserRef.child("online");
 
-  window.addEventListener("beforeunload", () => {
-    try { db.ref("users/" + sanitizedEmail + "/online").set(false); } catch (_){}
-    try { db.ref("chats/" + userId).off(); } catch (_){}
-    try { db.ref("logins/admin_override/" + userId).off(); } catch (_){}
-  });
+const livechatPresenceHandler = async snap => {
+  if (snap.val() !== true) return;
+
+  if (
+    auth.currentUser?.uid !== sessionData.uid ||
+    sessionStorage.getItem("5g88.adminSession") !== sessionData.uid
+  ) {
+    return;
+  }
+
+  try {
+    await onlineRef.onDisconnect().set(false);
+    await onlineRef.set(true);
+  } catch (error) {
+    console.error("[LiveChat] Presence error:", error);
+  }
+};
+
+connectedRef.on("value", livechatPresenceHandler);
+
+window.addEventListener("beforeunload", () => {
+  try {
+    connectedRef.off("value", livechatPresenceHandler);
+  } catch (_) {}
+
+  try {
+    onlineRef.set(false).catch(() => {});
+  } catch (_) {}
+
+  // Kekalkan Force Logout listener cleanup.
+  try {
+    db.ref("logins/admin_override/" + userId).off();
+  } catch (_) {}
+});
 
   // Livechat: bunyi + dot notifikasi
   let lastNotifTime = 0;
   let userHasInteracted = false;
   document.body.addEventListener("click", () => { userHasInteracted = true; });
 
-// LIVECHAT UNREAD V2
+// LIVECHAT UNREAD V3
 // Badge dan bunyi dikendalikan oleh shared-ui.js.
-// Jangan pasang listener lama menggunakan email sebagai chat ID.
-// Chat Site Admin menggunakan chats/admin_${uid}.
+// Semua LiveChat menggunakan permanent livechatId.
+// Akaun lama menggunakan legacy fallback sehingga migration.
+// Jangan gunakan email sebagai LiveChat database key.
   const loadingScreen = document.getElementById("loadingScreen");
 
 if (loadingScreen) {
