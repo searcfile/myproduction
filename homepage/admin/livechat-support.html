@@ -2796,6 +2796,43 @@ let selectedChatMemberIds = [];
 let selectedMergedEmail = "";
 let selectedChatGeneration = 0;
 
+/* ==========================================
+   LIVECHAT IDENTITY COMPATIBILITY
+   ========================================== */
+
+function getAdminUidFromChatSid(sid) {
+  const id = String(sid || "").trim();
+
+  // Guest dan legacy email bukan Admin UID.
+  if (!id || id.startsWith("g_") || id.includes("@")) {
+    return null;
+  }
+
+  // Support format lama admin_UID
+  // dan format baru username_UID.
+  const match = id.match(
+    /^.+_([a-zA-Z0-9]{28})$/
+  );
+
+  return match ? match[1] : null;
+}
+
+function isAdminChatSid(sid) {
+  return !!getAdminUidFromChatSid(sid);
+}
+
+function getChatIdentityPriority(sid) {
+  if (!isAdminChatSid(sid)) return 0;
+
+  // Legacy admin_UID.
+  if (String(sid).startsWith("admin_")) {
+    return 1;
+  }
+
+  // Permanent username_UID.
+  return 2;
+}
+
 function getInboxEmail(sid, userData = {}) {
   const raw = String(
     userData.email ||
@@ -2854,8 +2891,8 @@ function resolveAgentReplySid(memberIds = []) {
     allUsersData.find(([id]) => id === sid)?.[1] || {};
 
   ids.sort((a, b) => {
-    const adminA = a.startsWith("admin_") ? 1 : 0;
-    const adminB = b.startsWith("admin_") ? 1 : 0;
+const adminA = getChatIdentityPriority(a);
+const adminB = getChatIdentityPriority(b);
 
     // Paling penting: pilih channel admin UID dahulu.
     if (adminA !== adminB) return adminB - adminA;
@@ -2895,11 +2932,13 @@ function buildMergedInboxRows() {
   }
 
   return [...groups.values()].map(rows => {
-    const preferred = [...rows].sort((a, b) =>
-      Number(b[0].startsWith("admin_")) -
-      Number(a[0].startsWith("admin_")) ||
-      (b[2] || 0) - (a[2] || 0)
-    )[0];
+
+const preferred = [...rows].sort((a, b) =>
+  getChatIdentityPriority(b[0]) -
+  getChatIdentityPriority(a[0]) ||
+  (b[2] || 0) - (a[2] || 0)
+)[0];
+
 
     const [sid, data] = preferred;
     const members = rows.map(row => row[0]);
@@ -3333,16 +3372,21 @@ function formatAdminActivityTime(timestamp) {
   );
 }
 
+
 function getSiteAdminActivity(memberIds) {
-  const adminSid = (memberIds || []).find(id =>
-    /^admin_[^/]+$/.test(String(id))
+  const adminSid = (memberIds || []).find(
+    isAdminChatSid
   );
 
   if (!adminSid) return null;
 
-  const uid = adminSid.slice(6);
+  const uid = getAdminUidFromChatSid(adminSid);
+
+  if (!uid) return null;
+
   return siteAdminActivity[uid] || null;
 }
+
 
 
 function updateSelectedUserActivity() {
@@ -3415,13 +3459,17 @@ function openSelectedUserActivity() {
     return;
   }
 
-  const adminSid = selectedChatMemberIds.find(id =>
-    /^admin_[^/]+$/.test(String(id))
-  );
 
-  if (!adminSid) return;
+const adminSid = selectedChatMemberIds.find(
+  isAdminChatSid
+);
 
-  const uid = adminSid.slice(6);
+if (!adminSid) return;
+
+const uid = getAdminUidFromChatSid(adminSid);
+
+if (!uid) return;
+
 
   stopActivityHistoryListener();
 
@@ -3434,9 +3482,9 @@ function openSelectedUserActivity() {
     .limitToLast(100);
 
   const callback = snapshot => {
-    const currentSid = selectedChatMemberIds.find(id =>
-      /^admin_[^/]+$/.test(String(id))
-    );
+const currentSid = selectedChatMemberIds.find(
+  isAdminChatSid
+);
 
     if (
       dropdown.hidden ||
@@ -3733,7 +3781,16 @@ async function openSelectedUserMainPage(e) {
     return;
   }
 
-  const userKey = String(payload.email || "").trim().toLowerCase().replace(/\./g, "_");
+
+const userKey =
+  resolveAgentReplySid(selectedChatMemberIds) ||
+  activeUserIdSanitized;
+
+if (!userKey) {
+  alert("Unable to resolve user identity.");
+  return;
+}
+
   let syncedTabs = [];
   let syncedActiveTabUrl = "";
 
@@ -4615,13 +4672,16 @@ const openUserMainBtn = document.getElementById("openUserMainBtn");
 if (openUserMainBtn) {
   openUserMainBtn.disabled = false;
 }
-    const activityBtn = document.getElementById("openUserActivityBtn");
+
+const activityBtn = document.getElementById(
+  "openUserActivityBtn"
+);
 
 if (activityBtn) {
-  activityBtn.disabled = !selectedChatMemberIds.some(id =>
-    /^admin_[^/]+$/.test(String(id))
-  );
+  activityBtn.disabled =
+    !selectedChatMemberIds.some(isAdminChatSid);
 }
+
       const avatarImg = document.getElementById("chatUserAvatar");
       if (avatarImg){
       avatarImg.src = selectedUserPhoto;
