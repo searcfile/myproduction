@@ -518,8 +518,27 @@ function startUnread() {
   // =====================================
   // 2. LIVECHAT SITE ADMIN UNREAD
   // =====================================
-  if (canAccess('site')) {
-    const ref = db.ref(`chats/admin_${uid}`);
+
+if (canAccess('site')) {
+
+  // CENTRALIZED LIVECHAT IDENTITY
+  let chatId;
+
+  try {
+    chatId = window.G88LiveChatIdentity.resolve(
+      uid,
+      profile
+    );
+  } catch (error) {
+    console.error(
+      '[Floating LiveChat] Identity resolution failed:',
+      error
+    );
+    return;
+  }
+
+  const ref = db.ref(`chats/${chatId}`);
+
 
     const handler = snapshot => {
       let total = 0;
