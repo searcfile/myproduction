@@ -733,7 +733,7 @@ select[data-shared-dropdown]:not(.shared-dropdown-native):focus {
 .shared-chip-dropdown-trigger {
   border-color:
     var(--input-line-focus);
-   box-shadow: 0 0 0 #1775f94f;
+   box-shadow: 0 0 0 2px #1775f94f;
 }
 
 
