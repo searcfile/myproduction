@@ -1511,10 +1511,20 @@ function stopUserPresence(forceOffline = true){
   } catch {}
 
   try {
-    if (userRefForPresence) {
-      userRefForPresence.onDisconnect().cancel();
-      userRefForPresence = null;
-    }
+if (userRefForPresence) {
+
+  if (window.self === window.top) {
+    userRefForPresence.onDisconnect().cancel()
+      .catch(error => {
+        console.error(
+          "[LiveChat] Presence cleanup failed:",
+          error
+        );
+      });
+  }
+
+  userRefForPresence = null;
+}
   } catch {}
 
   const userPath = getUserPath();
@@ -1940,11 +1950,20 @@ function bindPresenceAndNotif(){
     if (snap.val() === true) {
       touchUserPresence({ typing: false });
 
-      userRefForPresence.onDisconnect().update({
-        online: false,
-        typing: false,
-        lastLoginTime: Date.now()
-      });
+if (window.self === window.top) {
+
+  userRefForPresence.onDisconnect().update({
+    online: false,
+    typing: false,
+    lastLoginTime: firebase.database.ServerValue.TIMESTAMP
+  }).catch(error => {
+    console.error(
+      "[LiveChat] Disconnect registration failed:",
+      error
+    );
+  });
+
+}
 
       clearInterval(userPresenceHeartbeat);
       userPresenceHeartbeat = setInterval(() => {
@@ -3129,7 +3148,9 @@ function playNotificationSound() {
   }
 }
 window.addEventListener("beforeunload", () => {
-  stopUserPresence(true);
+  stopUserPresence(
+  window.self === window.top
+);
 });
 window.addEventListener("DOMContentLoaded", async () => {
   initFingerprint();
