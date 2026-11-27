@@ -361,7 +361,6 @@ body * {
 }
 
 .christmas-floating-handle:active {
-  background: #1554ad;
   cursor: grabbing;
 }
 
