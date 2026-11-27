@@ -1154,8 +1154,12 @@ if (loadingScreen) {
     localStorage.setItem("christmasMusic", "off");
   }
 
-  const savedState = localStorage.getItem("christmasMusic");
-  setLabel(savedState === "on");
+// Default MUSIC ON setiap musim Christmas
+const savedState =
+  localStorage.getItem("christmasMusic") || "on";
+
+localStorage.setItem("christmasMusic", savedState);
+setLabel(savedState === "on");
 
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
