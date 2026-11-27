@@ -5405,14 +5405,10 @@ function updateMobileChips() {
 
   mobileChips.replaceChildren();
 
-  const searching =
-    document.activeElement === mobileInput &&
-    mobileInput.value.trim().length > 0;
-
-  mobileInputWrap.classList.toggle(
-    "mobile-site-has-chips",
-    sites.length > 0 && !searching
-  );
+mobileInputWrap.classList.toggle(
+  "mobile-site-has-chips",
+  sites.length > 0
+);
 
   // Aktifkan SVG clear apabila ada chips atau teks search.
   mobileInputWrap.classList.toggle(
@@ -5420,17 +5416,22 @@ function updateMobileChips() {
     sites.length > 0 || mobileInput.value.trim().length > 0
   );
 
-  if (!sites.length || searching) {
-    mobileChips.hidden = true;
-    return;
-  }
+if (!sites.length) {
+  mobileChips.hidden = true;
 
-  mobileChips.hidden = false;
-
-  const maxWidth = Math.max(
-    60,
-    mobileInputWrap.clientWidth - 48
+  mobileInputWrap.style.removeProperty(
+    "--mobile-site-input-offset"
   );
+
+  return;
+}
+
+mobileChips.hidden = false;
+
+const maxWidth = Math.max(
+  0,
+  mobileInputWrap.clientWidth - 100
+);
 
   let usedWidth = 0;
   let visibleCount = 0;
@@ -5535,8 +5536,26 @@ remove.title = `Remove ${site.name}`;
   )?.remove();
 
   mobileHiddenSitesOpen = false;
-}
+  /* MOBILE SITE - DYNAMIC CARET POSITION */
 
+const chipsWidth = Math.ceil(
+  mobileChips.getBoundingClientRect().width
+);
+
+mobileInputWrap.style.setProperty(
+  "--mobile-site-input-offset",
+  `${8 + chipsWidth + 6}px`
+);
+}
+/* MOBILE SITE - RESPONSIVE CHIP POSITION */
+
+const mobileSiteResizeObserver = new ResizeObserver(() => {
+  if (mobileInputWrap.clientWidth > 0) {
+    updateMobileChips();
+  }
+});
+
+mobileSiteResizeObserver.observe(mobileInputWrap);
 const customSiteEl = document.getElementById("headerSiteCustom");
 let customSiteDropdown = null;
 
