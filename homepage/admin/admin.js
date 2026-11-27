@@ -1265,101 +1265,193 @@ const CHRISTMAS_EFFECT_ENABLED = true;
     initChristmasEffect();
   }
 })();
-// ===== 🎄 CHRISTMAS MUSIC SYSTEM =====
+// ===== 🎄 CHRISTMAS MUSIC SYSTEM V2 =====
 (function () {
+  "use strict";
 
-  // ✅ 1) SWITCH UTAMA (tukar true/false)
-/*  const CHRISTMAS_MUSIC_ENABLED =
-  new Date().getMonth() === 11; */ // ❌ OFF (dah lepas Christmas)
-  // const CHRISTMAS_MUSIC_ENABLED = true; // ✅ ON (bila nak hidupkan semula)
-const CHRISTMAS_MUSIC_ENABLED = true;
-  const music = document.getElementById("christmasMusic");
-  const btn   = document.getElementById("musicToggle");
-  if (!music || !btn) return;
+  // TEST MODE
+  const CHRISTMAS_MUSIC_ENABLED = true;
 
-  // ✅ 2) Kalau OFF → terus matikan semuanya, hide button, clear storage
-  if (!CHRISTMAS_MUSIC_ENABLED) {
-    try { music.pause(); } catch(e){}
-    music.currentTime = 0;
-    music.remove();                 // buang audio element dari DOM
-    btn.hidden = true;    // sembunyi button
-    localStorage.removeItem("christmasMusic"); // buang state lama
-    return;                         // STOP script
-  }
-  btn.hidden = false;
-  music.volume = 0.3;
-  let isPlaying = false;
-  let pausedByHidden = false;
+  // AUTO DECEMBER MODE
+  // const CHRISTMAS_MUSIC_ENABLED =
+  //   new Date().getMonth() === 11;
 
-  function setLabel(on){
-    btn.textContent = on ? "🔊 MUSIC ON" : "🎵 MUSIC OFF";
-  }
+  const STORAGE_KEY = "christmasMusic";
 
-  function startMusic() {
-    music.play().then(() => {
-      isPlaying = true;
-      pausedByHidden = false;
-      setLabel(true);
-      localStorage.setItem("christmasMusic", "on");
-    }).catch(err => {
-      console.log("Autoplay blocked:", err);
-    });
-  }
+  function initChristmasMusic() {
 
-  function stopMusic() {
-    music.pause();
-    isPlaying = false;
-    pausedByHidden = false;
-    setLabel(false);
-    localStorage.setItem("christmasMusic", "off");
-  }
+    if (window.self !== window.top) return;
 
-// Default MUSIC ON setiap musim Christmas
-const savedState =
-  localStorage.getItem("christmasMusic") || "on";
+    const btn = document.getElementById("musicToggle");
 
-localStorage.setItem("christmasMusic", savedState);
-setLabel(savedState === "on");
+    if (!btn) return;
 
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (isPlaying) {
-      stopMusic();
-    } else {
-      localStorage.setItem("christmasMusic", "on");
-      startMusic();
-    }
-  });
+    if (btn.dataset.musicInitialized === "true") return;
 
-  function resumeIfWanted() {
-    if (!isPlaying && localStorage.getItem("christmasMusic") === "on") {
-      startMusic();
-    }
-  }
+    btn.dataset.musicInitialized = "true";
 
-  ["pointerdown", "keydown"].forEach(ev => {
-    const handler = () => {
-      resumeIfWanted();
-      document.removeEventListener(ev, handler);
-    };
-    document.addEventListener(ev, handler);
-  });
+    let music = document.getElementById("christmasMusic");
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      if (!music.paused) {
+    // Outside Christmas
+    if (!CHRISTMAS_MUSIC_ENABLED) {
+
+      if (music) {
         music.pause();
-        pausedByHidden = true;
+        music.remove();
       }
-    } else {
-      const state = localStorage.getItem("christmasMusic");
-      if (pausedByHidden && state === "on") {
-        music.play().then(() => {
-          isPlaying = true;
-          setLabel(true);
-        }).catch(()=>{});
+
+      btn.hidden = true;
+
+      localStorage.removeItem(STORAGE_KEY);
+
+      return;
+    }
+
+    // Auto create audio jika halaman belum ada audio
+    if (!music) {
+
+      music = document.createElement("audio");
+
+      music.id = "christmasMusic";
+      music.src = "./merrychristmas/MerryXmast.mp3";
+
+      document.body.appendChild(music);
+    }
+
+    music.loop = true;
+    music.preload = "none";
+    music.volume = 0.3;
+
+    btn.hidden = false;
+
+    // Default ON
+    let enabled =
+      localStorage.getItem(STORAGE_KEY) !== "off";
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      enabled ? "on" : "off"
+    );
+
+    function updateButton() {
+
+      btn.textContent = enabled
+        ? "🔊 MUSIC ON"
+        : "🎵 MUSIC OFF";
+
+      btn.setAttribute(
+        "aria-pressed",
+        String(enabled)
+      );
+    }
+
+    function startMusic() {
+
+      if (!enabled || document.hidden) return;
+
+      if (!music.paused) return;
+
+      music.play().then(() => {
+
+        if (!enabled || document.hidden) {
+          music.pause();
+        }
+
+      }).catch(error => {
+
+        console.warn(
+          "[Christmas Music] Playback:",
+          error
+        );
+
+      });
+    }
+
+    function stopMusic() {
+      music.pause();
+    }
+
+    // Music ON / OFF
+    btn.addEventListener("click", function (e) {
+
+      e.stopPropagation();
+
+      enabled = !enabled;
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        enabled ? "on" : "off"
+      );
+
+      updateButton();
+
+      if (enabled) {
+        startMusic();
+      } else {
+        stopMusic();
+      }
+    });
+
+    // Browser autoplay unlock
+    function unlockMusic(e) {
+
+      if (btn.contains(e.target)) return;
+
+      if (enabled && music.paused) {
+        startMusic();
       }
     }
-  });
+
+    document.addEventListener(
+      "pointerdown",
+      unlockMusic
+    );
+
+    document.addEventListener(
+      "keydown",
+      unlockMusic
+    );
+
+    // Pause jika browser tab tidak aktif
+    document.addEventListener(
+      "visibilitychange",
+      function () {
+
+        if (document.hidden) {
+          stopMusic();
+        } else if (enabled) {
+          startMusic();
+        }
+      }
+    );
+
+    // Stop ketika pindah halaman
+    window.addEventListener(
+      "pagehide",
+      stopMusic
+    );
+
+    // Initial state
+    updateButton();
+
+    if (enabled) {
+      startMusic();
+    }
+  }
+
+  // Tunggu semua element siap
+  if (document.readyState === "loading") {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initChristmasMusic,
+      { once: true }
+    );
+
+  } else {
+
+    initChristmasMusic();
+
+  }
 })();
 }
