@@ -1691,11 +1691,14 @@ function isLivechatVisible() {
     return true;
   }
 
-  const currentFile = window.location.pathname
-    .split("/")
-    .pop()
-    .toLowerCase();
+const rawFile = window.location.pathname
+  .split("/")
+  .pop()
+  .toLowerCase();
 
+const currentFile = rawFile.includes(".")
+  ? rawFile
+  : rawFile + ".html";
   // LiveChat dibuka secara langsung.
   if (window.parent === window) {
     return currentFile === "livechat.html";
