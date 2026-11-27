@@ -5565,7 +5565,7 @@ function setSiteSyncLoading(isLoading) {
 
 if (customSiteEl && window.NewUI?.chips) {
   customSiteDropdown = NewUI.chips(customSiteEl, {
-    placeholder: "🏢 Select Site or Search",
+    placeholder: "Select Site or Search",
     options: [],
     value: [],
 
