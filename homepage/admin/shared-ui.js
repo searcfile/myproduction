@@ -1,7 +1,35 @@
 
 (() => {
   "use strict";
+/* ==========================================
+   5G88 - CLEAN URL PAGE HELPER
+   Support Vercel + GitHub Pages
+   ========================================== */
 
+function normalizePageFile(value) {
+  const path = String(value || "")
+    .split(/[?#]/)[0]
+    .trim();
+
+  if (!path || path.endsWith("/")) {
+    return "index.html";
+  }
+
+  const file = path
+    .split("/")
+    .pop()
+    .toLowerCase();
+
+  if (!file) return "index.html";
+
+  if (!file.includes(".")) {
+    return file + ".html";
+  }
+
+  return file;
+}
+
+window.G88NormalizePageFile = normalizePageFile;
   /* ==========================================
      AGENT SUPPORT FLOATING - AUTO LOADER
      ========================================== */
@@ -9,9 +37,7 @@
   (function loadAgentSupportFloating() {
     if (window.self !== window.top) return;
 
-    const page = (
-      location.pathname.split("/").pop() || "index.html"
-    ).toLowerCase();
+const page = normalizePageFile(location.pathname);
 
     if (page === "login.html") return;
 
@@ -206,7 +232,9 @@ const SUPERADMIN_ONLY_PAGES = new Set([
   let currentAdminProfile = null;
 
   function canShowAdminPage(file) {
-    const pageFile = String(file || "").trim().toLowerCase();
+    const pageFile = file
+  ? normalizePageFile(file)
+  : "";
 
     if (!pageFile) return false;
 
@@ -248,12 +276,9 @@ const SUPERADMIN_ONLY_PAGES = new Set([
   }
 
 function canViewAdminPage(file) {
-  const pageFile = String(file || "")
-    .split(/[?#]/)[0]
-    .split("/")
-    .pop()
-    .trim()
-    .toLowerCase();
+const pageFile = file
+  ? normalizePageFile(file)
+  : "";
 
   if (!pageFile) return false;
 
@@ -629,7 +654,7 @@ window.isLivechatTabActive = isLivechatTabActive;
               findPageByFile(tab.file);
 
             return {
-              file: tab.file,
+              file: normalizePageFile(tab.file),
               name:
                 tab.name ||
                 tab.label ||
@@ -650,11 +675,7 @@ window.isLivechatTabActive = isLivechatTabActive;
                   location.href
                 );
 
-              const file =
-                url.pathname
-                  .split("/")
-                  .filter(Boolean)
-                  .pop();
+              const file = normalizePageFile(url.pathname);
 
               if (!file) return null;
 
@@ -860,46 +881,28 @@ function saveTabs(tabs) {
 
 
 
-  function getActiveFile() {
-     if (!getActiveTabStorageKey()) {
-  return getCurrentFile();
-}
-    const stored =
-      localStorage.getItem(
-        getActiveTabStorageKey()
-      );
+function getActiveFile() {
+  const key = getActiveTabStorageKey();
 
-    if (!stored) {
-      return getCurrentFile();
-    }
-
-    /*
-     * Support activeTabUrl lama
-     * yang menyimpan full URL.
-     */
-    try {
-      const url =
-        new URL(
-          stored,
-          location.href
-        );
-
-      return (
-        url.pathname
-          .split("/")
-          .filter(Boolean)
-          .pop() ||
-        getCurrentFile()
-      ).toLowerCase();
-
-    } catch (_) {
-      return String(stored)
-        .split("/")
-        .pop()
-        .toLowerCase();
-    }
+  if (!key) {
+    return getCurrentFile();
   }
 
+  const stored = localStorage.getItem(key);
+
+  if (!stored) {
+    return getCurrentFile();
+  }
+
+  try {
+    const url = new URL(stored, location.href);
+
+    return normalizePageFile(url.pathname);
+
+  } catch (_) {
+    return normalizePageFile(stored);
+  }
+}
 
 function setActiveFile(file) {
   if (!getActiveTabStorageKey()) return;
@@ -936,7 +939,7 @@ window.dispatchEvent(
 
           if (
             frameUrl.origin === location.origin &&
-            frameUrl.pathname.split("/").pop().toLowerCase() === "livechat.html"
+            normalizePageFile(frameUrl.pathname) === "livechat.html"
           ) {
             frame.contentWindow?.postMessage(
               { type: "5G88_LIVECHAT_TAB_ACTIVE" },
@@ -959,11 +962,7 @@ window.dispatchEvent(
 
   function navigateToTab(tab) {
     if (!tab?.file) return;
-     const targetFile = String(tab.file)
-  .split(/[?#]/)[0]
-  .split("/")
-  .pop()
-  .toLowerCase();
+const targetFile = normalizePageFile(tab.file);
 
 if (
   !canShowAdminPage(targetFile) ||
@@ -5351,7 +5350,7 @@ window.addEventListener("message", event => {
         return (
           item.contentWindow === event.source &&
           url.origin === location.origin &&
-          url.pathname.split("/").pop().toLowerCase() ===
+          normalizePageFile(url.pathname) ===
             "stickynotes.html"
         );
       } catch {
@@ -5679,7 +5678,7 @@ function saveSelection() {
 
       if (
         url.origin === location.origin &&
-        url.pathname.split("/").pop().toLowerCase() ===
+        normalizePageFile(url.pathname) ===
           "stickynotes.html"
       ) {
         frame.contentWindow?.postMessage(
@@ -9372,9 +9371,7 @@ function init() {
      5G88 - FLOATING LIVECHAT MODE
      ========================================== */
 
-  const currentPage = (
-    window.location.pathname.split("/").pop() || ""
-  ).toLowerCase();
+const currentPage = getCurrentFile();
 
   const isFloating =
     new URLSearchParams(window.location.search)
@@ -9519,18 +9516,7 @@ updateHeaderActiveState();
    ========================================================== */
 
 function getCurrentFile() {
-  try {
-    const pathname = window.location.pathname;
-
-    return (
-      pathname
-        .split("/")
-        .filter(Boolean)
-        .pop() || "index.html"
-    ).toLowerCase();
-  } catch (error) {
-    return "index.html";
-  }
+  return normalizePageFile(window.location.pathname);
 }
 
   /* ==========================================================
@@ -9595,7 +9581,7 @@ window.initTabBarSearch =
           .pop();
     }
 
-
+file = file ? normalizePageFile(file) : "";
     const page =
       findPageByFile(file);
 
