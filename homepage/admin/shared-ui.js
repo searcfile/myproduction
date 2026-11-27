@@ -1768,28 +1768,24 @@ aria-label="Search tabs"
   >
 
 
-  <!-- MUSIC -->
-  <button
-    id="musicToggle"
-    style="
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      z-index:999999;
-      background:rgba(0,0,0,0.6);
-      color:white;
-      border:1px solid white;
-      border-radius:50px;
-      padding:8px 14px;
-      cursor:pointer;
-      font-size:13px;
-      display:none !important;
-    ">
+<!-- CHRISTMAS EFFECT -->
+<button
+  type="button"
+  id="christmasEffectToggle"
+  class="christmas-control-btn"
+  aria-pressed="false"
+  hidden>
+  ❄️ EFFECT OFF
+</button>
 
-    🎵 MUSIC OFF
-
-  </button>
-
+<!-- CHRISTMAS MUSIC -->
+<button
+  type="button"
+  id="musicToggle"
+  class="christmas-control-btn"
+  hidden>
+  🎵 MUSIC OFF
+</button>
 
   <!-- USER AREA -->
   <div class="user-info">
