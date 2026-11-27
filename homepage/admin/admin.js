@@ -1069,9 +1069,9 @@ if (loadingScreen) {
 (function () {
   "use strict";
 
-  const CHRISTMAS_EFFECT_ENABLED =
-    new Date().getMonth() === 11;
-
+ /* const CHRISTMAS_EFFECT_ENABLED =
+    new Date().getMonth() === 11;*/
+const CHRISTMAS_EFFECT_ENABLED = true;
   const STORAGE_KEY = "5g88.christmasEffect";
 
   function initChristmasEffect() {
@@ -1269,10 +1269,10 @@ if (loadingScreen) {
 (function () {
 
   // ✅ 1) SWITCH UTAMA (tukar true/false)
-  const CHRISTMAS_MUSIC_ENABLED =
-  new Date().getMonth() === 11; // ❌ OFF (dah lepas Christmas)
+/*  const CHRISTMAS_MUSIC_ENABLED =
+  new Date().getMonth() === 11; */ // ❌ OFF (dah lepas Christmas)
   // const CHRISTMAS_MUSIC_ENABLED = true; // ✅ ON (bila nak hidupkan semula)
-
+const CHRISTMAS_MUSIC_ENABLED = true;
   const music = document.getElementById("christmasMusic");
   const btn   = document.getElementById("musicToggle");
   if (!music || !btn) return;
