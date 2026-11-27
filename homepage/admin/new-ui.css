@@ -3704,3 +3704,133 @@ input::placeholder{
   }
 
 }
+/* ==========================================
+   DESKTOP SELECT SITE - SVG & CARET
+   ========================================== */
+
+@media (min-width: 816px) {
+
+  #headerSiteCustom .shared-chip-dropdown-trigger {
+    position: relative;
+  }
+
+  #headerSiteCustom .header-site-bank-icon {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    max-width: calc(100% - 28px);
+
+    color: #ffffffd1;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  #headerSiteCustom .header-site-bank-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  #headerSiteCustom .header-site-placeholder {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #headerSiteCustom:not(.has-value)
+  .shared-chip-dropdown-values {
+    display: none !important;
+  }
+
+  #headerSiteCustom:not(.has-value)
+  .header-site-search-input {
+    padding: 0 !important;
+  }
+
+  #headerSiteCustom
+  .header-site-search-input::placeholder {
+    color: transparent !important;
+  }
+
+  #headerSiteCustom.has-value
+  .header-site-bank-icon,
+
+  #headerSiteCustom
+  .shared-chip-dropdown-trigger:has(
+    .header-site-search-input:not(:placeholder-shown)
+  ) .header-site-bank-icon {
+    display: none !important;
+  }
+
+}
+
+
+/* ==========================================
+   MOBILE SELECT SITE - SVG & CARET
+   ========================================== */
+
+.mobile-site-bank-icon {
+  display: none;
+}
+
+@media (max-width: 815px) {
+
+  #headerTabSearchMobilePanel .mobile-site-bank-icon {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    transform: translateY(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    max-width: calc(100% - 48px);
+
+    color: var(--blur);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    z-index: 4;
+  }
+
+  #headerTabSearchMobilePanel .mobile-site-bank-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  #headerTabSearchMobilePanel .mobile-site-placeholder {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #headerTabSearchMobileInput {
+    padding-left: 12px !important;
+  }
+
+  #headerTabSearchMobileInput::placeholder {
+    color: transparent !important;
+  }
+
+  #headerTabSearchMobilePanel
+  .mobile-site-has-chips .mobile-site-bank-icon,
+
+  #headerTabSearchMobileInput:not(:placeholder-shown)
+  ~ .mobile-site-bank-icon {
+    display: none !important;
+  }
+
+}
