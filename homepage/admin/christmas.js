@@ -10,7 +10,16 @@ const positionKey=()=> '5g88.christmas.floating.position.v1:'+uid;
 function closeFloat(){clearTimeout(closeTimer);floating?.classList.remove('is-open');floating?.querySelector('button').setAttribute('aria-expanded','false');}
 function fitPanel(){const panel=floating.querySelector('.christmas-floating-panel');const y=floating.getBoundingClientRect().top;panel.style.top=-Math.max(0,Math.min(y-8,panel.offsetHeight-(innerHeight-y-8)))+'px';}
 function openFloat(){if(!floating||floating.hidden||drag?.moved)return;clearTimeout(closeTimer);floating.classList.add('is-open');floating.querySelector('button').setAttribute('aria-expanded','true');fitPanel();}
-function clampY(y){const max=Math.max(8,innerHeight-(floating.offsetHeight||58)-8);return Math.max(Math.min(145,max),Math.min(max,y));}
+function clampY(y) {
+  const min = 8;
+
+  const max = Math.max(
+    min,
+    innerHeight - (floating.offsetHeight || 58) - 8
+  );
+
+  return Math.max(min, Math.min(max, y));
+}
 function positionFloat(d){floating.dataset.side=d.side;floating.style.left=d.side==='left'?d.offset+'px':'auto';floating.style.right=d.side==='right'?d.offset+'px':'auto';floating.style.bottom='auto';if(drag)return;let y=innerHeight-floating.offsetHeight-d.bottom;try{const raw=localStorage.getItem(positionKey());if(raw!==null&&Number.isFinite(Number(raw)))y=Number(raw);}catch{}floating.style.top=clampY(y)+'px';fitPanel();}
 function createFloat(){if(floating)return;const root=document.createElement('div');floating=root;root.id='christmasFloating';root.className='christmas-floating';root.hidden=true;
 root.innerHTML=`<button type="button" class="christmas-floating-handle" aria-label="Christmas settings" aria-expanded="false" aria-controls="christmasFloatingPanel"><svg class="christmas-floating-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg></button><div class="christmas-floating-panel" id="christmasFloatingPanel"><div class="christmas-floating-title">Status Assignment</div>${['effect','music'].map(k=>`<div class="christmas-floating-row" data-christmas-row="${k}"><span>${k==='effect'?'Effect':'Music'}</span><label class="shared-active-switch"><input type="checkbox" aria-label="${k}" data-christmas-control="${k}" data-active-label="ON" data-inactive-label="OFF"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob"></span></span></label></div>`).join('')}</div>`;
