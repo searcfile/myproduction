@@ -305,92 +305,271 @@ body * {
 }
 
 /* ==========================================
-   CHRISTMAS CONTROL BUTTONS
+   CHRISTMAS FLOATING CONTROL
    ========================================== */
 
-.christmas-control-btn {
+.christmas-floating {
   position: fixed;
-  right: 20px;
+  top: 50%;
+  right: 0;
   z-index: 999999;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 136px;
-  min-height: 34px;
-  padding: 8px 14px;
-
-  background: rgba(0, 0, 0, .6);
-  color: #fff;
-
-  border: 1px solid #fff;
-  border-radius: 50px;
-
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
-  white-space: nowrap;
-  cursor: pointer;
-
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-  transition:
-    background .2s ease,
-    border-color .2s ease,
-    opacity .2s ease;
+  width: 28px;
+  height: 64px;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.christmas-control-btn[hidden] {
+/* Hidden floating and hidden switch rows */
+
+.christmas-floating[hidden],
+.christmas-floating [hidden] {
   display: none !important;
 }
 
-.christmas-control-btn:hover {
-  background: rgba(22, 104, 220, .85);
-  border-color: #91caff;
+/* ==========================================
+   FLOATING HANDLE
+   ========================================== */
+
+.christmas-floating-handle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  width: 28px;
+  height: 64px;
+  padding: 4px;
+
+  background: #15325b;
+  color: #91caff;
+
+  border: 1px solid #1668dc;
+  border-radius: 8px 0 0 8px;
+
+  cursor: grab;
+  touch-action: none;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+
+  transition:
+    background-color .2s ease,
+    border-color .2s ease,
+    color .2s ease;
 }
 
-.christmas-control-btn:active {
+.christmas-floating-handle:hover {
+  background: #1668dc;
+  border-color: #3c89e8;
+  color: #fff;
+}
+
+.christmas-floating-handle:active {
   background: #1554ad;
+  cursor: grabbing;
 }
 
-/* Music button - bottom */
-
-#musicToggle {
-  bottom: 20px;
+.christmas-floating-handle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
-/* Effect button - above music */
-
-#christmasEffectToggle {
-  bottom: 64px;
+.christmas-floating-handle
+.christmas-floating-arrow {
+  width: 12px;
+  height: 12px;
+  transition: transform .2s ease;
 }
 
-#christmasEffectToggle.is-off {
-  color: rgba(255, 255, 255, .65);
-  border-color: rgba(255, 255, 255, .45);
+/* ==========================================
+   FLOATING PANEL
+   ========================================== */
+
+.christmas-floating-panel {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  left: auto;
+
+  width: 220px;
+  max-width: calc(100vw - 48px);
+  padding: 12px;
+
+  background: var(--backgrounddrop);
+  color: var(--colorbtn);
+
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.16),
+    0 3px 6px rgba(0,0,0,.08);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: translateX(8px) scale(.97);
+  transform-origin: right center;
+
+  transition:
+    opacity .18s ease,
+    visibility .18s ease,
+    transform .18s ease;
 }
 
-/* Mobile responsive */
+/* Open panel */
+
+.christmas-floating.is-open
+.christmas-floating-panel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+}
+
+.christmas-floating.is-open
+.christmas-floating-arrow {
+  transform: rotate(180deg);
+}
+
+/* ==========================================
+   FLOATING PANEL CONTENT
+   ========================================== */
+
+.christmas-floating-title {
+  display: flex;
+  align-items: center;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--colorbtn);
+
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+
+  border-bottom: 1px solid var(--border2);
+}
+
+.christmas-floating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  min-height: 38px;
+  padding: 6px 0;
+
+  font-size: 13px;
+  color: var(--colorbtn);
+}
+
+/* Keep original custom slide switch */
+
+.christmas-floating-row
+.shared-active-switch {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.christmas-floating-row
+.shared-active-switch:has(input:disabled) {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   LEFT SIDE POSITION
+   ========================================== */
+
+.christmas-floating[data-side="left"]
+.christmas-floating-handle {
+  border-radius: 0 8px 8px 0;
+}
+
+.christmas-floating[data-side="left"]
+.christmas-floating-panel {
+  left: 100%;
+  right: auto;
+
+  transform: translateX(-8px) scale(.97);
+  transform-origin: left center;
+}
+
+.christmas-floating[data-side="left"].is-open
+.christmas-floating-panel {
+  transform: translateX(0) scale(1);
+}
+
+.christmas-floating[data-side="left"]
+.christmas-floating-arrow {
+  transform: rotate(180deg);
+}
+
+.christmas-floating[data-side="left"].is-open
+.christmas-floating-arrow {
+  transform: rotate(0deg);
+}
+
+/* ==========================================
+   DRAGGING STATE
+   ========================================== */
+
+.christmas-floating.is-dragging,
+.christmas-floating.is-dragging
+.christmas-floating-handle {
+  cursor: grabbing !important;
+}
+
+.christmas-floating.is-dragging
+.christmas-floating-panel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+   ========================================== */
 
 @media (max-width: 815px) {
 
-  .christmas-control-btn {
-    right: 12px;
-    min-width: 118px;
-    min-height: 32px;
-    padding: 7px 12px;
-    font-size: 11px;
+  .christmas-floating {
+    width: 26px;
+    height: 58px;
   }
 
-  #musicToggle {
-    bottom: 12px;
+  .christmas-floating-handle {
+    width: 26px;
+    height: 58px;
   }
 
-  #christmasEffectToggle {
-    bottom: 52px;
+  .christmas-floating-panel {
+    width: 200px;
+    padding: 10px;
   }
+
+  .christmas-floating-title {
+    font-size: 13px;
+  }
+
+  .christmas-floating-row {
+    font-size: 12px;
+    min-height: 36px;
+  }
+}
+
+/* Hide legacy Christmas buttons */
+
+#christmasEffectToggle,
+#musicToggle {
+  display: none !important;
 }
   * {margin: 0;padding: 0;box-sizing: border-box;  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
   body {
