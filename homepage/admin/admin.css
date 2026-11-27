@@ -190,32 +190,206 @@ body * {
   transition: none !important;
 }
 
-/* ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ */
+/* ==========================================
+   CHRISTMAS EFFECT V2
+   ========================================== */
+
 .snow-layer {
   position: fixed;
-  inset: 0;              
-  pointer-events: none;  
-  z-index: 99999;  
+  inset: 0;
+  pointer-events: none !important;
+  z-index: 99999;
   overflow: hidden;
+  user-select: none;
 }
+
+.snow-layer[hidden] {
+  display: none !important;
+}
+
+.snow-layer * {
+  pointer-events: none !important;
+}
+
+/* Falling movement */
+
 .snowflake {
   position: absolute;
-  top: -10vh;
-  color: #fff;
-  font-size: 10px;
-  opacity: 0.8;
-  text-shadow: 0 0 6px rgba(255,255,255,0.9);
-  animation-name: snowFall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  top: -40px;
+  display: block;
+  line-height: 1;
+  animation: snowFall 12s linear infinite;
 }
-/* Jatuh + berputar */
+
 @keyframes snowFall {
-  0% {
-    transform: translate3d(0, -10vh, 0) rotate(0deg);
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  100% {
-    transform: translate3d(0, 110vh, 0) rotate(360deg);
+
+  to {
+    transform: translate3d(
+      0,
+      calc(100vh + 80px),
+      0
+    );
+  }
+}
+
+/* Left and right movement */
+
+.christmas-drift {
+  display: block;
+  animation: christmasDrift 3s
+    ease-in-out infinite alternate;
+}
+
+@keyframes christmasDrift {
+  from {
+    transform: translateX(
+      calc(var(--christmas-drift, 15px) * -1)
+    );
+  }
+
+  to {
+    transform: translateX(
+      var(--christmas-drift, 15px)
+    );
+  }
+}
+
+/* Christmas symbols */
+
+.christmas-symbol {
+  display: block;
+  text-align: center;
+  transform-origin: center center;
+}
+
+/* Snow rotation 360 degrees */
+
+.christmas-spin {
+  color: #e5f4ff;
+  text-shadow:
+    0 0 3px #70b7ff,
+    0 0 8px rgba(150, 210, 255, .6);
+
+  animation: christmasSpin 4s
+    linear infinite;
+}
+
+@keyframes christmasSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Snowman, gifts and Christmas ornaments */
+
+.christmas-ornament {
+  animation: christmasRock 3s
+    ease-in-out infinite alternate;
+}
+
+@keyframes christmasRock {
+  from {
+    transform: rotate(-22deg);
+  }
+
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+/* ==========================================
+   CHRISTMAS CONTROL BUTTONS
+   ========================================== */
+
+.christmas-control-btn {
+  position: fixed;
+  right: 20px;
+  z-index: 999999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 136px;
+  min-height: 34px;
+  padding: 8px 14px;
+
+  background: rgba(0, 0, 0, .6);
+  color: #fff;
+
+  border: 1px solid #fff;
+  border-radius: 50px;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    opacity .2s ease;
+}
+
+.christmas-control-btn[hidden] {
+  display: none !important;
+}
+
+.christmas-control-btn:hover {
+  background: rgba(22, 104, 220, .85);
+  border-color: #91caff;
+}
+
+.christmas-control-btn:active {
+  background: #1554ad;
+}
+
+/* Music button - bottom */
+
+#musicToggle {
+  bottom: 20px;
+}
+
+/* Effect button - above music */
+
+#christmasEffectToggle {
+  bottom: 64px;
+}
+
+#christmasEffectToggle.is-off {
+  color: rgba(255, 255, 255, .65);
+  border-color: rgba(255, 255, 255, .45);
+}
+
+/* Mobile responsive */
+
+@media (max-width: 815px) {
+
+  .christmas-control-btn {
+    right: 12px;
+    min-width: 118px;
+    min-height: 32px;
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  #musicToggle {
+    bottom: 12px;
+  }
+
+  #christmasEffectToggle {
+    bottom: 52px;
   }
 }
   * {margin: 0;padding: 0;box-sizing: border-box;  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
