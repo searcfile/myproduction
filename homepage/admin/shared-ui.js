@@ -70,7 +70,42 @@ const page = normalizePageFile(location.pathname);
 
   if (window.__HOMEPAGE_SHARED_UI__) return;
   window.__HOMEPAGE_SHARED_UI__ = true;
+/* ==========================================
+   CHRISTMAS MANAGER - AUTO LOADER
+   ========================================== */
 
+(function loadChristmasSystem() {
+  if (window.self !== window.top) return;
+
+  const page = normalizePageFile(location.pathname);
+
+  if (page === "login.html") return;
+
+  if (
+    window.__christmasV3 ||
+    document.querySelector(
+      'script[data-christmas-loader="true"]'
+    )
+  ) return;
+
+  const script = document.createElement("script");
+
+  script.src = new URL(
+    "./christmas.js",
+    location.href
+  ).href;
+
+  script.dataset.christmasLoader = "true";
+
+  script.onerror = () => {
+    console.error(
+      "[Christmas] Script failed to load:",
+      script.src
+    );
+  };
+
+  document.head.appendChild(script);
+})();
   /* ==========================================================
      PAGE DEFINITIONS
      ========================================================== */
