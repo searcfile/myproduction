@@ -7,7 +7,13 @@
   "use strict";
   if (window.G88History) return;
   const skipPages = new Set(["login.html"]);
-  const file = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+const rawFile = (
+  location.pathname.split("/").pop() || "index.html"
+).toLowerCase();
+
+const file = rawFile.includes(".")
+  ? rawFile
+  : rawFile + ".html";
   const pageName = file.replace(/\.html$/, "").replace(/[-_]/g, " ");
   const ignoredRoots = new Set(["tabHistory", "singleSessions", "adminPresence", "users", "chats", "notifikasi", "notifications", "logins", "adminUsers", "adminUsernameIndex", "privateSecondFactors", "loginChallenges", "blocked_users", "admin_override"]);
   const pageId = (window.crypto?.randomUUID?.() || (Date.now().toString(36) + Math.random().toString(36).slice(2))).replace(/[^a-zA-Z0-9-]/g, "");
