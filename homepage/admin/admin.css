@@ -338,22 +338,17 @@ body * {
   align-items: center;
   justify-content: center;
   gap: 6px;
-
   width: 28px;
   height: 64px;
   padding: 4px;
-
-  background: #15325b;
-  color: #91caff;
-
-  border: 1px solid #1668dc;
-  border-radius: 8px 0 0 8px;
-
+  background: var(--dropdown-bg);
+  color: #1668dc;
+  border: 1px solid var(--main-tab-border);
+  border-radius: 12px 0 0 12px;
+  border-right:0;
   cursor: grab;
   touch-action: none;
-
   box-shadow: 0 4px 12px rgba(0,0,0,.18);
-
   transition:
     background-color .2s ease,
     border-color .2s ease,
