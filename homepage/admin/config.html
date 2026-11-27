@@ -374,7 +374,25 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
         <label class="cfg-field cfg-wide"><span>Button movement animation</span><select id="siteAnimationMode" data-shared-dropdown><option value="off">Off (Static)</option><option value="float">Smooth Up &amp; Down</option></select></label>
         <label class="cfg-field"><span>Animation speed (px/second)</span><input id="siteAnimationSpeed" type="number" min="5" max="150" step="5" value="35"><small class="muted cfg-hint">Higher number = faster movement.</small></label>
         <label class="cfg-field"><span>Movement distance (px)</span><input id="siteAnimationRange" type="number" min="10" max="700" step="10" value="400"><small class="muted cfg-hint">Vertical distance from top to bottom.</small></label>
-        </div><div class="cfg-actions"><button type="button" class="btn-cancel-new" id="siteReset">Reset fields</button><button type="submit" class="btn-primary-new" id="siteSave">Save Site Admin</button></div></fieldset></section></form></div><aside class="cfg-nav" id="cfgSidebar"><button type="button" class="cfg-nav-btn active" data-target="agent">Agent Support</button><button type="button" class="cfg-nav-btn" data-target="site">Site Admin</button></aside></div></main>
+        </div><div class="cfg-actions"><button type="button" class="btn-cancel-new" id="siteReset">Reset fields</button><button type="submit" class="btn-primary-new" id="siteSave">Save Site Admin</button></div></fieldset></section></form>
+
+<!-- CHRISTMAS MANAGER -->
+<form id="christmasForm" hidden>
+  <section class="cfg-card" data-card="christmas">
+    <h2>Christmas Manager</h2>
+    <fieldset id="christmasFields" disabled style="border:0;margin:0;padding:0;min-width:0">
+      <div id="christmasSettings" class="cfg-grid"></div>
+      <div class="cfg-actions">
+        <button type="button" class="btn-cancel-new" id="christmasReset">Reset fields</button>
+        <button type="submit" class="btn-primary-new" id="christmasSave">Save Christmas</button>
+      </div>
+    </fieldset>
+  </section>
+</form>
+<!-- END CHRISTMAS MANAGER -->
+
+</div><aside class="cfg-nav" id="cfgSidebar"><button type="button" class="cfg-nav-btn active" data-target="agent">Agent Support</button><button type="button" class="cfg-nav-btn" data-target="site">Site Admin</button>
+<button type="button" class="cfg-nav-btn" data-target="christmas">Christmas</button></aside></div></main>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -434,7 +452,7 @@ function collect(type){const d={};for(const key of ids){const el=field(type,key)
 function validate(d,type){if(d.enabled&&!d.url)throw Error('Enter the LiveChat URL before activating.');if(d.enabled&&d.accessMode==='site_selected'&&!Object.keys(d.allowedUids).length)throw Error('Select at least one Site Admin.');if(d.label.length>40)throw Error('Label must be 40 characters or less.');if(!Number.isFinite(d.width)||!Number.isFinite(d.height)||d.width<280||d.width>900||d.height<280||d.height>1000)throw Error('Panel size is outside allowed range.');if(!['off','float'].includes(d.animationMode)||!Number.isFinite(d.animationSpeed)||d.animationSpeed<5||d.animationSpeed>150||!Number.isFinite(d.animationRange)||d.animationRange<10||d.animationRange>700)throw Error('Animation settings are outside allowed range.');if(type==='agent'&&d.accessMode!=='super_only')throw Error('Agent Support is reserved for Super Admin.');if(type==='site'&&!['site_all','site_selected'].includes(d.accessMode))throw Error('Invalid Site Admin access permission.');}
 async function save(type,e){e.preventDefault();if(!currentUser||busy)return;try{const d=collect(type);validate(d,type);busy=true;const reset=$(type==='site'?'siteReset':'reset'),button=$(type==='site'?'siteSave':'save');reset.disabled=true;button.disabled=true;button.textContent='Saving...';try{await firebase.database().ref(type==='site'?SITE_PATH:AGENT_PATH).update(d);configs[type]={...d};toast(type==='site'?'Site Admin LiveChat saved':'Agent Support saved');}finally{reset.disabled=false;button.disabled=false;button.textContent=type==='site'?'Save Site Admin':'Save Agent Support';busy=false;}}catch(err){toast(err.message||'Save failed',false);}}
 for(const type of ['agent','site']){field(type,'accessMode').addEventListener('change',()=>renderUsers(type));$(type==='site'?'siteUserList':'userList').addEventListener('change',e=>{if(e.target.matches('input[type="checkbox"]')){configs[type].allowedUids??={};configs[type].allowedUids[e.target.value]=e.target.checked;}});$(type==='site'?'siteReset':'reset').onclick=()=>{if(!currentUser||busy)return;fill(type,type==='site'?siteDefaults:agentDefaults);toast('Fields reset. Click Save to apply changes.');};$(type==='site'?'siteForm':'agentForm').addEventListener('submit',e=>save(type,e));}
-document.querySelectorAll('.cfg-nav-btn').forEach(btn=>btn.addEventListener('click',()=>{const type=btn.dataset.target;document.querySelectorAll('.cfg-nav-btn').forEach(b=>b.classList.toggle('active',b===btn));$('agentForm').hidden=type!=='agent';$('siteForm').hidden=type!=='site';sync();}));
+document.querySelectorAll('.cfg-nav-btn').forEach(btn=>btn.addEventListener('click',()=>{const type=btn.dataset.target;document.querySelectorAll('.cfg-nav-btn').forEach(b=>b.classList.toggle('active',b===btn));$('agentForm').hidden=type!=='agent';$('siteForm').hidden=type!=='site';$('christmasForm').hidden=type!=='christmas';sync();}));
 
 /* ==========================================
    MOBILE CONFIG SIDEBAR
@@ -634,4 +652,5 @@ function init() {
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+<script src="./christmas-config.js"></script>
 </body></html>
