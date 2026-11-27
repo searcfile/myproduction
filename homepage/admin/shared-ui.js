@@ -1802,26 +1802,6 @@ aria-label="Search tabs"
     style="display:none !important;"
   >
 
-
-<!-- CHRISTMAS EFFECT -->
-<button
-  type="button"
-  id="christmasEffectToggle"
-  class="christmas-control-btn"
-  aria-pressed="false"
-  hidden>
-  ❄️ EFFECT OFF
-</button>
-
-<!-- CHRISTMAS MUSIC -->
-<button
-  type="button"
-  id="musicToggle"
-  class="christmas-control-btn"
-  hidden>
-  🎵 MUSIC OFF
-</button>
-
   <!-- USER AREA -->
   <div class="user-info">
 
