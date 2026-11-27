@@ -16,8 +16,26 @@ function createFloat(){if(floating)return;const root=document.createElement('div
 root.innerHTML=`<button type="button" class="christmas-floating-handle" aria-label="Christmas settings" aria-expanded="false" aria-controls="christmasFloatingPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M9 4l3 3 3-3M9 20l3-3 3 3"/></svg><svg class="christmas-floating-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg></button><div class="christmas-floating-panel" id="christmasFloatingPanel"><div class="christmas-floating-title">Status Assignment</div>${['effect','music'].map(k=>`<div class="christmas-floating-row" data-christmas-row="${k}"><span>${k==='effect'?'Effect':'Music'}</span><label class="shared-active-switch"><input type="checkbox" aria-label="${k}" data-christmas-control="${k}" data-active-label="ON" data-inactive-label="OFF"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob"></span></span></label></div>`).join('')}</div>`;
 document.body.append(root);const handle=root.querySelector('button');
 root.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{const k=input.dataset.christmasControl,cap=k==='effect'?'Effect':'Music';if(config?.['allow'+cap+'Toggle']&&config[k+'Enabled'])save(k,input.checked);render();play();}));
-root.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&!drag)openFloat();});root.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&!drag){clearTimeout(closeTimer);closeTimer=setTimeout(closeFloat,180);}});
-handle.addEventListener('click',e=>{e.stopPropagation();if(suppressClick){suppressClick=false;return;}if(!matchMedia('(hover: hover) and (pointer: fine)').matches&&root.classList.contains('is-open'))closeFloat();else openFloat();});
+root.addEventListener('pointerenter', e => {
+  if (e.pointerType === 'mouse') {
+    clearTimeout(closeTimer);
+  }
+});
+root.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&!drag){clearTimeout(closeTimer);closeTimer=setTimeout(closeFloat,180);}});
+handle.addEventListener('click', e => {
+  e.stopPropagation();
+
+  if (suppressClick) {
+    suppressClick = false;
+    return;
+  }
+
+  if (root.classList.contains('is-open')) {
+    closeFloat();
+  } else {
+    openFloat();
+  }
+});
 document.addEventListener('pointerdown',e=>{if(!root.contains(e.target))closeFloat();},true);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFloat();});window.addEventListener('blur',closeFloat);
 handle.addEventListener('pointerdown',e=>{if(e.button!==0||drag)return;suppressClick=false;drag={id:e.pointerId,y:e.clientY,top:root.getBoundingClientRect().top,moved:false};handle.setPointerCapture(e.pointerId);});
 handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const delta=e.clientY-drag.y;if(!drag.moved&&Math.abs(delta)<6)return;drag.moved=true;root.classList.add('is-dragging');closeFloat();root.style.top=clampY(drag.top+delta)+'px';});
