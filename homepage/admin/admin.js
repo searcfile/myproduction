@@ -1069,9 +1069,9 @@ if (loadingScreen) {
 (function () {
   "use strict";
 
- /* const CHRISTMAS_EFFECT_ENABLED =
-    new Date().getMonth() === 11;*/
-const CHRISTMAS_EFFECT_ENABLED = true;
+const CHRISTMAS_EFFECT_ENABLED =
+  new Date().getMonth() === 11;
+   
   const STORAGE_KEY = "5g88.christmasEffect";
 
   function initChristmasEffect() {
@@ -1269,12 +1269,8 @@ const CHRISTMAS_EFFECT_ENABLED = true;
 (function () {
   "use strict";
 
-  // TEST MODE
-  const CHRISTMAS_MUSIC_ENABLED = true;
-
-  // AUTO DECEMBER MODE
-  // const CHRISTMAS_MUSIC_ENABLED =
-  //   new Date().getMonth() === 11;
+const CHRISTMAS_MUSIC_ENABLED =
+  new Date().getMonth() === 11;
 
   const STORAGE_KEY = "christmasMusic";
 
