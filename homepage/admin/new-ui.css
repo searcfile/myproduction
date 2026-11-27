@@ -3606,3 +3606,49 @@ input::placeholder{
 .shared-chip-dropdown-search-empty[hidden] {
   display: none !important;
 }
+/* ==========================================
+   HEADER SELECT SITE - BANK SVG ICON
+   ========================================== */
+
+@media (min-width: 816px) {
+
+  #headerSiteCustom .header-site-bank-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    color: #ffffffd1;
+    pointer-events: none;
+  }
+
+  #headerSiteCustom .header-site-bank-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  #headerSiteCustom:not(.has-value)
+  .shared-chip-dropdown-trigger {
+    gap: 6px !important;
+  }
+
+  #headerSiteCustom:not(.has-value)
+  .shared-chip-dropdown-values {
+    display: none !important;
+  }
+
+  #headerSiteCustom:not(.has-value)
+  .header-site-search-input {
+    padding: 0 !important;
+  }
+
+  #headerSiteCustom.has-value
+  .header-site-bank-icon {
+    display: none !important;
+  }
+
+}
