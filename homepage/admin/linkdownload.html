@@ -921,7 +921,7 @@ image.addEventListener("keydown", (event) => {
     el("span", "ld-image-placeholder", "▧")
   );
 }
-node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick=()=>removeCard(id);if (can('edit')) {
+node.append(image);const body=el('div','ld-card-body');const heading=el('div');heading.append(el('div','ld-card-title',card.name));body.append(heading);const links=el('div','ld-links');for(const link of Array.isArray(card.links)?card.links:[]){const btn=el('button','ld-button ld-link '+(link.enabled!==false&&safeUrl(link.url)?'btn-primary-new':''),link.label||'Download');btn.type='button';const url=safeUrl(link.url);if(link.enabled===false||!url){btn.disabled=true;btn.title='Not available';}else btn.addEventListener('click',async()=>{if(link.action==='open'){window.open(url,'_blank','noopener,noreferrer');return;}try{await navigator.clipboard.writeText(url);toast('Link copied');}catch{const input=el('textarea');input.value=url;document.body.append(input);input.select();try{if(!document.execCommand('copy'))throw Error();toast('Link copied');}catch{toast('Copy failed. Please copy manually.','error');}input.remove();}});links.append(btn);}if(!links.children.length)links.append(el('div','ld-hint','No download links'));body.append(links);const actions=el('div','ld-actions');const edit=el('button','ld-button btn-edit-new','Edit');edit.onclick=()=>openEditor(id);const del=el('button','ld-button btn-delete-new','Delete');del.onclick = () => removeCard(id, del);if (can('edit')) {
   actions.append(edit);
 }
 
@@ -1206,12 +1206,51 @@ form.querySelectorAll('input[data-new-ui-input]').forEach(input => {
 
 // Initialize semua custom slider dalam modal
 window.SharedActiveSwitch?.init(form);}
-async function removeCard(id) {
+async function removeCard(id, button) {
+
+  /* CHECK DELETE PERMISSION */
   if (!can('delete')) {
     toast('Delete permission denied', 'error');
     return;
   }
-const card=records[id];if(!card)return;const yes=window.confirm('Delete "'+card.name+'"? This cannot be undone.');if(!yes)return;try{await db.ref(PATH+'/'+id).remove();toast('Card deleted');}catch(err){toast(err.message||'Delete failed','error');}}
+
+  const card = records[id];
+
+  if (!card || !button) return;
+
+  /* CUSTOM DELETE CONFIRM */
+  await NewUI.confirm({
+
+    target: button,
+
+    title: 'Delete Link Download',
+
+    message: `Delete "${card.name}"? This cannot be undone.`,
+
+    confirmText: 'Delete',
+
+    cancelText: 'Cancel',
+
+    loadingText: 'Deleting...',
+
+    danger: true,
+
+    onConfirm: async () => {
+
+      /* RECHECK DELETE PERMISSION */
+      if (!can('delete')) {
+        throw new Error('Delete permission denied');
+      }
+
+      await db.ref(PATH + '/' + id).remove();
+
+      toast('Card deleted');
+
+    }
+
+  });
+
+}
 
 async function start(){
  showEmpty('No Data');window.HISTORY_TAB_NAME='LINK DOWNLOAD';
