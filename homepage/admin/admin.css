@@ -371,18 +371,13 @@ body * {
   cursor: grabbing;
 }
 
-.christmas-floating-handle svg {
+.christmas-floating-handle
+.christmas-floating-arrow {
   display: block;
   width: 16px;
   height: 16px;
   flex-shrink: 0;
   pointer-events: none;
-}
-
-.christmas-floating-handle
-.christmas-floating-arrow {
-  width: 12px;
-  height: 12px;
   transition: transform .2s ease;
 }
 
