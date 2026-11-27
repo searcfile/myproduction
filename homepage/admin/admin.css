@@ -403,7 +403,7 @@ body * {
   background: var(--backgrounddrop);
   color: var(--colorbtn);
 
-  border: 1px solid var(--border2);
+  border:0;
   border-radius: 8px;
 
   box-shadow:
