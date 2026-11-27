@@ -3606,3 +3606,128 @@ input::placeholder{
 .shared-chip-dropdown-search-empty[hidden] {
   display: none !important;
 }
+/* ==========================================================
+   SITE SELECT - CUSTOM PLACEHOLDER
+   DESKTOP + MOBILE
+   ========================================================== */
+
+#headerSiteCustom .site-select-placeholder,
+#headerTabSearchMobilePanel .site-select-placeholder {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-weight: 400;
+  line-height: normal;
+  white-space: nowrap;
+
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  z-index: 3;
+}
+
+/* SVG ASLI - TANPA WRAPPER */
+
+#headerSiteCustom .site-select-placeholder > svg,
+#headerTabSearchMobilePanel .site-select-placeholder > svg {
+  display: block;
+
+  width: 14px !important;
+  height: 14px !important;
+
+  min-width: 14px;
+  min-height: 14px;
+  max-width: 14px;
+  max-height: 14px;
+
+  flex: 0 0 14px;
+
+  margin: 0;
+  padding: 0;
+
+  fill: currentColor;
+}
+
+/* ==========================================================
+   DESKTOP HEADER
+   ========================================================== */
+
+#headerSiteCustom .shared-chip-dropdown-trigger {
+  position: relative;
+}
+
+#headerSiteCustom .site-select-placeholder {
+  left: 11px;
+  right: 26px;
+
+  font-size: 12px;
+  color: #ffffffd1;
+}
+
+/* Sembunyikan placeholder native */
+
+#headerSiteCustom
+.header-site-search-input::placeholder {
+  color: transparent !important;
+}
+
+/* Sembunyikan custom placeholder apabila menaip */
+
+#headerSiteCustom
+.header-site-search-input:not(:placeholder-shown)
++ .site-select-placeholder {
+  display: none;
+}
+
+/* Sembunyikan apabila ada selected site */
+
+#headerSiteCustom.has-value
+.site-select-placeholder {
+  display: none;
+}
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+#headerTabSearchMobilePanel
+.header-tab-search-mobile-input-wrap {
+  position: relative;
+}
+
+#headerTabSearchMobilePanel
+.site-select-placeholder {
+  left: 12px;
+  right: 32px;
+
+  font-size: 14px;
+  color: var(--blur);
+}
+
+/* Sembunyikan placeholder native */
+
+#headerTabSearchMobilePanel
+#headerTabSearchMobileInput::placeholder {
+  color: transparent !important;
+}
+
+/* Sembunyikan custom placeholder apabila menaip */
+
+#headerTabSearchMobilePanel
+#headerTabSearchMobileInput:not(:placeholder-shown)
++ .site-select-placeholder {
+  display: none;
+}
+
+/* Sembunyikan apabila ada selected chips */
+
+#headerTabSearchMobilePanel
+.mobile-site-has-chips
+.site-select-placeholder {
+  display: none;
+}
