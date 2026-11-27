@@ -1065,45 +1065,205 @@ if (loadingScreen) {
 }
 }); // ⬅️ tutup DOMContentLoaded
 
-// ====== ❄️ SNOW EFFECT – MERRY CHRISTMAS ❄️ ======
+// ===== ❄️ CHRISTMAS EFFECT V2 =====
 (function () {
-  document.addEventListener('DOMContentLoaded', function () {
-    // Hanya aktif di bulan Desember (0 = Jan, 11 = Des)
-    const now = new Date();
-    if (now.getMonth() !== 11) return;  // kalau mau selalu ON, hapus 2 baris ini
+  "use strict";
 
-    const flakesCount = 80; // jumlah kepingan salju (atur sesuka hati)
+  const CHRISTMAS_EFFECT_ENABLED =
+    new Date().getMonth() === 11;
 
-    const snowLayer = document.createElement('div');
-    snowLayer.className = 'snow-layer';
+  const STORAGE_KEY = "5g88.christmasEffect";
+
+  function initChristmasEffect() {
+    if (window.self !== window.top) return;
+
+    const btn = document.getElementById("christmasEffectToggle");
+
+    if (!CHRISTMAS_EFFECT_ENABLED) {
+      if (btn) btn.hidden = true;
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+
+    if (document.getElementById("christmasSnowLayer")) return;
+
+    let enabled =
+      localStorage.getItem(STORAGE_KEY) !== "off";
+
+    const snowLayer = document.createElement("div");
+
+    snowLayer.id = "christmasSnowLayer";
+    snowLayer.className = "snow-layer";
+    snowLayer.setAttribute("aria-hidden", "true");
+
     document.body.appendChild(snowLayer);
 
-    for (let i = 0; i < flakesCount; i++) {
-      const flake = document.createElement('span');
-      flake.className = 'snowflake';
-      flake.textContent = '✻'; // bintang salju putih (bukan emoji)
+    // Random number helper
+    const random = (min, max) =>
+      min + Math.random() * (max - min);
 
-      // Posisi horizontal random
-      flake.style.left = Math.random() * 100 + 'vw';
+    // Christmas ornaments
+    const ornaments = [
+      "☃️",
+      "🎁",
+      "🎄",
+      "⭐",
+      "🔔",
+      "🎅"
+    ];
 
-      // Ukuran random
-      const size = 8 + Math.random() * 12;   // 8px – 20px
-      flake.style.fontSize = size + 'px';
+    const snowSymbols = ["❄", "❅", "❆", "✻"];
 
-      // Durasi jatuh random
-      const duration = 6 + Math.random() * 10;  // 6s – 16s
-      flake.style.animationDuration = duration + 's';
+    function createParticles() {
+      snowLayer.replaceChildren();
 
-      // Delay random biar nggak bareng-bareng
-      const delay = Math.random() * 10;
-      flake.style.animationDelay = delay + 's';
+      // Kurangkan jumlah di mobile
+      const isMobile = window.innerWidth <= 815;
+      const count = isMobile ? 35 : 80;
 
-      // Opacity sedikit beda-beda
-      flake.style.opacity = (0.5 + Math.random() * 0.5).toFixed(2);
+      const fragment = document.createDocumentFragment();
 
-      snowLayer.appendChild(flake);
+      for (let i = 0; i < count; i++) {
+
+        // 75% snow, 25% Christmas ornaments
+        const isSnow = Math.random() < 0.75;
+
+        const particle = document.createElement("span");
+        particle.className = "snowflake";
+
+        const drift = document.createElement("span");
+        drift.className = "christmas-drift";
+
+        const symbol = document.createElement("span");
+
+        symbol.className = isSnow
+          ? "christmas-symbol christmas-spin"
+          : "christmas-symbol christmas-ornament";
+
+        const symbols = isSnow
+          ? snowSymbols
+          : ornaments;
+
+        symbol.textContent =
+          symbols[Math.floor(Math.random() * symbols.length)];
+
+        // Random horizontal position
+        particle.style.left = random(0, 100) + "%";
+
+        // Random size
+        symbol.style.fontSize = (
+          isSnow
+            ? random(8, 20)
+            : random(15, 24)
+        ) + "px";
+
+        // Random falling speed
+        const duration = random(8, 18);
+
+        particle.style.animationDuration =
+          duration + "s";
+
+        particle.style.animationDelay =
+          -random(0, duration) + "s";
+
+        // Random transparency
+        particle.style.opacity =
+          random(0.45, 0.95).toFixed(2);
+
+        // Random left-right movement
+        drift.style.animationDuration =
+          random(2, 5) + "s";
+
+        drift.style.setProperty(
+          "--christmas-drift",
+          random(8, 30) + "px"
+        );
+
+        // Random rotation speed
+        symbol.style.animationDuration =
+          random(2, 8) + "s";
+
+        // Random clockwise / anticlockwise
+        if (isSnow) {
+          symbol.style.animationDirection =
+            Math.random() > 0.5
+              ? "normal"
+              : "reverse";
+        }
+
+        drift.appendChild(symbol);
+        particle.appendChild(drift);
+        fragment.appendChild(particle);
+      }
+
+      snowLayer.appendChild(fragment);
     }
-  });
+
+    function applyEffectState() {
+      snowLayer.hidden = !enabled;
+
+      if (enabled) {
+        createParticles();
+      } else {
+        // Stop all animations when OFF
+        snowLayer.replaceChildren();
+      }
+
+      if (btn) {
+        btn.textContent = enabled
+          ? "❄️ EFFECT ON"
+          : "❄️ EFFECT OFF";
+
+        btn.setAttribute(
+          "aria-pressed",
+          String(enabled)
+        );
+
+        btn.classList.toggle(
+          "is-off",
+          !enabled
+        );
+      }
+    }
+
+    // Initial state
+    if (btn) {
+      btn.hidden = false;
+
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        enabled = !enabled;
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          enabled ? "on" : "off"
+        );
+
+        applyEffectState();
+      });
+    }
+
+    applyEffectState();
+
+    // Sync dengan browser tab lain
+    window.addEventListener("storage", function (e) {
+      if (e.key !== STORAGE_KEY) return;
+
+      enabled = e.newValue !== "off";
+      applyEffectState();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initChristmasEffect,
+      { once: true }
+    );
+  } else {
+    initChristmasEffect();
+  }
 })();
 // ===== 🎄 CHRISTMAS MUSIC SYSTEM =====
 (function () {
