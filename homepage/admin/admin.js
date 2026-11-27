@@ -221,7 +221,7 @@ function setBtnLoading(btn, state, text){
   }
 }
 
-const DEFAULT_PAGE_TITLE = "Back Office Editor 5G88";
+const DEFAULT_PAGE_TITLE = "Back Office v2";
 let livechatTitleTimer = null;
 let livechatTitleIndex = 0;
 let livechatUnreadActive = false;
