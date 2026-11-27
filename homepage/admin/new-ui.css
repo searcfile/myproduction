@@ -3652,3 +3652,55 @@ input::placeholder{
   }
 
 }
+/* ==========================================
+   MOBILE SELECT SITE - BANK SVG ICON
+   ========================================== */
+
+.mobile-site-bank-icon {
+  display: none;
+}
+
+@media (max-width: 815px) {
+
+  #headerTabSearchMobilePanel .mobile-site-bank-icon {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    transform: translateY(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 14px;
+    height: 14px;
+
+    color: var(--blur);
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  #headerTabSearchMobilePanel .mobile-site-bank-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  /* INPUT SPACE FOR SVG + 6PX GAP */
+  #headerTabSearchMobileInput {
+    padding-left: 32px !important;
+  }
+
+  /* HIDE SVG WHEN SITE CHIPS EXIST */
+  #headerTabSearchMobilePanel
+  .mobile-site-has-chips .mobile-site-bank-icon {
+    display: none !important;
+  }
+
+  #headerTabSearchMobilePanel
+  .mobile-site-has-chips #headerTabSearchMobileInput {
+    padding-left: 12px !important;
+  }
+
+}
