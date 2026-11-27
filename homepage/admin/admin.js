@@ -1109,7 +1109,8 @@ if (loadingScreen) {
 (function () {
 
   // ✅ 1) SWITCH UTAMA (tukar true/false)
-  const CHRISTMAS_MUSIC_ENABLED = false; // ❌ OFF (dah lepas Christmas)
+  const CHRISTMAS_MUSIC_ENABLED =
+  new Date().getMonth() === 11; // ❌ OFF (dah lepas Christmas)
   // const CHRISTMAS_MUSIC_ENABLED = true; // ✅ ON (bila nak hidupkan semula)
 
   const music = document.getElementById("christmasMusic");
