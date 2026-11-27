@@ -616,16 +616,16 @@ function isLivechatTabActive() {
 window.isLivechatTabActive = isLivechatTabActive;
 
 
-  function findPageByFile(file) {
-    const target = String(file || "")
-      .trim()
-      .toLowerCase();
+function findPageByFile(file) {
+  const target = file
+    ? normalizePageFile(file)
+    : "";
 
-    return ADMIN_PAGES.find(
-      item =>
-        item.file.toLowerCase() === target
-    ) || null;
-  }
+  return ADMIN_PAGES.find(
+    item =>
+      item.file.toLowerCase() === target
+  ) || null;
+}
 
 
   /* ==========================================================
@@ -1042,15 +1042,13 @@ window.location.assign(`./${targetFile}`);
       };
     }
 
-    if (!tab.file) return;
+if (!tab.file) return;
 
-    const page =
-      findPageByFile(tab.file);
-     const targetFile = String(tab.file)
-  .split(/[?#]/)[0]
-  .split("/")
-  .pop()
-  .toLowerCase();
+const targetFile = normalizePageFile(tab.file);
+
+tab.file = targetFile;
+
+const page = findPageByFile(targetFile);
 
 if (
   !canShowAdminPage(targetFile) ||
@@ -4356,11 +4354,7 @@ function refreshTab(tab) {
   if (!verifiedProfileReady) return;
   if (!tab?.file) return;
 
-  const targetFile = String(tab.file)
-    .split(/[?#]/)[0]
-    .split("/")
-    .pop()
-    .toLowerCase();
+  const targetFile = normalizePageFile(tab.file);
 
   if (!canViewAdminPage(targetFile)) return;
 
@@ -9605,11 +9599,9 @@ file = file ? normalizePageFile(file) : "";
 
 window.addEventListener('5g88:open-admin-tab', (event) => {
 
-  const file = String(event.detail?.file || '')
-    .split(/[?#]/)[0]
-    .split('/')
-    .pop()
-    .toLowerCase();
+  const file = event.detail?.file
+    ? normalizePageFile(event.detail.file)
+    : "";
 
   let target = null;
 
