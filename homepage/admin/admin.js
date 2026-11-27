@@ -1282,11 +1282,11 @@ if (loadingScreen) {
     try { music.pause(); } catch(e){}
     music.currentTime = 0;
     music.remove();                 // buang audio element dari DOM
-    btn.style.display = "none";     // sembunyi button
+    btn.hidden = true;    // sembunyi button
     localStorage.removeItem("christmasMusic"); // buang state lama
     return;                         // STOP script
   }
-
+  btn.hidden = false;
   music.volume = 0.3;
   let isPlaying = false;
   let pausedByHidden = false;
