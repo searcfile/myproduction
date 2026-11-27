@@ -2,7 +2,14 @@
 (() => {
 'use strict';
 if(window.self!==window.top)return;
-if((location.pathname.split('/').pop()||'index.html').toLowerCase()==='login.html')return;
+const currentPageFile = (
+  location.pathname.split('/').pop() || 'index.html'
+).toLowerCase();
+
+if (
+  currentPageFile === 'login.html' ||
+  currentPageFile === 'login'
+) return;
 if(window.__agentSupportFloatingInit)return;
 window.__agentSupportFloatingInit=true;
 const AGENT_PATH='adminConfig/agentSupportFloating';
@@ -231,7 +238,12 @@ function isRelatedTabOpen(type) {
       .pop()
       .toLowerCase();
 
-    return activeFile === targetFile;
+    const normalizedFile = activeFile &&
+  !activeFile.includes(".")
+    ? activeFile + ".html"
+    : activeFile;
+
+return normalizedFile === targetFile;
 
   } catch (error) {
     console.warn('[Floating] Active tab check:', error);
