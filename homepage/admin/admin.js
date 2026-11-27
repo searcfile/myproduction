@@ -8,7 +8,7 @@
   if (window.G88History) return;
   const skipPages = new Set(["login.html"]);
 const rawFile = (
-  location.pathname.split("/").pop() || "index.html"
+  location.pathname.split("/").pop() || "index.html" 
 ).toLowerCase();
 
 const file = rawFile.includes(".")
