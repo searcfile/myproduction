@@ -283,7 +283,7 @@ body * {
   }
 
   to {
-    transform: rotate(360deg);
+    transform: rotate(var(--christmas-rotation, 360deg));
   }
 }
 
@@ -296,11 +296,11 @@ body * {
 
 @keyframes christmasRock {
   from {
-    transform: rotate(-22deg);
+    transform: rotate(calc(var(--christmas-rock, 22deg) * -1));
   }
 
   to {
-    transform: rotate(22deg);
+    transform: rotate(var(--christmas-rock, 22deg));
   }
 }
 
