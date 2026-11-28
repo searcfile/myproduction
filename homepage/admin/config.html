@@ -695,33 +695,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
      CHRISTMAS ADD MUSIC MODULE
      ========================================== -->
 
-<dialog id="christmasAddMusicModule"
-        class="christmas-add-music-module">
+<!-- ==========================================
+     CHRISTMAS CUSTOM MUSIC MODULE
+     ========================================== -->
 
-  <div class="christmas-module-header">
-
-    <strong>Add Music</strong>
-
-    <button type="button"
-            id="christmasCloseMusic"
-            aria-label="Close">
-      <svg width="16" height="16"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           stroke-width="2">
-        <path d="M6 6l12 12M18 6L6 18"/>
-      </svg>
-    </button>
-
-  </div>
+<div id="christmasMusicModuleContent" hidden>
 
   <div class="christmas-module-body">
 
     <div class="cfg-field">
       <span>Music Title</span>
+
       <input type="text"
              id="christmasMusicTitle"
+             data-new-ui-input
              placeholder="Enter music title"
              maxlength="120"
              autocomplete="off">
@@ -730,9 +717,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div class="cfg-field">
       <span>Music Source</span>
 
-      <select id="christmasMusicSource">
+      <select id="christmasMusicSource"
+              data-shared-dropdown
+              data-placeholder="Select music source">
+
         <option value="upload">Upload MP3</option>
         <option value="url">Music URL</option>
+
       </select>
     </div>
 
@@ -759,7 +750,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
       <input type="url"
              id="christmasTrackUrl"
-             placeholder="https://example.com/music.mp3">
+             data-new-ui-input
+             placeholder="https://example.com/music.mp3"
+             autocomplete="off">
 
     </div>
 
@@ -781,7 +774,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
   </div>
 
-</dialog>
+</div>
 
 <script src="./christmas-config.js"></script>
 </body>
