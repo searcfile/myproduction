@@ -260,7 +260,7 @@ function play() {
   }
 
 }
-function play(){if(config&&audio&&lastMusic&&(!config.pauseWhenHidden||!document.hidden)&&audio.paused)audio.play().catch(()=>{});}
+
 function render(){if(!document.body)return;const d=config;if(!d||!d.enabled||!scheduled(d)||(d.accessMode!=='all'&&d.accessMode!==role)){stop();return;}
 const e=d.effectEnabled&&pref('effect',d.defaultEffectOn,d.allowEffectToggle),m=d.musicEnabled&&pref('music',d.defaultMusicOn,d.allowMusicToggle);
 syncChristmasFloat(d,e,m);
