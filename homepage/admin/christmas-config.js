@@ -1259,7 +1259,7 @@ statusInput.addEventListener('change', () => {
 const edit = document.createElement('button');
 
 edit.type = 'button';
-edit.className = 'btn-cancel-new';
+edit.className = 'btn-edit-new';
 edit.textContent = 'Edit';
 edit.disabled = musicBusy;
 
@@ -1275,7 +1275,7 @@ const del = document.createElement('button');
 
 del.type = 'button';
 del.className =
-  'btn-cancel-new christmas-music-delete';
+  'btn-delete-new christmas-music-delete';
 
 del.textContent = 'Delete';
 del.disabled = musicBusy;
