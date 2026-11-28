@@ -109,7 +109,16 @@ const musicList = document.getElementById(
 const playbackMode = document.getElementById(
   'christmasPlaybackMode'
 );
+const selectedMusic = document.getElementById(
+  'christmasSelectedMusic'
+);
 
+const selectedMusicField = document.getElementById(
+  'christmasSelectedMusicField'
+);
+
+let savedSelectedMusic = '';
+let musicSettingsBusy = false;
 let musicBusy = false;
 let musicTracks = {};
 let savedPlaybackMode = 'repeat_all';
@@ -812,45 +821,128 @@ window.SharedActiveSwitch?.sync?.(statusInput);
 /* ==========================================
    PLAYBACK MODE
    ========================================== */
+function syncSelectedMusic() {
+
+  const singleMode = [
+    'play_one',
+    'repeat_one'
+  ].includes(playbackMode.value);
+
+  selectedMusicField.hidden = !singleMode;
+
+  const tracks = Object.entries(musicTracks)
+    .filter(([id, track]) =>
+      track?.active === true
+    )
+    .sort((a, b) =>
+      (a[1].createdAt || 0) -
+      (b[1].createdAt || 0)
+    );
+
+  selectedMusic.replaceChildren(
+    new Option('Select music', '')
+  );
+
+  tracks.forEach(([id, track]) => {
+
+    selectedMusic.add(
+      new Option(track.title || 'Untitled', id)
+    );
+
+  });
+
+  const exists = tracks.some(
+    ([id]) => id === savedSelectedMusic
+  );
+
+  selectedMusic.value = exists
+    ? savedSelectedMusic
+    : tracks[0]?.[0] || '';
+
+  selectedMusic.disabled =
+    !user ||
+    musicSettingsBusy ||
+    !tracks.length;
+
+  selectedMusic._sharedDropdown
+    ?.refresh?.();
+
+  if (!singleMode) {
+
+    selectedMusic._sharedDropdown
+      ?.close?.();
+
+  }
+
+}
+async function saveMusicSettings() {
+
+  if (!user || musicBusy || musicSettingsBusy) {
+    return;
+  }
+
+  musicSettingsBusy = true;
+
+  const mode = playbackMode.value;
+
+  const selectedTrackId =
+    selectedMusic.value || '';
+
+  playbackMode.disabled = true;
+  selectedMusic.disabled = true;
+
+  playbackMode._sharedDropdown?.refresh?.();
+  selectedMusic._sharedDropdown?.refresh?.();
+
+  try {
+
+    await musicRequest(
+      '/settings',
+      'POST',
+      JSON.stringify({
+        mode,
+        selectedTrackId
+      })
+    );
+
+    savedPlaybackMode = mode;
+    savedSelectedMusic = selectedTrackId;
+
+    toast('Music settings saved');
+
+  } catch (error) {
+
+    playbackMode.value = savedPlaybackMode;
+
+    toast(error.message, false);
+
+  } finally {
+
+    musicSettingsBusy = false;
+
+    playbackMode.disabled = !user;
+
+    playbackMode._sharedDropdown?.refresh?.();
+
+    syncSelectedMusic();
+
+  }
+
+}
 
 playbackMode.addEventListener(
   'change',
-  async () => {
+  () => {
 
-    if (!user || musicBusy) return;
-
-    const mode = playbackMode.value;
-
-    playbackMode.disabled = true;
-
-    try {
-
-      await musicRequest(
-        '/settings',
-        'POST',
-        JSON.stringify({ mode })
-      );
-
-      savedPlaybackMode = mode;
-
-      toast('Playback mode saved');
-
-    } catch (error) {
-
-      playbackMode.value = savedPlaybackMode;
-
-      toast(error.message, false);
-
-    } finally {
-
-      playbackMode.disabled = !user;
-
-      playbackMode._sharedDropdown
-        ?.refresh?.();
-
-    }
+    syncSelectedMusic();
+    saveMusicSettings();
 
   }
+);
+
+selectedMusic.addEventListener(
+  'change',
+  saveMusicSettings
 );
 
 function syncMusicPlaylist(snapshot) {
@@ -862,10 +954,15 @@ function syncMusicPlaylist(snapshot) {
   savedPlaybackMode =
     data.mode || 'repeat_all';
 
+  savedSelectedMusic =
+    data.selectedTrackId || '';
+
   playbackMode.value = savedPlaybackMode;
 
   playbackMode._sharedDropdown
     ?.refresh?.();
+
+  syncSelectedMusic();
 
   renderMusicList();
 
