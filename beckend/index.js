@@ -7834,7 +7834,200 @@ app.post(
 
   }
 );
+/* ==========================================
+   CHRISTMAS REPLACE MP3
+   ========================================== */
 
+app.post(
+  '/api/christmas/music/:id/replace',
+
+  requireAdmin,
+  superOnly,
+
+  express.raw({
+    type: 'audio/mpeg',
+    limit: MUSIC_MAX_BYTES
+  }),
+
+  async (req, res) => {
+
+    try {
+
+      const id = req.params.id;
+      const title = req.query.title;
+
+      if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) {
+
+        return fail(
+          res, 400, 'Invalid music ID'
+        );
+
+      }
+
+      if (!validMusicTitle(title)) {
+
+        return fail(
+          res, 400, 'Invalid music title'
+        );
+
+      }
+
+      const buffer = req.body;
+
+      if (
+        !Buffer.isBuffer(buffer) ||
+        !buffer.length ||
+        buffer.length > MUSIC_MAX_BYTES
+      ) {
+
+        return fail(
+          res, 400, 'Invalid MP3 file'
+        );
+
+      }
+
+      const hasID3 =
+        buffer.subarray(0, 3).toString() === 'ID3';
+
+      const hasFrame =
+        buffer.length >= 2 &&
+        buffer[0] === 0xff &&
+        (buffer[1] & 0xe0) === 0xe0;
+
+      if (!hasID3 && !hasFrame) {
+
+        return fail(
+          res, 400, 'MP3 format required'
+        );
+
+      }
+
+      const ref = db.ref(
+        `${CHRISTMAS_MUSIC_PATH}/tracks/${id}`
+      );
+
+      const snapshot = await ref.once('value');
+      const track = snapshot.val();
+
+      if (!track) {
+
+        return fail(
+          res, 404, 'Music not found'
+        );
+
+      }
+
+      if (track.source !== 'github') {
+
+        return fail(
+          res, 400, 'MP3 upload required'
+        );
+
+      }
+
+      const { owner, repo, branch } =
+        getMusicGithubConfig();
+
+      const oldPath =
+        track.githubPath || `music/${id}.mp3`;
+
+      const newPath =
+        `music/${id}-${crypto.randomUUID()}.mp3`;
+
+      await musicGithubRequest(
+        newPath,
+        'PUT',
+        {
+          message: 'Replace Christmas music',
+          content: buffer.toString('base64'),
+          branch
+        }
+      );
+
+      const url =
+        `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${newPath}`;
+
+      const result = await ref.transaction(
+        current => {
+
+          if (
+            !current ||
+            current.source !== 'github' ||
+            (current.githubPath || `music/${id}.mp3`) !== oldPath
+          ) {
+            return;
+          }
+
+          return {
+            ...current,
+            title: title.trim(),
+            url,
+            githubPath: newPath,
+            size: buffer.length,
+            updatedAt: now(),
+            updatedBy: req.admin.uid
+          };
+
+        }
+      );
+
+      if (!result.committed) {
+
+        return fail(
+          res,
+          409,
+          'Music changed. Please refresh.'
+        );
+
+      }
+
+      // Remove old file only after successful DB update
+
+      try {
+
+        const oldFile = await musicGithubRequest(
+          `${oldPath}?ref=${encodeURIComponent(branch)}`
+        );
+
+        await musicGithubRequest(
+          oldPath,
+          'DELETE',
+          {
+            message: 'Remove replaced music file',
+            sha: oldFile.sha,
+            branch
+          }
+        );
+
+      } catch (cleanupError) {
+
+        console.warn(
+          '[MUSIC CLEANUP]',
+          cleanupError.message
+        );
+
+      }
+
+      return res.json({
+        ok: true,
+        id
+      });
+
+    } catch (error) {
+
+      console.error(
+        '[REPLACE MUSIC]',
+        error.message
+      );
+
+      return fail(
+        res, 500, 'Cannot replace music'
+      );
+
+    }
+
+  }
+);
 app.patch(
   '/api/christmas/music/:id',
   requireAdmin,
@@ -7943,7 +8136,8 @@ app.delete(
 
       if (track.source === 'github') {
 
-        const path = `music/${id}.mp3`;
+        const path =
+  track.githubPath || `music/${id}.mp3`;
 
         const { branch } =
           getMusicGithubConfig();
@@ -8064,6 +8258,95 @@ app.post(
         res,
         500,
         'Cannot save music settings'
+      );
+
+    }
+
+  }
+);
+/* ==========================================
+   CHRISTMAS MUSIC PLAYLIST ORDER
+   ========================================== */
+
+app.post(
+  '/api/christmas/music/reorder',
+
+  requireAdmin,
+  superOnly,
+
+  async (req, res) => {
+
+    try {
+
+      const { ids } = req.body || {};
+
+      if (
+        !Array.isArray(ids) ||
+        !ids.length ||
+        ids.some(id =>
+          typeof id !== 'string' ||
+          !/^[a-zA-Z0-9_-]{1,80}$/.test(id)
+        ) ||
+        new Set(ids).size !== ids.length
+      ) {
+
+        return fail(
+          res, 400, 'Invalid playlist order'
+        );
+
+      }
+
+      const ref = db.ref(
+        `${CHRISTMAS_MUSIC_PATH}/tracks`
+      );
+
+      const result = await ref.transaction(
+        current => {
+
+          if (!current) return;
+
+          const existingIds =
+            Object.keys(current);
+
+          if (
+            ids.length !== existingIds.length ||
+            ids.some(id => !current[id])
+          ) {
+            return;
+          }
+
+          ids.forEach((id, index) => {
+
+            current[id].order = index + 1;
+
+          });
+
+          return current;
+
+        }
+      );
+
+      if (!result.committed) {
+
+        return fail(
+          res,
+          409,
+          'Playlist changed. Please refresh.'
+        );
+
+      }
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+
+      console.error(
+        '[MUSIC REORDER]',
+        error.message
+      );
+
+      return fail(
+        res, 500, 'Cannot save playlist order'
       );
 
     }
