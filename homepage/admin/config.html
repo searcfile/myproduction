@@ -691,5 +691,98 @@ function init() {
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+<!-- ==========================================
+     CHRISTMAS ADD MUSIC MODULE
+     ========================================== -->
+
+<dialog id="christmasAddMusicModule"
+        class="christmas-add-music-module">
+
+  <div class="christmas-module-header">
+
+    <strong>Add Music</strong>
+
+    <button type="button"
+            id="christmasCloseMusic"
+            aria-label="Close">
+      <svg width="16" height="16"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    </button>
+
+  </div>
+
+  <div class="christmas-module-body">
+
+    <div class="cfg-field">
+      <span>Music Title</span>
+      <input type="text"
+             id="christmasMusicTitle"
+             placeholder="Enter music title"
+             maxlength="120"
+             autocomplete="off">
+    </div>
+
+    <div class="cfg-field">
+      <span>Music Source</span>
+
+      <select id="christmasMusicSource">
+        <option value="upload">Upload MP3</option>
+        <option value="url">Music URL</option>
+      </select>
+    </div>
+
+    <div class="cfg-field"
+         id="christmasUploadField">
+
+      <span>Select MP3 File</span>
+
+      <input type="file"
+             id="christmasMusicFile"
+             accept=".mp3,audio/mpeg">
+
+      <small class="muted">
+        Maximum file size: 10 MB
+      </small>
+
+    </div>
+
+    <div class="cfg-field"
+         id="christmasUrlField"
+         hidden>
+
+      <span>Music URL</span>
+
+      <input type="url"
+             id="christmasTrackUrl"
+             placeholder="https://example.com/music.mp3">
+
+    </div>
+
+  </div>
+
+  <div class="christmas-module-footer">
+
+    <button type="button"
+            class="btn-cancel-new"
+            id="christmasCancelMusic">
+      Cancel
+    </button>
+
+    <button type="button"
+            class="btn-primary-new"
+            id="christmasSaveMusic">
+      Save Music
+    </button>
+
+  </div>
+
+</dialog>
+
 <script src="./christmas-config.js"></script>
-</body></html>
+</body>
+</html>
