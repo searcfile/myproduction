@@ -44,6 +44,538 @@ syncChristmasSchedule();
 let user=null,busy=false,epoch=0;
 const resetFloatButton=document.createElement('button');resetFloatButton.type='button';resetFloatButton.className='btn-cancel-new';resetFloatButton.textContent='Reset Floating Position';document.getElementById('christmasReset').before(resetFloatButton);resetFloatButton.addEventListener('click',()=>{if(!user||busy)return;try{localStorage.removeItem('5g88.christmas.floating.position.v1:'+user.uid);toast('Floating position reset');}catch{toast('Unable to reset floating position',false);}});
 const ref=firebase.database().ref('adminConfig/christmas');const toast=(m,ok=true)=>NewUI.showToast(m,ok?'success':'error',3000);
+/* ==========================================
+   CHRISTMAS MUSIC MANAGER
+   ========================================== */
+
+const MUSIC_API =
+  'https://fiveg88-admin-backend-v2.onrender.com/api/christmas/music';
+
+const playlistRef = firebase.database().ref(
+  'adminConfig/christmasMusic'
+);
+
+const musicModule = document.getElementById(
+  'christmasAddMusicModule'
+);
+
+const addMusicBtn = document.getElementById(
+  'christmasAddMusic'
+);
+
+const saveMusicBtn = document.getElementById(
+  'christmasSaveMusic'
+);
+
+const musicSource = document.getElementById(
+  'christmasMusicSource'
+);
+
+const musicTitle = document.getElementById(
+  'christmasMusicTitle'
+);
+
+const musicFile = document.getElementById(
+  'christmasMusicFile'
+);
+
+const musicUrl = document.getElementById(
+  'christmasTrackUrl'
+);
+
+const musicList = document.getElementById(
+  'christmasMusicList'
+);
+
+const playbackMode = document.getElementById(
+  'christmasPlaybackMode'
+);
+
+let musicBusy = false;
+let musicTracks = {};
+let savedPlaybackMode = 'repeat_all';
+let previewAudio = null;
+
+function syncMusicSource() {
+
+  const upload = musicSource.value === 'upload';
+
+  document.getElementById(
+    'christmasUploadField'
+  ).hidden = !upload;
+
+  document.getElementById(
+    'christmasUrlField'
+  ).hidden = upload;
+
+}
+
+function closeMusicModule() {
+
+  if (musicBusy) return;
+
+  musicModule.close();
+
+}
+
+function openChristmasAddMusic() {
+
+  if (!user || musicBusy) return;
+
+  musicTitle.value = '';
+  musicFile.value = '';
+  musicUrl.value = '';
+
+  musicSource.value = 'upload';
+
+  syncMusicSource();
+
+  musicModule.showModal();
+
+  musicTitle.focus();
+
+}
+
+addMusicBtn.addEventListener(
+  'click',
+  openChristmasAddMusic
+);
+
+musicSource.addEventListener(
+  'change',
+  syncMusicSource
+);
+
+document.getElementById(
+  'christmasCloseMusic'
+).onclick = closeMusicModule;
+
+document.getElementById(
+  'christmasCancelMusic'
+).onclick = closeMusicModule;
+
+musicModule.addEventListener('cancel', e => {
+
+  if (musicBusy) e.preventDefault();
+
+});
+
+musicFile.addEventListener('change', () => {
+
+  const file = musicFile.files[0];
+
+  if (file && !musicTitle.value.trim()) {
+
+    musicTitle.value = file.name
+      .replace(/\.mp3$/i, '')
+      .slice(0, 120);
+
+  }
+
+});
+
+async function musicRequest(
+  path = '',
+  method = 'POST',
+  body,
+  contentType = 'application/json'
+) {
+
+  if (!user) {
+    throw new Error('Access denied');
+  }
+
+  const token = await user.getIdToken();
+
+  const response = await fetch(
+    MUSIC_API + path,
+    {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': contentType
+      },
+      ...(body !== undefined ? { body } : {})
+    }
+  );
+
+  const result = await response.json()
+    .catch(() => ({}));
+
+  if (!response.ok || !result.ok) {
+
+    throw new Error(
+      result.message ||
+      result.error ||
+      `Request failed (${response.status})`
+    );
+
+  }
+
+  return result;
+
+}
+
+saveMusicBtn.addEventListener('click', async () => {
+
+  if (!user || musicBusy) return;
+
+  const title = musicTitle.value.trim();
+  const isUpload = musicSource.value === 'upload';
+
+  const file = musicFile.files[0];
+  const url = musicUrl.value.trim();
+
+  if (!title || title.length > 120) {
+
+    toast('Please enter music title', false);
+    return;
+
+  }
+
+  if (isUpload) {
+
+    if (!file) {
+
+      toast('Please select MP3 file', false);
+      return;
+
+    }
+
+    if (!/\.mp3$/i.test(file.name)) {
+
+      toast('Only MP3 files allowed', false);
+      return;
+
+    }
+
+    if (
+      !file.size ||
+      file.size > 10 * 1024 * 1024
+    ) {
+
+      toast('Maximum file size is 10 MB', false);
+      return;
+
+    }
+
+  } else {
+
+    try {
+
+      const parsed = new URL(url);
+
+      if (
+        parsed.protocol !== 'https:' ||
+        parsed.username ||
+        parsed.password ||
+        url.length > 1000
+      ) {
+        throw new Error();
+      }
+
+    } catch {
+
+      toast('Invalid HTTPS music URL', false);
+      return;
+
+    }
+
+  }
+
+  musicBusy = true;
+
+  try {
+
+    await NewUI.setButtonLoading(
+      saveMusicBtn,
+      true,
+      {
+        text: isUpload
+          ? 'Uploading...'
+          : 'Saving...'
+      }
+    );
+
+    if (isUpload) {
+
+      await musicRequest(
+        '/upload?title=' +
+          encodeURIComponent(title),
+        'POST',
+        file,
+        'audio/mpeg'
+      );
+
+    } else {
+
+      await musicRequest(
+        '',
+        'POST',
+        JSON.stringify({
+          title,
+          url
+        })
+      );
+
+    }
+
+    musicModule.close();
+
+    toast('Music added successfully');
+
+  } catch (error) {
+
+    toast(error.message, false);
+
+  } finally {
+
+    musicBusy = false;
+
+    await NewUI.setButtonLoading(
+      saveMusicBtn,
+      false
+    );
+
+  }
+
+});
+
+/* ==========================================
+   RENDER MUSIC PLAYLIST
+   ========================================== */
+
+function stopMusicPreview() {
+
+  if (!previewAudio) return;
+
+  previewAudio.pause();
+  previewAudio = null;
+
+}
+
+function renderMusicList() {
+
+  musicList.replaceChildren();
+
+  const tracks = Object.entries(musicTracks)
+    .sort((a, b) =>
+      (a[1].createdAt || 0) -
+      (b[1].createdAt || 0)
+    );
+
+  if (!tracks.length) {
+
+    const empty = document.createElement('div');
+
+    empty.className = 'christmas-music-empty';
+    empty.textContent = 'No Data';
+
+    musicList.append(empty);
+
+    return;
+
+  }
+
+  tracks.forEach(([id, track]) => {
+
+    const row = document.createElement('div');
+    row.className = 'christmas-music-item';
+
+    const info = document.createElement('div');
+    info.className = 'christmas-music-info';
+
+    const name = document.createElement('div');
+    name.className = 'christmas-music-name';
+    name.textContent = track.title || 'Untitled';
+
+    const meta = document.createElement('div');
+    meta.className = 'christmas-music-meta';
+
+    meta.textContent =
+      (track.source === 'github'
+        ? 'MP3 Upload'
+        : 'Music URL') +
+      ' · ' +
+      (track.active ? 'Active' : 'Inactive');
+
+    info.append(name, meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'christmas-music-actions';
+
+    const preview = document.createElement('button');
+
+    preview.type = 'button';
+    preview.className = 'btn-cancel-new';
+    preview.textContent = 'Preview';
+
+    preview.onclick = async () => {
+
+      if (previewAudio?.dataset.trackId === id) {
+
+        stopMusicPreview();
+        renderMusicList();
+        return;
+
+      }
+
+      stopMusicPreview();
+
+      try {
+
+        const url = new URL(track.url);
+
+        if (url.protocol !== 'https:') {
+          throw new Error('Invalid music URL');
+        }
+
+        const player = new Audio(url.href);
+
+        previewAudio = player;
+        player.dataset.trackId = id;
+
+        player.volume = 0.5;
+
+        player.onended = () => {
+
+          if (previewAudio !== player) return;
+
+          stopMusicPreview();
+          renderMusicList();
+
+        };
+
+        await player.play();
+
+        renderMusicList();
+
+      } catch {
+
+        stopMusicPreview();
+        renderMusicList();
+
+        toast('Unable to preview music', false);
+
+      }
+
+    };
+
+    if (previewAudio?.dataset.trackId === id) {
+
+      preview.textContent = 'Stop';
+
+    }
+
+    actions.append(preview);
+
+    row.append(info, actions);
+
+    musicList.append(row);
+
+  });
+
+}
+/* ==========================================
+   PLAYBACK MODE
+   ========================================== */
+
+playbackMode.addEventListener(
+  'change',
+  async () => {
+
+    if (!user || musicBusy) return;
+
+    const mode = playbackMode.value;
+
+    playbackMode.disabled = true;
+
+    try {
+
+      await musicRequest(
+        '/settings',
+        'POST',
+        JSON.stringify({ mode })
+      );
+
+      savedPlaybackMode = mode;
+
+      toast('Playback mode saved');
+
+    } catch (error) {
+
+      playbackMode.value = savedPlaybackMode;
+
+      toast(error.message, false);
+
+    } finally {
+
+      playbackMode.disabled = !user;
+
+      playbackMode._sharedDropdown
+        ?.refresh?.();
+
+    }
+
+  }
+);
+
+function syncMusicPlaylist(snapshot) {
+
+  const data = snapshot.val() || {};
+
+  musicTracks = data.tracks || {};
+
+  savedPlaybackMode =
+    data.mode || 'repeat_all';
+
+  playbackMode.value = savedPlaybackMode;
+
+  playbackMode._sharedDropdown
+    ?.refresh?.();
+
+  renderMusicList();
+
+}
+
+function startMusicManager() {
+
+  playlistRef.off(
+    'value',
+    syncMusicPlaylist
+  );
+
+  playlistRef.on(
+    'value',
+    syncMusicPlaylist,
+    error => toast(error.message, false)
+  );
+
+}
+
+function stopMusicManager() {
+
+  playlistRef.off(
+    'value',
+    syncMusicPlaylist
+  );
+
+  stopMusicPreview();
+
+  musicTracks = {};
+
+  renderMusicList();
+
+}
+
+window.addEventListener(
+  'pagehide',
+  stopMusicManager
+);
+
+/* ==========================================
+   END CHRISTMAS MUSIC MANAGER
+   ========================================== */
 function fill(d) {
 
   for (
@@ -98,7 +630,15 @@ function fill(d) {
   syncChristmasSchedule();
 
 }
-firebase.auth().onIdTokenChanged(async u=>{const n=++epoch;user=null;fs.disabled=true;if(!u||sessionStorage.getItem('5g88.adminSession')!==u.uid)return;try{const t=await u.getIdTokenResult();const p=(await firebase.database().ref('adminUsers/'+u.uid).once('value')).val();if(!p?.active||!p.secondPasswordEnabled||p.role!=='superadmin'||t.claims.secondVerified!==true||t.claims.pinVersion!==p.pinVersion)return;const s=await ref.once('value');if(n!==epoch)return;fill(normalize(s.val()||{}));user=u;fs.disabled=false;}catch(e){toast(e.message,false);}});document.getElementById('christmasReset').onclick=()=>{if(user&&!busy)fill(defaults);};form.onsubmit=async e=>{e.preventDefault();if(!user||busy||!form.reportValidity())return
+firebase.auth().onIdTokenChanged(async u=>{
+const n = ++epoch;
+user = null;
+fs.disabled = true;
+stopMusicManager();
+if(!u||sessionStorage.getItem('5g88.adminSession')!==u.uid)return;try{const t=await u.getIdTokenResult();const p=(await firebase.database().ref('adminUsers/'+u.uid).once('value')).val();if(!p?.active||!p.secondPasswordEnabled||p.role!=='superadmin'||t.claims.secondVerified!==true||t.claims.pinVersion!==p.pinVersion)return;const s=await ref.once('value');if(n!==epoch)return;fill(normalize(s.val()||{}));user = u;
+fs.disabled = false;
+startMusicManager();
+}catch(e){toast(e.message,false);}});document.getElementById('christmasReset').onclick=()=>{if(user&&!busy)fill(defaults);};form.onsubmit=async e=>{e.preventDefault();if(!user||busy||!form.reportValidity())return
 const d = {};
 
 for (
