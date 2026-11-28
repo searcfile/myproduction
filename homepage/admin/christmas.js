@@ -678,6 +678,89 @@ function savePlaybackPosition(force = false) {
   });
 
 }
+      /* ==========================================
+   RESTORE MUSIC PLAYBACK POSITION
+   ========================================== */
+
+function restorePlaybackPosition(
+  d,
+  tracks,
+  singleMode,
+  preferredTrack
+) {
+
+  if (
+    restoredPlayback ||
+    !musicReady ||
+    !uid
+  ) return;
+
+  restoredPlayback = true;
+
+  if (!d.rememberPlayback) return;
+
+  const saved = readPlayerStorage('playback');
+
+  if (
+    !saved ||
+    saved.mode !== getPlaybackMode()
+  ) return;
+
+  const track = tracks.find(
+    item => item.id === saved.trackId
+  );
+
+  if (tracks.length && !track) return;
+
+  if (
+    singleMode &&
+    preferredTrack?.id !== track?.id
+  ) return;
+
+  let expectedUrl;
+
+  try {
+
+    expectedUrl = new URL(
+      track?.url || d.musicUrl,
+      location.href
+    ).href;
+
+  } catch {
+
+    return;
+
+  }
+
+  if (saved.url !== expectedUrl) return;
+
+  currentTrackId = track?.id || null;
+
+  manualPaused =
+    d.allowPlayPause &&
+    saved.paused === true;
+
+  pendingSeek = {
+
+    url: expectedUrl,
+
+    time: Math.max(
+      0,
+      Number(saved.time) || 0
+    )
+
+  };
+
+  console.log(
+    '[Christmas Player] Restoring playback',
+    {
+      trackId: currentTrackId,
+      time: pendingSeek.time,
+      paused: manualPaused
+    }
+  );
+
+}
 function applyPendingSeek() {
 
   if (
@@ -1142,7 +1225,12 @@ audio.preload = 'auto';
     if (!audio.isConnected) {
       document.body.append(audio);
     }
-
+    
+audio.addEventListener(
+  'ended',
+  nextChristmasTrack
+);
+    
 audio.addEventListener(
   'loadedmetadata',
   () => {
@@ -1262,7 +1350,6 @@ function play() {
 
     lastMusic &&
 
-    musicAvailable &&
 musicAvailable &&
 
 musicReady &&
@@ -1272,7 +1359,6 @@ pendingSeek === null &&
 !audio.seeking &&
 
 !manualPaused &&
-    !manualPaused &&
 
     !musicFailed &&
 
