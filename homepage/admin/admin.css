@@ -2983,3 +2983,85 @@ body.tab-dragging-active *{
 .header .dropdown-content {
   z-index:21474836499 !important;
 }
+/* ==========================================
+   CHRISTMAS MUSIC MANAGER
+   ========================================== */
+
+.christmas-music-manager {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid var(--tx-border, #303030);
+  border-radius: 8px;
+  background: var(--tx-surface-soft, #1f1f1f);
+  min-width: 0;
+}
+
+.christmas-music-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.christmas-music-toolbar h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.christmas-music-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.christmas-music-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  min-width: 0;
+  border: 1px solid var(--tx-border, #303030);
+  border-radius: 6px;
+  background: var(--tx-surface, #141414);
+  color: var(--tx-ink, #fff);
+}
+
+.christmas-music-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.christmas-music-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.christmas-music-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 550px) {
+
+  .christmas-music-manager {
+    padding: 10px;
+  }
+
+  .christmas-music-item {
+    flex-wrap: wrap;
+  }
+
+  .christmas-music-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+}
