@@ -7987,29 +7987,89 @@ app.post(
 
     try {
 
-      const { mode } = req.body || {};
+      const {
+        mode,
+        selectedTrackId = ''
+      } = req.body || {};
 
       if (!MUSIC_MODES.includes(mode)) {
-        return fail(res, 400, 'Invalid playback mode');
+
+        return fail(
+          res,
+          400,
+          'Invalid playback mode'
+        );
+
       }
 
-      await db.ref(CHRISTMAS_MUSIC_PATH).update({
+      if (
+        typeof selectedTrackId !== 'string' ||
+        selectedTrackId.length > 128 ||
+        /[.#$\[\]\/\x00-\x1F\x7F]/.test(
+          selectedTrackId
+        )
+      ) {
+
+        return fail(
+          res,
+          400,
+          'Invalid music ID'
+        );
+
+      }
+
+      if (selectedTrackId) {
+
+        const snapshot = await db.ref(
+          `${CHRISTMAS_MUSIC_PATH}/tracks/${selectedTrackId}`
+        ).once('value');
+
+        const track = snapshot.val();
+
+        if (!track || track.active !== true) {
+
+          return fail(
+            res,
+            400,
+            'Selected music is unavailable'
+          );
+
+        }
+
+      }
+
+      await db.ref(
+        CHRISTMAS_MUSIC_PATH
+      ).update({
+
         mode,
+        selectedTrackId,
         updatedAt: now(),
         updatedBy: req.admin.uid
+
       });
 
-      return res.json({ ok: true });
+      return res.json({
+        ok: true
+      });
 
     } catch (error) {
 
-      return fail(res, 500, 'Cannot save music mode');
+      console.error(
+        '[CHRISTMAS MUSIC SETTINGS]',
+        error.message
+      );
+
+      return fail(
+        res,
+        500,
+        'Cannot save music settings'
+      );
 
     }
 
   }
 );
-
 /* =====================================================
    END CHRISTMAS MUSIC API
    ===================================================== */
