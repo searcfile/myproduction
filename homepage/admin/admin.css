@@ -3333,3 +3333,397 @@ body.tab-dragging-active *{
   }
 
 }
+/* ==========================================
+   CHRISTMAS MUSIC PLAYER SETTINGS
+   ========================================== */
+
+.christmas-player-settings {
+  margin-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border2);
+}
+
+.christmas-player-settings h2 {
+  margin: 0 0 16px;
+}
+
+
+/* ==========================================
+   CHRISTMAS FLOATING MINI PLAYER V4
+   ========================================== */
+
+.christmas-floating.has-mini-player
+.christmas-floating-panel {
+
+  width: 290px;
+
+  max-width: calc(100vw - 64px);
+
+  max-height: calc(100dvh - 16px);
+
+  overflow-y: auto;
+
+  box-sizing: border-box;
+
+}
+
+.christmas-mini-player {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  min-width: 0;
+
+  margin-top: 12px;
+
+  padding-top: 14px;
+
+  border-top: 1px solid var(--border2);
+
+  color: var(--text-soft);
+
+}
+
+.christmas-mini-player[hidden] {
+  display: none !important;
+}
+
+
+/* NOW PLAYING */
+
+.christmas-player-heading {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  min-width: 0;
+
+}
+
+.christmas-player-art {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 46px;
+
+  height: 46px;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  color: #1668dc;
+
+  background: rgba(22,104,220,.12);
+
+  border: 1px solid rgba(22,104,220,.25);
+
+}
+
+.christmas-player-art svg {
+
+  width: 24px;
+
+  height: 24px;
+
+}
+
+.christmas-player-info {
+
+  display: flex;
+
+  flex: 1;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  min-width: 0;
+
+}
+
+.christmas-player-caption {
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  letter-spacing: .8px;
+
+  color: var(--text-dim);
+
+}
+
+.christmas-player-info strong {
+
+  display: block;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+.christmas-player-info [data-player="mode"] {
+
+  font-size: 11px;
+
+  color: var(--text-dim);
+
+}
+
+
+/* MUSIC PROGRESS */
+
+.christmas-player-progress {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  min-width: 0;
+
+}
+
+.christmas-mini-player input[type="range"] {
+
+  width: 100%;
+
+  min-width: 0;
+
+  height: 18px;
+
+  margin: 0;
+
+  padding: 0;
+
+  accent-color: #1668dc;
+
+  cursor: pointer;
+
+}
+
+.christmas-player-time {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  font-size: 11px;
+
+  font-variant-numeric: tabular-nums;
+
+  color: var(--text-dim);
+
+}
+
+
+/* PLAYBACK BUTTONS */
+
+.christmas-player-controls {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 18px;
+
+}
+
+.christmas-mini-player button {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 32px;
+
+  height: 32px;
+
+  padding: 0;
+
+  flex-shrink: 0;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: var(--text-soft);
+
+  cursor: pointer;
+
+  transition:
+
+    background-color .2s ease,
+
+    color .2s ease,
+
+    opacity .2s ease;
+
+}
+
+.christmas-mini-player button:hover {
+
+  color: #1668dc;
+
+  background: var(--btnfocus);
+
+}
+
+.christmas-mini-player
+.christmas-player-play {
+
+  width: 44px;
+
+  height: 44px;
+
+  border-radius: 50%;
+
+  color: #fff;
+
+  background: #1668dc;
+
+}
+
+.christmas-mini-player
+.christmas-player-play:hover {
+
+  color: #fff;
+
+  background: #3c89e8;
+
+}
+
+.christmas-player-play svg {
+
+  width: 22px;
+
+  height: 22px;
+
+}
+
+.christmas-mini-player button:disabled,
+
+.christmas-mini-player input:disabled {
+
+  opacity: .35;
+
+  cursor: not-allowed;
+
+}
+
+
+/* VOLUME CONTROL */
+
+.christmas-player-volume {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding-top: 10px;
+
+  border-top: 1px solid var(--border2);
+
+}
+
+.christmas-player-volume input {
+
+  flex: 1;
+
+  min-width: 0;
+
+}
+
+.christmas-player-volume
+[data-player="volumeText"] {
+
+  min-width: 34px;
+
+  text-align: right;
+
+  font-size: 11px;
+
+  color: var(--text-dim);
+
+  font-variant-numeric: tabular-nums;
+
+}
+
+.christmas-player-status {
+
+  font-size: 11px;
+
+  text-align: center;
+
+  color: var(--text-dim);
+
+}
+
+.christmas-player-status:empty {
+
+  display: none;
+
+}
+
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 550px) {
+
+  .christmas-floating.has-mini-player
+  .christmas-floating-panel {
+
+    width: 260px;
+
+    max-width: calc(100vw - 64px);
+
+  }
+
+  .christmas-player-controls {
+
+    gap: 14px;
+
+  }
+
+  .christmas-player-art {
+
+    width: 40px;
+
+    height: 40px;
+
+  }
+
+  .christmas-mini-player {
+
+    gap: 10px;
+
+  }
+
+}
