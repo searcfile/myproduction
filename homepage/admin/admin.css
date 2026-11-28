@@ -3066,69 +3066,28 @@ body.tab-dragging-active *{
 
 }
 /* ==========================================
-   CHRISTMAS ADD MUSIC MODULE
+   CHRISTMAS CUSTOM MUSIC MODULE
    ========================================== */
-
-.christmas-add-music-module {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  width: min(440px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  box-sizing: border-box;
-  padding: 0;
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  background: var(--backgrounddrop);
-  color: var(--colorbtn);
-  box-shadow: 0 12px 40px rgba(0,0,0,.25);
-  overflow-y: auto;
-}
-
-.christmas-add-music-module:not([open]) {
-  display: none !important;
-}
-
-.christmas-add-music-module::backdrop {
-  background: rgba(0,0,0,.5);
-}
-
-.christmas-module-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border2);
-}
-
-.christmas-module-header button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--colorbtn-close);
-  cursor: pointer;
-}
-
-.christmas-module-header button:hover {
-  background: var(--modulx);
-  color: var(--colorbtn);
-}
 
 .christmas-module-body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 16px;
+  min-width: 0;
 }
 
 .christmas-module-body [hidden] {
   display: none !important;
+}
+
+.christmas-module-body .cfg-field {
+  min-width: 0;
+}
+
+.christmas-module-body .shared-dropdown,
+.christmas-module-body .new-ui-input-wrap {
+  width: 100%;
+  min-width: 0;
 }
 
 .christmas-module-footer {
@@ -3136,8 +3095,7 @@ body.tab-dragging-active *{
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border2);
+  width: 100%;
 }
 
 .christmas-module-footer button {
@@ -3149,6 +3107,15 @@ body.tab-dragging-active *{
   height: auto;
   min-height: 36px;
   padding: 6px;
+}
+
+@media (max-width: 550px) {
+
+  .christmas-module-footer button {
+    flex: 1;
+    min-width: 0;
+  }
+
 }
 
 .christmas-music-empty {
