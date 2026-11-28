@@ -23,6 +23,7 @@ function normalize(raw={}){const d={...defaults};for(const k of Object.keys(d)){
 let config=null,uid='',role='',ref=null,epoch=0,layer,audio,lastEffect='',lastMusic='',timer;
 let musicRef = null;
 let musicData = {};
+      let musicReady = false;
 let currentTrackId = null;
 let playlistFinished = false;
 let playlistSignature = '';
@@ -638,17 +639,22 @@ function savePlaybackPosition(force = false) {
 
   if (
     !uid ||
+    !musicReady ||
+    !restoredPlayback ||
     !config?.rememberPlayback ||
     !musicAvailable ||
     !audio ||
     !lastMusic ||
     pendingSeek !== null ||
+    audio.readyState < 1 ||
+    audio.seeking ||
+    audio.src !== lastMusic ||
     !Number.isFinite(audio.currentTime)
   ) return;
 
   if (
     !force &&
-    Date.now() - lastPlaybackSave < 5000
+    Date.now() - lastPlaybackSave < 1000
   ) return;
 
   lastPlaybackSave = Date.now();
@@ -672,89 +678,46 @@ function savePlaybackPosition(force = false) {
   });
 
 }
-
-function restorePlaybackPosition(
-  d,
-  tracks,
-  singleMode,
-  preferredTrack
-) {
-
-  if (restoredPlayback) return;
-
-  restoredPlayback = true;
-
-  if (!d.rememberPlayback) return;
-
-  const saved = readPlayerStorage('playback');
-
-  if (
-    !saved ||
-    saved.mode !== getPlaybackMode() ||
-    saved.signature !== playlistSignature
-  ) return;
-
-  const track = tracks.find(
-    item => item.id === saved.trackId
-  );
-
-  if (tracks.length && !track) return;
-
-  if (
-    singleMode &&
-    preferredTrack?.id !== track?.id
-  ) return;
-
-  let expectedUrl;
-
-  try {
-
-    expectedUrl = new URL(
-      track?.url || d.musicUrl,
-      location.href
-    ).href;
-
-  } catch {
-
-    return;
-
-  }
-
-  if (saved.url !== expectedUrl) return;
-
-  currentTrackId = track?.id || null;
-
-  manualPaused =
-    d.allowPlayPause && saved.paused === true;
-
-  pendingSeek = {
-
-    url: expectedUrl,
-
-    time: Math.max(0, Number(saved.time) || 0)
-
-  };
-
-}
-
 function applyPendingSeek() {
 
   if (
     !pendingSeek ||
     !audio ||
     audio.src !== pendingSeek.url ||
+    audio.readyState < 1 ||
     !Number.isFinite(audio.duration)
   ) return;
 
-  audio.currentTime = Math.max(
-    0,
-    Math.min(
-      pendingSeek.time,
-      Math.max(0, audio.duration - 0.2)
-    )
-  );
+  try {
 
-  pendingSeek = null;
+    const target = Math.max(
+      0,
+      Math.min(
+        pendingSeek.time,
+        Math.max(0, audio.duration - 0.2)
+      )
+    );
+
+    audio.currentTime = target;
+
+    pendingSeek = null;
+
+    console.log(
+      '[Christmas Player] Playback restored',
+      {
+        time: target,
+        paused: manualPaused
+      }
+    );
+
+  } catch (error) {
+
+    console.warn(
+      '[Christmas Player] Restore seek failed',
+      error.message
+    );
+
+  }
 
 }
 
@@ -1031,7 +994,13 @@ function nextChristmasTrack() {
 }
 
 function renderChristmasMusic(d, enabled) {
+if (!musicReady) {
 
+  audio?.pause();
+
+  return;
+
+}
 if (!enabled) {
 
   musicAvailable = false;
@@ -1169,7 +1138,7 @@ currentMusicTitle =
       || document.createElement('audio');
 
     audio.id = 'christmasMusic';
-
+audio.preload = 'auto';
     if (!audio.isConnected) {
       document.body.append(audio);
     }
@@ -1181,6 +1150,34 @@ audio.addEventListener(
     applyPendingSeek();
 
     syncMiniPlayer();
+
+    play();
+
+  }
+);
+
+audio.addEventListener(
+  'canplay',
+  () => {
+
+    applyPendingSeek();
+
+    syncMiniPlayer();
+
+    play();
+
+  }
+);
+
+audio.addEventListener(
+  'seeked',
+  () => {
+
+    savePlaybackPosition(true);
+
+    syncMiniPlayer();
+
+    play();
 
   }
 );
@@ -1266,7 +1263,15 @@ function play() {
     lastMusic &&
 
     musicAvailable &&
+musicAvailable &&
 
+musicReady &&
+
+pendingSeek === null &&
+
+!audio.seeking &&
+
+!manualPaused &&
     !manualPaused &&
 
     !musicFailed &&
@@ -1315,6 +1320,8 @@ ref = null;
 musicRef = null;
 savePlaybackPosition(true);
 
+musicReady = false;
+
 musicData = {};
 
 config = null;
@@ -1362,6 +1369,8 @@ musicRef.on('value', snapshot => {
 
   musicData = snapshot.val() || {};
 
+  musicReady = true;
+
   render();
 
 }, error => {
@@ -1370,15 +1379,38 @@ musicRef.on('value', snapshot => {
 
   console.error('[Christmas Music]', error);
 
+  musicReady = false;
+
   musicData = {};
 
-  render();
+  stop();
 
 });
-ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);window.addEventListener('pagehide', () => {
+ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);
+window.addEventListener('beforeunload', () => {
+
+  savePlaybackPosition(true);
+
+});
+
+document.addEventListener('visibilitychange', () => {
+
+  if (document.hidden) {
+
+    savePlaybackPosition(true);
+
+  }
+
+});
+
+window.addEventListener('pagehide', () => {
 
   savePlaybackPosition(true);
 
   audio?.pause();
 
-});}init();})();
+});
+}
+init();
+}
+)();
