@@ -4,6 +4,19 @@ const limits={"desktopCount": [0, 120], "mobileCount": [0, 60], "rotation": [0, 
 const choices={"scheduleMode": ["december", "always", "custom"], "direction": ["random", "right", "left"], "side": ["right", "left"], "accessMode": ["all", "superadmin", "siteadmin"]};
 function normalize(raw={}){const d={...defaults};for(const k of Object.keys(d)){const v=raw[k];if(typeof d[k]==='boolean'){if(typeof v==='boolean')d[k]=v;}else if(limits[k]){if(typeof v==='number'&&Number.isFinite(v))d[k]=Math.max(limits[k][0],Math.min(limits[k][1],v));}else if(choices[k]){if(choices[k].includes(v))d[k]=v;}else if(typeof v==='string'&&v.length<=1000)d[k]=v;}return d;}
 let config=null,uid='',role='',ref=null,epoch=0,layer,audio,lastEffect='',lastMusic='',timer;
+let musicRef = null;
+let musicData = {};
+let currentTrackId = null;
+let playlistFinished = false;
+let playlistSignature = '';
+
+const playbackModes = [
+  'play_one',
+  'repeat_one',
+  'play_all',
+  'repeat_all',
+  'shuffle'
+];
 const key=k=>'5g88.christmas.'+uid+'.'+k;
 let floating, drag, closeTimer, suppressClick=false;
 const positionKey=()=> '5g88.christmas.floating.position.v1:'+uid;
@@ -56,12 +69,235 @@ function syncChristmasFloat(d,e,m){createFloat();const showE=d.effectEnabled&&d.
 function pref(k,def,allow){if(!allow)return def;try{const v=localStorage.getItem(key(k));return v===null?def:v==='on';}catch{return def;}}
 function save(k,v){try{localStorage.setItem(key(k),v?'on':'off')}catch{}}
 function scheduled(d){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kuala_Lumpur',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=k=>parts.find(p=>p.type===k).value;const date=get('year')+'-'+get('month')+'-'+get('day');return d.scheduleMode==='always'||(d.scheduleMode==='december'?get('month')==='12':date>=d.startDate&&date<=d.endDate);}
-function stop(){layer?.replaceChildren();audio?.pause();closeFloat();if(floating)floating.hidden=true;lastEffect='';lastMusic='';}
+/* ==========================================
+   CHRISTMAS PLAYLIST ENGINE
+   ========================================== */
+
+function getMusicTracks() {
+  return Object.entries(musicData.tracks || {})
+    .filter(([id, track]) =>
+      track?.active === true &&
+      typeof track.url === 'string'
+    )
+    .map(([id, track]) => ({
+      ...track,
+      id
+    }))
+    .sort((a, b) =>
+      (a.createdAt || 0) - (b.createdAt || 0)
+    );
+}
+
+function getPlaybackMode() {
+  return playbackModes.includes(musicData.mode)
+    ? musicData.mode
+    : 'repeat_all';
+}
+
+function resetPlaylist() {
+  currentTrackId = null;
+  playlistFinished = false;
+  lastMusic = '';
+}
+
+function nextChristmasTrack() {
+  const tracks = getMusicTracks();
+  const mode = getPlaybackMode();
+
+  if (!tracks.length) {
+    playlistFinished = true;
+    return;
+  }
+
+  const index = tracks.findIndex(
+    track => track.id === currentTrackId
+  );
+
+  if (mode === 'play_one') {
+    playlistFinished = true;
+    return;
+  }
+
+  if (mode === 'repeat_one') {
+    audio.currentTime = 0;
+    play();
+    return;
+  }
+
+  if (mode === 'shuffle') {
+    const others = tracks.filter(
+      track => track.id !== currentTrackId
+    );
+
+    const pool = others.length ? others : tracks;
+
+    currentTrackId =
+      pool[Math.floor(Math.random() * pool.length)].id;
+
+  } else if (index + 1 < tracks.length) {
+
+    currentTrackId = tracks[index + 1].id;
+
+  } else if (mode === 'repeat_all') {
+
+    currentTrackId = tracks[0].id;
+
+  } else {
+
+    playlistFinished = true;
+    return;
+
+  }
+
+  audio.currentTime = 0;
+  lastMusic = '';
+  render();
+}
+
+function renderChristmasMusic(d, enabled) {
+
+  if (!enabled) {
+    audio?.pause();
+    resetPlaylist();
+    return;
+  }
+
+  const tracks = getMusicTracks();
+  const mode = getPlaybackMode();
+
+  const signature = JSON.stringify([
+    mode,
+    tracks.map(t => [t.id, t.url])
+  ]);
+
+  if (signature !== playlistSignature) {
+    playlistSignature = signature;
+    playlistFinished = false;
+  }
+
+  if (playlistFinished) return;
+
+  let track = tracks.find(
+    t => t.id === currentTrackId
+  );
+
+  if (!track && tracks.length) {
+    track = tracks[0];
+    currentTrackId = track.id;
+  }
+
+  let url;
+
+  try {
+    url = new URL(
+      track?.url || d.musicUrl,
+      location.href
+    );
+
+    if (
+      url.protocol !== 'https:' &&
+      url.origin !== location.origin
+    ) throw new Error('Invalid music URL');
+
+  } catch {
+    audio?.pause();
+    lastMusic = '';
+    return;
+  }
+
+  if (!audio) {
+    audio = document.getElementById('christmasMusic')
+      || document.createElement('audio');
+
+    audio.id = 'christmasMusic';
+
+    if (!audio.isConnected) {
+      document.body.append(audio);
+    }
+
+    audio.addEventListener(
+      'ended',
+      nextChristmasTrack
+    );
+  }
+
+  if (audio.src !== url.href) {
+    audio.src = url.href;
+  }
+
+  audio.volume = d.volume / 100;
+
+  audio.loop = tracks.length
+    ? mode === 'repeat_one'
+    : d.loop;
+
+  lastMusic = url.href;
+
+  play();
+}
+function stop() {
+  layer?.replaceChildren();
+  audio?.pause();
+  closeFloat();
+
+  if (floating) floating.hidden = true;
+
+  lastEffect = '';
+  resetPlaylist();
+}
+
+function play() {
+
+  if (
+    config &&
+    audio &&
+    lastMusic &&
+    !playlistFinished &&
+    (!config.pauseWhenHidden || !document.hidden) &&
+    audio.paused
+  ) {
+    audio.play().catch(() => {});
+  }
+
+}
 function play(){if(config&&audio&&lastMusic&&(!config.pauseWhenHidden||!document.hidden)&&audio.paused)audio.play().catch(()=>{});}
 function render(){if(!document.body)return;const d=config;if(!d||!d.enabled||!scheduled(d)||(d.accessMode!=='all'&&d.accessMode!==role)){stop();return;}
 const e=d.effectEnabled&&pref('effect',d.defaultEffectOn,d.allowEffectToggle),m=d.musicEnabled&&pref('music',d.defaultMusicOn,d.allowMusicToggle);
 syncChristmasFloat(d,e,m);
 const count=innerWidth<=815?d.mobileCount:d.desktopCount;const signature=e?JSON.stringify([count,d.symbols,d.rotation,d.direction,d.fallSeconds,d.spinSeconds,d.size,d.opacity,d.swing]):'';
 if(signature!==lastEffect){lastEffect=signature;if(!layer){layer=document.createElement('div');layer.className='snow-layer';layer.setAttribute('aria-hidden','true');document.body.append(layer);}layer.replaceChildren();if(e){const icons=d.symbols.split('|').map(s=>s.trim()).filter(Boolean).slice(0,40);for(let i=0;i<count&&icons.length;i++){const p=document.createElement('span'),dr=document.createElement('span'),s=document.createElement('span');p.className='snowflake';dr.className='christmas-drift';const snow=icons.filter(x=>/^[❄❅❆✻]/u.test(x));s.textContent=snow.length&&Math.random()<.75?snow[Math.floor(Math.random()*snow.length)]:icons[Math.floor(Math.random()*icons.length)];s.className='christmas-symbol '+(/^[❄❅❆✻]/u.test(s.textContent)?'christmas-spin':'christmas-ornament');p.style.left=Math.random()*100+'%';p.style.opacity=d.opacity/100;p.style.animationDuration=d.fallSeconds*(.7+Math.random()*.6)+'s';p.style.animationDelay=-Math.random()*d.fallSeconds+'s';dr.style.setProperty('--christmas-drift',d.swing+'px');s.style.fontSize=Math.max(8,d.size*(.5+Math.random()*.5))+'px';s.style.animationDuration=d.spinSeconds+'s';s.style.setProperty('--christmas-rotation',d.rotation+'deg');s.style.setProperty('--christmas-rock',Math.min(d.rotation,45)+'deg');s.style.animationDirection=d.direction==='left'||(d.direction==='random'&&Math.random()<.5)?'reverse':'normal';dr.append(s);p.append(dr);layer.append(p);}}}
-if(!m){audio?.pause();lastMusic='';return;}let url;try{url=new URL(d.musicUrl,location.href);if(url.protocol!=='https:'&&url.origin!==location.origin)throw Error();}catch{audio?.pause();lastMusic='';return;}if(!audio){audio=document.getElementById('christmasMusic')||document.createElement('audio');audio.id='christmasMusic';if(!audio.isConnected)document.body.append(audio);}if(audio.src!==url.href)audio.src=url.href;audio.volume=d.volume/100;audio.loop=d.loop;lastMusic=url.href;play();}
-function init(){if(!window.firebase?.auth||!firebase.apps.length){setTimeout(init,300);return;}firebase.auth().onIdTokenChanged(async u=>{const n=++epoch;ref?.off();ref=null;config=null;stop();if(!u||sessionStorage.getItem('5g88.adminSession')!==u.uid)return;try{const t=await u.getIdTokenResult();const p=(await firebase.database().ref('adminUsers/'+u.uid).once('value')).val();if(n!==epoch||!p?.active||!p.secondPasswordEnabled||t.claims.secondVerified!==true||t.claims.pinVersion!==p.pinVersion||!['superadmin','siteadmin'].includes(p.role))return;uid=u.uid;role=p.role;ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);window.addEventListener('pagehide',()=>audio?.pause());}init();})();
+renderChristmasMusic(d, m);
+}
+function init(){if(!window.firebase?.auth||!firebase.apps.length){setTimeout(init,300);return;}firebase.auth().onIdTokenChanged(async u=>{const n=++epoch;ref?.off();
+musicRef?.off();
+ref = null;
+musicRef = null;
+musicData = {};
+config = null;
+stop();
+                                                                                                                                          
+if(!u||sessionStorage.getItem('5g88.adminSession')!==u.uid)return;try{const t=await u.getIdTokenResult();const p=(await firebase.database().ref('adminUsers/'+u.uid).once('value')).val();if(n!==epoch||!p?.active||!p.secondPasswordEnabled||t.claims.secondVerified!==true||t.claims.pinVersion!==p.pinVersion||!['superadmin','siteadmin'].includes(p.role))return;uid=u.uid;role=p.role;
+musicRef = firebase.database().ref(
+  'adminConfig/christmasMusic'
+);
+
+musicRef.on('value', snapshot => {
+
+  if (n !== epoch) return;
+
+  musicData = snapshot.val() || {};
+
+  render();
+
+}, error => {
+
+  if (n !== epoch) return;
+
+  console.error('[Christmas Music]', error);
+
+  musicData = {};
+
+  render();
+
+});
+ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);window.addEventListener('pagehide',()=>audio?.pause());}init();})();
