@@ -8300,33 +8300,30 @@ app.post(
         `${CHRISTMAS_MUSIC_PATH}/tracks`
       );
 
-      const result = await ref.transaction(
-        current => {
+      // Load Firebase data before transaction
 
-          if (!current) return;
+      const snapshot = await ref.once('value');
 
-          const existingIds =
-            Object.keys(current);
+      const existing = snapshot.val() || {};
 
-          if (
-            ids.length !== existingIds.length ||
-            ids.some(id => !current[id])
-          ) {
-            return;
+      const existingIds = Object.keys(existing);
+
+      if (
+        ids.length !== existingIds.length ||
+        ids.some(id =>
+          !Object.prototype.hasOwnProperty.call(
+            existing, id
+          )
+        )
+      ) {
+
+        console.warn(
+          '[MUSIC REORDER] ID mismatch',
+          {
+            received: ids,
+            existing: existingIds
           }
-
-          ids.forEach((id, index) => {
-
-            current[id].order = index + 1;
-
-          });
-
-          return current;
-
-        }
-      );
-
-      if (!result.committed) {
+        );
 
         return fail(
           res,
@@ -8336,7 +8333,87 @@ app.post(
 
       }
 
-      return res.json({ ok: true });
+      let firstAttempt = true;
+
+      const result = await ref.transaction(
+
+        current => {
+
+          const data =
+            firstAttempt && current === null
+              ? existing
+              : current;
+
+          firstAttempt = false;
+
+          if (!data) return;
+
+          const currentIds = Object.keys(data);
+
+          if (
+            ids.length !== currentIds.length ||
+            ids.some(id =>
+              !Object.prototype.hasOwnProperty.call(
+                data, id
+              )
+            )
+          ) {
+
+            return;
+
+          }
+
+          const updated = { ...data };
+
+          ids.forEach((id, index) => {
+
+            updated[id] = {
+              ...data[id],
+              order: index + 1
+            };
+
+          });
+
+          return updated;
+
+        },
+
+        undefined,
+        false
+
+      );
+
+      if (!result.committed) {
+
+        console.warn(
+          '[MUSIC REORDER] Transaction aborted',
+          {
+            received: ids,
+            current: Object.keys(
+              result.snapshot.val() || {}
+            )
+          }
+        );
+
+        return fail(
+          res,
+          409,
+          'Playlist changed. Please refresh.'
+        );
+
+      }
+
+      console.log(
+        '[MUSIC REORDER] Success',
+        {
+          ids,
+          total: ids.length
+        }
+      );
+
+      return res.json({
+        ok: true
+      });
 
     } catch (error) {
 
@@ -8346,7 +8423,9 @@ app.post(
       );
 
       return fail(
-        res, 500, 'Cannot save playlist order'
+        res,
+        500,
+        'Cannot save playlist order'
       );
 
     }
