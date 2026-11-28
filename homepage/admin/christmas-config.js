@@ -17,23 +17,6 @@ Object.assign(defaults, {
   autoSkipMusicError: true
 
 });
-Object.assign(defaults, {
-
-  showMiniPlayer: true,
-
-  allowPlayPause: true,
-
-  allowTrackSkip: true,
-
-  allowMusicSeek: true,
-
-  allowVolumeControl: true,
-
-  rememberPlayback: true,
-
-  autoSkipMusicError: true
-
-});
 const limits={"desktopCount": [0, 120], "mobileCount": [0, 60], "rotation": [0, 1080], "fallSeconds": [3, 60], "spinSeconds": [1, 30], "size": [8, 40], "opacity": [10, 100], "swing": [0, 60], "volume": [0, 100], "bottom": [0, 150], "offset": [0, 100]};
 const choices={"scheduleMode": ["december", "always", "custom"], "direction": ["random", "right", "left"], "side": ["right", "left"], "accessMode": ["all", "superadmin", "siteadmin"]};
 function normalize(raw={}){const d={...defaults};for(const k of Object.keys(d)){const v=raw[k];if(typeof d[k]==='boolean'){if(typeof v==='boolean')d[k]=v;}else if(limits[k]){if(typeof v==='number'&&Number.isFinite(v))d[k]=Math.max(limits[k][0],Math.min(limits[k][1],v));}else if(choices[k]){if(choices[k].includes(v))d[k]=v;}else if(typeof v==='string'&&v.length<=1000)d[k]=v;}return d;}
