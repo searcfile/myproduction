@@ -124,14 +124,37 @@ let musicTracks = {};
 let savedPlaybackMode = 'repeat_all';
 let previewAudio = null;
 let editingMusicId = null;
+const replaceField = document.getElementById(
+  'christmasReplaceField'
+);
 
+const replaceMusic = document.getElementById(
+  'christmasReplaceMusic'
+);
+
+const currentMusicFile = document.getElementById(
+  'christmasCurrentFile'
+);
+
+window.SharedActiveSwitch?.init?.(
+  replaceField
+);
 function syncMusicSource() {
 
-  const upload = musicSource.value === 'upload';
+  const upload =
+    musicSource.value === 'upload';
+
+  const editing =
+    editingMusicId !== null;
+
+  replaceField.hidden =
+    !editing || !upload;
 
   document.getElementById(
     'christmasUploadField'
-  ).hidden = !upload;
+  ).hidden =
+    !upload ||
+    (editing && !replaceMusic.checked);
 
   document.getElementById(
     'christmasUrlField'
@@ -156,7 +179,13 @@ function openChristmasAddMusic() {
   stopMusicPreview();
 
   editingMusicId = null;
+replaceMusic.checked = false;
 
+currentMusicFile.textContent = '';
+
+window.SharedActiveSwitch?.sync?.(
+  replaceMusic
+);
   musicModule.setTitle('Add Music');
 
   saveMusicBtn.textContent = 'Save Music';
@@ -192,7 +221,14 @@ function openChristmasEditMusic(id) {
   stopMusicPreview();
 
   editingMusicId = id;
+replaceMusic.checked = false;
 
+currentMusicFile.textContent =
+  (track.title || 'Untitled') + '.mp3';
+
+window.SharedActiveSwitch?.sync?.(
+  replaceMusic
+);
   musicModule.setTitle('Edit Music');
 
   saveMusicBtn.textContent = 'Save Changes';
@@ -217,13 +253,9 @@ function openChristmasEditMusic(id) {
   musicTitle._newUIInput?.refresh?.();
   musicUrl._newUIInput?.refresh?.();
 
-  syncMusicSource();
+syncMusicSource();
 
-  document.getElementById(
-    'christmasUploadField'
-  ).hidden = true;
-
-  musicModule.open();
+musicModule.open();
 
   musicTitle.focus();
 
@@ -237,7 +269,16 @@ musicSource.addEventListener(
   'change',
   syncMusicSource
 );
+replaceMusic.addEventListener(
+  'change',
+  () => {
 
+    musicFile.value = '';
+
+    syncMusicSource();
+
+  }
+);
 document.getElementById(
   'christmasCancelMusic'
 ).onclick = closeMusicModule;
@@ -321,7 +362,52 @@ saveMusicBtn.addEventListener('click', async () => {
   }
 
   const updates = { title };
+const isReplacing =
+  track.source === 'github' &&
+  replaceMusic.checked;
 
+const replacementFile =
+  musicFile.files[0];
+
+if (isReplacing) {
+
+  if (!replacementFile) {
+
+    toast(
+      'Please select new MP3 file',
+      false
+    );
+
+    return;
+
+  }
+
+  if (!/\.mp3$/i.test(replacementFile.name)) {
+
+    toast(
+      'Only MP3 files allowed',
+      false
+    );
+
+    return;
+
+  }
+
+  if (
+    !replacementFile.size ||
+    replacementFile.size > 10 * 1024 * 1024
+  ) {
+
+    toast(
+      'Maximum file size is 10 MB',
+      false
+    );
+
+    return;
+
+  }
+
+}
   if (track.source === 'url') {
 
     const url = musicUrl.value.trim();
@@ -354,17 +440,38 @@ saveMusicBtn.addEventListener('click', async () => {
 
   try {
 
-    await NewUI.setButtonLoading(
-      saveMusicBtn,
-      true,
-      { text: 'Saving...' }
-    );
+await NewUI.setButtonLoading(
+  saveMusicBtn,
+  true,
+  {
+    text: isReplacing
+      ? 'Uploading...'
+      : 'Saving...'
+  }
+);
 
-    await musicRequest(
-      '/' + encodeURIComponent(id),
-      'PATCH',
-      JSON.stringify(updates)
-    );
+if (isReplacing) {
+
+  await musicRequest(
+    '/' +
+      encodeURIComponent(id) +
+      '/replace?title=' +
+      encodeURIComponent(title),
+
+    'POST',
+    replacementFile,
+    'audio/mpeg'
+  );
+
+} else {
+
+  await musicRequest(
+    '/' + encodeURIComponent(id),
+    'PATCH',
+    JSON.stringify(updates)
+  );
+
+}
 
     editingMusicId = null;
 
