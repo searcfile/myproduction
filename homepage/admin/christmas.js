@@ -74,18 +74,42 @@ function scheduled(d){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asi
    ========================================== */
 
 function getMusicTracks() {
-  return Object.entries(musicData.tracks || {})
+
+  return Object.entries(
+    musicData.tracks || {}
+  )
+
     .filter(([id, track]) =>
       track?.active === true &&
       typeof track.url === 'string'
     )
+
     .map(([id, track]) => ({
       ...track,
       id
     }))
-    .sort((a, b) =>
-      (a.createdAt || 0) - (b.createdAt || 0)
-    );
+
+    .sort((a, b) => {
+
+      const orderA =
+        Number.isFinite(a.order)
+          ? a.order
+          : Number.MAX_SAFE_INTEGER;
+
+      const orderB =
+        Number.isFinite(b.order)
+          ? b.order
+          : Number.MAX_SAFE_INTEGER;
+
+      return (
+        orderA - orderB ||
+        (a.createdAt || 0) -
+        (b.createdAt || 0) ||
+        a.id.localeCompare(b.id)
+      );
+
+    });
+
 }
 
 function getPlaybackMode() {
