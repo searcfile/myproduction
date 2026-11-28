@@ -3176,16 +3176,6 @@ body.tab-dragging-active *{
   min-height: 30px;
 }
 
-.christmas-music-delete {
-  color: #ff4d4f !important;
-  border-color: #a61d24 !important;
-}
-
-.christmas-music-delete:hover {
-  color: #fff !important;
-  background: #a61d24 !important;
-  border-color: #ff4d4f !important;
-}
 
 /* MOBILE RESPONSIVE */
 
