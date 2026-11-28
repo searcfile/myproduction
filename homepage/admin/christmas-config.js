@@ -726,15 +726,289 @@ async function updateMusicStatus(id, active) {
   });
 
 }
+      function sortMusicTracks(a, b) {
+
+  const orderA =
+    Number.isFinite(a[1].order)
+      ? a[1].order
+      : Number.MAX_SAFE_INTEGER;
+
+  const orderB =
+    Number.isFinite(b[1].order)
+      ? b[1].order
+      : Number.MAX_SAFE_INTEGER;
+
+  return (
+    orderA - orderB ||
+    (a[1].createdAt || 0) -
+    (b[1].createdAt || 0) ||
+    a[0].localeCompare(b[0])
+  );
+
+}
+
+let musicOrderBusy = false;
+
+async function saveMusicOrder() {
+
+  if (!user || musicBusy || musicOrderBusy) {
+
+    renderMusicList();
+    return;
+
+  }
+
+  const ids = Array.from(
+    musicList.querySelectorAll('[data-music-id]')
+  ).map(row => row.dataset.musicId);
+
+  musicOrderBusy = true;
+
+  musicList.classList.add('is-saving-order');
+
+  try {
+
+    await musicRequest(
+      '/reorder',
+      'POST',
+      JSON.stringify({ ids })
+    );
+
+    toast('Playlist order saved');
+
+  } catch (error) {
+
+    toast(error.message, false);
+
+    renderMusicList();
+
+  } finally {
+
+    musicOrderBusy = false;
+
+    musicList.classList.remove('is-saving-order');
+
+  }
+
+}
+      function bindMusicDrag(handle, row) {
+
+  let drag = null;
+
+  handle.addEventListener(
+    'pointerdown',
+    event => {
+
+      if (
+        !user ||
+        musicBusy ||
+        musicOrderBusy ||
+        event.button !== 0 ||
+        drag
+      ) return;
+
+      drag = {
+        pointerId: event.pointerId,
+        startY: event.clientY,
+        originalOrder: Array.from(
+          musicList.children
+        ),
+        moved: false
+      };
+
+      handle.setPointerCapture(
+        event.pointerId
+      );
+
+    }
+  );
+
+  handle.addEventListener(
+    'pointermove',
+    event => {
+
+      if (
+        !drag ||
+        drag.pointerId !== event.pointerId
+      ) return;
+
+      if (
+        !drag.moved &&
+        Math.abs(event.clientY - drag.startY) < 6
+      ) return;
+
+      drag.moved = true;
+
+      row.classList.add('is-dragging');
+
+      musicList.classList.add('is-reordering');
+
+      const rows = Array.from(
+        musicList.querySelectorAll(
+          '.christmas-music-item'
+        )
+      ).filter(item => item !== row);
+
+      const target = rows.find(item => {
+
+        const rect =
+          item.getBoundingClientRect();
+
+        return event.clientY <
+          rect.top + rect.height / 2;
+
+      });
+
+      if (target) {
+
+        musicList.insertBefore(
+          row,
+          target
+        );
+
+      } else {
+
+        musicList.append(row);
+
+      }
+
+      if (
+        !handle.hasPointerCapture(event.pointerId)
+      ) {
+
+        handle.setPointerCapture(
+          event.pointerId
+        );
+
+      }
+
+    }
+  );
+
+  function finish(event, cancelled = false) {
+
+    if (
+      !drag ||
+      drag.pointerId !== event.pointerId
+    ) return;
+
+    const previous = drag;
+
+    drag = null;
+
+    row.classList.remove('is-dragging');
+
+    musicList.classList.remove('is-reordering');
+
+    if (
+      handle.hasPointerCapture(event.pointerId)
+    ) {
+
+      handle.releasePointerCapture(
+        event.pointerId
+      );
+
+    }
+
+    if (cancelled) {
+
+      previous.originalOrder.forEach(item => {
+
+        if (item.parentNode === musicList) {
+          musicList.append(item);
+        }
+
+      });
+
+      return;
+
+    }
+
+    if (previous.moved) {
+
+      const current = Array.from(
+        musicList.children
+      );
+
+      const changed = current.some(
+        (item, index) =>
+          item !== previous.originalOrder[index]
+      );
+
+      if (changed) saveMusicOrder();
+
+    }
+
+  }
+
+  handle.addEventListener(
+    'pointerup',
+    event => finish(event)
+  );
+
+  handle.addEventListener(
+    'pointercancel',
+    event => finish(event, true)
+  );
+
+  handle.addEventListener(
+    'lostpointercapture',
+    event => finish(event, true)
+  );
+
+  // Keyboard accessibility
+
+  handle.addEventListener(
+    'keydown',
+    event => {
+
+      if (
+        !user ||
+        musicBusy ||
+        musicOrderBusy
+      ) return;
+
+      if (event.key === 'ArrowUp') {
+
+        event.preventDefault();
+
+        const previous =
+          row.previousElementSibling;
+
+        if (!previous) return;
+
+        musicList.insertBefore(row, previous);
+
+      } else if (event.key === 'ArrowDown') {
+
+        event.preventDefault();
+
+        const next = row.nextElementSibling;
+
+        if (!next) return;
+
+        musicList.insertBefore(next, row);
+
+      } else {
+
+        return;
+
+      }
+
+      handle.focus();
+
+      saveMusicOrder();
+
+    }
+  );
+
+}
 function renderMusicList() {
 
   musicList.replaceChildren();
 
-  const tracks = Object.entries(musicTracks)
-    .sort((a, b) =>
-      (a[1].createdAt || 0) -
-      (b[1].createdAt || 0)
-    );
+const tracks = Object.entries(musicTracks)
+  .sort(sortMusicTracks);
 
   if (!tracks.length) {
 
@@ -753,7 +1027,37 @@ function renderMusicList() {
 
     const row = document.createElement('div');
     row.className = 'christmas-music-item';
+row.dataset.musicId = id;
 
+const handle = document.createElement('button');
+
+handle.type = 'button';
+
+handle.className = 'christmas-music-drag';
+
+handle.title = 'Drag to reorder';
+
+handle.setAttribute(
+  'aria-label',
+  'Reorder ' + (track.title || 'music')
+);
+
+handle.innerHTML = `
+  <svg width="16" height="16"
+       viewBox="0 0 24 24"
+       fill="currentColor">
+
+    <circle cx="9" cy="5" r="1.5"/>
+    <circle cx="15" cy="5" r="1.5"/>
+    <circle cx="9" cy="12" r="1.5"/>
+    <circle cx="15" cy="12" r="1.5"/>
+    <circle cx="9" cy="19" r="1.5"/>
+    <circle cx="15" cy="19" r="1.5"/>
+
+  </svg>
+`;
+
+bindMusicDrag(handle, row);
     const info = document.createElement('div');
     info.className = 'christmas-music-info';
 
@@ -915,7 +1219,7 @@ actions.append(
   del
 );
 
-row.append(info, actions);
+row.append(handle, info, actions);
 
 musicList.append(row);
 
@@ -941,10 +1245,7 @@ function syncSelectedMusic() {
     .filter(([id, track]) =>
       track?.active === true
     )
-    .sort((a, b) =>
-      (a[1].createdAt || 0) -
-      (b[1].createdAt || 0)
-    );
+.sort(sortMusicTracks);
 
   selectedMusic.replaceChildren(
     new Option('Select music', '')
