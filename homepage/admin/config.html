@@ -382,6 +382,45 @@ h2{font-size:16px;margin:0 0 18px}.muted{color:var(--tx-muted,#9aaac0)}
     <h2>Christmas Manager</h2>
     <fieldset id="christmasFields" disabled style="border:0;margin:0;padding:0;min-width:0">
       <div id="christmasSettings" class="cfg-grid"></div>
+         <!-- CHRISTMAS MUSIC MANAGER -->
+
+<section class="christmas-music-manager"
+         id="christmasMusicManager">
+
+  <div class="christmas-music-toolbar">
+
+    <h2>Music Playlist</h2>
+
+    <button type="button"
+            class="btn-primary-new"
+            id="christmasAddMusic">
+      Add Music
+    </button>
+
+  </div>
+
+  <div class="cfg-field">
+
+    <span>Playback mode</span>
+
+    <select id="christmasPlaybackMode"
+            data-shared-dropdown>
+
+      <option value="play_one">Play One</option>
+      <option value="repeat_one">Repeat One</option>
+      <option value="play_all">Play All</option>
+      <option value="repeat_all">Repeat All</option>
+      <option value="shuffle">Shuffle</option>
+
+    </select>
+
+  </div>
+
+  <div id="christmasMusicList"
+       class="christmas-music-list">
+  </div>
+
+</section>
       <div class="cfg-actions">
         <button type="button" class="btn-cancel-new" id="christmasReset">Reset fields</button>
         <button type="submit" class="btn-primary-new" id="christmasSave">Save Christmas</button>
