@@ -165,26 +165,59 @@ function renderChristmasMusic(d, enabled) {
   const tracks = getMusicTracks();
   const mode = getPlaybackMode();
 
-  const signature = JSON.stringify([
-    mode,
-    tracks.map(t => [t.id, t.url])
-  ]);
+const singleMode = [
+  'play_one',
+  'repeat_one'
+].includes(mode);
 
-  if (signature !== playlistSignature) {
-    playlistSignature = signature;
-    playlistFinished = false;
+const selectedId =
+  musicData.selectedTrackId || '';
+
+const preferredTrack = singleMode
+  ? tracks.find(t => t.id === selectedId)
+    || tracks[0]
+  : null;
+
+const signature = JSON.stringify([
+  mode,
+  singleMode ? preferredTrack?.id || '' : '',
+  tracks.map(t => [t.id, t.url])
+]);
+
+if (signature !== playlistSignature) {
+
+  playlistSignature = signature;
+  playlistFinished = false;
+
+  if (singleMode) {
+
+    currentTrackId =
+      preferredTrack?.id || null;
+
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
   }
 
-  if (playlistFinished) return;
+}
 
-  let track = tracks.find(
-    t => t.id === currentTrackId
-  );
+if (playlistFinished) return;
 
-  if (!track && tracks.length) {
-    track = tracks[0];
-    currentTrackId = track.id;
-  }
+let track = singleMode
+  ? preferredTrack
+  : tracks.find(
+      t => t.id === currentTrackId
+    );
+
+if (!track && tracks.length) {
+
+  track = tracks[0];
+
+}
+
+currentTrackId = track?.id || null;
 
   let url;
 
