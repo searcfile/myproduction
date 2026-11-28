@@ -1,5 +1,22 @@
 (()=>{'use strict';if(window.__christmasV3||self!==top)return;window.__christmasV3=true;
 const defaults={"enabled": true, "effectEnabled": true, "musicEnabled": true, "showEffectButton": true, "showMusicButton": true, "allowEffectToggle": true, "allowMusicToggle": true, "defaultEffectOn": true, "defaultMusicOn": true, "scheduleMode": "december", "startDate": "2026-12-01", "endDate": "2026-12-31", "desktopCount": 80, "mobileCount": 35, "rotation": 360, "direction": "random", "fallSeconds": 12, "spinSeconds": 4, "size": 20, "opacity": 80, "swing": 20, "symbols": "❄|❅|❆|☃️|🎁|🎄|⭐|🔔|🎅", "musicUrl": "./merrychristmas/MerryXmast.mp3", "volume": 30, "loop": true, "pauseWhenHidden": true, "side": "right", "bottom": 20, "offset": 20, "accessMode": "all"};
+Object.assign(defaults, {
+
+  showMiniPlayer: true,
+
+  allowPlayPause: true,
+
+  allowTrackSkip: true,
+
+  allowMusicSeek: true,
+
+  allowVolumeControl: true,
+
+  rememberPlayback: true,
+
+  autoSkipMusicError: true
+
+});
 const limits={"desktopCount": [0, 120], "mobileCount": [0, 60], "rotation": [0, 1080], "fallSeconds": [3, 60], "spinSeconds": [1, 30], "size": [8, 40], "opacity": [10, 100], "swing": [0, 60], "volume": [0, 100], "bottom": [0, 150], "offset": [0, 100]};
 const choices={"scheduleMode": ["december", "always", "custom"], "direction": ["random", "right", "left"], "side": ["right", "left"], "accessMode": ["all", "superadmin", "siteadmin"]};
 function normalize(raw={}){const d={...defaults};for(const k of Object.keys(d)){const v=raw[k];if(typeof d[k]==='boolean'){if(typeof v==='boolean')d[k]=v;}else if(limits[k]){if(typeof v==='number'&&Number.isFinite(v))d[k]=Math.max(limits[k][0],Math.min(limits[k][1],v));}else if(choices[k]){if(choices[k].includes(v))d[k]=v;}else if(typeof v==='string'&&v.length<=1000)d[k]=v;}return d;}
@@ -9,7 +26,23 @@ let musicData = {};
 let currentTrackId = null;
 let playlistFinished = false;
 let playlistSignature = '';
+let miniPlayer = null;
 
+let manualPaused = false;
+
+let musicAvailable = false;
+
+let musicFailed = false;
+
+let currentMusicTitle = '';
+
+let restoredPlayback = false;
+
+let failedTracks = new Set();
+
+let pendingSeek = null;
+
+let lastPlaybackSave = 0;
 const playbackModes = [
   'play_one',
   'repeat_one',
@@ -34,10 +67,770 @@ function clampY(y) {
   return Math.max(min, Math.min(max, y));
 }
 function positionFloat(d){floating.dataset.side=d.side;floating.style.left=d.side==='left'?d.offset+'px':'auto';floating.style.right=d.side==='right'?d.offset+'px':'auto';floating.style.bottom='auto';if(drag)return;let y=innerHeight-floating.offsetHeight-d.bottom;try{const raw=localStorage.getItem(positionKey());if(raw!==null&&Number.isFinite(Number(raw)))y=Number(raw);}catch{}floating.style.top=clampY(y)+'px';fitPanel();}
+/* ==========================================
+   CHRISTMAS MINI MUSIC PLAYER
+   ========================================== */
+
+function readPlayerStorage(name, fallback = null) {
+
+  if (!uid) return fallback;
+
+  try {
+
+    const raw = localStorage.getItem(
+      key('player.' + name)
+    );
+
+    return raw === null
+      ? fallback
+      : JSON.parse(raw);
+
+  } catch {
+
+    return fallback;
+
+  }
+
+}
+
+function writePlayerStorage(name, value) {
+
+  if (!uid) return;
+
+  try {
+
+    localStorage.setItem(
+      key('player.' + name),
+      JSON.stringify(value)
+    );
+
+  } catch {}
+
+}
+
+function getPlayerVolume(d) {
+
+  const value = d.allowVolumeControl
+    ? readPlayerStorage('volume', d.volume)
+    : d.volume;
+
+  return typeof value === 'number' &&
+    Number.isFinite(value)
+      ? Math.max(0, Math.min(100, value))
+      : d.volume;
+
+}
+
+function formatMusicTime(seconds) {
+
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return '0:00';
+  }
+
+  const minutes = Math.floor(seconds / 60);
+
+  const secs = Math.floor(seconds % 60);
+
+  return minutes + ':' +
+    String(secs).padStart(2, '0');
+
+}
+
+function playerIcon(name) {
+
+  const paths = {
+
+    play: '<path d="m8 5 12 7-12 7z" fill="currentColor" stroke="none"/>',
+
+    pause: '<path d="M9 5v14M15 5v14" stroke-width="3"/>',
+
+    previous: '<path d="M6 5v14m13-14L9 12l10 7z"/>',
+
+    next: '<path d="M18 5v14M5 5l10 7-10 7z"/>',
+
+    volume: '<path d="M11 5 6 9H3v6h3l5 4zM15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>',
+
+    mute: '<path d="M11 5 6 9H3v6h3l5 4zM16 9l6 6m0-6-6 6"/>',
+
+    music: '<path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3h3m11 1a3 3 0 1 1-3-3h3"/>'
+
+  };
+
+  return `<svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round">
+
+    ${paths[name] || ''}
+
+  </svg>`;
+
+}
+
+function createMiniPlayer(root) {
+
+  const panel = root.querySelector(
+    '.christmas-floating-panel'
+  );
+
+  miniPlayer = document.createElement('div');
+
+  miniPlayer.className = 'christmas-mini-player';
+
+  miniPlayer.hidden = true;
+
+  miniPlayer.innerHTML = `
+
+    <div class="christmas-player-heading">
+
+      <div class="christmas-player-art">
+        ${playerIcon('music')}
+      </div>
+
+      <div class="christmas-player-info">
+
+        <span class="christmas-player-caption">
+          NOW PLAYING
+        </span>
+
+        <strong data-player="title">
+          No Music
+        </strong>
+
+        <span data-player="mode"></span>
+
+      </div>
+
+    </div>
+
+    <div class="christmas-player-progress">
+
+      <input
+        type="range"
+        data-player="seek"
+        aria-label="Music progress"
+        min="0"
+        max="1"
+        step="0.1"
+        value="0">
+
+      <div class="christmas-player-time">
+
+        <span data-player="current">0:00</span>
+
+        <span data-player="duration">0:00</span>
+
+      </div>
+
+    </div>
+
+    <div class="christmas-player-controls">
+
+      <button
+        type="button"
+        data-player="previous"
+        aria-label="Previous music"
+        title="Previous music">
+
+        ${playerIcon('previous')}
+
+      </button>
+
+      <button
+        type="button"
+        class="christmas-player-play"
+        data-player="play"
+        aria-label="Play music"
+        title="Play music">
+
+        ${playerIcon('play')}
+
+      </button>
+
+      <button
+        type="button"
+        data-player="next"
+        aria-label="Next music"
+        title="Next music">
+
+        ${playerIcon('next')}
+
+      </button>
+
+    </div>
+
+    <div class="christmas-player-volume">
+
+      <button
+        type="button"
+        data-player="mute"
+        aria-label="Mute music"
+        title="Mute music">
+
+        ${playerIcon('volume')}
+
+      </button>
+
+      <input
+        type="range"
+        data-player="volume"
+        aria-label="Music volume"
+        min="0"
+        max="100"
+        step="1"
+        value="30">
+
+      <span data-player="volumeText">30%</span>
+
+    </div>
+
+    <div
+      class="christmas-player-status"
+      data-player="status"
+      aria-live="polite">
+    </div>
+
+  `;
+
+  panel.append(miniPlayer);
+
+  const get = name => miniPlayer.querySelector(
+    '[data-player="' + name + '"]'
+  );
+
+  get('play').addEventListener('click', () => {
+
+    if (
+      !config?.allowPlayPause ||
+      !musicAvailable ||
+      !audio
+    ) return;
+
+    if (musicFailed || playlistFinished || audio.paused) {
+
+      manualPaused = false;
+
+      if (musicFailed) {
+
+        failedTracks.clear();
+
+        musicFailed = false;
+
+        audio.load();
+
+      }
+
+      if (playlistFinished) {
+
+        playlistFinished = false;
+
+        audio.currentTime = 0;
+
+      }
+
+      play();
+
+    } else {
+
+      manualPaused = true;
+
+      audio.pause();
+
+    }
+
+    savePlaybackPosition(true);
+
+    syncMiniPlayer();
+
+  });
+
+  get('previous').addEventListener(
+    'click',
+    () => changePlayerTrack(-1)
+  );
+
+  get('next').addEventListener(
+    'click',
+    () => changePlayerTrack(1)
+  );
+
+  get('seek').addEventListener('input', event => {
+
+    if (
+      !config?.allowMusicSeek ||
+      !musicAvailable ||
+      !audio ||
+      !Number.isFinite(audio.duration)
+    ) return;
+
+    audio.currentTime = Math.max(
+      0,
+      Math.min(
+        audio.duration,
+        Number(event.target.value)
+      )
+    );
+
+    savePlaybackPosition(true);
+
+    syncMiniPlayer();
+
+  });
+
+  get('volume').addEventListener('input', event => {
+
+    if (!config?.allowVolumeControl) return;
+
+    const volume = Number(event.target.value);
+
+    writePlayerStorage('volume', volume);
+
+    if (audio) audio.volume = volume / 100;
+
+    syncMiniPlayer();
+
+  });
+
+  get('mute').addEventListener('click', () => {
+
+    if (!config?.allowVolumeControl) return;
+
+    const volume = getPlayerVolume(config);
+
+    if (volume > 0) {
+
+      writePlayerStorage('lastVolume', volume);
+
+      writePlayerStorage('volume', 0);
+
+    } else {
+
+      const previous = readPlayerStorage(
+        'lastVolume',
+        config.volume || 30
+      );
+
+      writePlayerStorage(
+        'volume',
+        Math.max(1, Math.min(100, Number(previous) || 30))
+      );
+
+    }
+
+    if (audio) {
+
+      audio.volume =
+        getPlayerVolume(config) / 100;
+
+    }
+
+    syncMiniPlayer();
+
+  });
+
+}
+
+function syncMiniPlayer() {
+
+  if (!miniPlayer || !config) return;
+
+  const d = config;
+
+  miniPlayer.hidden =
+    !d.showMiniPlayer || !musicAvailable;
+
+  if (miniPlayer.hidden) return;
+
+  const get = name => miniPlayer.querySelector(
+    '[data-player="' + name + '"]'
+  );
+
+  const tracks = getMusicTracks();
+
+  const mode = getPlaybackMode();
+
+  const singleMode = [
+    'play_one',
+    'repeat_one'
+  ].includes(mode);
+
+  const labels = {
+
+    play_one: 'Play One',
+
+    repeat_one: 'Repeat One',
+
+    play_all: 'Play All',
+
+    repeat_all: 'Repeat All',
+
+    shuffle: 'Shuffle'
+
+  };
+
+  get('title').textContent =
+    currentMusicTitle || 'Loading music...';
+
+  get('mode').textContent =
+    labels[mode] || mode;
+
+  const paused = !audio || audio.paused;
+
+  const playButton = get('play');
+
+  const icon = paused ? 'play' : 'pause';
+
+  if (playButton.dataset.icon !== icon) {
+
+    playButton.dataset.icon = icon;
+
+    playButton.innerHTML = playerIcon(icon);
+
+  }
+
+  playButton.setAttribute(
+    'aria-label',
+    paused ? 'Play music' : 'Pause music'
+  );
+
+  playButton.title =
+    paused ? 'Play music' : 'Pause music';
+
+  playButton.disabled =
+    !d.allowPlayPause || !audio || !lastMusic;
+
+  get('previous').disabled =
+    !d.allowTrackSkip ||
+    singleMode ||
+    tracks.length < 2;
+
+  get('next').disabled =
+    !d.allowTrackSkip ||
+    singleMode ||
+    tracks.length < 2;
+
+  const duration =
+    Number.isFinite(audio?.duration)
+      ? audio.duration
+      : 0;
+
+  const current =
+    Number.isFinite(audio?.currentTime)
+      ? audio.currentTime
+      : 0;
+
+  const seek = get('seek');
+
+  seek.disabled =
+    !d.allowMusicSeek || !duration;
+
+  seek.max = duration || 1;
+
+  seek.value = Math.min(
+    current,
+    duration || 1
+  );
+
+  get('current').textContent =
+    formatMusicTime(current);
+
+  get('duration').textContent =
+    formatMusicTime(duration);
+
+  const volume = getPlayerVolume(d);
+
+  get('volume').disabled =
+    !d.allowVolumeControl;
+
+  get('volume').value = volume;
+
+  get('volumeText').textContent =
+    volume + '%';
+
+  const mute = get('mute');
+
+  mute.disabled = !d.allowVolumeControl;
+
+  const volumeIcon = volume ? 'volume' : 'mute';
+
+  if (mute.dataset.icon !== volumeIcon) {
+
+    mute.dataset.icon = volumeIcon;
+
+    mute.innerHTML = playerIcon(volumeIcon);
+
+  }
+
+  mute.title = volume ? 'Mute music' : 'Unmute music';
+
+  mute.setAttribute('aria-label', mute.title);
+
+  get('status').textContent = musicFailed
+    ? 'Music unavailable'
+    : playlistFinished
+      ? 'Playback completed'
+      : '';
+
+}
+
+function changePlayerTrack(direction) {
+
+  if (
+    !config?.allowTrackSkip ||
+    !musicAvailable
+  ) return;
+
+  const mode = getPlaybackMode();
+
+  if (
+    mode === 'play_one' ||
+    mode === 'repeat_one'
+  ) return;
+
+  const tracks = getMusicTracks();
+
+  if (tracks.length < 2) return;
+
+  let index = tracks.findIndex(
+    track => track.id === currentTrackId
+  );
+
+  if (index < 0) index = 0;
+
+  index = (
+    index + direction + tracks.length
+  ) % tracks.length;
+
+  currentTrackId = tracks[index].id;
+
+  playlistFinished = false;
+
+  manualPaused = false;
+
+  musicFailed = false;
+
+  failedTracks.clear();
+
+  pendingSeek = null;
+
+  if (audio) {
+
+    audio.pause();
+
+    audio.currentTime = 0;
+
+  }
+
+  lastMusic = '';
+
+  render();
+
+  savePlaybackPosition(true);
+
+}
+
+function savePlaybackPosition(force = false) {
+
+  if (
+    !uid ||
+    !config?.rememberPlayback ||
+    !musicAvailable ||
+    !audio ||
+    !lastMusic ||
+    pendingSeek !== null ||
+    !Number.isFinite(audio.currentTime)
+  ) return;
+
+  if (
+    !force &&
+    Date.now() - lastPlaybackSave < 5000
+  ) return;
+
+  lastPlaybackSave = Date.now();
+
+  writePlayerStorage('playback', {
+
+    trackId: currentTrackId,
+
+    url: lastMusic,
+
+    time: audio.currentTime,
+
+    paused: manualPaused,
+
+    finished: playlistFinished,
+
+    mode: getPlaybackMode(),
+
+    signature: playlistSignature
+
+  });
+
+}
+
+function restorePlaybackPosition(
+  d,
+  tracks,
+  singleMode,
+  preferredTrack
+) {
+
+  if (restoredPlayback) return;
+
+  restoredPlayback = true;
+
+  if (!d.rememberPlayback) return;
+
+  const saved = readPlayerStorage('playback');
+
+  if (
+    !saved ||
+    saved.mode !== getPlaybackMode() ||
+    saved.signature !== playlistSignature
+  ) return;
+
+  const track = tracks.find(
+    item => item.id === saved.trackId
+  );
+
+  if (tracks.length && !track) return;
+
+  if (
+    singleMode &&
+    preferredTrack?.id !== track?.id
+  ) return;
+
+  let expectedUrl;
+
+  try {
+
+    expectedUrl = new URL(
+      track?.url || d.musicUrl,
+      location.href
+    ).href;
+
+  } catch {
+
+    return;
+
+  }
+
+  if (saved.url !== expectedUrl) return;
+
+  currentTrackId = track?.id || null;
+
+  manualPaused =
+    d.allowPlayPause && saved.paused === true;
+
+  pendingSeek = {
+
+    url: expectedUrl,
+
+    time: Math.max(0, Number(saved.time) || 0)
+
+  };
+
+}
+
+function applyPendingSeek() {
+
+  if (
+    !pendingSeek ||
+    !audio ||
+    audio.src !== pendingSeek.url ||
+    !Number.isFinite(audio.duration)
+  ) return;
+
+  audio.currentTime = Math.max(
+    0,
+    Math.min(
+      pendingSeek.time,
+      Math.max(0, audio.duration - 0.2)
+    )
+  );
+
+  pendingSeek = null;
+
+}
+
+function handleMusicError() {
+
+  if (!musicAvailable || !audio || !config) return;
+
+  if (currentTrackId) {
+
+    failedTracks.add(currentTrackId);
+
+  }
+
+  const mode = getPlaybackMode();
+
+  const tracks = getMusicTracks();
+
+  const singleMode = [
+    'play_one',
+    'repeat_one'
+  ].includes(mode);
+
+  if (
+    config.autoSkipMusicError &&
+    !singleMode &&
+    tracks.length > 1
+  ) {
+
+    const index = tracks.findIndex(
+      item => item.id === currentTrackId
+    );
+
+    const remaining = mode === 'play_all'
+      ? tracks.slice(index + 1)
+      : [
+          ...tracks.slice(index + 1),
+          ...tracks.slice(0, index + 1)
+        ];
+
+    const next = remaining.find(
+      item => !failedTracks.has(item.id)
+    );
+
+    if (next) {
+
+      currentTrackId = next.id;
+
+      pendingSeek = null;
+
+      playlistFinished = false;
+
+      lastMusic = '';
+
+      render();
+
+      return;
+
+    }
+
+  }
+
+  musicFailed = true;
+
+  audio.pause();
+
+  syncMiniPlayer();
+
+}
 function createFloat(){if(floating)return;const root=document.createElement('div');floating=root;root.id='christmasFloating';root.className='christmas-floating';root.hidden=true;
 root.innerHTML=`<button type="button" class="christmas-floating-handle" aria-label="Christmas settings" aria-expanded="false" aria-controls="christmasFloatingPanel"><svg class="christmas-floating-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg></button><div class="christmas-floating-panel" id="christmasFloatingPanel"><div class="christmas-floating-title">Status Assignment</div>${['effect','music'].map(k=>`<div class="christmas-floating-row" data-christmas-row="${k}"><span>${k==='effect'?'Effect':'Music'}</span><label class="shared-active-switch"><input type="checkbox" aria-label="${k}" data-christmas-control="${k}" data-active-label="ON" data-inactive-label="OFF"><span class="shared-active-track"><span class="shared-active-text"></span><span class="shared-active-knob"></span></span></label></div>`).join('')}</div>`;
 document.body.append(root);const handle=root.querySelector('button');
-root.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{const k=input.dataset.christmasControl,cap=k==='effect'?'Effect':'Music';if(config?.['allow'+cap+'Toggle']&&config[k+'Enabled'])save(k,input.checked);render();play();}));
+createMiniPlayer(root);
+root.querySelectorAll(
+  'input[data-christmas-control]'
+)
+  .forEach(input=>input.addEventListener('change',()=>{const k=input.dataset.christmasControl,cap=k==='effect'?'Effect':'Music';if(config?.['allow'+cap+'Toggle']&&config[k+'Enabled'])save(k,input.checked);render();play();}));
 root.addEventListener('pointerenter', e => {
   if (e.pointerType === 'mouse') {
     clearTimeout(closeTimer);
@@ -64,7 +857,66 @@ handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return
 function finish(e){if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;root.classList.remove('is-dragging');if(moved){suppressClick=true;try{if(uid)localStorage.setItem(positionKey(),String(root.getBoundingClientRect().top));}catch{}closeFloat();}if(handle.hasPointerCapture(e.pointerId))handle.releasePointerCapture(e.pointerId);}
 ['pointerup','pointercancel','lostpointercapture'].forEach(name=>handle.addEventListener(name,finish));window.SharedActiveSwitch?.init?.(root);
 }
-function syncChristmasFloat(d,e,m){createFloat();const showE=d.effectEnabled&&d.showEffectButton,showM=d.musicEnabled&&d.showMusicButton;floating.hidden=!showE&&!showM;if(floating.hidden){closeFloat();return;}for(const [k,on,show,allow] of [['effect',e,showE,d.allowEffectToggle],['music',m,showM,d.allowMusicToggle]]){const row=floating.querySelector('[data-christmas-row="'+k+'"]'),input=row.querySelector('input');row.hidden=!show;input.checked=on;input.disabled=!allow;window.SharedActiveSwitch?.sync?.(input);}positionFloat(d);}
+function syncChristmasFloat(d, e, m) {
+
+  createFloat();
+
+  musicAvailable = m;
+
+  const showE =
+    d.effectEnabled && d.showEffectButton;
+
+  const showM =
+    d.musicEnabled && d.showMusicButton;
+
+  const showPlayer =
+    d.showMiniPlayer && m;
+
+  floating.classList.toggle(
+    'has-mini-player',
+    showPlayer
+  );
+
+  floating.hidden =
+    !showE && !showM && !showPlayer;
+
+  if (floating.hidden) {
+
+    closeFloat();
+
+    return;
+
+  }
+
+  for (const [k, on, show, allow] of [
+
+    ['effect', e, showE, d.allowEffectToggle],
+
+    ['music', m, showM, d.allowMusicToggle]
+
+  ]) {
+
+    const row = floating.querySelector(
+      '[data-christmas-row="' + k + '"]'
+    );
+
+    const input = row.querySelector('input');
+
+    row.hidden = !show;
+
+    input.checked = on;
+
+    input.disabled = !allow;
+
+    window.SharedActiveSwitch?.sync?.(input);
+
+  }
+
+  syncMiniPlayer();
+
+  positionFloat(d);
+
+}
 
 function pref(k,def,allow){if(!allow)return def;try{const v=localStorage.getItem(key(k));return v===null?def:v==='on';}catch{return def;}}
 function save(k,v){try{localStorage.setItem(key(k),v?'on':'off')}catch{}}
@@ -180,11 +1032,43 @@ function nextChristmasTrack() {
 
 function renderChristmasMusic(d, enabled) {
 
-  if (!enabled) {
-    audio?.pause();
-    resetPlaylist();
-    return;
-  }
+if (!enabled) {
+
+  musicAvailable = false;
+
+  audio?.pause();
+
+  manualPaused = false;
+
+  musicFailed = false;
+
+  pendingSeek = null;
+
+  failedTracks.clear();
+
+  restoredPlayback = true;
+
+  resetPlaylist();
+
+  syncMiniPlayer();
+
+  return;
+
+}
+
+musicAvailable = true;
+
+if (!d.allowPlayPause) {
+
+  manualPaused = false;
+
+}
+
+if (!d.rememberPlayback) {
+
+  pendingSeek = null;
+
+}
 
   const tracks = getMusicTracks();
   const mode = getPlaybackMode();
@@ -212,7 +1096,11 @@ if (signature !== playlistSignature) {
 
   playlistSignature = signature;
   playlistFinished = false;
+musicFailed = false;
 
+failedTracks.clear();
+
+pendingSeek = null;
   if (singleMode) {
 
     currentTrackId =
@@ -227,7 +1115,20 @@ if (signature !== playlistSignature) {
 
 }
 
-if (playlistFinished) return;
+restorePlaybackPosition(
+  d,
+  tracks,
+  singleMode,
+  preferredTrack
+);
+
+if (playlistFinished) {
+
+  syncMiniPlayer();
+
+  return;
+
+}
 
 let track = singleMode
   ? preferredTrack
@@ -242,7 +1143,8 @@ if (!track && tracks.length) {
 }
 
 currentTrackId = track?.id || null;
-
+currentMusicTitle =
+  track?.title || 'Christmas Music';
   let url;
 
   try {
@@ -272,27 +1174,77 @@ currentTrackId = track?.id || null;
       document.body.append(audio);
     }
 
-    audio.addEventListener(
-      'ended',
-      nextChristmasTrack
-    );
+audio.addEventListener(
+  'loadedmetadata',
+  () => {
+
+    applyPendingSeek();
+
+    syncMiniPlayer();
+
+  }
+);
+
+audio.addEventListener(
+  'timeupdate',
+  () => {
+
+    savePlaybackPosition();
+
+    syncMiniPlayer();
+
+  }
+);
+
+audio.addEventListener(
+  'play',
+  syncMiniPlayer
+);
+
+audio.addEventListener(
+  'pause',
+  syncMiniPlayer
+);
+
+audio.addEventListener(
+  'ended',
+  () => {
+
+    savePlaybackPosition(true);
+
+    syncMiniPlayer();
+
+  }
+);
+
+audio.addEventListener(
+  'error',
+  handleMusicError
+);
   }
 
   if (audio.src !== url.href) {
     audio.src = url.href;
   }
 
-  audio.volume = d.volume / 100;
+audio.volume = getPlayerVolume(d) / 100;
 
   audio.loop = tracks.length
     ? mode === 'repeat_one'
     : d.loop;
 
-  lastMusic = url.href;
+lastMusic = url.href;
 
-  play();
+applyPendingSeek();
+
+play();
+
+syncMiniPlayer();
 }
 function stop() {
+  musicAvailable = false;
+
+pendingSeek = null;
   layer?.replaceChildren();
   audio?.pause();
   closeFloat();
@@ -306,14 +1258,46 @@ function stop() {
 function play() {
 
   if (
+
     config &&
+
     audio &&
+
     lastMusic &&
+
+    musicAvailable &&
+
+    !manualPaused &&
+
+    !musicFailed &&
+
     !playlistFinished &&
-    (!config.pauseWhenHidden || !document.hidden) &&
+
+    (
+      !config.pauseWhenHidden ||
+      !document.hidden
+    ) &&
+
     audio.paused
+
   ) {
-    audio.play().catch(() => {});
+
+    audio.play().catch(error => {
+
+      if (
+        error.name !== 'NotAllowedError' &&
+        error.name !== 'AbortError'
+      ) {
+
+        console.warn(
+          '[Christmas Player]',
+          error.message
+        );
+
+      }
+
+    });
+
   }
 
 }
@@ -329,9 +1313,43 @@ function init(){if(!window.firebase?.auth||!firebase.apps.length){setTimeout(ini
 musicRef?.off();
 ref = null;
 musicRef = null;
+savePlaybackPosition(true);
+
 musicData = {};
+
 config = null;
+
 stop();
+
+manualPaused = false;
+
+musicFailed = false;
+
+musicAvailable = false;
+
+currentMusicTitle = '';
+
+restoredPlayback = false;
+
+playlistSignature = '';
+
+pendingSeek = null;
+
+lastPlaybackSave = 0;
+
+failedTracks.clear();
+
+uid = '';
+
+role = '';
+
+if (audio) {
+
+  audio.removeAttribute('src');
+
+  audio.load();
+
+}
                                                                                                                                           
 if(!u||sessionStorage.getItem('5g88.adminSession')!==u.uid)return;try{const t=await u.getIdTokenResult();const p=(await firebase.database().ref('adminUsers/'+u.uid).once('value')).val();if(n!==epoch||!p?.active||!p.secondPasswordEnabled||t.claims.secondVerified!==true||t.claims.pinVersion!==p.pinVersion||!['superadmin','siteadmin'].includes(p.role))return;uid=u.uid;role=p.role;
 musicRef = firebase.database().ref(
@@ -357,4 +1375,10 @@ musicRef.on('value', snapshot => {
   render();
 
 });
-ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);window.addEventListener('pagehide',()=>audio?.pause());}init();})();
+ref=firebase.database().ref('adminConfig/christmas');ref.on('value',s=>{if(n!==epoch)return;config=normalize(s.val()||{});render();},()=>{config=null;stop();});}catch{stop();}});timer=setInterval(render,1000);document.addEventListener('click',play);document.addEventListener('keydown',play);document.addEventListener('visibilitychange',()=>{if(document.hidden&&config?.pauseWhenHidden)audio?.pause();else play();});window.addEventListener('resize',render);window.addEventListener('storage',render);window.addEventListener('pagehide', () => {
+
+  savePlaybackPosition(true);
+
+  audio?.pause();
+
+});}init();})();
