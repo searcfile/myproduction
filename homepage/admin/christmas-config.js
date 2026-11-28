@@ -55,9 +55,28 @@ const playlistRef = firebase.database().ref(
   'adminConfig/christmasMusic'
 );
 
-const musicModule = document.getElementById(
-  'christmasAddMusicModule'
+const musicModuleContent = document.getElementById(
+  'christmasMusicModuleContent'
 );
+
+const musicModule = NewUI.modal.create({
+  title: 'Add Music',
+  width: 440,
+  autoOpen: false,
+  destroyOnClose: false,
+
+  content: musicModuleContent.querySelector(
+    '.christmas-module-body'
+  ),
+
+  footer: musicModuleContent.querySelector(
+    '.christmas-module-footer'
+  )
+});
+
+musicModuleContent.remove();
+
+NewUI.init(musicModule.dialog);
 
 const addMusicBtn = document.getElementById(
   'christmasAddMusic'
@@ -115,6 +134,8 @@ function closeMusicModule() {
 
   if (musicBusy) return;
 
+  musicSource._sharedDropdown?.close?.();
+
   musicModule.close();
 
 }
@@ -123,11 +144,11 @@ function openChristmasAddMusic() {
 
   if (!user || musicBusy) return;
 
+  stopMusicPreview();
+
   editingMusicId = null;
 
-  musicModule.querySelector(
-    '.christmas-module-header strong'
-  ).textContent = 'Add Music';
+  musicModule.setTitle('Add Music');
 
   saveMusicBtn.textContent = 'Save Music';
 
@@ -138,13 +159,19 @@ function openChristmasAddMusic() {
   musicSource.disabled = false;
   musicSource.value = 'upload';
 
+  musicSource._sharedDropdown?.refresh?.();
+
+  musicTitle._newUIInput?.refresh?.();
+  musicUrl._newUIInput?.refresh?.();
+
   syncMusicSource();
 
-  musicModule.showModal();
+  musicModule.open();
 
   musicTitle.focus();
 
 }
+
 function openChristmasEditMusic(id) {
 
   if (!user || musicBusy) return;
@@ -157,9 +184,7 @@ function openChristmasEditMusic(id) {
 
   editingMusicId = id;
 
-  musicModule.querySelector(
-    '.christmas-module-header strong'
-  ).textContent = 'Edit Music';
+  musicModule.setTitle('Edit Music');
 
   saveMusicBtn.textContent = 'Save Changes';
 
@@ -178,13 +203,18 @@ function openChristmasEditMusic(id) {
       ? track.url || ''
       : '';
 
+  musicSource._sharedDropdown?.refresh?.();
+
+  musicTitle._newUIInput?.refresh?.();
+  musicUrl._newUIInput?.refresh?.();
+
   syncMusicSource();
 
   document.getElementById(
     'christmasUploadField'
   ).hidden = true;
 
-  musicModule.showModal();
+  musicModule.open();
 
   musicTitle.focus();
 
@@ -200,18 +230,8 @@ musicSource.addEventListener(
 );
 
 document.getElementById(
-  'christmasCloseMusic'
-).onclick = closeMusicModule;
-
-document.getElementById(
   'christmasCancelMusic'
 ).onclick = closeMusicModule;
-
-musicModule.addEventListener('cancel', e => {
-
-  if (musicBusy) e.preventDefault();
-
-});
 
 musicFile.addEventListener('change', () => {
 
@@ -222,6 +242,8 @@ musicFile.addEventListener('change', () => {
     musicTitle.value = file.name
       .replace(/\.mp3$/i, '')
       .slice(0, 120);
+
+    musicTitle._newUIInput?.refresh?.();
 
   }
 
