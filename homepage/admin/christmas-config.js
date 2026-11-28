@@ -95,6 +95,7 @@ let musicBusy = false;
 let musicTracks = {};
 let savedPlaybackMode = 'repeat_all';
 let previewAudio = null;
+let editingMusicId = null;
 
 function syncMusicSource() {
 
@@ -122,10 +123,19 @@ function openChristmasAddMusic() {
 
   if (!user || musicBusy) return;
 
+  editingMusicId = null;
+
+  musicModule.querySelector(
+    '.christmas-module-header strong'
+  ).textContent = 'Add Music';
+
+  saveMusicBtn.textContent = 'Save Music';
+
   musicTitle.value = '';
   musicFile.value = '';
   musicUrl.value = '';
 
+  musicSource.disabled = false;
   musicSource.value = 'upload';
 
   syncMusicSource();
@@ -135,7 +145,50 @@ function openChristmasAddMusic() {
   musicTitle.focus();
 
 }
+function openChristmasEditMusic(id) {
 
+  if (!user || musicBusy) return;
+
+  const track = musicTracks[id];
+
+  if (!track) return;
+
+  stopMusicPreview();
+
+  editingMusicId = id;
+
+  musicModule.querySelector(
+    '.christmas-module-header strong'
+  ).textContent = 'Edit Music';
+
+  saveMusicBtn.textContent = 'Save Changes';
+
+  musicTitle.value = track.title || '';
+  musicFile.value = '';
+
+  musicSource.value =
+    track.source === 'github'
+      ? 'upload'
+      : 'url';
+
+  musicSource.disabled = true;
+
+  musicUrl.value =
+    track.source === 'url'
+      ? track.url || ''
+      : '';
+
+  syncMusicSource();
+
+  document.getElementById(
+    'christmasUploadField'
+  ).hidden = true;
+
+  musicModule.showModal();
+
+  musicTitle.focus();
+
+}
 addMusicBtn.addEventListener(
   'click',
   openChristmasAddMusic
@@ -220,6 +273,93 @@ saveMusicBtn.addEventListener('click', async () => {
 
   if (!user || musicBusy) return;
 
+  if (editingMusicId !== null) {
+
+  const id = editingMusicId;
+  const track = musicTracks[id];
+  const title = musicTitle.value.trim();
+
+  if (!track) {
+    toast('Music not found', false);
+    return;
+  }
+
+  if (!title || title.length > 120) {
+    toast('Invalid music title', false);
+    return;
+  }
+
+  const updates = { title };
+
+  if (track.source === 'url') {
+
+    const url = musicUrl.value.trim();
+
+    try {
+
+      const parsed = new URL(url);
+
+      if (
+        parsed.protocol !== 'https:' ||
+        parsed.username ||
+        parsed.password ||
+        url.length > 1000
+      ) {
+        throw new Error();
+      }
+
+      updates.url = url;
+
+    } catch {
+
+      toast('Invalid HTTPS music URL', false);
+      return;
+
+    }
+
+  }
+
+  musicBusy = true;
+
+  try {
+
+    await NewUI.setButtonLoading(
+      saveMusicBtn,
+      true,
+      { text: 'Saving...' }
+    );
+
+    await musicRequest(
+      '/' + encodeURIComponent(id),
+      'PATCH',
+      JSON.stringify(updates)
+    );
+
+    editingMusicId = null;
+
+    musicModule.close();
+
+    toast('Music updated successfully');
+
+  } catch (error) {
+
+    toast(error.message, false);
+
+  } finally {
+
+    musicBusy = false;
+
+    await NewUI.setButtonLoading(
+      saveMusicBtn,
+      false
+    );
+
+  }
+
+  return;
+
+}
+  
   const title = musicTitle.value.trim();
   const isUpload = musicSource.value === 'upload';
 
@@ -353,7 +493,101 @@ function stopMusicPreview() {
   previewAudio = null;
 
 }
+async function updateMusicStatus(id, active) {
 
+  if (!user || musicBusy) return;
+
+  musicBusy = true;
+
+  try {
+
+    await musicRequest(
+      '/' + encodeURIComponent(id),
+      'PATCH',
+      JSON.stringify({ active })
+    );
+
+    toast(
+      active
+        ? 'Music activated'
+        : 'Music deactivated'
+    );
+
+  } catch (error) {
+
+    toast(error.message, false);
+
+  } finally {
+
+    musicBusy = false;
+
+    renderMusicList();
+
+  }
+
+}
+      async function deleteChristmasMusic(id, button) {
+
+  if (!user || musicBusy) return;
+
+  const track = musicTracks[id];
+
+  if (!track) return;
+
+  await NewUI.confirm({
+
+    target: button,
+
+    title: 'Delete Music',
+
+    message:
+      `Delete "${track.title}"? ` +
+      'This action cannot be undone.',
+
+    confirmText: 'Delete',
+
+    cancelText: 'Cancel',
+
+    loadingText: 'Deleting...',
+
+    danger: true,
+
+    onConfirm: async () => {
+
+      if (!user || musicBusy) {
+        throw new Error('Please try again');
+      }
+
+      musicBusy = true;
+
+      try {
+
+        if (
+          previewAudio?.dataset.trackId === id
+        ) {
+          stopMusicPreview();
+        }
+
+        await musicRequest(
+          '/' + encodeURIComponent(id),
+          'DELETE'
+        );
+
+        toast('Music deleted successfully');
+
+      } finally {
+
+        musicBusy = false;
+
+        renderMusicList();
+
+      }
+
+    }
+
+  });
+
+}
 function renderMusicList() {
 
   musicList.replaceChildren();
@@ -467,11 +701,88 @@ function renderMusicList() {
 
     }
 
-    actions.append(preview);
+/* ACTIVE / INACTIVE SWITCH */
 
-    row.append(info, actions);
+const status = document.createElement('label');
 
-    musicList.append(row);
+status.className = 'shared-active-switch';
+
+status.innerHTML = `
+  <input
+    type="checkbox"
+    data-active-label="Active"
+    data-inactive-label="Inactive"
+    aria-label="Music status"
+  >
+
+  <span class="shared-active-track">
+    <span class="shared-active-text"></span>
+    <span class="shared-active-knob"></span>
+  </span>
+`;
+
+const statusInput = status.querySelector('input');
+
+statusInput.checked = track.active === true;
+statusInput.disabled = musicBusy;
+
+statusInput.addEventListener('change', () => {
+
+  const active = statusInput.checked;
+
+  statusInput.disabled = true;
+
+  updateMusicStatus(id, active);
+
+});
+
+/* EDIT BUTTON */
+
+const edit = document.createElement('button');
+
+edit.type = 'button';
+edit.className = 'btn-cancel-new';
+edit.textContent = 'Edit';
+edit.disabled = musicBusy;
+
+edit.onclick = () => {
+
+  openChristmasEditMusic(id);
+
+};
+
+/* DELETE BUTTON */
+
+const del = document.createElement('button');
+
+del.type = 'button';
+del.className =
+  'btn-cancel-new christmas-music-delete';
+
+del.textContent = 'Delete';
+del.disabled = musicBusy;
+
+del.onclick = () => {
+
+  deleteChristmasMusic(id, del);
+
+};
+
+/* APPEND ACTIONS */
+
+actions.append(
+  status,
+  preview,
+  edit,
+  del
+);
+
+row.append(info, actions);
+
+musicList.append(row);
+
+window.SharedActiveSwitch?.init?.(row);
+window.SharedActiveSwitch?.sync?.(statusInput);
 
   });
 
