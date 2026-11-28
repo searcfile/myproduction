@@ -7586,14 +7586,35 @@ const MUSIC_MODES = [
 
 function getMusicGithubConfig() {
 
-  const token = process.env.GITHUB_MUSIC_TOKEN;
-  const owner = process.env.GITHUB_MUSIC_OWNER;
-  const repo = process.env.GITHUB_MUSIC_REPO;
-  const branch =
-    process.env.GITHUB_MUSIC_BRANCH || 'main';
+  const token = String(
+    process.env.GITHUB_MUSIC_TOKEN || ''
+  ).trim();
+
+  const owner = String(
+    process.env.GITHUB_MUSIC_OWNER || ''
+  ).trim();
+
+  const repo = String(
+    process.env.GITHUB_MUSIC_REPO || ''
+  ).trim();
+
+  const branch = String(
+    process.env.GITHUB_MUSIC_BRANCH || 'main'
+  ).trim();
+
+  console.log('[CHRISTMAS MUSIC CONFIG]', {
+    owner,
+    repo,
+    branch,
+    tokenConfigured: Boolean(token)
+  });
 
   if (!token || !owner || !repo) {
-    throw new Error('GitHub music storage not configured');
+
+    throw new Error(
+      'GitHub music storage not configured'
+    );
+
   }
 
   return { token, owner, repo, branch };
@@ -7625,13 +7646,20 @@ async function musicGithubRequest(
     }
   );
 
-  const result = await response.json();
+const result = await response.json();
 
-  if (!response.ok) {
-    throw new Error(
-      `GitHub request failed: ${response.status}`
-    );
-  }
+if (!response.ok) {
+
+  console.error('[CHRISTMAS GITHUB ERROR]', {
+    status: response.status,
+    message: result.message
+  });
+
+  throw new Error(
+    `GitHub request failed: ${response.status}`
+  );
+
+}
 
   return result;
 
