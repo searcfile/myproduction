@@ -7567,5 +7567,423 @@ return res.json({ ok: true });
 /* =====================================================
    END STICKY NOTES API
    ===================================================== */
+/* =====================================================
+   CHRISTMAS MUSIC API
+   ===================================================== */
+
+const CHRISTMAS_MUSIC_PATH =
+  'adminConfig/christmasMusic';
+
+const MUSIC_MAX_BYTES = 10 * 1024 * 1024;
+
+const MUSIC_MODES = [
+  'play_one',
+  'repeat_one',
+  'play_all',
+  'repeat_all',
+  'shuffle'
+];
+
+function getMusicGithubConfig() {
+
+  const token = process.env.GITHUB_MUSIC_TOKEN;
+  const owner = process.env.GITHUB_MUSIC_OWNER;
+  const repo = process.env.GITHUB_MUSIC_REPO;
+  const branch =
+    process.env.GITHUB_MUSIC_BRANCH || 'main';
+
+  if (!token || !owner || !repo) {
+    throw new Error('GitHub music storage not configured');
+  }
+
+  return { token, owner, repo, branch };
+
+}
+
+async function musicGithubRequest(
+  path,
+  method = 'GET',
+  body
+) {
+
+  const { token, owner, repo } =
+    getMusicGithubConfig();
+
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      ...(body
+        ? { body: JSON.stringify(body) }
+        : {})
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      `GitHub request failed: ${response.status}`
+    );
+  }
+
+  return result;
+
+}
+
+function validMusicTitle(value) {
+
+  return typeof value === 'string' &&
+    value.trim().length > 0 &&
+    value.trim().length <= 120;
+
+}
+
+function validMusicUrl(value) {
+
+  try {
+
+    const url = new URL(value);
+
+    return url.protocol === 'https:' &&
+      !url.username &&
+      !url.password &&
+      value.length <= 1000;
+
+  } catch {
+
+    return false;
+
+  }
+
+}
+
+app.post(
+  '/api/christmas/music',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+
+      const { title, url } = req.body || {};
+
+      if (
+        !validMusicTitle(title) ||
+        !validMusicUrl(url)
+      ) {
+        return fail(res, 400, 'Invalid music details');
+      }
+
+      const ref = db
+        .ref(`${CHRISTMAS_MUSIC_PATH}/tracks`)
+        .push();
+
+      const track = {
+        title: title.trim(),
+        url: url.trim(),
+        active: true,
+        source: 'url',
+        createdBy: req.admin.uid,
+        createdAt: now(),
+        updatedAt: now()
+      };
+
+      await ref.set(track);
+
+      return res.json({
+        ok: true,
+        id: ref.key,
+        track
+      });
+
+    } catch (error) {
+
+      console.error('Add music:', error.message);
+
+      return fail(res, 500, 'Cannot add music');
+
+    }
+
+  }
+);
+
+app.post(
+  '/api/christmas/music/upload',
+  requireAdmin,
+  superOnly,
+
+  express.raw({
+    type: 'audio/mpeg',
+    limit: MUSIC_MAX_BYTES
+  }),
+
+  async (req, res) => {
+
+    try {
+
+      const title = req.query.title;
+
+      if (!validMusicTitle(title)) {
+        return fail(res, 400, 'Invalid music title');
+      }
+
+      if (
+        !Buffer.isBuffer(req.body) ||
+        !req.body.length ||
+        req.body.length > MUSIC_MAX_BYTES
+      ) {
+        return fail(res, 400, 'Invalid MP3 file');
+      }
+
+      const buffer = req.body;
+
+      const hasID3 =
+        buffer.subarray(0, 3).toString() === 'ID3';
+
+      const hasFrame =
+        buffer.length >= 2 &&
+        buffer[0] === 0xff &&
+        (buffer[1] & 0xe0) === 0xe0;
+
+      if (!hasID3 && !hasFrame) {
+        return fail(res, 400, 'MP3 format required');
+      }
+
+      const { owner, repo, branch } =
+        getMusicGithubConfig();
+
+      const ref = db
+        .ref(`${CHRISTMAS_MUSIC_PATH}/tracks`)
+        .push();
+
+      const githubPath = `music/${ref.key}.mp3`;
+
+      await musicGithubRequest(
+        githubPath,
+        'PUT',
+        {
+          message: 'Upload Christmas music',
+          content: buffer.toString('base64'),
+          branch
+        }
+      );
+
+      const track = {
+        title: title.trim(),
+        url:
+          `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${githubPath}`,
+        githubPath,
+        source: 'github',
+        active: true,
+        size: buffer.length,
+        createdBy: req.admin.uid,
+        createdAt: now(),
+        updatedAt: now()
+      };
+
+      await ref.set(track);
+
+      return res.json({
+        ok: true,
+        id: ref.key,
+        track
+      });
+
+    } catch (error) {
+
+      console.error('Upload music:', error.message);
+
+      return fail(res, 500, 'Cannot upload music');
+
+    }
+
+  }
+);
+
+app.patch(
+  '/api/christmas/music/:id',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+
+      const id = req.params.id;
+
+      if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) {
+        return fail(res, 400, 'Invalid music ID');
+      }
+
+      const ref = db.ref(
+        `${CHRISTMAS_MUSIC_PATH}/tracks/${id}`
+      );
+
+      const snapshot = await ref.once('value');
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, 'Music not found');
+      }
+
+      const current = snapshot.val();
+      const body = req.body || {};
+
+      const updates = {
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      };
+
+      if (body.title !== undefined) {
+
+        if (!validMusicTitle(body.title)) {
+          return fail(res, 400, 'Invalid title');
+        }
+
+        updates.title = body.title.trim();
+
+      }
+
+      if (body.active !== undefined) {
+
+        if (typeof body.active !== 'boolean') {
+          return fail(res, 400, 'Invalid status');
+        }
+
+        updates.active = body.active;
+
+      }
+
+      if (body.url !== undefined) {
+
+        if (
+          current.source !== 'url' ||
+          !validMusicUrl(body.url)
+        ) {
+          return fail(res, 400, 'Invalid URL update');
+        }
+
+        updates.url = body.url.trim();
+
+      }
+
+      await ref.update(updates);
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+
+      console.error('Edit music:', error.message);
+
+      return fail(res, 500, 'Cannot edit music');
+
+    }
+
+  }
+);
+
+app.delete(
+  '/api/christmas/music/:id',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+
+      const id = req.params.id;
+
+      if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) {
+        return fail(res, 400, 'Invalid music ID');
+      }
+
+      const ref = db.ref(
+        `${CHRISTMAS_MUSIC_PATH}/tracks/${id}`
+      );
+
+      const snapshot = await ref.once('value');
+
+      if (!snapshot.exists()) {
+        return fail(res, 404, 'Music not found');
+      }
+
+      const track = snapshot.val();
+
+      if (track.source === 'github') {
+
+        const path = `music/${id}.mp3`;
+
+        const { branch } =
+          getMusicGithubConfig();
+
+        const file = await musicGithubRequest(
+          `${path}?ref=${encodeURIComponent(branch)}`
+        );
+
+        await musicGithubRequest(
+          path,
+          'DELETE',
+          {
+            message: 'Delete Christmas music',
+            sha: file.sha,
+            branch
+          }
+        );
+
+      }
+
+      await ref.remove();
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+
+      console.error('Delete music:', error.message);
+
+      return fail(res, 500, 'Cannot delete music');
+
+    }
+
+  }
+);
+
+app.post(
+  '/api/christmas/music/settings',
+  requireAdmin,
+  superOnly,
+  async (req, res) => {
+
+    try {
+
+      const { mode } = req.body || {};
+
+      if (!MUSIC_MODES.includes(mode)) {
+        return fail(res, 400, 'Invalid playback mode');
+      }
+
+      await db.ref(CHRISTMAS_MUSIC_PATH).update({
+        mode,
+        updatedAt: now(),
+        updatedBy: req.admin.uid
+      });
+
+      return res.json({ ok: true });
+
+    } catch (error) {
+
+      return fail(res, 500, 'Cannot save music mode');
+
+    }
+
+  }
+);
+
+/* =====================================================
+   END CHRISTMAS MUSIC API
+   ===================================================== */
 app.use((err,req,res,next)=>{console.error(err.message);return fail(res,500,'Request failed');});
 app.listen(process.env.PORT||3000,'0.0.0.0',()=>console.log('5G88 backend listening'));
