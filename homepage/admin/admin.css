@@ -3207,3 +3207,129 @@ body.tab-dragging-active *{
   }
 
 }
+/* ==========================================
+   CHRISTMAS REPLACE MUSIC
+   ========================================== */
+
+.christmas-current-file {
+  padding: 10px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--backgroundbtn);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+#christmasReplaceField .cfg-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ==========================================
+   CHRISTMAS PLAYLIST DRAG & DROP
+   ========================================== */
+
+.christmas-music-list
+.christmas-music-item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.christmas-music-drag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  min-width: 28px;
+  height: 36px;
+
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+  color: var(--text-dim);
+
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  flex-shrink: 0;
+}
+
+.christmas-music-drag:hover {
+  color: #1668dc;
+  background: var(--btnfocus);
+}
+
+.christmas-music-drag:active {
+  cursor: grabbing;
+}
+
+.christmas-music-drag svg {
+  pointer-events: none;
+}
+
+.christmas-music-item.is-dragging {
+  border-color: #1668dc !important;
+  background: var(--btnfocus);
+  box-shadow: 0 0 0 2px rgba(22,104,220,.2);
+  opacity: .85;
+}
+
+.christmas-music-list.is-reordering {
+  user-select: none;
+}
+
+.christmas-music-list.is-saving-order
+.christmas-music-drag {
+  opacity: .4;
+  pointer-events: none;
+  cursor: wait;
+}
+
+.christmas-music-info {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 650px) {
+
+  .christmas-music-list
+  .christmas-music-item {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .christmas-music-item
+  .christmas-music-drag {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .christmas-music-item
+  .christmas-music-info {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .christmas-music-item
+  .christmas-music-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+}
